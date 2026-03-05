@@ -1474,16 +1474,21 @@ border-radius: 0px;
 </div>
 
 
-<div id="introduction" class="section level1" number="1">
-<h1><span class="header-section-number">1</span> Introduction</h1>
+<div id="github-repository" class="section level1" number="1">
+<h1><span class="header-section-number">1</span> GitHub Repository</h1>
+<p>The companion repository for this webpage is available at:</p>
+<p><a href="https://github.com/svenbuerki/SRK_bioinformatics/" class="uri">https://github.com/svenbuerki/SRK_bioinformatics/</a></p>
+</div>
+<div id="introduction" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> Introduction</h1>
 <p>Self-incompatibility (SI) systems represent one of the most important mechanisms preventing inbreeding in flowering plants, with the sporophytic SI system found in the Brassicaceae being controlled by the highly polymorphic S-locus. The S-receptor kinase (SRK) gene, encoding the female determinant of incompatibility specificity, exhibits extraordinary allelic diversity maintained by balancing selection over evolutionary timescales. Understanding SRK haplotype diversity and population genetic structure is critical for assessing the evolutionary maintenance of outcrossing systems and identifying populations at risk of SI breakdown.</p>
 <p>Traditional approaches to SRK characterization have been limited by the technical challenges of resolving highly similar allelic sequences and the complex genetic architecture of polyploid species. Long-read Nanopore sequencing offers unprecedented opportunities to reconstruct complete SRK haplotypes and resolve allelic relationships within individuals, but requires specialized bioinformatics approaches to handle the unique characteristics of amplicon data from polymorphic loci.</p>
 <p>This comprehensive pipeline integrates Nanopore amplicon assembly, haplotype phasing, and population genetic analysis to provide a complete workflow for SRK diversity assessment. The approach combines multiple CANU assembly replicates optimized for rare haplotype recovery with polyploid-aware variant calling and read-backed phasing to generate high-confidence haplotype reconstructions. Downstream analysis components translate DNA sequences to functional proteins, apply abundance-based filtering to distinguish authentic alleles from technical artifacts, and generate population genetic datasets suitable for demographic inference and conservation assessment.</p>
 <p>The pipeline is specifically designed for threatened plant species research, addressing the critical need to assess SI system integrity in small or fragmented populations where genetic diversity loss may compromise reproductive success. By providing both molecular-level haplotype reconstruction and population-level genetic analysis, this workflow enables comprehensive evaluation of self-incompatibility system evolution and maintenance in natural populations facing conservation challenges.</p>
 <p>Key innovations include multi-replicate assembly strategies for maximizing allelic recovery, reference-guided sequence orientation and gap-filling procedures, SRK-specific protein validation criteria, and tetraploid-aware zygosity analysis. The modular design allows adaptation to different species and study systems while maintaining rigorous quality control throughout the analysis workflow.</p>
 </div>
-<div id="pipeline-overview" class="section level1" number="2">
-<h1><span class="header-section-number">2</span> Pipeline Overview</h1>
+<div id="pipeline-overview" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> Pipeline Overview</h1>
 <ol style="list-style-type: decimal">
 <li><a href="#prepcanseq">Prepare Canonical Sequences</a></li>
 <li><a href="#nanampassphas">Nanopore Amplicon Assembly and Phasing Pipeline</a></li>
@@ -1499,8 +1504,8 @@ border-radius: 0px;
 </ol>
 <p>Steps 1-8 are performed within each library independently, while steps 9-11 are conducted across all libraries to infer protein-based alleles and assign genotypes.</p>
 </div>
-<div id="prepcanseq" class="section level1" number="3">
-<h1><span class="header-section-number">3</span> Prepare Canonical Sequences</h1>
+<div id="prepcanseq" class="section level1" number="4">
+<h1><span class="header-section-number">4</span> Prepare Canonical Sequences</h1>
 <blockquote>
 <p>Warning: This need to be be done ONLY ONCE!</p>
 </blockquote>
@@ -1514,8 +1519,8 @@ border-radius: 0px;
 </ol></li>
 <li><strong>Folder:</strong> <code>/Users/buerkilab/Documents/Amplicon_SRK/Canu_amplicon/Canonical_sequences</code></li>
 </ul>
-<div id="reverse-complement-sequences-and-check-start-codon" class="section level2" number="3.1">
-<h2><span class="header-section-number">3.1</span> Reverse Complement Sequences and Check Start Codon</h2>
+<div id="reverse-complement-sequences-and-check-start-codon" class="section level2" number="4.1">
+<h2><span class="header-section-number">4.1</span> Reverse Complement Sequences and Check Start Codon</h2>
 <ul>
 <li><code>reverse_complement_startcodon_fasta.py</code></li>
 </ul>
@@ -1578,8 +1583,8 @@ print(f&quot;Corrected FASTA: {out_fasta}&quot;)
 print(f&quot;Log file:        {log_file}&quot;)
 </code></pre>
 </div>
-<div id="gene-annotation" class="section level2" number="3.2">
-<h2><span class="header-section-number">3.2</span> Gene Annotation</h2>
+<div id="gene-annotation" class="section level2" number="4.2">
+<h2><span class="header-section-number">4.2</span> Gene Annotation</h2>
 <ul>
 <li>Done with the lab linux computer (<code>/media/Artemisia/Slicksport_PacBio/BEA/Augustus</code>) and the <code>SRK_canonical_haplotype_sequences_revcomp_ATGfixed.fasta</code> as template.</li>
 <li><strong>Output:</strong> <code>augustus_SRK_canonical_haplotype_sequences_revcomp_ATGfixed_arabidopsis.csv</code></li>
@@ -1589,16 +1594,16 @@ print(f&quot;Log file:        {log_file}&quot;)
 augustus --species=arabidopsis --strand=both --singlestrand=false --genemodel=partial --protein=on --codingseq=on --introns=on --start=on --stop=on --cds=on --gff3=on --sample=100 --keep_viterbi=true --alternatives-from-sampling=true --minexonintronprob=0.2 --minmeanexonintronprob=0.5 --maxtracks=2 SRK_canonical_haplotype_sequences_revcomp_ATGfixed.fasta --exonnames=on &gt; augustus_SRK_canonical_haplotype_sequences_revcomp_ATGfixed_arabidopsis.gff</code></pre>
 </div>
 </div>
-<div id="nanampassphas" class="section level1" number="4">
-<h1><span class="header-section-number">4</span> Nanopore Amplicon Assembly and Phasing Pipeline</h1>
-<div id="rationale-and-documentation" class="section level2" number="4.1">
-<h2><span class="header-section-number">4.1</span> Rationale and Documentation</h2>
-<div id="overview" class="section level3" number="4.1.1">
-<h3><span class="header-section-number">4.1.1</span> Overview</h3>
+<div id="nanampassphas" class="section level1" number="5">
+<h1><span class="header-section-number">5</span> Nanopore Amplicon Assembly and Phasing Pipeline</h1>
+<div id="rationale-and-documentation" class="section level2" number="5.1">
+<h2><span class="header-section-number">5.1</span> Rationale and Documentation</h2>
+<div id="overview" class="section level3" number="5.1.1">
+<h3><span class="header-section-number">5.1.1</span> Overview</h3>
 <p>This pipeline implements a multi-replicate CANU assembly approach optimized for rare haplotype detection in Nanopore amplicon sequencing data. The workflow follows the methodology described in the knowledge base for SRK amplicon reconstruction and haplotype phasing.</p>
 </div>
-<div id="pipeline-steps" class="section level3" number="4.1.2">
-<h3><span class="header-section-number">4.1.2</span> Pipeline Steps</h3>
+<div id="pipeline-steps" class="section level3" number="5.1.2">
+<h3><span class="header-section-number">5.1.2</span> Pipeline Steps</h3>
 <ol style="list-style-type: decimal">
 <li>Amplicon Reconstruction and Haplotype Phasing</li>
 </ol>
@@ -1700,8 +1705,8 @@ variants.vcf.gz aligned.bam</code></pre>
     &gt; &quot;${library}_${sample}_hap${i}.fasta&quot;
 done</code></pre>
 </div>
-<div id="output-files" class="section level3" number="4.1.3">
-<h3><span class="header-section-number">4.1.3</span> Output Files</h3>
+<div id="output-files" class="section level3" number="5.1.3">
+<h3><span class="header-section-number">5.1.3</span> Output Files</h3>
 <p>For each sample, the pipeline generates:</p>
 <ul>
 <li><code>combined_unique_contigs.fasta</code>: Deduplicated contigs from all CANU replicates</li>
@@ -1713,8 +1718,8 @@ done</code></pre>
 <li><code>${library}_${sample}_Phased_haplotypes.fasta</code>: Combined haplotype file</li>
 </ul>
 </div>
-<div id="error-handling" class="section level3" number="4.1.4">
-<h3><span class="header-section-number">4.1.4</span> Error Handling</h3>
+<div id="error-handling" class="section level3" number="5.1.4">
+<h3><span class="header-section-number">5.1.4</span> Error Handling</h3>
 <p>The script includes comprehensive error checking:</p>
 <ul>
 <li>File existence validation</li>
@@ -1723,13 +1728,13 @@ done</code></pre>
 <li>Process failure detection with <code>set -euo pipefail</code></li>
 </ul>
 </div>
-<div id="scientific-rationale" class="section level3" number="4.1.5">
-<h3><span class="header-section-number">4.1.5</span> Scientific Rationale</h3>
+<div id="scientific-rationale" class="section level3" number="5.1.5">
+<h3><span class="header-section-number">5.1.5</span> Scientific Rationale</h3>
 <p>This multi-replicate approach addresses the stochastic nature of long-read assembly algorithms, particularly important for detecting rare haplotypes in self-incompatibility systems where allelic diversity is crucial for population viability. The combination of multiple assembly attempts with rigorous polishing and polyploid-aware variant calling maximizes the recovery of authentic haplotype sequences from complex amplicon pools.</p>
 </div>
 </div>
-<div id="bioinformatics" class="section level2" number="4.2">
-<h2><span class="header-section-number">4.2</span> Bioinformatics</h2>
+<div id="bioinformatics" class="section level2" number="5.2">
+<h2><span class="header-section-number">5.2</span> Bioinformatics</h2>
 <ul>
 <li>Load environment first by <code>conda activate nanopore_pipeline</code>.</li>
 <li>LibraryID MUST be e.g. <code>Library0001</code>. Avoid underscore to support downstream analyses.</li>
@@ -1989,16 +1994,16 @@ echo &quot;ALL SAMPLES COMPLETE&quot;
 echo &quot;=====================================&quot;</code></pre>
 </div>
 </div>
-<div id="haporient" class="section level1" number="5">
-<h1><span class="header-section-number">5</span> Haplotype Orientation and Consolidation Pipeline</h1>
-<div id="rationale-and-documentation-1" class="section level2" number="5.1">
-<h2><span class="header-section-number">5.1</span> Rationale and Documentation</h2>
-<div id="overview-1" class="section level3" number="5.1.1">
-<h3><span class="header-section-number">5.1.1</span> Overview</h3>
+<div id="haporient" class="section level1" number="6">
+<h1><span class="header-section-number">6</span> Haplotype Orientation and Consolidation Pipeline</h1>
+<div id="rationale-and-documentation-1" class="section level2" number="6.1">
+<h2><span class="header-section-number">6.1</span> Rationale and Documentation</h2>
+<div id="overview-1" class="section level3" number="6.1.1">
+<h3><span class="header-section-number">6.1.1</span> Overview</h3>
 <p>This pipeline standardizes the orientation of phased haplotypes across all samples within a sequencing library by aligning them to a reference sequence and reverse-complementing sequences that align in the antisense orientation. The workflow consolidates all oriented haplotypes into a single multi-FASTA file for downstream analysis.</p>
 </div>
-<div id="pipeline-steps-1" class="section level3" number="5.1.2">
-<h3><span class="header-section-number">5.1.2</span> Pipeline Steps</h3>
+<div id="pipeline-steps-1" class="section level3" number="6.1.2">
+<h3><span class="header-section-number">6.1.2</span> Pipeline Steps</h3>
 <ol style="list-style-type: decimal">
 <li>Haplotype Orientation Standardization</li>
 </ol>
@@ -2104,23 +2109,23 @@ fi</code></pre>
 <p>Removes intermediate files to conserve disk space:</p>
 <pre class="bash"><code>rm -f hap_vs_ref.sam forward.fasta reversed.fasta</code></pre>
 </div>
-<div id="output-files-1" class="section level3" number="5.1.3">
-<h3><span class="header-section-number">5.1.3</span> Output Files</h3>
-<div id="per-sample-outputs" class="section level4" number="5.1.3.1">
-<h4><span class="header-section-number">5.1.3.1</span> Per-Sample Outputs</h4>
+<div id="output-files-1" class="section level3" number="6.1.3">
+<h3><span class="header-section-number">6.1.3</span> Output Files</h3>
+<div id="per-sample-outputs" class="section level4" number="6.1.3.1">
+<h4><span class="header-section-number">6.1.3.1</span> Per-Sample Outputs</h4>
 <ul>
 <li><code>${Library}_${BARCODE}_Phased_haplotypes.oriented.fasta</code>: Oriented haplotypes for individual samples</li>
 </ul>
 </div>
-<div id="consolidated-output" class="section level4" number="5.1.3.2">
-<h4><span class="header-section-number">5.1.3.2</span> Consolidated Output</h4>
+<div id="consolidated-output" class="section level4" number="6.1.3.2">
+<h4><span class="header-section-number">6.1.3.2</span> Consolidated Output</h4>
 <ul>
 <li><code>all_${Library}_Phased_haplotypes.fasta</code>: Master file containing all oriented haplotypes from the library</li>
 </ul>
 </div>
 </div>
-<div id="error-handling-and-robustness" class="section level3" number="5.1.4">
-<h3><span class="header-section-number">5.1.4</span> Error Handling and Robustness</h3>
+<div id="error-handling-and-robustness" class="section level3" number="6.1.4">
+<h3><span class="header-section-number">6.1.4</span> Error Handling and Robustness</h3>
 <p>The pipeline includes several robustness features:</p>
 <ol style="list-style-type: decimal">
 <li><strong>Missing file tolerance</strong>: Continues processing if individual samples are missing</li>
@@ -2130,8 +2135,8 @@ fi</code></pre>
 <li><strong>Process failure detection</strong>: Uses <code>set -euo pipefail</code> for immediate error detection</li>
 </ol>
 </div>
-<div id="scientific-rationale-1" class="section level3" number="5.1.5">
-<h3><span class="header-section-number">5.1.5</span> Scientific Rationale</h3>
+<div id="scientific-rationale-1" class="section level3" number="6.1.5">
+<h3><span class="header-section-number">6.1.5</span> Scientific Rationale</h3>
 <p>Consistent haplotype orientation is critical for downstream phylogenetic and population genetic analyses. In self-incompatibility research, where allelic relationships and evolutionary patterns are paramount, standardized sequence orientation ensures:</p>
 <ol style="list-style-type: decimal">
 <li><strong>Accurate sequence comparisons</strong>: Prevents false divergence estimates due to orientation differences</li>
@@ -2140,8 +2145,8 @@ fi</code></pre>
 <li><strong>Reproducible analyses</strong>: Ensures consistent results across different analysis runs</li>
 </ol>
 </div>
-<div id="computational-efficiency" class="section level3" number="5.1.6">
-<h3><span class="header-section-number">5.1.6</span> Computational Efficiency</h3>
+<div id="computational-efficiency" class="section level3" number="6.1.6">
+<h3><span class="header-section-number">6.1.6</span> Computational Efficiency</h3>
 <p>The pipeline optimizes computational resources through:
 - <strong>Single alignment per sample</strong>: Minimizes computational overhead
 - <strong>Conditional processing</strong>: Only processes sequences requiring orientation correction
@@ -2150,8 +2155,8 @@ fi</code></pre>
 <p>This approach is particularly valuable when processing large numbers of samples with variable haplotype counts, as commonly encountered in population-level studies of self-incompatibility systems.</p>
 </div>
 </div>
-<div id="bioinformatics-1" class="section level2" number="5.2">
-<h2><span class="header-section-number">5.2</span> Bioinformatics</h2>
+<div id="bioinformatics-1" class="section level2" number="6.2">
+<h2><span class="header-section-number">6.2</span> Bioinformatics</h2>
 <ul>
 <li>For each barcode, find all <code>*_Phased_haplotypes.fasta</code>, orient haplotype sequences based on SRK haplotype sequences (canonical reference), produced final curated file</li>
 <li><strong>Input:</strong>
@@ -2249,16 +2254,16 @@ echo &quot;DONE&quot;
 echo &quot;Output: $FINAL_OUT&quot;</code></pre>
 </div>
 </div>
-<div id="fastafiltrefint" class="section level1" number="6">
-<h1><span class="header-section-number">6</span> FASTA Sequence Filtering and Reference Integration Pipeline</h1>
-<div id="rationale-and-documentation-2" class="section level2" number="6.1">
-<h2><span class="header-section-number">6.1</span> Rationale and Documentation</h2>
-<div id="overview-2" class="section level3" number="6.1.1">
-<h3><span class="header-section-number">6.1.1</span> Overview</h3>
+<div id="fastafiltrefint" class="section level1" number="7">
+<h1><span class="header-section-number">7</span> FASTA Sequence Filtering and Reference Integration Pipeline</h1>
+<div id="rationale-and-documentation-2" class="section level2" number="7.1">
+<h2><span class="header-section-number">7.1</span> Rationale and Documentation</h2>
+<div id="overview-2" class="section level3" number="7.1.1">
+<h3><span class="header-section-number">7.1.1</span> Overview</h3>
 <p>This pipeline filters haplotype sequences by minimum length criteria and integrates canonical reference sequences to create a comprehensive dataset for downstream phylogenetic and comparative analyses. The workflow is essential for preparing high-quality sequence datasets where length uniformity and reference inclusion are critical for accurate evolutionary inferences.</p>
 </div>
-<div id="pipeline-steps-2" class="section level3" number="6.1.2">
-<h3><span class="header-section-number">6.1.2</span> Pipeline Steps</h3>
+<div id="pipeline-steps-2" class="section level3" number="7.1.2">
+<h3><span class="header-section-number">7.1.2</span> Pipeline Steps</h3>
 <ol style="list-style-type: decimal">
 <li>Quality Control Through Length Filtering</li>
 </ol>
@@ -2352,10 +2357,10 @@ rm -f &quot;$TMP_COMBINED&quot;   # Cleanup after processing</code></pre>
 <li>Maintains system cleanliness</li>
 </ul>
 </div>
-<div id="output-files-2" class="section level3" number="6.1.3">
-<h3><span class="header-section-number">6.1.3</span> Output Files</h3>
-<div id="primary-output" class="section level4" number="6.1.3.1">
-<h4><span class="header-section-number">6.1.3.1</span> Primary Output</h4>
+<div id="output-files-2" class="section level3" number="7.1.3">
+<h3><span class="header-section-number">7.1.3</span> Output Files</h3>
+<div id="primary-output" class="section level4" number="7.1.3.1">
+<h4><span class="header-section-number">7.1.3.1</span> Primary Output</h4>
 <ul>
 <li><code>${BASENAME}_filtered_min${MINLEN}.fasta</code>: Filtered sequences meeting length criteria, including canonical references</li>
 </ul>
@@ -2368,8 +2373,8 @@ rm -f &quot;$TMP_COMBINED&quot;   # Cleanup after processing</code></pre>
 </ul>
 </div>
 </div>
-<div id="quality-control-metrics" class="section level3" number="6.1.4">
-<h3><span class="header-section-number">6.1.4</span> Quality Control Metrics</h3>
+<div id="quality-control-metrics" class="section level3" number="7.1.4">
+<h3><span class="header-section-number">7.1.4</span> Quality Control Metrics</h3>
 <p>The filtering process provides implicit quality metrics:</p>
 <ol style="list-style-type: decimal">
 <li><strong>Sequence retention rate</strong>: Proportion of sequences passing length filter</li>
@@ -2378,27 +2383,27 @@ rm -f &quot;$TMP_COMBINED&quot;   # Cleanup after processing</code></pre>
 <li><strong>Dataset completeness</strong>: Total number of sequences for analysis</li>
 </ol>
 </div>
-<div id="scientific-applications" class="section level3" number="6.1.5">
-<h3><span class="header-section-number">6.1.5</span> Scientific Applications</h3>
+<div id="scientific-applications" class="section level3" number="7.1.5">
+<h3><span class="header-section-number">7.1.5</span> Scientific Applications</h3>
 <p>This filtered dataset serves multiple research objectives:</p>
-<div id="phylogenetic-analysis" class="section level4" number="6.1.5.1">
-<h4><span class="header-section-number">6.1.5.1</span> Phylogenetic Analysis</h4>
+<div id="phylogenetic-analysis" class="section level4" number="7.1.5.1">
+<h4><span class="header-section-number">7.1.5.1</span> Phylogenetic Analysis</h4>
 <ul>
 <li><strong>Tree construction</strong>: Uniform sequence lengths improve alignment quality</li>
 <li><strong>Bootstrap support</strong>: Adequate sequence length enhances statistical confidence</li>
 <li><strong>Evolutionary relationships</strong>: Reference sequences provide phylogenetic context</li>
 </ul>
 </div>
-<div id="population-genetics" class="section level4" number="6.1.5.2">
-<h4><span class="header-section-number">6.1.5.2</span> Population Genetics</h4>
+<div id="population-genetics" class="section level4" number="7.1.5.2">
+<h4><span class="header-section-number">7.1.5.2</span> Population Genetics</h4>
 <ul>
 <li><strong>Allelic diversity</strong>: Quantification of haplotype variation within populations</li>
 <li><strong>Frequency estimation</strong>: Accurate representation of allelic frequencies</li>
 <li><strong>Selection analysis</strong>: Detection of balancing selection signatures</li>
 </ul>
 </div>
-<div id="self-incompatibility-research" class="section level4" number="6.1.5.3">
-<h4><span class="header-section-number">6.1.5.3</span> Self-Incompatibility Research</h4>
+<div id="self-incompatibility-research" class="section level4" number="7.1.5.3">
+<h4><span class="header-section-number">7.1.5.3</span> Self-Incompatibility Research</h4>
 <ul>
 <li><strong>Allele identification</strong>: Classification of novel haplotypes relative to known alleles</li>
 <li><strong>Functional prediction</strong>: Sequence-based inference of incompatibility phenotypes</li>
@@ -2406,10 +2411,10 @@ rm -f &quot;$TMP_COMBINED&quot;   # Cleanup after processing</code></pre>
 </ul>
 </div>
 </div>
-<div id="parameter-optimization" class="section level3" number="6.1.6">
-<h3><span class="header-section-number">6.1.6</span> Parameter Optimization</h3>
-<div id="length-threshold-selection" class="section level4" number="6.1.6.1">
-<h4><span class="header-section-number">6.1.6.1</span> Length Threshold Selection</h4>
+<div id="parameter-optimization" class="section level3" number="7.1.6">
+<h3><span class="header-section-number">7.1.6</span> Parameter Optimization</h3>
+<div id="length-threshold-selection" class="section level4" number="7.1.6.1">
+<h4><span class="header-section-number">7.1.6.1</span> Length Threshold Selection</h4>
 <p>Optimal minimum length depends on:</p>
 <ul>
 <li><strong>Expected amplicon size</strong>: Typically 80-90% of full-length sequence</li>
@@ -2418,8 +2423,8 @@ rm -f &quot;$TMP_COMBINED&quot;   # Cleanup after processing</code></pre>
 <li><strong>Reference sequence lengths</strong>: Consistency with canonical sequences</li>
 </ul>
 </div>
-<div id="typical-thresholds" class="section level4" number="6.1.6.2">
-<h4><span class="header-section-number">6.1.6.2</span> Typical Thresholds</h4>
+<div id="typical-thresholds" class="section level4" number="7.1.6.2">
+<h4><span class="header-section-number">7.1.6.2</span> Typical Thresholds</h4>
 <ul>
 <li><strong>SRK amplicons</strong>: 3000-4000 bp (for ~4500 bp expected length)</li>
 <li><strong>Partial sequences</strong>: 1500-2000 bp (for targeted regions)</li>
@@ -2427,8 +2432,8 @@ rm -f &quot;$TMP_COMBINED&quot;   # Cleanup after processing</code></pre>
 </ul>
 </div>
 </div>
-<div id="integration-with-upstream-workflows" class="section level3" number="6.1.7">
-<h3><span class="header-section-number">6.1.7</span> Integration with Upstream Workflows</h3>
+<div id="integration-with-upstream-workflows" class="section level3" number="7.1.7">
+<h3><span class="header-section-number">7.1.7</span> Integration with Upstream Workflows</h3>
 <p>This pipeline integrates seamlessly with the haplotype orientation workflow:</p>
 <ol style="list-style-type: decimal">
 <li><strong>Input compatibility</strong>: Accepts consolidated haplotype files</li>
@@ -2439,8 +2444,8 @@ rm -f &quot;$TMP_COMBINED&quot;   # Cleanup after processing</code></pre>
 <p>The filtered output serves as high-quality input for subsequent phylogenetic reconstruction, population genetic analysis, and functional annotation workflows essential for understanding self-incompatibility system evolution and maintenance.</p>
 </div>
 </div>
-<div id="bioinformatics-2" class="section level2" number="6.2">
-<h2><span class="header-section-number">6.2</span> Bioinformatics</h2>
+<div id="bioinformatics-2" class="section level2" number="7.2">
+<h2><span class="header-section-number">7.2</span> Bioinformatics</h2>
 <ul>
 <li>Script: <code>filter_and_add_references.sh</code></li>
 <li>Input:
@@ -2496,8 +2501,8 @@ echo &quot;Filtered FASTA written to: $OUT&quot;
 </code></pre>
 </div>
 </div>
-<div id="msa" class="section level1" number="7">
-<h1><span class="header-section-number">7</span> Multiple Sequence Alignment</h1>
+<div id="msa" class="section level1" number="8">
+<h1><span class="header-section-number">8</span> Multiple Sequence Alignment</h1>
 <ul>
 <li>Align sequences with <code>MAFFT</code></li>
 <li>Input: <code>all_Library003_Phased_haplotypes_filtered_min3250.fasta</code></li>
@@ -2523,16 +2528,16 @@ mafft --auto --adjustdirection all_Library005_Phased_haplotypes_filtered_min3250
 # Library006
 mafft --auto --adjustdirection all_Library006_Phased_haplotypes_filtered_min3250.fasta &gt; all_Library006_Phased_haplotypes_filtered_min3250_aligned.fasta</code></pre>
 </div>
-<div id="exonextract" class="section level1" number="8">
-<h1><span class="header-section-number">8</span> Exon Extraction from Multiple Sequence Alignments Pipeline</h1>
-<div id="rationale-and-documentation-3" class="section level2" number="8.1">
-<h2><span class="header-section-number">8.1</span> Rationale and Documentation</h2>
-<div id="overview-3" class="section level3" number="8.1.1">
-<h3><span class="header-section-number">8.1.1</span> Overview</h3>
+<div id="exonextract" class="section level1" number="9">
+<h1><span class="header-section-number">9</span> Exon Extraction from Multiple Sequence Alignments Pipeline</h1>
+<div id="rationale-and-documentation-3" class="section level2" number="9.1">
+<h2><span class="header-section-number">9.1</span> Rationale and Documentation</h2>
+<div id="overview-3" class="section level3" number="9.1.1">
+<h3><span class="header-section-number">9.1.1</span> Overview</h3>
 <p>This Python pipeline extracts exonic sequences from multiple sequence alignments (MSAs) using gene structure annotations from AUGUSTUS gene prediction software. The workflow maps genomic coordinates to alignment positions and extracts coding sequences while preserving alignment-derived insertions and deletions, enabling comparative analysis of protein-coding regions across haplotypes.</p>
 </div>
-<div id="pipeline-steps-3" class="section level3" number="8.1.2">
-<h3><span class="header-section-number">8.1.2</span> Pipeline Steps</h3>
+<div id="pipeline-steps-3" class="section level3" number="9.1.2">
+<h3><span class="header-section-number">9.1.2</span> Pipeline Steps</h3>
 <ol style="list-style-type: decimal">
 <li>Exon-Focused Comparative Analysis</li>
 </ol>
@@ -2666,10 +2671,10 @@ SeqIO.write(exon_records, out_file, &quot;fasta&quot;)</code></pre>
 <li><strong>Metadata retention</strong>: Preserves sequence relationships</li>
 </ul>
 </div>
-<div id="output-files-3" class="section level3" number="8.1.3">
-<h3><span class="header-section-number">8.1.3</span> Output Files</h3>
-<div id="primary-output-1" class="section level4" number="8.1.3.1">
-<h4><span class="header-section-number">8.1.3.1</span> Primary Output</h4>
+<div id="output-files-3" class="section level3" number="9.1.3">
+<h3><span class="header-section-number">9.1.3</span> Output Files</h3>
+<div id="primary-output-1" class="section level4" number="9.1.3.1">
+<h4><span class="header-section-number">9.1.3.1</span> Primary Output</h4>
 <ul>
 <li><code>${input_basename}_exons.fasta</code>: Concatenated exonic sequences for all input sequences</li>
 </ul>
@@ -2682,10 +2687,10 @@ SeqIO.write(exon_records, out_file, &quot;fasta&quot;)</code></pre>
 </ul>
 </div>
 </div>
-<div id="scientific-applications-1" class="section level3" number="8.1.4">
-<h3><span class="header-section-number">8.1.4</span> Scientific Applications</h3>
-<div id="molecular-evolution-analysis" class="section level4" number="8.1.4.1">
-<h4><span class="header-section-number">8.1.4.1</span> Molecular Evolution Analysis</h4>
+<div id="scientific-applications-1" class="section level3" number="9.1.4">
+<h3><span class="header-section-number">9.1.4</span> Scientific Applications</h3>
+<div id="molecular-evolution-analysis" class="section level4" number="9.1.4.1">
+<h4><span class="header-section-number">9.1.4.1</span> Molecular Evolution Analysis</h4>
 <p><strong>Synonymous vs. Non-synonymous Analysis:</strong></p>
 <ul>
 <li>Calculation of dN/dS ratios for selection detection</li>
@@ -2699,8 +2704,8 @@ SeqIO.write(exon_records, out_file, &quot;fasta&quot;)</code></pre>
 <li>Comparative protein modeling across haplotypes</li>
 </ul>
 </div>
-<div id="self-incompatibility-research-1" class="section level4" number="8.1.4.2">
-<h4><span class="header-section-number">8.1.4.2</span> Self-Incompatibility Research</h4>
+<div id="self-incompatibility-research-1" class="section level4" number="9.1.4.2">
+<h4><span class="header-section-number">9.1.4.2</span> Self-Incompatibility Research</h4>
 <p><strong>Functional Domain Analysis:</strong>
 - <strong>Hypervariable regions</strong>: Identification of polymorphic sites critical for specificity
 - <strong>Conserved domains</strong>: Detection of structurally important regions
@@ -2711,18 +2716,18 @@ SeqIO.write(exon_records, out_file, &quot;fasta&quot;)</code></pre>
 - Prediction of incompatibility phenotypes from sequence data</p>
 </div>
 </div>
-<div id="quality-control-and-error-handling" class="section level3" number="8.1.5">
-<h3><span class="header-section-number">8.1.5</span> Quality Control and Error Handling</h3>
-<div id="coordinate-mapping-validation" class="section level4" number="8.1.5.1">
-<h4><span class="header-section-number">8.1.5.1</span> Coordinate Mapping Validation</h4>
+<div id="quality-control-and-error-handling" class="section level3" number="9.1.5">
+<h3><span class="header-section-number">9.1.5</span> Quality Control and Error Handling</h3>
+<div id="coordinate-mapping-validation" class="section level4" number="9.1.5.1">
+<h4><span class="header-section-number">9.1.5.1</span> Coordinate Mapping Validation</h4>
 <ul>
 <li><strong>Boundary checking</strong>: Ensures exon coordinates fall within sequence bounds</li>
 <li><strong>Gap handling</strong>: Properly manages alignment gaps in coordinate conversion</li>
 <li><strong>Missing data</strong>: Graceful handling of unmappable exon positions</li>
 </ul>
 </div>
-<div id="sequence-integrity" class="section level4" number="8.1.5.2">
-<h4><span class="header-section-number">8.1.5.2</span> Sequence Integrity</h4>
+<div id="sequence-integrity" class="section level4" number="9.1.5.2">
+<h4><span class="header-section-number">9.1.5.2</span> Sequence Integrity</h4>
 <ul>
 <li><strong>Length validation</strong>: Confirms expected exon lengths after extraction</li>
 <li><strong>Frame preservation</strong>: Maintains reading frame consistency across sequences</li>
@@ -2730,8 +2735,8 @@ SeqIO.write(exon_records, out_file, &quot;fasta&quot;)</code></pre>
 </ul>
 </div>
 </div>
-<div id="integration-with-upstream-workflows-1" class="section level3" number="8.1.6">
-<h3><span class="header-section-number">8.1.6</span> Integration with Upstream Workflows</h3>
+<div id="integration-with-upstream-workflows-1" class="section level3" number="9.1.6">
+<h3><span class="header-section-number">9.1.6</span> Integration with Upstream Workflows</h3>
 <p>This pipeline integrates with previous steps in the haplotype analysis workflow:</p>
 <ol style="list-style-type: decimal">
 <li><strong>MSA dependency</strong>: Requires high-quality multiple sequence alignment</li>
@@ -2742,8 +2747,8 @@ SeqIO.write(exon_records, out_file, &quot;fasta&quot;)</code></pre>
 <p>The extracted exonic sequences provide the foundation for detailed molecular evolutionary analyses essential for understanding the functional significance of sequence variation in self-incompatibility systems, where protein-level changes directly impact reproductive compatibility and population genetic dynamics.</p>
 </div>
 </div>
-<div id="bioinformatics-3" class="section level2" number="8.2">
-<h2><span class="header-section-number">8.2</span> Bioinformatics</h2>
+<div id="bioinformatics-3" class="section level2" number="9.2">
+<h2><span class="header-section-number">9.2</span> Bioinformatics</h2>
 <ul>
 <li>Activate container: source srk_env/bin/activate</li>
 <li>Script: <code>extract_exons_with_annotation.py</code></li>
@@ -2838,16 +2843,16 @@ print(f&quot;Exon DNA FASTA written to: {out_file}&quot;)
 </code></pre>
 </div>
 </div>
-<div id="msagapback" class="section level1" number="9">
-<h1><span class="header-section-number">9</span> MSA Gap Backfilling and Terminus Processing Pipeline</h1>
-<div id="rationale-and-documentation-4" class="section level2" number="9.1">
-<h2><span class="header-section-number">9.1</span> Rationale and Documentation</h2>
-<div id="overview-4" class="section level3" number="9.1.1">
-<h3><span class="header-section-number">9.1.1</span> Overview</h3>
+<div id="msagapback" class="section level1" number="10">
+<h1><span class="header-section-number">10</span> MSA Gap Backfilling and Terminus Processing Pipeline</h1>
+<div id="rationale-and-documentation-4" class="section level2" number="10.1">
+<h2><span class="header-section-number">10.1</span> Rationale and Documentation</h2>
+<div id="overview-4" class="section level3" number="10.1.1">
+<h3><span class="header-section-number">10.1.1</span> Overview</h3>
 <p>This Python pipeline addresses alignment gaps in multiple sequence alignments (MSAs) by implementing a reference-based backfilling strategy combined with terminus gap replacement. The workflow improves alignment quality for downstream phylogenetic analysis by reducing the impact of assembly artifacts and sequencing limitations while preserving authentic biological variation.</p>
 </div>
-<div id="pipeline-steps-4" class="section level3" number="9.1.2">
-<h3><span class="header-section-number">9.1.2</span> Pipeline Steps</h3>
+<div id="pipeline-steps-4" class="section level3" number="10.1.2">
+<h3><span class="header-section-number">10.1.2</span> Pipeline Steps</h3>
 <ol style="list-style-type: decimal">
 <li>Alignment Quality Enhancement Strategy</li>
 </ol>
@@ -2972,10 +2977,10 @@ SeqIO.write(new_records, out_fasta, &quot;fasta&quot;)</code></pre>
 <li><strong>BioPython compatibility</strong>: Creates proper SeqRecord objects for downstream analysis</li>
 </ul>
 </div>
-<div id="output-files-4" class="section level3" number="9.1.3">
-<h3><span class="header-section-number">9.1.3</span> Output Files</h3>
-<div id="primary-output-2" class="section level4" number="9.1.3.1">
-<h4><span class="header-section-number">9.1.3.1</span> Primary Output</h4>
+<div id="output-files-4" class="section level3" number="10.1.3">
+<h3><span class="header-section-number">10.1.3</span> Output Files</h3>
+<div id="primary-output-2" class="section level4" number="10.1.3.1">
+<h4><span class="header-section-number">10.1.3.1</span> Primary Output</h4>
 <ul>
 <li><code>${input_basename}_backfilled.fasta</code>: Processed MSA with gap-filled terminal regions</li>
 </ul>
@@ -2988,10 +2993,10 @@ SeqIO.write(new_records, out_fasta, &quot;fasta&quot;)</code></pre>
 </ul>
 </div>
 </div>
-<div id="quality-control-and-processing-logic" class="section level3" number="9.1.4">
-<h3><span class="header-section-number">9.1.4</span> Quality Control and Processing Logic</h3>
-<div id="gap-classification-system" class="section level4" number="9.1.4.1">
-<h4><span class="header-section-number">9.1.4.1</span> Gap Classification System</h4>
+<div id="quality-control-and-processing-logic" class="section level3" number="10.1.4">
+<h3><span class="header-section-number">10.1.4</span> Quality Control and Processing Logic</h3>
+<div id="gap-classification-system" class="section level4" number="10.1.4.1">
+<h4><span class="header-section-number">10.1.4.1</span> Gap Classification System</h4>
 <p>The pipeline implements a three-tier gap classification:</p>
 <ol style="list-style-type: decimal">
 <li><strong>Terminal gaps within backfill window</strong>: Filled with reference sequence</li>
@@ -2999,8 +3004,8 @@ SeqIO.write(new_records, out_fasta, &quot;fasta&quot;)</code></pre>
 <li><strong>Internal gaps within sequence boundaries</strong>: Preserved as authentic indels</li>
 </ol>
 </div>
-<div id="sequence-integrity-preservation" class="section level4" number="9.1.4.2">
-<h4><span class="header-section-number">9.1.4.2</span> Sequence Integrity Preservation</h4>
+<div id="sequence-integrity-preservation" class="section level4" number="10.1.4.2">
+<h4><span class="header-section-number">10.1.4.2</span> Sequence Integrity Preservation</h4>
 <p><strong>Biological variation protection:</strong></p>
 <ul>
 <li>Internal gaps representing genuine insertions/deletions are preserved</li>
@@ -3015,10 +3020,10 @@ SeqIO.write(new_records, out_fasta, &quot;fasta&quot;)</code></pre>
 </ul>
 </div>
 </div>
-<div id="scientific-applications-2" class="section level3" number="9.1.5">
-<h3><span class="header-section-number">9.1.5</span> Scientific Applications</h3>
-<div id="phylogenetic-analysis-enhancement" class="section level4" number="9.1.5.1">
-<h4><span class="header-section-number">9.1.5.1</span> Phylogenetic Analysis Enhancement</h4>
+<div id="scientific-applications-2" class="section level3" number="10.1.5">
+<h3><span class="header-section-number">10.1.5</span> Scientific Applications</h3>
+<div id="phylogenetic-analysis-enhancement" class="section level4" number="10.1.5.1">
+<h4><span class="header-section-number">10.1.5.1</span> Phylogenetic Analysis Enhancement</h4>
 <p><strong>Tree reconstruction improvement:</strong></p>
 <ul>
 <li>Reduced terminal gap artifacts improve branch length estimation</li>
@@ -3032,8 +3037,8 @@ SeqIO.write(new_records, out_fasta, &quot;fasta&quot;)</code></pre>
 <li>Improved statistical confidence in phylogenetic relationships</li>
 </ul>
 </div>
-<div id="population-genetic-analysis" class="section level4" number="9.1.5.2">
-<h4><span class="header-section-number">9.1.5.2</span> Population Genetic Analysis</h4>
+<div id="population-genetic-analysis" class="section level4" number="10.1.5.2">
+<h4><span class="header-section-number">10.1.5.2</span> Population Genetic Analysis</h4>
 <p><strong>Allelic diversity assessment:</strong></p>
 <ul>
 <li>More accurate sequence length estimates for diversity calculations</li>
@@ -3046,8 +3051,8 @@ SeqIO.write(new_records, out_fasta, &quot;fasta&quot;)</code></pre>
 - Improved power for detecting selection in terminal domains</p>
 </div>
 </div>
-<div id="integration-with-downstream-workflows" class="section level3" number="9.1.6">
-<h3><span class="header-section-number">9.1.6</span> Integration with Downstream Workflows</h3>
+<div id="integration-with-downstream-workflows" class="section level3" number="10.1.6">
+<h3><span class="header-section-number">10.1.6</span> Integration with Downstream Workflows</h3>
 <p>This processed alignment serves as optimized input for:</p>
 <ol style="list-style-type: decimal">
 <li><strong>Phylogenetic reconstruction</strong>: Maximum likelihood and Bayesian inference</li>
@@ -3058,8 +3063,8 @@ SeqIO.write(new_records, out_fasta, &quot;fasta&quot;)</code></pre>
 <p>The backfilled alignment provides a balance between technical artifact correction and biological variation preservation, essential for accurate evolutionary analysis of self-incompatibility haplotypes where terminal regions may contain functionally important domains.</p>
 </div>
 </div>
-<div id="bioinformatics-4" class="section level2" number="9.2">
-<h2><span class="header-section-number">9.2</span> Bioinformatics</h2>
+<div id="bioinformatics-4" class="section level2" number="10.2">
+<h2><span class="header-section-number">10.2</span> Bioinformatics</h2>
 <p>Add primer sequences to fill out ends of the exon sequences.</p>
 <ul>
 <li>Script: <code>backfill_alignment_ends.py</code></li>
@@ -3151,16 +3156,16 @@ print(&quot;\n✅ Done!&quot;)
 print(f&quot;Backfilled alignment written to: {out_fasta}&quot;)</code></pre>
 </div>
 </div>
-<div id="DNA2AA" class="section level1" number="10">
-<h1><span class="header-section-number">10</span> DNA to Amino Acid Translation Pipeline</h1>
-<div id="rationale-and-documentation-5" class="section level2" number="10.1">
-<h2><span class="header-section-number">10.1</span> Rationale and Documentation</h2>
-<div id="overview-5" class="section level3" number="10.1.1">
-<h3><span class="header-section-number">10.1.1</span> Overview</h3>
+<div id="DNA2AA" class="section level1" number="11">
+<h1><span class="header-section-number">11</span> DNA to Amino Acid Translation Pipeline</h1>
+<div id="rationale-and-documentation-5" class="section level2" number="11.1">
+<h2><span class="header-section-number">11.1</span> Rationale and Documentation</h2>
+<div id="overview-5" class="section level3" number="11.1.1">
+<h3><span class="header-section-number">11.1.1</span> Overview</h3>
 <p>This Python pipeline translates aligned DNA sequences to amino acid sequences using a specified reading frame and the standard nuclear genetic code. The workflow is essential for protein-level comparative analysis of coding sequences, enabling detection of selection pressures, functional domain identification, and phylogenetic analysis based on protein evolution rather than nucleotide changes.</p>
 </div>
-<div id="pipeline-steps-5" class="section level3" number="10.1.2">
-<h3><span class="header-section-number">10.1.2</span> Pipeline Steps</h3>
+<div id="pipeline-steps-5" class="section level3" number="11.1.2">
+<h3><span class="header-section-number">11.1.2</span> Pipeline Steps</h3>
 <ol style="list-style-type: decimal">
 <li>Protein-Level Evolutionary Analysis</li>
 </ol>
@@ -3293,10 +3298,10 @@ else:
 print(&quot;\n✅ Translation complete&quot;)
 print(f&quot;AA FASTA written to: {out_fasta}&quot;)</code></pre>
 </div>
-<div id="output-files-5" class="section level3" number="10.1.3">
-<h3><span class="header-section-number">10.1.3</span> Output Files</h3>
-<div id="primary-output-3" class="section level4" number="10.1.3.1">
-<h4><span class="header-section-number">10.1.3.1</span> Primary Output</h4>
+<div id="output-files-5" class="section level3" number="11.1.3">
+<h3><span class="header-section-number">11.1.3</span> Output Files</h3>
+<div id="primary-output-3" class="section level4" number="11.1.3.1">
+<h4><span class="header-section-number">11.1.3.1</span> Primary Output</h4>
 <ul>
 <li><code>${input_basename}_frame${frame}_AA.fasta</code>: Amino acid sequences translated from specified reading frame</li>
 </ul>
@@ -3309,10 +3314,10 @@ print(f&quot;AA FASTA written to: {out_fasta}&quot;)</code></pre>
 </ul>
 </div>
 </div>
-<div id="quality-control-considerations" class="section level3" number="10.1.4">
-<h3><span class="header-section-number">10.1.4</span> Quality Control Considerations</h3>
-<div id="translation-validation" class="section level4" number="10.1.4.1">
-<h4><span class="header-section-number">10.1.4.1</span> Translation Validation</h4>
+<div id="quality-control-considerations" class="section level3" number="11.1.4">
+<h3><span class="header-section-number">11.1.4</span> Quality Control Considerations</h3>
+<div id="translation-validation" class="section level4" number="11.1.4.1">
+<h4><span class="header-section-number">11.1.4.1</span> Translation Validation</h4>
 <p><strong>Frame selection verification:</strong></p>
 <ul>
 <li>Correct frame identification crucial for meaningful protein analysis</li>
@@ -3326,8 +3331,8 @@ print(f&quot;AA FASTA written to: {out_fasta}&quot;)</code></pre>
 <li>Complete translation enables comprehensive analysis of all sequence variants</li>
 </ul>
 </div>
-<div id="sequence-length-considerations" class="section level4" number="10.1.4.2">
-<h4><span class="header-section-number">10.1.4.2</span> Sequence Length Considerations</h4>
+<div id="sequence-length-considerations" class="section level4" number="11.1.4.2">
+<h4><span class="header-section-number">11.1.4.2</span> Sequence Length Considerations</h4>
 <p><strong>Codon trimming effects:</strong></p>
 <ul>
 <li>1-2 nucleotide loss at 3’ end for sequences not divisible by 3</li>
@@ -3336,10 +3341,10 @@ print(f&quot;AA FASTA written to: {out_fasta}&quot;)</code></pre>
 </ul>
 </div>
 </div>
-<div id="scientific-applications-3" class="section level3" number="10.1.5">
-<h3><span class="header-section-number">10.1.5</span> Scientific Applications</h3>
-<div id="molecular-evolution-analysis-1" class="section level4" number="10.1.5.1">
-<h4><span class="header-section-number">10.1.5.1</span> Molecular Evolution Analysis</h4>
+<div id="scientific-applications-3" class="section level3" number="11.1.5">
+<h3><span class="header-section-number">11.1.5</span> Scientific Applications</h3>
+<div id="molecular-evolution-analysis-1" class="section level4" number="11.1.5.1">
+<h4><span class="header-section-number">11.1.5.1</span> Molecular Evolution Analysis</h4>
 <p><strong>Selection pressure quantification:</strong></p>
 <ul>
 <li><strong>dN/dS analysis</strong>: Ratio of non-synonymous to synonymous substitution rates</li>
@@ -3353,8 +3358,8 @@ print(f&quot;AA FASTA written to: {out_fasta}&quot;)</code></pre>
 <li><strong>Functional grouping</strong>: Clustering based on protein similarity rather than DNA similarity</li>
 </ul>
 </div>
-<div id="self-incompatibility-research-2" class="section level4" number="10.1.5.2">
-<h4><span class="header-section-number">10.1.5.2</span> Self-Incompatibility Research</h4>
+<div id="self-incompatibility-research-2" class="section level4" number="11.1.5.2">
+<h4><span class="header-section-number">11.1.5.2</span> Self-Incompatibility Research</h4>
 <p><strong>Functional domain analysis:</strong></p>
 <ul>
 <li><strong>Hypervariable regions</strong>: Identification of specificity-determining domains</li>
@@ -3369,8 +3374,8 @@ print(f&quot;AA FASTA written to: {out_fasta}&quot;)</code></pre>
 </ul>
 </div>
 </div>
-<div id="integration-with-downstream-workflows-1" class="section level3" number="10.1.6">
-<h3><span class="header-section-number">10.1.6</span> Integration with Downstream Workflows</h3>
+<div id="integration-with-downstream-workflows-1" class="section level3" number="11.1.6">
+<h3><span class="header-section-number">11.1.6</span> Integration with Downstream Workflows</h3>
 <p>The translated amino acid sequences serve as input for:</p>
 <ol style="list-style-type: decimal">
 <li><strong>Phylogenetic analysis</strong>: Maximum likelihood protein evolution models</li>
@@ -3381,8 +3386,8 @@ print(f&quot;AA FASTA written to: {out_fasta}&quot;)</code></pre>
 <p>This translation step bridges the gap between nucleotide-level haplotype reconstruction and protein-level functional analysis, essential for understanding the molecular basis of self-incompatibility specificity and the evolutionary forces maintaining allelic diversity in natural populations.</p>
 </div>
 </div>
-<div id="bioinformatics-5" class="section level2" number="10.2">
-<h2><span class="header-section-number">10.2</span> Bioinformatics</h2>
+<div id="bioinformatics-5" class="section level2" number="11.2">
+<h2><span class="header-section-number">11.2</span> Bioinformatics</h2>
 <blockquote>
 <p>POTENTIALLY NOT NEEDED BECAUSE IT APPLIES TO INDIVIDUAL LIBRARY!</p>
 </blockquote>
@@ -3460,16 +3465,16 @@ print(f&quot;AA FASTA written to: {out_fasta}&quot;)
 </code></pre>
 </div>
 </div>
-<div id="SRKprotandfilter" class="section level1" number="11">
-<h1><span class="header-section-number">11</span> SRK Protein Translation, Alignment, and Abundance Filtering Pipeline</h1>
-<div id="rationale-and-documentation-6" class="section level2" number="11.1">
-<h2><span class="header-section-number">11.1</span> Rationale and Documentation</h2>
-<div id="overview-6" class="section level3" number="11.1.1">
-<h3><span class="header-section-number">11.1.1</span> Overview</h3>
+<div id="SRKprotandfilter" class="section level1" number="12">
+<h1><span class="header-section-number">12</span> SRK Protein Translation, Alignment, and Abundance Filtering Pipeline</h1>
+<div id="rationale-and-documentation-6" class="section level2" number="12.1">
+<h2><span class="header-section-number">12.1</span> Rationale and Documentation</h2>
+<div id="overview-6" class="section level3" number="12.1.1">
+<h3><span class="header-section-number">12.1.1</span> Overview</h3>
 <p>This comprehensive Python pipeline translates DNA sequences to amino acids, performs multiple sequence alignment, and applies abundance-based filtering to identify functional SRK (S-receptor kinase) proteins. The workflow includes enhanced tracking and validation features specifically designed for self-incompatibility research, enabling identification of potentially self-compatible individuals through protein-level analysis.</p>
 </div>
-<div id="pipeline-steps-6" class="section level3" number="11.1.2">
-<h3><span class="header-section-number">11.1.2</span> Pipeline Steps</h3>
+<div id="pipeline-steps-6" class="section level3" number="12.1.2">
+<h3><span class="header-section-number">12.1.2</span> Pipeline Steps</h3>
 <ol style="list-style-type: decimal">
 <li>SRK Protein Analysis Framework</li>
 </ol>
@@ -3664,10 +3669,10 @@ with open(&quot;SRK_self_compatible_candidates.txt&quot;, &quot;w&quot;) as f:
 <li><strong>Abundance filter dropout</strong>: Possible rare or degraded alleles</li>
 </ul>
 </div>
-<div id="output-files-6" class="section level3" number="11.1.3">
-<h3><span class="header-section-number">11.1.3</span> Output Files</h3>
-<div id="primary-outputs" class="section level4" number="11.1.3.1">
-<h4><span class="header-section-number">11.1.3.1</span> Primary Outputs</h4>
+<div id="output-files-6" class="section level3" number="12.1.3">
+<h3><span class="header-section-number">12.1.3</span> Output Files</h3>
+<div id="primary-outputs" class="section level4" number="12.1.3.1">
+<h4><span class="header-section-number">12.1.3.1</span> Primary Outputs</h4>
 <ul>
 <li><code>SRK_proteins_raw.fasta</code>: All functional proteins before alignment</li>
 <li><code>SRK_proteins_aligned.fasta</code>: MAFFT-aligned protein sequences</li>
@@ -3675,8 +3680,8 @@ with open(&quot;SRK_self_compatible_candidates.txt&quot;, &quot;w&quot;) as f:
 <li><code>SRK_functional_protein_key.tsv</code>: Mapping between original sequences and final proteins</li>
 </ul>
 </div>
-<div id="analysis-reports" class="section level4" number="11.1.3.2">
-<h4><span class="header-section-number">11.1.3.2</span> Analysis Reports</h4>
+<div id="analysis-reports" class="section level4" number="12.1.3.2">
+<h4><span class="header-section-number">12.1.3.2</span> Analysis Reports</h4>
 <ul>
 <li><code>SRK_individual_status_report.tsv</code>: Comprehensive individual processing summary</li>
 <li><code>SRK_self_compatible_candidates.txt</code>: List of potentially self-compatible individuals</li>
@@ -3690,10 +3695,10 @@ with open(&quot;SRK_self_compatible_candidates.txt&quot;, &quot;w&quot;) as f:
 </ul>
 </div>
 </div>
-<div id="scientific-applications-4" class="section level3" number="11.1.4">
-<h3><span class="header-section-number">11.1.4</span> Scientific Applications</h3>
-<div id="population-genetics-of-self-incompatibility" class="section level4" number="11.1.4.1">
-<h4><span class="header-section-number">11.1.4.1</span> Population Genetics of Self-Incompatibility</h4>
+<div id="scientific-applications-4" class="section level3" number="12.1.4">
+<h3><span class="header-section-number">12.1.4</span> Scientific Applications</h3>
+<div id="population-genetics-of-self-incompatibility" class="section level4" number="12.1.4.1">
+<h4><span class="header-section-number">12.1.4.1</span> Population Genetics of Self-Incompatibility</h4>
 <p><strong>Allelic diversity assessment:</strong></p>
 <ul>
 <li>Quantification of functional SRK protein variants</li>
@@ -3707,8 +3712,8 @@ with open(&quot;SRK_self_compatible_candidates.txt&quot;, &quot;w&quot;) as f:
 <li>Evolutionary transitions from outcrossing to selfing</li>
 </ul>
 </div>
-<div id="molecular-evolution-analysis-2" class="section level4" number="11.1.4.2">
-<h4><span class="header-section-number">11.1.4.2</span> Molecular Evolution Analysis</h4>
+<div id="molecular-evolution-analysis-2" class="section level4" number="12.1.4.2">
+<h4><span class="header-section-number">12.1.4.2</span> Molecular Evolution Analysis</h4>
 <p><strong>Selection pressure detection:</strong></p>
 <ul>
 <li>Protein-level analysis of selection on SRK domains</li>
@@ -3723,10 +3728,10 @@ with open(&quot;SRK_self_compatible_candidates.txt&quot;, &quot;w&quot;) as f:
 </ul>
 </div>
 </div>
-<div id="quality-control-and-validation" class="section level3" number="11.1.5">
-<h3><span class="header-section-number">11.1.5</span> Quality Control and Validation</h3>
-<div id="multi-level-filtering-system" class="section level4" number="11.1.5.1">
-<h4><span class="header-section-number">11.1.5.1</span> Multi-Level Filtering System</h4>
+<div id="quality-control-and-validation" class="section level3" number="12.1.5">
+<h3><span class="header-section-number">12.1.5</span> Quality Control and Validation</h3>
+<div id="multi-level-filtering-system" class="section level4" number="12.1.5.1">
+<h4><span class="header-section-number">12.1.5.1</span> Multi-Level Filtering System</h4>
 <ol style="list-style-type: decimal">
 <li><strong>Translation quality</strong>: DNA length, reading frame, stop codons</li>
 <li><strong>Protein validation</strong>: Length, ambiguous residues, domain features</li>
@@ -3734,8 +3739,8 @@ with open(&quot;SRK_self_compatible_candidates.txt&quot;, &quot;w&quot;) as f:
 <li><strong>Individual tracking</strong>: Comprehensive failure mode analysis</li>
 </ol>
 </div>
-<div id="statistical-considerations" class="section level4" number="11.1.5.2">
-<h4><span class="header-section-number">11.1.5.2</span> Statistical Considerations</h4>
+<div id="statistical-considerations" class="section level4" number="12.1.5.2">
+<h4><span class="header-section-number">12.1.5.2</span> Statistical Considerations</h4>
 <p><strong>Abundance threshold optimization:</strong></p>
 <ul>
 <li>Balance between artifact removal and rare allele retention</li>
@@ -3752,8 +3757,8 @@ with open(&quot;SRK_self_compatible_candidates.txt&quot;, &quot;w&quot;) as f:
 </div>
 </div>
 </div>
-<div id="bioinformatics-6" class="section level2" number="11.2">
-<h2><span class="header-section-number">11.2</span> Bioinformatics</h2>
+<div id="bioinformatics-6" class="section level2" number="12.2">
+<h2><span class="header-section-number">12.2</span> Bioinformatics</h2>
 <ul>
 <li><p><strong>Definition:</strong> A functional allele is defined by the number of distinct functional protein sequences (isoforms) underpinning all DNA SRK sequences. We need to include frequency to remove bioinformatics and sequencing noise (set to 5)</p></li>
 <li><p><strong>Approach:</strong> Merge <code>_exons_backfilled.fasta</code> files, translate sequences and discard those that do not produce functional proteins, and create protein sequences (with a key). The discareded samples have some information whether they have lost SI due to non-functional SRK and will then be self-compatible.</p></li>
@@ -4124,16 +4129,16 @@ print(&quot;SC candidates: SRK_self_compatible_candidates.txt&quot;)
 </code></pre>
 </div>
 </div>
-<div id="SRKfunctionalprotgenotype" class="section level1" number="12">
-<h1><span class="header-section-number">12</span> SRK Functional Protein Genotyping Pipeline</h1>
-<div id="rationale-and-documentation-7" class="section level2" number="12.1">
-<h2><span class="header-section-number">12.1</span> Rationale and Documentation</h2>
-<div id="overview-7" class="section level3" number="12.1.1">
-<h3><span class="header-section-number">12.1.1</span> Overview</h3>
+<div id="SRKfunctionalprotgenotype" class="section level1" number="13">
+<h1><span class="header-section-number">13</span> SRK Functional Protein Genotyping Pipeline</h1>
+<div id="rationale-and-documentation-7" class="section level2" number="13.1">
+<h2><span class="header-section-number">13.1</span> Rationale and Documentation</h2>
+<div id="overview-7" class="section level3" number="13.1.1">
+<h3><span class="header-section-number">13.1.1</span> Overview</h3>
 <p>This Python pipeline converts individual SRK protein assignments into standardized genotype matrices suitable for population genetic analysis. The workflow transforms sequence-to-protein mappings into both long-format tables and wide-format binary matrices, enabling downstream analysis of S-allele frequencies, mating compatibility, and population genetic structure in self-incompatibility systems.</p>
 </div>
-<div id="pipeline-steps-7" class="section level3" number="12.1.2">
-<h3><span class="header-section-number">12.1.2</span> Pipeline Steps</h3>
+<div id="pipeline-steps-7" class="section level3" number="13.1.2">
+<h3><span class="header-section-number">13.1.2</span> Pipeline Steps</h3>
 <ol style="list-style-type: decimal">
 <li>Genotype Matrix Construction for Population Analysis</li>
 </ol>
@@ -4291,10 +4296,10 @@ print(wide_out)</code></pre>
 <li><strong>Output confirmation</strong>: File paths for generated datasets</li>
 </ul>
 </div>
-<div id="output-files-7" class="section level3" number="12.1.3">
-<h3><span class="header-section-number">12.1.3</span> Output Files</h3>
-<div id="primary-outputs-1" class="section level4" number="12.1.3.1">
-<h4><span class="header-section-number">12.1.3.1</span> Primary Outputs</h4>
+<div id="output-files-7" class="section level3" number="13.1.3">
+<h3><span class="header-section-number">13.1.3</span> Output Files</h3>
+<div id="primary-outputs-1" class="section level4" number="13.1.3.1">
+<h4><span class="header-section-number">13.1.3.1</span> Primary Outputs</h4>
 <p><strong>Long-format table (<code>SRK_individual_protein_table.tsv</code>):</strong></p>
 <ul>
 <li>Two-column format: Individual, Protein</li>
@@ -4308,8 +4313,8 @@ print(wide_out)</code></pre>
 <li>Standard format for population genetic analysis software</li>
 </ul>
 </div>
-<div id="data-structure-examples" class="section level4" number="12.1.3.2">
-<h4><span class="header-section-number">12.1.3.2</span> Data Structure Examples</h4>
+<div id="data-structure-examples" class="section level4" number="13.1.3.2">
+<h4><span class="header-section-number">13.1.3.2</span> Data Structure Examples</h4>
 <p><strong>Long format:</strong></p>
 <pre><code>Individual    Protein
 Library001_01 SRK_protein_001
@@ -4321,10 +4326,10 @@ Library001_01 1               0               0
 Library001_02 0               0               1</code></pre>
 </div>
 </div>
-<div id="scientific-applications-5" class="section level3" number="12.1.4">
-<h3><span class="header-section-number">12.1.4</span> Scientific Applications</h3>
-<div id="population-genetic-analysis-1" class="section level4" number="12.1.4.1">
-<h4><span class="header-section-number">12.1.4.1</span> Population Genetic Analysis</h4>
+<div id="scientific-applications-5" class="section level3" number="13.1.4">
+<h3><span class="header-section-number">13.1.4</span> Scientific Applications</h3>
+<div id="population-genetic-analysis-1" class="section level4" number="13.1.4.1">
+<h4><span class="header-section-number">13.1.4.1</span> Population Genetic Analysis</h4>
 <p><strong>Allele frequency estimation:</strong></p>
 <ul>
 <li>Direct calculation from column sums in binary matrix</li>
@@ -4338,8 +4343,8 @@ Library001_02 0               0               1</code></pre>
 <li>Comparison across populations or time points</li>
 </ul>
 </div>
-<div id="self-incompatibility-system-analysis" class="section level4" number="12.1.4.2">
-<h4><span class="header-section-number">12.1.4.2</span> Self-Incompatibility System Analysis</h4>
+<div id="self-incompatibility-system-analysis" class="section level4" number="13.1.4.2">
+<h4><span class="header-section-number">13.1.4.2</span> Self-Incompatibility System Analysis</h4>
 <p><strong>Mating compatibility prediction:</strong></p>
 <ul>
 <li>Construction of incompatibility matrices from genotype data</li>
@@ -4353,8 +4358,8 @@ Library001_02 0               0               1</code></pre>
 <li>Historical population size reconstruction</li>
 </ul>
 </div>
-<div id="evolutionary-analysis" class="section level4" number="12.1.4.3">
-<h4><span class="header-section-number">12.1.4.3</span> Evolutionary Analysis</h4>
+<div id="evolutionary-analysis" class="section level4" number="13.1.4.3">
+<h4><span class="header-section-number">13.1.4.3</span> Evolutionary Analysis</h4>
 <p><strong>Balancing selection detection:</strong></p>
 <ul>
 <li>Tests for excess heterozygosity at S-loci</li>
@@ -4369,10 +4374,10 @@ Library001_02 0               0               1</code></pre>
 </ul>
 </div>
 </div>
-<div id="quality-control-and-validation-1" class="section level3" number="12.1.5">
-<h3><span class="header-section-number">12.1.5</span> Quality Control and Validation</h3>
-<div id="data-integrity-checks" class="section level4" number="12.1.5.1">
-<h4><span class="header-section-number">12.1.5.1</span> Data Integrity Checks</h4>
+<div id="quality-control-and-validation-1" class="section level3" number="13.1.5">
+<h3><span class="header-section-number">13.1.5</span> Quality Control and Validation</h3>
+<div id="data-integrity-checks" class="section level4" number="13.1.5.1">
+<h4><span class="header-section-number">13.1.5.1</span> Data Integrity Checks</h4>
 <p><strong>Individual identifier validation:</strong></p>
 <ul>
 <li>Warning system for unparseable sequence names</li>
@@ -4386,8 +4391,8 @@ Library001_02 0               0               1</code></pre>
 <li>No missing data in final matrices</li>
 </ul>
 </div>
-<div id="statistical-considerations-1" class="section level4" number="12.1.5.2">
-<h4><span class="header-section-number">12.1.5.2</span> Statistical Considerations</h4>
+<div id="statistical-considerations-1" class="section level4" number="13.1.5.2">
+<h4><span class="header-section-number">13.1.5.2</span> Statistical Considerations</h4>
 <p><strong>Sample size adequacy:</strong></p>
 <ul>
 <li>Sufficient individuals for population genetic inference</li>
@@ -4404,8 +4409,8 @@ Library001_02 0               0               1</code></pre>
 </div>
 </div>
 </div>
-<div id="bioinformatics-7" class="section level2" number="12.2">
-<h2><span class="header-section-number">12.2</span> Bioinformatics</h2>
+<div id="bioinformatics-7" class="section level2" number="13.2">
+<h2><span class="header-section-number">13.2</span> Bioinformatics</h2>
 <ul>
 <li>Goal: Genotype individuals based on protein data</li>
 <li>Script: <code>genotype_SRK_from_functional_proteins.py</code></li>
@@ -4575,16 +4580,16 @@ print(long_out)
 print(wide_out)</code></pre>
 </div>
 </div>
-<div id="zygosity" class="section level1" number="13">
-<h1><span class="header-section-number">13</span> SRK Zygosity Analysis Pipeline for Tetraploid Species</h1>
-<div id="rationale-and-documentation-8" class="section level2" number="13.1">
-<h2><span class="header-section-number">13.1</span> Rationale and Documentation</h2>
-<div id="overview-8" class="section level3" number="13.1.1">
-<h3><span class="header-section-number">13.1.1</span> Overview</h3>
+<div id="zygosity" class="section level1" number="14">
+<h1><span class="header-section-number">14</span> SRK Zygosity Analysis Pipeline for Tetraploid Species</h1>
+<div id="rationale-and-documentation-8" class="section level2" number="14.1">
+<h2><span class="header-section-number">14.1</span> Rationale and Documentation</h2>
+<div id="overview-8" class="section level3" number="14.1.1">
+<h3><span class="header-section-number">14.1.1</span> Overview</h3>
 <p>This R pipeline analyzes S-locus zygosity patterns in tetraploid species by quantifying the number of distinct SRK proteins per individual and classifying genotype configurations. The workflow addresses the complex genetics of polyploid self-incompatibility systems, where individuals can carry multiple S-alleles with varying degrees of heterozygosity, providing insights into mating system evolution and population genetic structure.</p>
 </div>
-<div id="pipeline-steps-8" class="section level3" number="13.1.2">
-<h3><span class="header-section-number">13.1.2</span> Pipeline Steps</h3>
+<div id="pipeline-steps-8" class="section level3" number="14.1.2">
+<h3><span class="header-section-number">14.1.2</span> Pipeline Steps</h3>
 <ol style="list-style-type: decimal">
 <li>Polyploid Self-Incompatibility Analysis Framework</li>
 </ol>
@@ -4745,10 +4750,10 @@ dev.off()</code></pre>
 <li><strong>Distribution assessment</strong>: Visual identification of dominant genotype classes</li>
 </ul>
 </div>
-<div id="output-files-8" class="section level3" number="13.1.3">
-<h3><span class="header-section-number">13.1.3</span> Output Files</h3>
-<div id="primary-outputs-2" class="section level4" number="13.1.3.1">
-<h4><span class="header-section-number">13.1.3.1</span> Primary Outputs</h4>
+<div id="output-files-8" class="section level3" number="14.1.3">
+<h3><span class="header-section-number">14.1.3</span> Output Files</h3>
+<div id="primary-outputs-2" class="section level4" number="14.1.3.1">
+<h4><span class="header-section-number">14.1.3.1</span> Primary Outputs</h4>
 <p><strong>Zygosity table (<code>SRK_individual_zygosity.tsv</code>):</strong></p>
 <ul>
 <li>Individual identifiers with protein counts</li>
@@ -4763,8 +4768,8 @@ dev.off()</code></pre>
 <li>Publication-ready figure for manuscript inclusion</li>
 </ul>
 </div>
-<div id="data-structure-example" class="section level4" number="13.1.3.2">
-<h4><span class="header-section-number">13.1.3.2</span> Data Structure Example</h4>
+<div id="data-structure-example" class="section level4" number="14.1.3.2">
+<h4><span class="header-section-number">14.1.3.2</span> Data Structure Example</h4>
 <pre><code>Individual      N_proteins  Zygosity      Genotype
 Library001_01   2          Heterozygous   AABB
 Library001_02   1          Homozygous     AAAA
@@ -4772,11 +4777,11 @@ Library001_03   4          Heterozygous   ABCD
 Library001_04   3          Heterozygous   AABC</code></pre>
 </div>
 </div>
-<div id="scientific-applications-6" class="section level3" number="13.1.4">
-<h3><span class="header-section-number">13.1.4</span> Scientific Applications</h3>
+<div id="scientific-applications-6" class="section level3" number="14.1.4">
+<h3><span class="header-section-number">14.1.4</span> Scientific Applications</h3>
 </div>
-<div id="population-genetic-inference" class="section level3" number="13.1.5">
-<h3><span class="header-section-number">13.1.5</span> Population Genetic Inference</h3>
+<div id="population-genetic-inference" class="section level3" number="14.1.5">
+<h3><span class="header-section-number">14.1.5</span> Population Genetic Inference</h3>
 <p><strong>Demographic history reconstruction:</strong></p>
 <ul>
 <li><strong>High ABCD frequency</strong>: Large, outcrossing populations with minimal drift</li>
@@ -4790,8 +4795,8 @@ Library001_04   3          Heterozygous   AABC</code></pre>
 <li>Homozygosity excess indicates small population effects</li>
 <li>Heterozygosity patterns reveal demographic constraints</li>
 </ul>
-<div id="self-incompatibility-system-analysis-1" class="section level4" number="13.1.5.1">
-<h4><span class="header-section-number">13.1.5.1</span> Self-Incompatibility System Analysis</h4>
+<div id="self-incompatibility-system-analysis-1" class="section level4" number="14.1.5.1">
+<h4><span class="header-section-number">14.1.5.1</span> Self-Incompatibility System Analysis</h4>
 <p><strong>Functional assessment:</strong></p>
 <ul>
 <li><strong>AAAA individuals</strong>: Likely self-compatible due to S-allele homozygosity</li>
@@ -4805,8 +4810,8 @@ Library001_04   3          Heterozygous   AABC</code></pre>
 <li>Population size thresholds for incompatibility maintenance</li>
 </ul>
 </div>
-<div id="conservation-genetics-applications" class="section level4" number="13.1.5.2">
-<h4><span class="header-section-number">13.1.5.2</span> Conservation Genetics Applications</h4>
+<div id="conservation-genetics-applications" class="section level4" number="14.1.5.2">
+<h4><span class="header-section-number">14.1.5.2</span> Conservation Genetics Applications</h4>
 <p><strong>Population viability assessment:</strong></p>
 <ul>
 <li>S-locus diversity as indicator of reproductive potential</li>
@@ -4821,10 +4826,10 @@ Library001_04   3          Heterozygous   AABC</code></pre>
 </ul>
 </div>
 </div>
-<div id="statistical-considerations-2" class="section level3" number="13.1.6">
-<h3><span class="header-section-number">13.1.6</span> Statistical Considerations</h3>
-<div id="sample-size-requirements" class="section level4" number="13.1.6.1">
-<h4><span class="header-section-number">13.1.6.1</span> Sample Size Requirements</h4>
+<div id="statistical-considerations-2" class="section level3" number="14.1.6">
+<h3><span class="header-section-number">14.1.6</span> Statistical Considerations</h3>
+<div id="sample-size-requirements" class="section level4" number="14.1.6.1">
+<h4><span class="header-section-number">14.1.6.1</span> Sample Size Requirements</h4>
 <p><strong>Minimum sample sizes:</strong></p>
 <ul>
 <li>At least 20-30 individuals for basic frequency estimation</li>
@@ -4832,8 +4837,8 @@ Library001_04   3          Heterozygous   AABC</code></pre>
 <li>Population-specific considerations based on expected diversity</li>
 </ul>
 </div>
-<div id="interpretation-guidelines" class="section level4" number="13.1.6.2">
-<h4><span class="header-section-number">13.1.6.2</span> Interpretation Guidelines</h4>
+<div id="interpretation-guidelines" class="section level4" number="14.1.6.2">
+<h4><span class="header-section-number">14.1.6.2</span> Interpretation Guidelines</h4>
 <p><strong>Genotype frequency expectations:</strong></p>
 <ul>
 <li><strong>Random mating</strong>: Hardy-Weinberg proportions modified for polyploidy</li>
@@ -4850,8 +4855,8 @@ Library001_04   3          Heterozygous   AABC</code></pre>
 </div>
 </div>
 </div>
-<div id="bioinformatics-8" class="section level2" number="13.2">
-<h2><span class="header-section-number">13.2</span> Bioinformatics</h2>
+<div id="bioinformatics-8" class="section level2" number="14.2">
+<h2><span class="header-section-number">14.2</span> Bioinformatics</h2>
 <ul>
 <li>Goal: Score individual zygosity from genotypes to AAAA, AABB, AABC, ABCD based on number of recovered protein types</li>
 <li>Script: <code>SRK_zygosity_from_genotype.R</code></li>

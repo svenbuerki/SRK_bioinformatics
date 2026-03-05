@@ -16,6 +16,12 @@ editor_options:
     wrap: sentence
 ---
 
+# GitHub Repository
+
+The companion repository for this webpage is available at:
+
+https://github.com/svenbuerki/SRK_bioinformatics/
+
 # Introduction
 
 Self-incompatibility (SI) systems represent one of the most important mechanisms preventing inbreeding in flowering plants, with the sporophytic SI system found in the Brassicaceae being controlled by the highly polymorphic S-locus. The S-receptor kinase (SRK) gene, encoding the female determinant of incompatibility specificity, exhibits extraordinary allelic diversity maintained by balancing selection over evolutionary timescales. Understanding SRK haplotype diversity and population genetic structure is critical for assessing the evolutionary maintenance of outcrossing systems and identifying populations at risk of SI breakdown.

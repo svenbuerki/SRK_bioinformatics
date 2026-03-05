@@ -1,4 +1,0 @@
-extract_exons_with_annotation.py
-backfill_alignment_ends.py
-define_functional_proteins.py
-genotype_SRK_from_functional_proteins.py
