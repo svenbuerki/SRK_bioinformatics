@@ -1489,20 +1489,28 @@ border-radius: 0px;
 </div>
 <div id="pipeline-overview" class="section level1" number="3">
 <h1><span class="header-section-number">3</span> Pipeline Overview</h1>
+<p>The pipeline consists of 11 main steps divided into two phases:</p>
+<div id="phase-1-within-library-processing-steps-1-8" class="section level3" number="3.0.1">
+<h3><span class="header-section-number">3.0.1</span> Phase 1: Within-Library Processing (Steps 1-8)</h3>
 <ol style="list-style-type: decimal">
-<li><a href="#prepcanseq">Prepare Canonical Sequences</a></li>
-<li><a href="#nanampassphas">Nanopore Amplicon Assembly and Phasing Pipeline</a></li>
-<li><a href="#haporient">Haplotype Orientation and Consolidation Pipeline</a></li>
-<li><a href="#fastafiltrefint">FASTA Sequence Filtering and Reference Integration Pipeline</a></li>
-<li><a href="#msa">Multiple Sequence Alignment</a></li>
-<li><a href="#exonextract">Exon Extraction from Multiple Sequence Alignments Pipeline</a></li>
-<li><a href="#msagapback">MSA Gap Backfilling and Terminus Processing Pipeline</a></li>
-<li><a href="#DNA2AA">DNA to Amino Acid Translation Pipeline</a></li>
-<li><a href="#SRKprotandfilter">SRK Protein Translation, Alignment, and Abundance Filtering Pipeline</a></li>
-<li><a href="#SRKfunctionalprotgenotype">SRK Functional Protein Genotyping Pipeline</a></li>
-<li><a href="#zygosity">SRK Zygosity Analysis Pipeline for Tetraploid Species</a></li>
+<li><a href="#prepcanseq">Prepare Canonical Sequences</a> - Reference sequence preparation</li>
+<li><a href="#nanampassphas">Nanopore Amplicon Assembly and Phasing Pipeline</a> - Multi-CANU assembly with polyploid phasing</li>
+<li><a href="#haporient">Haplotype Orientation and Consolidation Pipeline</a> - Standardize sequence orientation</li>
+<li><a href="#fastafiltrefint">FASTA Sequence Filtering and Reference Integration Pipeline</a> - Quality control and reference addition</li>
+<li><a href="#msa">Multiple Sequence Alignment</a> - MAFFT-based alignment</li>
+<li><a href="#exonextract">Exon Extraction from Multiple Sequence Alignments Pipeline</a> - Extract coding sequences using AUGUSTUS annotations</li>
+<li><a href="#msagapback">MSA Gap Backfilling and Terminus Processing Pipeline</a> - Reference-guided gap filling for terminal regions</li>
+<li><a href="#DNA2AA">DNA to Amino Acid Translation Pipeline</a> - Frame-specific protein translation (<strong>Note:</strong> This step is not mandatory)</li>
 </ol>
-<p>Steps 1-8 are performed within each library independently, while steps 9-11 are conducted across all libraries to infer protein-based alleles and assign genotypes.</p>
+</div>
+<div id="phase-2-cross-library-analysis-steps-9-11" class="section level3" number="3.0.2">
+<h3><span class="header-section-number">3.0.2</span> Phase 2: Cross-Library Analysis (Steps 9-11)</h3>
+<ol start="9" style="list-style-type: decimal">
+<li><a href="#SRKprotandfilter">SRK Protein Translation, Alignment, and Abundance Filtering Pipeline</a> - Comprehensive protein validation and abundance filtering</li>
+<li><a href="#SRKfunctionalprotgenotype">SRK Functional Protein Genotyping Pipeline</a> - Generate population genetic matrices</li>
+<li><a href="#zygosity">SRK Zygosity Analysis Pipeline for Tetraploid Species</a> - Tetraploid genotype classification and demographic inference</li>
+</ol>
+</div>
 </div>
 <div id="prepcanseq" class="section level1" number="4">
 <h1><span class="header-section-number">4</span> Prepare Canonical Sequences</h1>

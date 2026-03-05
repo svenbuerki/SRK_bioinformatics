@@ -35,20 +35,24 @@ The pipeline is specifically designed for threatened plant species research, add
 Key innovations include multi-replicate assembly strategies for maximizing allelic recovery, reference-guided sequence orientation and gap-filling procedures, SRK-specific protein validation criteria, and tetraploid-aware zygosity analysis. The modular design allows adaptation to different species and study systems while maintaining rigorous quality control throughout the analysis workflow.
 
 # Pipeline Overview
+The pipeline consists of 11 main steps divided into two phases:
 
-1. [Prepare Canonical Sequences](#prepcanseq)
-2. [Nanopore Amplicon Assembly and Phasing Pipeline](#nanampassphas)
-3. [Haplotype Orientation and Consolidation Pipeline](#haporient)
-4. [FASTA Sequence Filtering and Reference Integration Pipeline](#fastafiltrefint)
-5. [Multiple Sequence Alignment](#msa)
-6. [Exon Extraction from Multiple Sequence Alignments Pipeline](#exonextract)
-7. [MSA Gap Backfilling and Terminus Processing Pipeline](#msagapback)
-8. [DNA to Amino Acid Translation Pipeline](#DNA2AA)
-9. [SRK Protein Translation, Alignment, and Abundance Filtering Pipeline](#SRKprotandfilter)
-10. [SRK Functional Protein Genotyping Pipeline](#SRKfunctionalprotgenotype)
-11. [SRK Zygosity Analysis Pipeline for Tetraploid Species](#zygosity)
+### Phase 1: Within-Library Processing (Steps 1-8)
 
-Steps 1-8 are performed within each library independently, while steps 9-11 are conducted across all libraries to infer protein-based alleles and assign genotypes.
+1. [Prepare Canonical Sequences](#prepcanseq) - Reference sequence preparation
+2. [Nanopore Amplicon Assembly and Phasing Pipeline](#nanampassphas) - Multi-CANU assembly with polyploid phasing
+3. [Haplotype Orientation and Consolidation Pipeline](#haporient) - Standardize sequence orientation
+4. [FASTA Sequence Filtering and Reference Integration Pipeline](#fastafiltrefint) - Quality control and reference addition
+5. [Multiple Sequence Alignment](#msa) - MAFFT-based alignment
+6. [Exon Extraction from Multiple Sequence Alignments Pipeline](#exonextract) - Extract coding sequences using AUGUSTUS annotations
+7. [MSA Gap Backfilling and Terminus Processing Pipeline](#msagapback) - Reference-guided gap filling for terminal regions
+8. [DNA to Amino Acid Translation Pipeline](#DNA2AA) - Frame-specific protein translation (**Note:** This step is not mandatory)
+
+### Phase 2: Cross-Library Analysis (Steps 9-11)
+
+9. [SRK Protein Translation, Alignment, and Abundance Filtering Pipeline](#SRKprotandfilter) - Comprehensive protein validation and abundance filtering
+10. [SRK Functional Protein Genotyping Pipeline](#SRKfunctionalprotgenotype) - Generate population genetic matrices
+11. [SRK Zygosity Analysis Pipeline for Tetraploid Species](#zygosity) - Tetraploid genotype classification and demographic inference
 
 # Prepare Canonical Sequences {#prepcanseq}
 
