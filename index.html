@@ -1467,31 +1467,39 @@ border-radius: 0px;
 
 
 <h1 class="title toc-ignore">SRK Bioinformatics</h1>
-<h3 class="subtitle">Analyze SRK amplicon data to investigate self-incompatibility system</h3>
+<h3 class="subtitle">Nanopore-Based SRK Haplotype Reconstruction and Population Analysis Pipeline</h3>
 <h4 class="author">Sven Buerki - Boise State University</h4>
 <h4 class="date">2026-03-05</h4>
 
 </div>
 
 
-<div id="amplicon-reconstruction" class="section level1" number="1">
-<h1><span class="header-section-number">1</span> Amplicon reconstruction</h1>
-<ul>
-<li><strong>Goal:</strong> <em>De novo</em> reconstruct phased amplicon sequences for each barcode within a Library</li>
-</ul>
+<div id="introduction" class="section level1" number="1">
+<h1><span class="header-section-number">1</span> Introduction</h1>
+<p>Self-incompatibility (SI) systems represent one of the most important mechanisms preventing inbreeding in flowering plants, with the sporophytic SI system found in the Brassicaceae being controlled by the highly polymorphic S-locus. The S-receptor kinase (SRK) gene, encoding the female determinant of incompatibility specificity, exhibits extraordinary allelic diversity maintained by balancing selection over evolutionary timescales. Understanding SRK haplotype diversity and population genetic structure is critical for assessing the evolutionary maintenance of outcrossing systems and identifying populations at risk of SI breakdown.</p>
+<p>Traditional approaches to SRK characterization have been limited by the technical challenges of resolving highly similar allelic sequences and the complex genetic architecture of polyploid species. Long-read Nanopore sequencing offers unprecedented opportunities to reconstruct complete SRK haplotypes and resolve allelic relationships within individuals, but requires specialized bioinformatics approaches to handle the unique characteristics of amplicon data from polymorphic loci.</p>
+<p>This comprehensive pipeline integrates Nanopore amplicon assembly, haplotype phasing, and population genetic analysis to provide a complete workflow for SRK diversity assessment. The approach combines multiple CANU assembly replicates optimized for rare haplotype recovery with polyploid-aware variant calling and read-backed phasing to generate high-confidence haplotype reconstructions. Downstream analysis components translate DNA sequences to functional proteins, apply abundance-based filtering to distinguish authentic alleles from technical artifacts, and generate population genetic datasets suitable for demographic inference and conservation assessment.</p>
+<p>The pipeline is specifically designed for threatened plant species research, addressing the critical need to assess SI system integrity in small or fragmented populations where genetic diversity loss may compromise reproductive success. By providing both molecular-level haplotype reconstruction and population-level genetic analysis, this workflow enables comprehensive evaluation of self-incompatibility system evolution and maintenance in natural populations facing conservation challenges.</p>
+<p>Key innovations include multi-replicate assembly strategies for maximizing allelic recovery, reference-guided sequence orientation and gap-filling procedures, SRK-specific protein validation criteria, and tetraploid-aware zygosity analysis. The modular design allows adaptation to different species and study systems while maintaining rigorous quality control throughout the analysis workflow.</p>
 </div>
-<div id="sampling" class="section level1" number="2">
-<h1><span class="header-section-number">2</span> Sampling</h1>
-<ul>
-<li>Sampling file (CSV): <code>sampling_metadata.csv</code>
-<ul>
-<li>SampleID: Combination of libraryID and barcode</li>
-<li>Ingroup: if 1 then LEPA, else outgroup</li>
-<li>Pop: This is scored (now) at EO level and we want to use that for preliminary analyses</li>
-</ul></li>
-</ul>
+<div id="pipeline-overview" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> Pipeline Overview</h1>
+<ol style="list-style-type: decimal">
+<li><a href="#prepcanseq">Prepare Canonical Sequences</a></li>
+<li><a href="#nanampassphas">Nanopore Amplicon Assembly and Phasing Pipeline</a></li>
+<li><a href="#haporient">Haplotype Orientation and Consolidation Pipeline</a></li>
+<li><a href="#fastafiltrefint">FASTA Sequence Filtering and Reference Integration Pipeline</a></li>
+<li><a href="#msa">Multiple Sequence Alignment</a></li>
+<li><a href="#exonextract">Exon Extraction from Multiple Sequence Alignments Pipeline</a></li>
+<li><a href="#msagapback">MSA Gap Backfilling and Terminus Processing Pipeline</a></li>
+<li><a href="#DNA2AA">DNA to Amino Acid Translation Pipeline</a></li>
+<li><a href="#SRKprotandfilter">SRK Protein Translation, Alignment, and Abundance Filtering Pipeline</a></li>
+<li><a href="#SRKfunctionalprotgenotype">SRK Functional Protein Genotyping Pipeline</a></li>
+<li><a href="#zygosity">SRK Zygosity Analysis Pipeline for Tetraploid Species</a></li>
+</ol>
+<p>Steps 1-8 are performed within each library independently, while steps 9-11 are conducted across all libraries to infer protein-based alleles and assign genotypes.</p>
 </div>
-<div id="prepare-canonical-sequences" class="section level1" number="3">
+<div id="prepcanseq" class="section level1" number="3">
 <h1><span class="header-section-number">3</span> Prepare Canonical Sequences</h1>
 <blockquote>
 <p>Warning: This need to be be done ONLY ONCE!</p>
@@ -1581,7 +1589,7 @@ print(f&quot;Log file:        {log_file}&quot;)
 augustus --species=arabidopsis --strand=both --singlestrand=false --genemodel=partial --protein=on --codingseq=on --introns=on --start=on --stop=on --cds=on --gff3=on --sample=100 --keep_viterbi=true --alternatives-from-sampling=true --minexonintronprob=0.2 --minmeanexonintronprob=0.5 --maxtracks=2 SRK_canonical_haplotype_sequences_revcomp_ATGfixed.fasta --exonnames=on &gt; augustus_SRK_canonical_haplotype_sequences_revcomp_ATGfixed_arabidopsis.gff</code></pre>
 </div>
 </div>
-<div id="nanopore-amplicon-assembly-and-phasing-pipeline" class="section level1" number="4">
+<div id="nanampassphas" class="section level1" number="4">
 <h1><span class="header-section-number">4</span> Nanopore Amplicon Assembly and Phasing Pipeline</h1>
 <div id="rationale-and-documentation" class="section level2" number="4.1">
 <h2><span class="header-section-number">4.1</span> Rationale and Documentation</h2>
@@ -1981,7 +1989,7 @@ echo &quot;ALL SAMPLES COMPLETE&quot;
 echo &quot;=====================================&quot;</code></pre>
 </div>
 </div>
-<div id="haplotype-orientation-and-consolidation-pipeline" class="section level1" number="5">
+<div id="haporient" class="section level1" number="5">
 <h1><span class="header-section-number">5</span> Haplotype Orientation and Consolidation Pipeline</h1>
 <div id="rationale-and-documentation-1" class="section level2" number="5.1">
 <h2><span class="header-section-number">5.1</span> Rationale and Documentation</h2>
@@ -2241,7 +2249,7 @@ echo &quot;DONE&quot;
 echo &quot;Output: $FINAL_OUT&quot;</code></pre>
 </div>
 </div>
-<div id="fasta-sequence-filtering-and-reference-integration-pipeline" class="section level1" number="6">
+<div id="fastafiltrefint" class="section level1" number="6">
 <h1><span class="header-section-number">6</span> FASTA Sequence Filtering and Reference Integration Pipeline</h1>
 <div id="rationale-and-documentation-2" class="section level2" number="6.1">
 <h2><span class="header-section-number">6.1</span> Rationale and Documentation</h2>
@@ -2488,7 +2496,7 @@ echo &quot;Filtered FASTA written to: $OUT&quot;
 </code></pre>
 </div>
 </div>
-<div id="multiple-sequence-alignment" class="section level1" number="7">
+<div id="msa" class="section level1" number="7">
 <h1><span class="header-section-number">7</span> Multiple Sequence Alignment</h1>
 <ul>
 <li>Align sequences with <code>MAFFT</code></li>
@@ -2515,7 +2523,7 @@ mafft --auto --adjustdirection all_Library005_Phased_haplotypes_filtered_min3250
 # Library006
 mafft --auto --adjustdirection all_Library006_Phased_haplotypes_filtered_min3250.fasta &gt; all_Library006_Phased_haplotypes_filtered_min3250_aligned.fasta</code></pre>
 </div>
-<div id="exon-extraction-from-multiple-sequence-alignments-pipeline" class="section level1" number="8">
+<div id="exonextract" class="section level1" number="8">
 <h1><span class="header-section-number">8</span> Exon Extraction from Multiple Sequence Alignments Pipeline</h1>
 <div id="rationale-and-documentation-3" class="section level2" number="8.1">
 <h2><span class="header-section-number">8.1</span> Rationale and Documentation</h2>
@@ -2830,7 +2838,7 @@ print(f&quot;Exon DNA FASTA written to: {out_file}&quot;)
 </code></pre>
 </div>
 </div>
-<div id="msa-gap-backfilling-and-terminus-processing-pipeline" class="section level1" number="9">
+<div id="msagapback" class="section level1" number="9">
 <h1><span class="header-section-number">9</span> MSA Gap Backfilling and Terminus Processing Pipeline</h1>
 <div id="rationale-and-documentation-4" class="section level2" number="9.1">
 <h2><span class="header-section-number">9.1</span> Rationale and Documentation</h2>
@@ -3143,7 +3151,7 @@ print(&quot;\n✅ Done!&quot;)
 print(f&quot;Backfilled alignment written to: {out_fasta}&quot;)</code></pre>
 </div>
 </div>
-<div id="dna-to-amino-acid-translation-pipeline" class="section level1" number="10">
+<div id="DNA2AA" class="section level1" number="10">
 <h1><span class="header-section-number">10</span> DNA to Amino Acid Translation Pipeline</h1>
 <div id="rationale-and-documentation-5" class="section level2" number="10.1">
 <h2><span class="header-section-number">10.1</span> Rationale and Documentation</h2>
@@ -3452,7 +3460,7 @@ print(f&quot;AA FASTA written to: {out_fasta}&quot;)
 </code></pre>
 </div>
 </div>
-<div id="srk-protein-translation-alignment-and-abundance-filtering-pipeline" class="section level1" number="11">
+<div id="SRKprotandfilter" class="section level1" number="11">
 <h1><span class="header-section-number">11</span> SRK Protein Translation, Alignment, and Abundance Filtering Pipeline</h1>
 <div id="rationale-and-documentation-6" class="section level2" number="11.1">
 <h2><span class="header-section-number">11.1</span> Rationale and Documentation</h2>
@@ -4116,7 +4124,7 @@ print(&quot;SC candidates: SRK_self_compatible_candidates.txt&quot;)
 </code></pre>
 </div>
 </div>
-<div id="srk-functional-protein-genotyping-pipeline" class="section level1" number="12">
+<div id="SRKfunctionalprotgenotype" class="section level1" number="12">
 <h1><span class="header-section-number">12</span> SRK Functional Protein Genotyping Pipeline</h1>
 <div id="rationale-and-documentation-7" class="section level2" number="12.1">
 <h2><span class="header-section-number">12.1</span> Rationale and Documentation</h2>
@@ -4565,6 +4573,432 @@ print(&quot;Outputs:&quot;)
 print(long_out)
 
 print(wide_out)</code></pre>
+</div>
+</div>
+<div id="zygosity" class="section level1" number="13">
+<h1><span class="header-section-number">13</span> SRK Zygosity Analysis Pipeline for Tetraploid Species</h1>
+<div id="rationale-and-documentation-8" class="section level2" number="13.1">
+<h2><span class="header-section-number">13.1</span> Rationale and Documentation</h2>
+<div id="overview-8" class="section level3" number="13.1.1">
+<h3><span class="header-section-number">13.1.1</span> Overview</h3>
+<p>This R pipeline analyzes S-locus zygosity patterns in tetraploid species by quantifying the number of distinct SRK proteins per individual and classifying genotype configurations. The workflow addresses the complex genetics of polyploid self-incompatibility systems, where individuals can carry multiple S-alleles with varying degrees of heterozygosity, providing insights into mating system evolution and population genetic structure.</p>
+</div>
+<div id="pipeline-steps-8" class="section level3" number="13.1.2">
+<h3><span class="header-section-number">13.1.2</span> Pipeline Steps</h3>
+<ol style="list-style-type: decimal">
+<li>Polyploid Self-Incompatibility Analysis Framework</li>
+</ol>
+<p>Zygosity analysis serves critical functions in polyploid self-incompatibility research:</p>
+<ul>
+<li><strong>Genotype complexity assessment</strong>: Quantifies S-allele diversity within individuals</li>
+<li><strong>Mating system inference</strong>: Identifies patterns consistent with outcrossing vs. selfing</li>
+<li><strong>Population structure analysis</strong>: Reveals demographic processes affecting S-locus diversity</li>
+<li><strong>Evolutionary constraint evaluation</strong>: Assesses maintenance of incompatibility function in polyploids</li>
+</ul>
+<ol start="2" style="list-style-type: decimal">
+<li>Data Loading and Validation</li>
+</ol>
+<p>Loads individual-protein assignments from the genotyping pipeline:</p>
+<pre class="r"><code>df &lt;- read.table(
+    &quot;SRK_individual_protein_table.tsv&quot;,
+    header=TRUE,
+    sep=&quot;\t&quot;,
+    stringsAsFactors=FALSE
+)</code></pre>
+<p><strong>Data structure expectations:</strong></p>
+<ul>
+<li><strong>Two-column format</strong>: Individual identifier and Protein assignment</li>
+<li><strong>Tab-delimited</strong>: Standard format from upstream genotyping pipeline</li>
+<li><strong>Header row</strong>: Column names for Individual and Protein</li>
+<li><strong>String preservation</strong>: Prevents automatic factor conversion for downstream analysis</li>
+</ul>
+<ol start="3" style="list-style-type: decimal">
+<li>Protein Diversity Quantification</li>
+</ol>
+<p>Calculates the number of distinct SRK proteins per individual:</p>
+<pre class="r"><code>library(dplyr)
+
+zyg &lt;- df %&gt;%
+    group_by(Individual) %&gt;%
+    summarise(
+        N_proteins = n_distinct(Protein)
+    )</code></pre>
+<p><strong>Quantification features:</strong></p>
+<ul>
+<li><strong>Individual grouping</strong>: Aggregates all protein assignments per individual</li>
+<li><strong>Distinct counting</strong>: Uses <code>n_distinct()</code> to avoid counting duplicate proteins</li>
+<li><strong>Complete enumeration</strong>: Processes all individuals in dataset</li>
+<li><strong>Efficient processing</strong>: Leverages dplyr for optimized data manipulation</li>
+</ul>
+<p><strong>Biological significance:</strong></p>
+<p>In tetraploid species, the number of distinct S-proteins reflects:
+- <strong>Allelic diversity</strong>: Higher numbers indicate greater S-locus heterozygosity
+- <strong>Demographic history</strong>: Bottlenecks reduce within-individual diversity
+- <strong>Mating patterns</strong>: Outcrossing maintains higher diversity than selfing</p>
+<ol start="4" style="list-style-type: decimal">
+<li>Binary Zygosity Classification</li>
+</ol>
+<p>Assigns simplified homozygous vs. heterozygous categories:</p>
+<pre class="r"><code>zyg$Zygosity &lt;- ifelse(
+    zyg$N_proteins == 1,
+    &quot;Homozygous&quot;,
+    &quot;Heterozygous&quot;
+)</code></pre>
+<p><strong>Classification logic:</strong></p>
+<ul>
+<li><strong>Homozygous</strong>: Single distinct protein (AAAA genotype)</li>
+<li><strong>Heterozygous</strong>: Multiple distinct proteins (AABB, AABC, ABCD genotypes)</li>
+<li><strong>Binary simplification</strong>: Reduces complexity for basic population genetic analysis</li>
+<li><strong>Functional relevance</strong>: Homozygous individuals may exhibit compromised incompatibility</li>
+</ul>
+<ol start="5" style="list-style-type: decimal">
+<li>Detailed Genotype Model Assignment</li>
+</ol>
+<p>Provides specific genotype configurations based on protein count:</p>
+<pre class="r"><code>zyg$Genotype &lt;- case_when(
+    zyg$N_proteins == 1 ~ &quot;AAAA&quot;,
+    zyg$N_proteins == 2 ~ &quot;AABB&quot;,
+    zyg$N_proteins == 3 ~ &quot;AABC&quot;,
+    zyg$N_proteins == 4 ~ &quot;ABCD&quot;,
+    TRUE ~ &quot;Unknown&quot;
+)</code></pre>
+<p><strong>Genotype model interpretations:</strong></p>
+<p><strong>AAAA (Homozygous):</strong></p>
+<ul>
+<li>All four chromosome copies carry identical S-allele</li>
+<li>Likely self-compatible due to lack of allelic diversity</li>
+<li>May result from inbreeding or population bottlenecks</li>
+<li>Represents potential breakdown of self-incompatibility system</li>
+</ul>
+<p><strong>AABB (Duplex heterozygous):</strong></p>
+<ul>
+<li>Two copies each of two different S-alleles</li>
+<li>Maintains incompatibility function through allelic diversity</li>
+<li>Common pattern in balanced polyploid populations</li>
+<li>Reflects structured mating or demographic processes</li>
+</ul>
+<p><strong>AABC (Triplex heterozygous):</strong></p>
+<ul>
+<li>One allele present in three copies, second allele in one copy</li>
+<li>Intermediate heterozygosity level</li>
+<li>May indicate recent hybridization or gene conversion events</li>
+<li>Maintains incompatibility but with reduced diversity</li>
+</ul>
+<p><strong>ABCD (Quadruplex heterozygous):</strong></p>
+<ul>
+<li>Four different S-alleles across chromosome copies</li>
+<li>Maximum within-individual S-locus diversity</li>
+<li>Indicates strong outcrossing and large effective population size</li>
+<li>Optimal configuration for maintaining incompatibility function</li>
+</ul>
+<ol start="6" style="list-style-type: decimal">
+<li>Data Export and Documentation</li>
+</ol>
+<p>Saves zygosity analysis results with proper formatting:</p>
+<pre class="r"><code>write.table(
+    zyg,
+    &quot;SRK_individual_zygosity.tsv&quot;,
+    sep=&quot;\t&quot;,
+    quote=FALSE,
+    row.names=FALSE
+)</code></pre>
+<p><strong>Export features:</strong></p>
+<ul>
+<li><strong>Tab-delimited format</strong>: Standard for downstream analysis</li>
+<li><strong>No quotes</strong>: Clean formatting for data import</li>
+<li><strong>No row names</strong>: Prevents index column creation</li>
+<li><strong>Header preservation</strong>: Maintains column names for clarity</li>
+</ul>
+<ol start="7" style="list-style-type: decimal">
+<li>Summary Statistics Generation</li>
+</ol>
+<p>Provides comprehensive descriptive statistics:</p>
+<pre class="r"><code>cat(&quot;\nSummary:\n&quot;)
+print(table(zyg$N_proteins))
+print(table(zyg$Zygosity))</code></pre>
+<p><strong>Statistical summaries:</strong></p>
+<ul>
+<li><strong>Protein count distribution</strong>: Frequency of each genotype class</li>
+<li><strong>Zygosity proportions</strong>: Homozygous vs. heterozygous ratios</li>
+<li><strong>Population assessment</strong>: Overall genetic diversity patterns</li>
+<li><strong>Quality control</strong>: Identification of unusual genotype frequencies</li>
+</ul>
+<ol start="8" style="list-style-type: decimal">
+<li>Visualization Generation</li>
+</ol>
+<p>Creates graphical summary of genotype diversity:</p>
+<pre class="r"><code>pdf(&quot;SRK_zygosity_distribution.pdf&quot;)
+
+barplot(
+    table(zyg$N_proteins),
+    main=&quot;SRK genotype diversity&quot;,
+    xlab=&quot;Number of SRK proteins&quot;,
+    ylab=&quot;Number of individuals&quot;
+)
+
+dev.off()</code></pre>
+<p><strong>Visualization features:</strong></p>
+<ul>
+<li><strong>Bar plot format</strong>: Clear representation of genotype frequency distribution</li>
+<li><strong>PDF output</strong>: High-quality vector graphics for publication</li>
+<li><strong>Descriptive labels</strong>: Clear axis labels and title</li>
+<li><strong>Distribution assessment</strong>: Visual identification of dominant genotype classes</li>
+</ul>
+</div>
+<div id="output-files-8" class="section level3" number="13.1.3">
+<h3><span class="header-section-number">13.1.3</span> Output Files</h3>
+<div id="primary-outputs-2" class="section level4" number="13.1.3.1">
+<h4><span class="header-section-number">13.1.3.1</span> Primary Outputs</h4>
+<p><strong>Zygosity table (<code>SRK_individual_zygosity.tsv</code>):</strong></p>
+<ul>
+<li>Individual identifiers with protein counts</li>
+<li>Binary zygosity classification (Homozygous/Heterozygous)</li>
+<li>Detailed genotype models (AAAA, AABB, AABC, ABCD)</li>
+<li>Ready for downstream population genetic analysis</li>
+</ul>
+<p><strong>Distribution plot (<code>SRK_zygosity_distribution.pdf</code>):</strong></p>
+<ul>
+<li>Bar plot showing frequency of each genotype class</li>
+<li>Visual assessment of population genetic structure</li>
+<li>Publication-ready figure for manuscript inclusion</li>
+</ul>
+</div>
+<div id="data-structure-example" class="section level4" number="13.1.3.2">
+<h4><span class="header-section-number">13.1.3.2</span> Data Structure Example</h4>
+<pre><code>Individual      N_proteins  Zygosity      Genotype
+Library001_01   2          Heterozygous   AABB
+Library001_02   1          Homozygous     AAAA
+Library001_03   4          Heterozygous   ABCD
+Library001_04   3          Heterozygous   AABC</code></pre>
+</div>
+</div>
+<div id="scientific-applications-6" class="section level3" number="13.1.4">
+<h3><span class="header-section-number">13.1.4</span> Scientific Applications</h3>
+</div>
+<div id="population-genetic-inference" class="section level3" number="13.1.5">
+<h3><span class="header-section-number">13.1.5</span> Population Genetic Inference</h3>
+<p><strong>Demographic history reconstruction:</strong></p>
+<ul>
+<li><strong>High ABCD frequency</strong>: Large, outcrossing populations with minimal drift</li>
+<li><strong>High AAAA frequency</strong>: Population bottlenecks or inbreeding</li>
+<li><strong>AABB dominance</strong>: Structured populations or assortative mating</li>
+<li><strong>Mixed patterns</strong>: Complex demographic history or population admixture</li>
+</ul>
+<p><strong>Effective population size estimation:</strong></p>
+<ul>
+<li>S-allele diversity correlates with effective population size</li>
+<li>Homozygosity excess indicates small population effects</li>
+<li>Heterozygosity patterns reveal demographic constraints</li>
+</ul>
+<div id="self-incompatibility-system-analysis-1" class="section level4" number="13.1.5.1">
+<h4><span class="header-section-number">13.1.5.1</span> Self-Incompatibility System Analysis</h4>
+<p><strong>Functional assessment:</strong></p>
+<ul>
+<li><strong>AAAA individuals</strong>: Likely self-compatible due to S-allele homozygosity</li>
+<li><strong>Multi-allelic individuals</strong>: Maintain strong incompatibility function</li>
+<li><strong>Population-level patterns</strong>: Overall system integrity assessment</li>
+</ul>
+<p><strong>Evolutionary constraints:</strong></p>
+<ul>
+<li>Balancing selection effectiveness in maintaining diversity</li>
+<li>Drift effects on S-locus polymorphism</li>
+<li>Population size thresholds for incompatibility maintenance</li>
+</ul>
+</div>
+<div id="conservation-genetics-applications" class="section level4" number="13.1.5.2">
+<h4><span class="header-section-number">13.1.5.2</span> Conservation Genetics Applications</h4>
+<p><strong>Population viability assessment:</strong></p>
+<ul>
+<li>S-locus diversity as indicator of reproductive potential</li>
+<li>Identification of populations at risk of incompatibility breakdown</li>
+<li>Prioritization of conservation efforts based on genetic diversity</li>
+</ul>
+<p><strong>Management recommendations:</strong></p>
+<ul>
+<li><strong>High homozygosity</strong>: Genetic rescue through outcrossing</li>
+<li><strong>Low diversity</strong>: Population augmentation strategies</li>
+<li><strong>Fragmented patterns</strong>: Habitat connectivity restoration priorities</li>
+</ul>
+</div>
+</div>
+<div id="statistical-considerations-2" class="section level3" number="13.1.6">
+<h3><span class="header-section-number">13.1.6</span> Statistical Considerations</h3>
+<div id="sample-size-requirements" class="section level4" number="13.1.6.1">
+<h4><span class="header-section-number">13.1.6.1</span> Sample Size Requirements</h4>
+<p><strong>Minimum sample sizes:</strong></p>
+<ul>
+<li>At least 20-30 individuals for basic frequency estimation</li>
+<li>Larger samples (&gt;50) for demographic inference</li>
+<li>Population-specific considerations based on expected diversity</li>
+</ul>
+</div>
+<div id="interpretation-guidelines" class="section level4" number="13.1.6.2">
+<h4><span class="header-section-number">13.1.6.2</span> Interpretation Guidelines</h4>
+<p><strong>Genotype frequency expectations:</strong></p>
+<ul>
+<li><strong>Random mating</strong>: Hardy-Weinberg proportions modified for polyploidy</li>
+<li><strong>Inbreeding</strong>: Excess homozygosity relative to random mating</li>
+<li><strong>Population structure</strong>: Non-random genotype associations</li>
+</ul>
+<p><strong>Comparative analysis:</strong></p>
+<ul>
+<li>Comparison with neutral markers to detect selection</li>
+<li>Temporal sampling to assess diversity changes</li>
+<li>Multi-population studies to understand regional patterns</li>
+</ul>
+<p>This zygosity analysis pipeline provides essential insights into the genetic architecture of self-incompatibility in polyploid species, enabling assessment of system functionality and population genetic health critical for both evolutionary understanding and conservation management.</p>
+</div>
+</div>
+</div>
+<div id="bioinformatics-8" class="section level2" number="13.2">
+<h2><span class="header-section-number">13.2</span> Bioinformatics</h2>
+<ul>
+<li>Goal: Score individual zygosity from genotypes to AAAA, AABB, AABC, ABCD based on number of recovered protein types</li>
+<li>Script: <code>SRK_zygosity_from_genotype.R</code></li>
+<li>Execute code: <code>Rscript SRK_zygosity_from_genotype.R</code></li>
+<li>Input: <code>SRK_individual_protein_table.tsv</code></li>
+<li>Output:
+<ul>
+<li><code>SRK_individual_zygosity.tsv</code></li>
+<li><code>SRK_zygosity_distribution.pdf</code></li>
+</ul></li>
+</ul>
+<pre><code>Starting SRK zygosity analysis from genotype matrix
+
+  
+Number of individuals: 128 
+
+Protein count distribution:
+ 1  2  3  4 
+
+66 51  5  6 
+
+  
+
+Zygosity distribution:
+
+Heterozygous   Homozygous 
+
+          62           66 
+
+Output files created:
+
+SRK_individual_zygosity.tsv
+SRK_zygosity_distribution.pdf
+</code></pre>
+<pre class="r"><code>############################################################
+# SRK zygosity analysis for tetraploid species
+############################################################
+
+cat(&quot;\nStarting SRK zygosity analysis\n&quot;)
+
+############################################################
+# Load data
+############################################################
+
+df &lt;- read.table(
+
+&quot;SRK_individual_protein_table.tsv&quot;,
+
+header=TRUE,
+sep=&quot;\t&quot;,
+stringsAsFactors=FALSE
+
+)
+
+############################################################
+# Count proteins per individual
+############################################################
+
+library(dplyr)
+
+zyg &lt;- df %&gt;%
+
+group_by(Individual) %&gt;%
+
+summarise(
+
+N_proteins = n_distinct(Protein)
+
+)
+
+############################################################
+# Assign zygosity class
+############################################################
+
+zyg$Zygosity &lt;- ifelse(
+
+zyg$N_proteins == 1,
+
+&quot;Homozygous&quot;,
+
+&quot;Heterozygous&quot;
+
+)
+
+############################################################
+# Assign genotype model
+############################################################
+
+zyg$Genotype &lt;- case_when(
+
+zyg$N_proteins == 1 ~ &quot;AAAA&quot;,
+zyg$N_proteins == 2 ~ &quot;AABB&quot;,
+zyg$N_proteins == 3 ~ &quot;AABC&quot;,
+zyg$N_proteins == 4 ~ &quot;ABCD&quot;,
+TRUE ~ &quot;Unknown&quot;
+
+)
+
+############################################################
+# Save
+############################################################
+
+write.table(
+
+zyg,
+
+&quot;SRK_individual_zygosity.tsv&quot;,
+
+sep=&quot;\t&quot;,
+quote=FALSE,
+row.names=FALSE
+
+)
+
+############################################################
+# Summary stats
+############################################################
+
+cat(&quot;\nSummary:\n&quot;)
+
+print(table(zyg$N_proteins))
+
+print(table(zyg$Zygosity))
+
+############################################################
+# Plot
+############################################################
+
+pdf(&quot;SRK_zygosity_distribution.pdf&quot;)
+
+barplot(
+
+table(zyg$N_proteins),
+
+main=&quot;SRK genotype diversity&quot;,
+
+xlab=&quot;Number of SRK proteins&quot;,
+
+ylab=&quot;Number of individuals&quot;
+
+)
+
+dev.off()
+
+cat(&quot;\nOutput files:\n&quot;)
+cat(&quot;SRK_individual_zygosity.tsv\n&quot;)
+cat(&quot;SRK_zygosity_distribution.pdf\n&quot;)</code></pre>
 </div>
 </div>
 
