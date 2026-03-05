@@ -3452,6 +3452,1121 @@ print(f&quot;AA FASTA written to: {out_fasta}&quot;)
 </code></pre>
 </div>
 </div>
+<div id="srk-protein-translation-alignment-and-abundance-filtering-pipeline" class="section level1" number="11">
+<h1><span class="header-section-number">11</span> SRK Protein Translation, Alignment, and Abundance Filtering Pipeline</h1>
+<div id="rationale-and-documentation-6" class="section level2" number="11.1">
+<h2><span class="header-section-number">11.1</span> Rationale and Documentation</h2>
+<div id="overview-6" class="section level3" number="11.1.1">
+<h3><span class="header-section-number">11.1.1</span> Overview</h3>
+<p>This comprehensive Python pipeline translates DNA sequences to amino acids, performs multiple sequence alignment, and applies abundance-based filtering to identify functional SRK (S-receptor kinase) proteins. The workflow includes enhanced tracking and validation features specifically designed for self-incompatibility research, enabling identification of potentially self-compatible individuals through protein-level analysis.</p>
+</div>
+<div id="pipeline-steps-6" class="section level3" number="11.1.2">
+<h3><span class="header-section-number">11.1.2</span> Pipeline Steps</h3>
+<ol style="list-style-type: decimal">
+<li>SRK Protein Analysis Framework</li>
+</ol>
+<p>This pipeline addresses critical aspects of self-incompatibility research:</p>
+<ul>
+<li><strong>Functional protein identification</strong>: Distinguishes authentic SRK proteins from assembly artifacts</li>
+<li><strong>Abundance-based validation</strong>: Uses protein frequency to confirm biological authenticity</li>
+<li><strong>Self-compatibility detection</strong>: Identifies individuals lacking functional SRK proteins</li>
+<li><strong>Population-level analysis</strong>: Enables comparative analysis across multiple individuals</li>
+</ul>
+<ol start="2" style="list-style-type: decimal">
+<li>Input Parameters and Configuration</li>
+</ol>
+<p>The script requires user-specified parameters with optional enhanced validation:</p>
+<pre class="python"><code>frame = int(input(&quot;Translation frame (1,2,3): &quot;)) - 1
+min_length = 100
+min_count = int(input(&quot;Minimum sequences per protein (recommended 2-5): &quot;))
+
+use_enhanced_validation = input(&quot;Use enhanced SRK domain validation? (y/n, default=n): &quot;).strip().lower()
+use_enhanced_validation = use_enhanced_validation == &#39;y&#39;</code></pre>
+<p><strong>Parameter specifications:</strong></p>
+<ul>
+<li><strong>Translation frame</strong>: Reading frame for DNA to protein translation (0-based internally)</li>
+<li><strong>Minimum length</strong>: Quality threshold for protein sequences (100 amino acids)</li>
+<li><strong>Minimum count</strong>: Abundance threshold for protein validation (2-5 recommended)</li>
+<li><strong>Enhanced validation</strong>: Optional SRK-specific domain validation</li>
+</ul>
+<ol start="3" style="list-style-type: decimal">
+<li>Enhanced SRK Domain Validation</li>
+</ol>
+<p>Implements optional domain-specific validation for SRK proteins:</p>
+<pre class="python"><code>def validate_srk_features(protein_seq):
+    &quot;&quot;&quot;Enhanced SRK domain validation - OPTIONAL&quot;&quot;&quot;
+    if not use_enhanced_validation:
+        return True  # Skip enhanced validation, use original logic
+    
+    # Check for minimum cysteine content (SRK should have ~12)
+    if protein_seq.count(&#39;C&#39;) &lt; 6:
+        return False
+    
+    # Check for basic kinase motifs
+    kinase_motifs = [
+        r&#39;[LIVMFYC]G.{0,20}GxGxxG&#39;,  # ATP-binding
+        r&#39;[LIVMFYC]K.{6,20}D[LIVMFY]K&#39;,  # Catalytic
+    ]
+    
+    motif_count = sum(1 for motif in kinase_motifs if re.search(motif, protein_seq))
+    return motif_count &gt;= 1</code></pre>
+<p><strong>Validation criteria:</strong></p>
+<ul>
+<li><strong>Cysteine content</strong>: Minimum 6 cysteines (SRK proteins typically contain ~12)</li>
+<li><strong>ATP-binding motif</strong>: Glycine-rich loop characteristic of kinase domains</li>
+<li><strong>Catalytic motif</strong>: Lysine and aspartate residues essential for kinase activity</li>
+<li><strong>Motif requirement</strong>: At least one kinase motif must be present</li>
+</ul>
+<ol start="4" style="list-style-type: decimal">
+<li>Comprehensive Individual Tracking</li>
+</ol>
+<p>Implements detailed tracking of sequence processing for each individual:</p>
+<pre class="python"><code>individual_status = defaultdict(lambda: {
+    &#39;total_sequences&#39;: 0,
+    &#39;functional_proteins&#39;: 0,
+    &#39;failed_reasons&#39;: [],
+    &#39;sequences_details&#39;: []
+})</code></pre>
+<p><strong>Tracking categories:</strong></p>
+<ul>
+<li><strong>Total sequences</strong>: All sequences processed per individual</li>
+<li><strong>Functional proteins</strong>: Sequences passing validation criteria</li>
+<li><strong>Failed reasons</strong>: Detailed failure mode documentation</li>
+<li><strong>Sequence details</strong>: Per-sequence processing information</li>
+</ul>
+<ol start="5" style="list-style-type: decimal">
+<li>DNA Translation and Quality Control</li>
+</ol>
+<p>Processes DNA sequences with comprehensive quality validation:</p>
+<pre class="python"><code># ORIGINAL LOGIC FROM YOUR WORKING SCRIPT
+dna = str(record.seq).replace(&quot;-&quot;, &quot;&quot;).upper()
+dna = dna[frame:]
+dna = dna[:len(dna)-(len(dna)%3)]
+
+failure_reasons = []
+prot = &quot;&quot;
+
+if len(dna) &lt; 3:
+    failure_reasons.append(&quot;too_short_dna&quot;)
+    continue
+
+prot = str(Seq(dna).translate()).rstrip(&quot;*&quot;)
+
+# ORIGINAL VALIDATION CHECKS
+if len(prot) &lt; min_length:
+    failure_reasons.append(&quot;too_short_protein&quot;)
+
+if &quot;X&quot; in prot:
+    failure_reasons.append(&quot;ambiguous_aa&quot;)
+
+if &quot;*&quot; in prot:
+    failure_reasons.append(&quot;premature_stop&quot;)</code></pre>
+<p><strong>Quality control criteria:</strong></p>
+<ul>
+<li><strong>Minimum DNA length</strong>: At least 3 nucleotides for translation</li>
+<li><strong>Protein length</strong>: Minimum 100 amino acids for functional analysis</li>
+<li><strong>Ambiguous residues</strong>: Rejection of sequences with ‘X’ characters</li>
+<li><strong>Premature stops</strong>: Identification of internal stop codons</li>
+<li><strong>Frame adjustment</strong>: Proper reading frame application and codon boundary management</li>
+</ul>
+<ol start="6" style="list-style-type: decimal">
+<li>Multiple Sequence Alignment</li>
+</ol>
+<p>Performs amino acid sequence alignment using MAFFT:</p>
+<pre class="python"><code>subprocess.run(
+    f&quot;mafft --auto --amino {raw_fasta} &gt; {aligned_fasta}&quot;,
+    shell=True,
+    check=True
+)</code></pre>
+<p><strong>Alignment parameters:</strong></p>
+<ul>
+<li><strong>MAFFT auto mode</strong>: Automatically selects optimal alignment strategy</li>
+<li><strong>Amino acid mode</strong>: Optimized for protein sequence alignment</li>
+<li><strong>Quality assurance</strong>: Error checking for alignment completion</li>
+</ul>
+<ol start="7" style="list-style-type: decimal">
+<li>Abundance-Based Filtering</li>
+</ol>
+<p>Implements protein frequency filtering to identify authentic variants:</p>
+<pre class="python"><code>aligned_seqs = []
+for rec in aligned_records:
+    ungapped = str(rec.seq).replace(&quot;-&quot;, &quot;&quot;)
+    aligned_seqs.append(ungapped)
+
+counts = Counter(aligned_seqs)
+filtered = {
+    seq: count
+    for seq, count in counts.items()
+    if count &gt;= min_count
+}</code></pre>
+<p><strong>Filtering rationale:</strong></p>
+<ul>
+<li><strong>Assembly artifact removal</strong>: Low-frequency sequences likely represent errors</li>
+<li><strong>Biological validation</strong>: Authentic alleles should appear in multiple individuals</li>
+<li><strong>Population genetics</strong>: Rare alleles vs. technical artifacts distinction</li>
+<li><strong>Statistical confidence</strong>: Higher frequency increases reliability</li>
+</ul>
+<ol start="8" style="list-style-type: decimal">
+<li>Enhanced Individual Status Reporting</li>
+</ol>
+<p>Generates comprehensive reports tracking abundance filtering effects:</p>
+<pre class="python"><code>def generate_individual_report(individual_status, individuals_in_final_key):
+    &quot;&quot;&quot;Generate comprehensive individual status report with abundance filtering tracking&quot;&quot;&quot;
+    
+    for individual, status in individual_status.items():
+        # Check if individual made it to final genotype data
+        in_final_data = individual in individuals_in_final_key
+        proteins_in_final = individuals_in_final_key.get(individual, 0)
+        
+        # Classify individual status
+        if total_seq == 0:
+            classification = &quot;no_sequences&quot;
+        elif functional == 0:
+            classification = &quot;no_functional_proteins&quot;
+        elif not in_final_data:
+            classification = &quot;dropped_abundance_filter&quot;  # NEW CATEGORY
+        elif functional &lt; total_seq * 0.5:
+            classification = &quot;low_functional_rate&quot;
+        else:
+            classification = &quot;normal&quot;</code></pre>
+<p><strong>Classification system:</strong></p>
+<ul>
+<li><strong>no_sequences</strong>: No sequences processed for individual</li>
+<li><strong>no_functional_proteins</strong>: All sequences failed quality control</li>
+<li><strong>dropped_abundance_filter</strong>: Functional proteins failed abundance threshold</li>
+<li><strong>low_functional_rate</strong>: &lt;50% of sequences produced functional proteins</li>
+<li><strong>normal</strong>: Standard processing with adequate functional proteins</li>
+</ul>
+<ol start="9" style="list-style-type: decimal">
+<li>Self-Compatibility Candidate Identification</li>
+</ol>
+<p>Identifies individuals potentially lacking functional SRK proteins:</p>
+<pre class="python"><code>sc_candidates = [row[&#39;Individual&#39;] for row in report_data
+                if row[&#39;Classification&#39;] in [&#39;no_functional_proteins&#39;, &#39;low_functional_rate&#39;, &#39;dropped_abundance_filter&#39;]]
+
+with open(&quot;SRK_self_compatible_candidates.txt&quot;, &quot;w&quot;) as f:
+    f.write(&quot;# Individuals with no or low functional SRK proteins\n&quot;)
+    f.write(&quot;# These may be self-compatible\n&quot;)
+    for individual in sc_candidates:
+        f.write(f&quot;{individual}\n&quot;)</code></pre>
+<p><strong>Self-compatibility indicators:</strong></p>
+<ul>
+<li><strong>Absence of functional SRK</strong>: Complete loss of S-receptor function</li>
+<li><strong>Low functional rate</strong>: Potential pseudogenization events</li>
+<li><strong>Abundance filter dropout</strong>: Possible rare or degraded alleles</li>
+</ul>
+</div>
+<div id="output-files-6" class="section level3" number="11.1.3">
+<h3><span class="header-section-number">11.1.3</span> Output Files</h3>
+<div id="primary-outputs" class="section level4" number="11.1.3.1">
+<h4><span class="header-section-number">11.1.3.1</span> Primary Outputs</h4>
+<ul>
+<li><code>SRK_proteins_raw.fasta</code>: All functional proteins before alignment</li>
+<li><code>SRK_proteins_aligned.fasta</code>: MAFFT-aligned protein sequences</li>
+<li><code>SRK_functional_proteins.fasta</code>: Final abundance-filtered protein dataset</li>
+<li><code>SRK_functional_protein_key.tsv</code>: Mapping between original sequences and final proteins</li>
+</ul>
+</div>
+<div id="analysis-reports" class="section level4" number="11.1.3.2">
+<h4><span class="header-section-number">11.1.3.2</span> Analysis Reports</h4>
+<ul>
+<li><code>SRK_individual_status_report.tsv</code>: Comprehensive individual processing summary</li>
+<li><code>SRK_self_compatible_candidates.txt</code>: List of potentially self-compatible individuals</li>
+</ul>
+<p><strong>Report columns:</strong></p>
+<ul>
+<li>Individual identifier and sequence counts</li>
+<li>Functional protein statistics and rates</li>
+<li>Abundance filtering effects</li>
+<li>Classification and failure reason analysis</li>
+</ul>
+</div>
+</div>
+<div id="scientific-applications-4" class="section level3" number="11.1.4">
+<h3><span class="header-section-number">11.1.4</span> Scientific Applications</h3>
+<div id="population-genetics-of-self-incompatibility" class="section level4" number="11.1.4.1">
+<h4><span class="header-section-number">11.1.4.1</span> Population Genetics of Self-Incompatibility</h4>
+<p><strong>Allelic diversity assessment:</strong></p>
+<ul>
+<li>Quantification of functional SRK protein variants</li>
+<li>Population-level frequency estimation of S-alleles</li>
+<li>Detection of rare vs. common incompatibility alleles</li>
+</ul>
+<p><strong>Self-compatibility evolution:</strong></p>
+<ul>
+<li>Identification of individuals with compromised SRK function</li>
+<li>Analysis of pseudogenization patterns in S-loci</li>
+<li>Evolutionary transitions from outcrossing to selfing</li>
+</ul>
+</div>
+<div id="molecular-evolution-analysis-2" class="section level4" number="11.1.4.2">
+<h4><span class="header-section-number">11.1.4.2</span> Molecular Evolution Analysis</h4>
+<p><strong>Selection pressure detection:</strong></p>
+<ul>
+<li>Protein-level analysis of selection on SRK domains</li>
+<li>Identification of sites under balancing selection</li>
+<li>Comparative analysis of selection across populations</li>
+</ul>
+<p><strong>Functional domain analysis:</strong></p>
+<ul>
+<li>Kinase domain conservation and variation</li>
+<li>Receptor domain hypervariability analysis</li>
+<li>Structure-function relationship investigation</li>
+</ul>
+</div>
+</div>
+<div id="quality-control-and-validation" class="section level3" number="11.1.5">
+<h3><span class="header-section-number">11.1.5</span> Quality Control and Validation</h3>
+<div id="multi-level-filtering-system" class="section level4" number="11.1.5.1">
+<h4><span class="header-section-number">11.1.5.1</span> Multi-Level Filtering System</h4>
+<ol style="list-style-type: decimal">
+<li><strong>Translation quality</strong>: DNA length, reading frame, stop codons</li>
+<li><strong>Protein validation</strong>: Length, ambiguous residues, domain features</li>
+<li><strong>Abundance filtering</strong>: Population-level frequency validation</li>
+<li><strong>Individual tracking</strong>: Comprehensive failure mode analysis</li>
+</ol>
+</div>
+<div id="statistical-considerations" class="section level4" number="11.1.5.2">
+<h4><span class="header-section-number">11.1.5.2</span> Statistical Considerations</h4>
+<p><strong>Abundance threshold optimization:</strong></p>
+<ul>
+<li>Balance between artifact removal and rare allele retention</li>
+<li>Population size considerations for frequency thresholds</li>
+<li>Technical replicate validation for threshold setting</li>
+</ul>
+<p><strong>Classification reliability:</strong></p>
+<ul>
+<li>Multiple validation criteria for self-compatibility candidates</li>
+<li>Conservative approach to minimize false positives</li>
+<li>Detailed documentation for manual review of edge cases</li>
+</ul>
+<p>This pipeline provides a robust framework for identifying functional SRK proteins and detecting potential self-compatibility evolution, essential for understanding the maintenance and breakdown of self-incompatibility systems in natural populations.</p>
+</div>
+</div>
+</div>
+<div id="bioinformatics-6" class="section level2" number="11.2">
+<h2><span class="header-section-number">11.2</span> Bioinformatics</h2>
+<ul>
+<li><p><strong>Definition:</strong> A functional allele is defined by the number of distinct functional protein sequences (isoforms) underpinning all DNA SRK sequences. We need to include frequency to remove bioinformatics and sequencing noise (set to 5)</p></li>
+<li><p><strong>Approach:</strong> Merge <code>_exons_backfilled.fasta</code> files, translate sequences and discard those that do not produce functional proteins, and create protein sequences (with a key). The discareded samples have some information whether they have lost SI due to non-functional SRK and will then be self-compatible.</p></li>
+<li><p><strong>Script:</strong> <code>define_functional_proteins.py</code></p></li>
+<li><p><strong>Input:</strong> <code>*_exons_backfilled.fasta</code> (e.g., <code>all_Library003_Phased_haplotypes_filtered_min3250_aligned_exons_backfilled.fasta</code>)</p>
+<ul>
+<li>filter = 5</li>
+<li>Enhanced = n</li>
+</ul></li>
+<li><p><strong>Output:</strong></p>
+<ul>
+<li><code>SRK_proteins_raw.fasta</code> - All translated proteins before filtering</li>
+<li><code>SRK_proteins_aligned.fasta</code> - MAFFT-aligned proteins</li>
+<li><code>SRK_functional_proteins.fasta</code> - Final functional proteins</li>
+<li><code>SRK_functional_protein_key.tsv</code> - Mapping of sequences to protein namesSRK_functional_proteins.fasta and SRK_functional_protein_key.tsv</li>
+<li>Quality control files:
+<ul>
+<li><strong><code>SRK_individual_status_report.tsv</code></strong> - Detailed per-individual analysis</li>
+<li><strong><code>SRK_self_compatible_candidates.txt</code></strong> - List of individuals with no/low functional SRK</li>
+</ul></li>
+</ul></li>
+</ul>
+<pre><code>Unique aligned proteins: 399
+
+After abundance filter: 94
+
+
+FINAL SUMMARY
+Final functional proteins: 94
+Protein FASTA: SRK_functional_proteins.fasta
+Protein key: SRK_functional_protein_key.tsv
+
+Individual classifications:
+  normal: 75
+  low_functional_rate: 53
+  dropped_abundance_filter: 21
+  no_functional_proteins: 5
+
+Individuals dropped by abundance filter (min_count=5): 21
+Dropped individuals:
+  Library004_barcode82: 20 functional proteins → 0 in final data
+  Library004_barcode86: 4 functional proteins → 0 in final data
+  Library002_barcode26: 9 functional proteins → 0 in final data
+  Library002_barcode27: 11 functional proteins → 0 in final data
+  Library002_barcode28: 8 functional proteins → 0 in final data
+  Library002_barcode34: 11 functional proteins → 0 in final data
+  Library002_barcode36: 7 functional proteins → 0 in final data
+  Library002_barcode38: 13 functional proteins → 0 in final data
+  Library002_barcode45: 8 functional proteins → 0 in final data
+  Library002_barcode55: 16 functional proteins → 0 in final data
+  Library003_barcode68: 7 functional proteins → 0 in final data
+  Library006_barcode39: 26 functional proteins → 0 in final data
+  Library006_barcode45: 2 functional proteins → 0 in final data
+  Library006_barcode49: 11 functional proteins → 0 in final data
+  Library006_barcode52: 12 functional proteins → 0 in final data
+  Library001_barcode03: 4 functional proteins → 0 in final data
+  Library001_barcode12: 8 functional proteins → 0 in final data
+  Library001_barcode13: 5 functional proteins → 0 in final data
+  Library001_barcode15: 12 functional proteins → 0 in final data
+  Library001_barcode16: 7 functional proteins → 0 in final data
+  Library001_barcode22: 2 functional proteins → 0 in final data
+
+Potential self-compatible individuals: 79
+Detailed report: SRK_individual_status_report.tsv
+SC candidates: SRK_self_compatible_candidates.txt</code></pre>
+<p>CODE</p>
+<pre class="python"><code>#!/usr/bin/env python3
+# Enhanced version with abundance filtering tracking
+
+from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+from collections import Counter, defaultdict
+import glob
+import subprocess
+import sys
+import re
+
+# ----------------------------
+# Parameters
+# ----------------------------
+frame = int(input(&quot;Translation frame (1,2,3): &quot;)) - 1
+min_length = 100
+min_count = int(input(&quot;Minimum sequences per protein (recommended 2-5): &quot;))
+
+# Add option for enhanced validation
+use_enhanced_validation = input(&quot;Use enhanced SRK domain validation? (y/n, default=n): &quot;).strip().lower()
+use_enhanced_validation = use_enhanced_validation == &#39;y&#39;
+
+# ----------------------------
+# DEFINE FUNCTIONS FIRST
+# ----------------------------
+def validate_srk_features(protein_seq):
+    &quot;&quot;&quot;Enhanced SRK domain validation - OPTIONAL&quot;&quot;&quot;
+    if not use_enhanced_validation:
+        return True  # Skip enhanced validation, use original logic
+    
+    # Check for minimum cysteine content (SRK should have ~12)
+    if protein_seq.count(&#39;C&#39;) &lt; 6:
+        return False
+    
+    # Check for basic kinase motifs
+    kinase_motifs = [
+        r&#39;[LIVMFYC]G.{0,20}GxGxxG&#39;,  # ATP-binding
+        r&#39;[LIVMFYC]K.{6,20}D[LIVMFY]K&#39;,  # Catalytic
+    ]
+    
+    motif_count = sum(1 for motif in kinase_motifs if re.search(motif, protein_seq))
+    return motif_count &gt;= 1
+
+def generate_individual_report(individual_status, individuals_in_final_key):
+    &quot;&quot;&quot;Generate comprehensive individual status report with abundance filtering tracking&quot;&quot;&quot;
+    
+    report_data = []
+    
+    for individual, status in individual_status.items():
+        total_seq = status[&#39;total_sequences&#39;]
+        functional = status[&#39;functional_proteins&#39;]
+        
+        # Check if individual made it to final genotype data
+        in_final_data = individual in individuals_in_final_key
+        proteins_in_final = individuals_in_final_key.get(individual, 0)
+        
+        # Classify individual status
+        if total_seq == 0:
+            classification = &quot;no_sequences&quot;
+        elif functional == 0:
+            classification = &quot;no_functional_proteins&quot;
+        elif not in_final_data:
+            classification = &quot;dropped_abundance_filter&quot;  # NEW CATEGORY
+        elif functional &lt; total_seq * 0.5:
+            classification = &quot;low_functional_rate&quot;
+        else:
+            classification = &quot;normal&quot;
+        
+        # Most common failure reasons
+        failure_counts = Counter(status[&#39;failed_reasons&#39;])
+        top_failures = failure_counts.most_common(3)
+        
+        report_data.append({
+            &#39;Individual&#39;: individual,
+            &#39;Total_sequences&#39;: total_seq,
+            &#39;Functional_proteins&#39;: functional,
+            &#39;Functional_rate&#39;: functional/total_seq if total_seq &gt; 0 else 0,
+            &#39;Proteins_in_final_data&#39;: proteins_in_final,  # NEW COLUMN
+            &#39;In_final_genotype_data&#39;: &#39;Yes&#39; if in_final_data else &#39;No&#39;,  # NEW COLUMN
+            &#39;Classification&#39;: classification,
+            &#39;Top_failure_reasons&#39;: &#39;;&#39;.join([f&quot;{reason}({count})&quot; for reason, count in top_failures])
+        })
+    
+    return report_data
+
+# ----------------------------
+# Enhanced tracking dictionaries
+# ----------------------------
+individual_status = defaultdict(lambda: {
+    &#39;total_sequences&#39;: 0,
+    &#39;functional_proteins&#39;: 0,
+    &#39;failed_reasons&#39;: [],
+    &#39;sequences_details&#39;: []
+})
+
+# ----------------------------
+# Files
+# ----------------------------
+pattern = &quot;*_exons_backfilled.fasta&quot;
+raw_fasta = &quot;SRK_proteins_raw.fasta&quot;
+aligned_fasta = &quot;SRK_proteins_aligned.fasta&quot;
+final_fasta = &quot;SRK_functional_proteins.fasta&quot;
+key_file = &quot;SRK_functional_protein_key.tsv&quot;
+
+# ----------------------------
+# Step 1: Translate and store mapping (ORIGINAL LOGIC + tracking)
+# ----------------------------
+print(&quot;\nTranslating sequences with enhanced tracking...&quot;)
+
+raw_records = []
+original_to_protein = {}
+
+for fasta in glob.glob(pattern):
+    print(f&quot;Processing {fasta}...&quot;)
+    
+    for record in SeqIO.parse(fasta, &quot;fasta&quot;):
+        # Extract individual ID from sequence name
+        individual_id = &quot;_&quot;.join(record.id.split(&#39;_&#39;)[:2])  # Adjust based on your naming
+        
+        individual_status[individual_id][&#39;total_sequences&#39;] += 1
+        
+        # ORIGINAL LOGIC FROM YOUR WORKING SCRIPT
+        dna = str(record.seq).replace(&quot;-&quot;, &quot;&quot;).upper()
+        dna = dna[frame:]
+        dna = dna[:len(dna)-(len(dna)%3)]
+        
+        failure_reasons = []
+        prot = &quot;&quot;
+        
+        if len(dna) &lt; 3:
+            failure_reasons.append(&quot;too_short_dna&quot;)
+            continue
+        
+        prot = str(Seq(dna).translate()).rstrip(&quot;*&quot;)
+        
+        # ORIGINAL VALIDATION CHECKS
+        if len(prot) &lt; min_length:
+            failure_reasons.append(&quot;too_short_protein&quot;)
+        
+        if &quot;X&quot; in prot:
+            failure_reasons.append(&quot;ambiguous_aa&quot;)
+        
+        if &quot;*&quot; in prot:
+            failure_reasons.append(&quot;premature_stop&quot;)
+        
+        # OPTIONAL enhanced validation (only if requested)
+        if use_enhanced_validation and not validate_srk_features(prot):
+            failure_reasons.append(&quot;missing_srk_domains&quot;)
+        
+        # Store details for reporting
+        seq_detail = {
+            &#39;sequence_id&#39;: record.id,
+            &#39;length_dna&#39;: len(dna),
+            &#39;length_protein&#39;: len(prot),
+            &#39;failure_reasons&#39;: failure_reasons
+        }
+        individual_status[individual_id][&#39;sequences_details&#39;].append(seq_detail)
+        
+        # ORIGINAL SUCCESS CRITERIA (same as your working script)
+        if not failure_reasons:
+            raw_records.append(
+                SeqRecord(Seq(prot), id=record.id, description=&quot;&quot;)
+            )
+            original_to_protein[record.id] = prot
+            individual_status[individual_id][&#39;functional_proteins&#39;] += 1
+        else:
+            individual_status[individual_id][&#39;failed_reasons&#39;].extend(failure_reasons)
+
+print(&quot;Raw functional proteins:&quot;, len(raw_records))
+SeqIO.write(raw_records, raw_fasta, &quot;fasta&quot;)
+
+# ----------------------------
+# Step 2: Align (ORIGINAL)
+# ----------------------------
+print(&quot;\nRunning MAFFT alignment...&quot;)
+subprocess.run(
+    f&quot;mafft --auto --amino {raw_fasta} &gt; {aligned_fasta}&quot;,
+    shell=True,
+    check=True
+)
+
+# ----------------------------
+# Step 3: Count aligned proteins (ORIGINAL)
+# ----------------------------
+aligned_records = list(SeqIO.parse(aligned_fasta, &quot;fasta&quot;))
+aligned_seq_dict = {}
+aligned_seqs = []
+
+for rec in aligned_records:
+    ungapped = str(rec.seq).replace(&quot;-&quot;, &quot;&quot;)
+    aligned_seq_dict[rec.id] = ungapped
+    aligned_seqs.append(ungapped)
+
+counts = Counter(aligned_seqs)
+print(&quot;Unique aligned proteins:&quot;, len(counts))
+
+# ----------------------------
+# Step 4: Apply abundance filter (ORIGINAL)
+# ----------------------------
+filtered = {
+    seq: count
+    for seq, count in counts.items()
+    if count &gt;= min_count
+}
+print(&quot;After abundance filter:&quot;, len(filtered))
+
+# ----------------------------
+# Step 5: Assign protein names (ORIGINAL)
+# ----------------------------
+protein_names = {}
+for i, seq in enumerate(filtered):
+    protein_names[seq] = f&quot;SRK_protein_{i+1:03d}&quot;
+
+# ----------------------------
+# Step 6: Write final FASTA (ORIGINAL)
+# ----------------------------
+final_records = []
+for seq, name in protein_names.items():
+    count = filtered[seq]
+    final_records.append(
+        SeqRecord(
+            Seq(seq),
+            id=name,
+            description=f&quot;count={count}&quot;
+        )
+    )
+
+SeqIO.write(final_records, final_fasta, &quot;fasta&quot;)
+
+# ----------------------------
+# Step 7: Write key (ORIGINAL)
+# ----------------------------
+with open(key_file, &quot;w&quot;) as out:
+    out.write(&quot;Original_sequence_ID\tProtein\tCount\n&quot;)
+    for seq_id, prot in original_to_protein.items():
+        if prot in protein_names:
+            name = protein_names[prot]
+            count = filtered[prot]
+            out.write(f&quot;{seq_id}\t{name}\t{count}\n&quot;)
+
+# ----------------------------
+# NEW: Track which individuals made it to final data
+# ----------------------------
+individuals_in_final_key = defaultdict(int)
+
+# Count how many proteins each individual has in the final key file
+for seq_id, prot in original_to_protein.items():
+    if prot in protein_names:
+        individual_id = &quot;_&quot;.join(seq_id.split(&#39;_&#39;)[:2])
+        individuals_in_final_key[individual_id] += 1
+
+# ----------------------------
+# NEW: Generate enhanced reports with abundance tracking
+# ----------------------------
+report_data = generate_individual_report(individual_status, individuals_in_final_key)
+
+# Save individual status report with new columns
+with open(&quot;SRK_individual_status_report.tsv&quot;, &quot;w&quot;) as f:
+    f.write(&quot;Individual\tTotal_sequences\tFunctional_proteins\tFunctional_rate\t&quot;
+            &quot;Proteins_in_final_data\tIn_final_genotype_data\tClassification\tTop_failure_reasons\n&quot;)
+    for row in report_data:
+        f.write(f&quot;{row[&#39;Individual&#39;]}\t{row[&#39;Total_sequences&#39;]}\t{row[&#39;Functional_proteins&#39;]}\t&quot;
+                f&quot;{row[&#39;Functional_rate&#39;]:.3f}\t{row[&#39;Proteins_in_final_data&#39;]}\t&quot;
+                f&quot;{row[&#39;In_final_genotype_data&#39;]}\t{row[&#39;Classification&#39;]}\t{row[&#39;Top_failure_reasons&#39;]}\n&quot;)
+
+# Identify potentially self-compatible individuals (updated categories)
+sc_candidates = [row[&#39;Individual&#39;] for row in report_data
+                if row[&#39;Classification&#39;] in [&#39;no_functional_proteins&#39;, &#39;low_functional_rate&#39;, &#39;dropped_abundance_filter&#39;]]
+
+with open(&quot;SRK_self_compatible_candidates.txt&quot;, &quot;w&quot;) as f:
+    f.write(&quot;# Individuals with no or low functional SRK proteins\n&quot;)
+    f.write(&quot;# These may be self-compatible\n&quot;)
+    for individual in sc_candidates:
+        f.write(f&quot;{individual}\n&quot;)
+
+# ----------------------------
+# Final summary with abundance filtering stats
+# ----------------------------
+print(&quot;\nFINAL SUMMARY&quot;)
+print(&quot;Final functional proteins:&quot;, len(protein_names))
+print(&quot;Protein FASTA:&quot;, final_fasta)
+print(&quot;Protein key:&quot;, key_file)
+
+# Print summary of individual classifications
+classification_counts = Counter([row[&#39;Classification&#39;] for row in report_data])
+print(&quot;\nIndividual classifications:&quot;)
+for classification, count in classification_counts.items():
+    print(f&quot;  {classification}: {count}&quot;)
+
+# Specific stats about abundance filtering
+dropped_abundance = [row for row in report_data if row[&#39;Classification&#39;] == &#39;dropped_abundance_filter&#39;]
+print(f&quot;\nIndividuals dropped by abundance filter (min_count={min_count}): {len(dropped_abundance)}&quot;)
+if dropped_abundance:
+    print(&quot;Dropped individuals:&quot;)
+    for row in dropped_abundance:
+        print(f&quot;  {row[&#39;Individual&#39;]}: {row[&#39;Functional_proteins&#39;]} functional proteins → 0 in final data&quot;)
+
+print(f&quot;\nPotential self-compatible individuals: {len(sc_candidates)}&quot;)
+print(&quot;Detailed report: SRK_individual_status_report.tsv&quot;)
+print(&quot;SC candidates: SRK_self_compatible_candidates.txt&quot;)
+</code></pre>
+</div>
+</div>
+<div id="srk-functional-protein-genotyping-pipeline" class="section level1" number="12">
+<h1><span class="header-section-number">12</span> SRK Functional Protein Genotyping Pipeline</h1>
+<div id="rationale-and-documentation-7" class="section level2" number="12.1">
+<h2><span class="header-section-number">12.1</span> Rationale and Documentation</h2>
+<div id="overview-7" class="section level3" number="12.1.1">
+<h3><span class="header-section-number">12.1.1</span> Overview</h3>
+<p>This Python pipeline converts individual SRK protein assignments into standardized genotype matrices suitable for population genetic analysis. The workflow transforms sequence-to-protein mappings into both long-format tables and wide-format binary matrices, enabling downstream analysis of S-allele frequencies, mating compatibility, and population genetic structure in self-incompatibility systems.</p>
+</div>
+<div id="pipeline-steps-7" class="section level3" number="12.1.2">
+<h3><span class="header-section-number">12.1.2</span> Pipeline Steps</h3>
+<ol style="list-style-type: decimal">
+<li>Genotype Matrix Construction for Population Analysis</li>
+</ol>
+<p>Genotype matrix generation serves critical functions in self-incompatibility research:</p>
+<ul>
+<li><strong>Population genetic analysis</strong>: Enables calculation of allele frequencies and genetic diversity</li>
+<li><strong>Mating compatibility prediction</strong>: Facilitates incompatibility matrix construction</li>
+<li><strong>Demographic analysis</strong>: Supports effective population size estimation and bottleneck detection</li>
+<li><strong>Selection analysis</strong>: Provides input for tests of balancing selection on S-loci</li>
+</ul>
+<ol start="2" style="list-style-type: decimal">
+<li>Input Parameter Specification</li>
+</ol>
+<p>The script requires a single input file from the previous pipeline step:</p>
+<pre class="python"><code>protein_key_file = input(
+    &quot;Enter SRK_functional_protein_key.tsv: &quot;
+).strip()
+
+long_out = &quot;SRK_individual_protein_table.tsv&quot;
+wide_out = &quot;SRK_individual_genotypes.tsv&quot;</code></pre>
+<p><strong>File specifications:</strong></p>
+<ul>
+<li><strong>Protein key file</strong>: Output from SRK protein translation and filtering pipeline</li>
+<li><strong>Long format output</strong>: Individual-protein pairs for relational analysis</li>
+<li><strong>Wide format output</strong>: Binary genotype matrix for population genetic software</li>
+</ul>
+<ol start="3" style="list-style-type: decimal">
+<li>Protein Assignment Loading and Parsing</li>
+</ol>
+<p>Loads protein assignments with robust individual identifier extraction:</p>
+<pre class="python"><code>individual_proteins = defaultdict(list)
+
+with open(protein_key_file, newline=&quot;&quot;) as f:
+    reader = csv.DictReader(f, delimiter=&quot;\t&quot;)
+    for row in reader:
+        seq_id = row[&quot;Original_sequence_ID&quot;]
+        protein = row[&quot;Protein&quot;]
+        
+        parts = seq_id.split(&quot;_&quot;)
+        
+        # FIXED extraction
+        if len(parts) &lt; 2:
+            print(&quot;WARNING: cannot parse:&quot;, seq_id)
+            continue
+        
+        individual = f&quot;{parts[0]}_{parts[1]}&quot;
+        individual_proteins[individual].append(protein)</code></pre>
+<p><strong>Parsing features:</strong></p>
+<ul>
+<li><strong>Flexible identifier handling</strong>: Extracts individual IDs from sequence names</li>
+<li><strong>Error tolerance</strong>: Continues processing despite malformed identifiers</li>
+<li><strong>Warning system</strong>: Reports unparseable sequence identifiers</li>
+<li><strong>Data aggregation</strong>: Groups all proteins by individual identifier</li>
+</ul>
+<p><strong>Individual ID extraction logic:</strong></p>
+<ul>
+<li>Assumes sequence naming convention: <code>{library}_{barcode}_{additional_info}</code></li>
+<li>Combines first two underscore-separated components as individual identifier</li>
+<li>Maintains consistency with upstream pipeline naming conventions</li>
+</ul>
+<ol start="4" style="list-style-type: decimal">
+<li>Long-Format Table Generation</li>
+</ol>
+<p>Creates relational table format for flexible downstream analysis:</p>
+<pre class="python"><code>with open(long_out, &quot;w&quot;) as out:
+    out.write(&quot;Individual\tProtein\n&quot;)
+    for individual in sorted(individual_proteins):
+        for protein in individual_proteins[individual]:
+            out.write(f&quot;{individual}\t{protein}\n&quot;)</code></pre>
+<p><strong>Long format advantages:</strong></p>
+<ul>
+<li><strong>Database compatibility</strong>: Suitable for SQL queries and relational analysis</li>
+<li><strong>Flexible filtering</strong>: Easy subsetting by individual or protein</li>
+<li><strong>Statistical software</strong>: Compatible with R, Python pandas, and other analysis tools</li>
+<li><strong>Visualization</strong>: Enables creation of allele frequency plots and distribution analyses</li>
+</ul>
+<ol start="5" style="list-style-type: decimal">
+<li>Comprehensive Protein Inventory</li>
+</ol>
+<p>Generates complete catalog of functional proteins across all individuals:</p>
+<pre class="python"><code>all_proteins = sorted({
+    protein
+    for proteins in individual_proteins.values()
+    for protein in proteins
+})</code></pre>
+<p><strong>Inventory features:</strong></p>
+<ul>
+<li><strong>Set comprehension</strong>: Eliminates duplicate proteins across individuals</li>
+<li><strong>Sorted ordering</strong>: Provides consistent protein ordering across analyses</li>
+<li><strong>Population-wide scope</strong>: Captures complete allelic diversity in dataset</li>
+<li><strong>Matrix preparation</strong>: Establishes column structure for genotype matrix</li>
+</ul>
+<ol start="6" style="list-style-type: decimal">
+<li>Binary Genotype Matrix Construction</li>
+</ol>
+<p>Creates presence/absence matrix for population genetic analysis:</p>
+<pre class="python"><code>genotype_matrix = OrderedDict()
+
+for individual in sorted(individual_proteins):
+    protein_set = set(individual_proteins[individual])
+    genotype_matrix[individual] = {
+        protein: 1 if protein in protein_set else 0
+        for protein in all_proteins
+    }</code></pre>
+<p><strong>Matrix construction logic:</strong></p>
+<ul>
+<li><strong>Binary encoding</strong>: 1 for protein presence, 0 for absence</li>
+<li><strong>Complete coverage</strong>: Every individual scored for every protein</li>
+<li><strong>Set-based lookup</strong>: Efficient presence/absence determination</li>
+<li><strong>Ordered structure</strong>: Maintains consistent individual and protein ordering</li>
+</ul>
+<p><strong>Population genetic applications:</strong></p>
+<ul>
+<li><strong>Allele frequency calculation</strong>: Column sums provide allele counts</li>
+<li><strong>Genetic diversity metrics</strong>: Enables Shannon diversity and evenness calculations</li>
+<li><strong>Hardy-Weinberg testing</strong>: Supports tests of population genetic equilibrium</li>
+<li><strong>Structure analysis</strong>: Input for STRUCTURE, ADMIXTURE, and PCA analyses</li>
+</ul>
+<ol start="7" style="list-style-type: decimal">
+<li>Wide-Format Matrix Output</li>
+</ol>
+<p>Writes standardized genotype matrix with proper formatting:</p>
+<pre class="python"><code>with open(wide_out, &quot;w&quot;, newline=&quot;&quot;) as out:
+    writer = csv.writer(out, delimiter=&quot;\t&quot;)
+    header = [&quot;Individual&quot;] + all_proteins
+    writer.writerow(header)
+    
+    for individual, geno in genotype_matrix.items():
+        row = [individual] + [
+            geno[p]
+            for p in all_proteins
+        ]
+        writer.writerow(row)</code></pre>
+<p><strong>Output format features:</strong></p>
+<ul>
+<li><strong>Header row</strong>: Clear column identification for downstream analysis</li>
+<li><strong>Tab-delimited</strong>: Standard format for population genetic software</li>
+<li><strong>Consistent ordering</strong>: Maintains individual and protein order across rows/columns</li>
+<li><strong>Complete matrix</strong>: No missing data in final output</li>
+</ul>
+<ol start="8" style="list-style-type: decimal">
+<li>Summary Statistics and Reporting</li>
+</ol>
+<p>Provides comprehensive processing summary:</p>
+<pre class="python"><code>print(&quot;\n✅ Functional protein genotyping complete&quot;)
+print(&quot;Individuals:&quot;, len(genotype_matrix))
+print(&quot;Functional alleles:&quot;, len(all_proteins))
+print(&quot;Outputs:&quot;)
+print(long_out)
+print(wide_out)</code></pre>
+<p><strong>Summary metrics:</strong></p>
+<ul>
+<li><strong>Sample size</strong>: Total number of individuals successfully genotyped</li>
+<li><strong>Allelic diversity</strong>: Number of distinct functional proteins identified</li>
+<li><strong>Output confirmation</strong>: File paths for generated datasets</li>
+</ul>
+</div>
+<div id="output-files-7" class="section level3" number="12.1.3">
+<h3><span class="header-section-number">12.1.3</span> Output Files</h3>
+<div id="primary-outputs-1" class="section level4" number="12.1.3.1">
+<h4><span class="header-section-number">12.1.3.1</span> Primary Outputs</h4>
+<p><strong>Long-format table (<code>SRK_individual_protein_table.tsv</code>):</strong></p>
+<ul>
+<li>Two-column format: Individual, Protein</li>
+<li>One row per individual-protein combination</li>
+<li>Suitable for relational database operations and flexible analysis</li>
+</ul>
+<p><strong>Wide-format matrix (<code>SRK_individual_genotypes.tsv</code>):</strong></p>
+<ul>
+<li>Binary presence/absence matrix</li>
+<li>Rows: individuals, Columns: proteins</li>
+<li>Standard format for population genetic analysis software</li>
+</ul>
+</div>
+<div id="data-structure-examples" class="section level4" number="12.1.3.2">
+<h4><span class="header-section-number">12.1.3.2</span> Data Structure Examples</h4>
+<p><strong>Long format:</strong></p>
+<pre><code>Individual    Protein
+Library001_01 SRK_protein_001
+Library001_01 SRK_protein_015
+Library001_02 SRK_protein_003</code></pre>
+<p><strong>Wide format:</strong></p>
+<pre><code>Individual    SRK_protein_001 SRK_protein_002 SRK_protein_003
+Library001_01 1               0               0
+Library001_02 0               0               1</code></pre>
+</div>
+</div>
+<div id="scientific-applications-5" class="section level3" number="12.1.4">
+<h3><span class="header-section-number">12.1.4</span> Scientific Applications</h3>
+<div id="population-genetic-analysis-1" class="section level4" number="12.1.4.1">
+<h4><span class="header-section-number">12.1.4.1</span> Population Genetic Analysis</h4>
+<p><strong>Allele frequency estimation:</strong></p>
+<ul>
+<li>Direct calculation from column sums in binary matrix</li>
+<li>Temporal and spatial frequency comparisons</li>
+<li>Rare vs. common allele identification</li>
+</ul>
+<p><strong>Genetic diversity quantification:</strong></p>
+<ul>
+<li>Shannon diversity index calculation</li>
+<li>Allelic richness and evenness metrics</li>
+<li>Comparison across populations or time points</li>
+</ul>
+</div>
+<div id="self-incompatibility-system-analysis" class="section level4" number="12.1.4.2">
+<h4><span class="header-section-number">12.1.4.2</span> Self-Incompatibility System Analysis</h4>
+<p><strong>Mating compatibility prediction:</strong></p>
+<ul>
+<li>Construction of incompatibility matrices from genotype data</li>
+<li>Prediction of successful vs. unsuccessful crosses</li>
+<li>Identification of universally compatible individuals</li>
+</ul>
+<p><strong>Effective population size estimation:</strong></p>
+<ul>
+<li>S-allele-based demographic inference</li>
+<li>Detection of population bottlenecks through allelic diversity loss</li>
+<li>Historical population size reconstruction</li>
+</ul>
+</div>
+<div id="evolutionary-analysis" class="section level4" number="12.1.4.3">
+<h4><span class="header-section-number">12.1.4.3</span> Evolutionary Analysis</h4>
+<p><strong>Balancing selection detection:</strong></p>
+<ul>
+<li>Tests for excess heterozygosity at S-loci</li>
+<li>Comparison of S-locus vs. neutral marker diversity</li>
+<li>Identification of selection signatures maintaining allelic diversity</li>
+</ul>
+<p><strong>Population structure analysis:</strong></p>
+<ul>
+<li>Principal component analysis of S-allele composition</li>
+<li>STRUCTURE analysis for population subdivision</li>
+<li>Migration pattern inference from allele sharing</li>
+</ul>
+</div>
+</div>
+<div id="quality-control-and-validation-1" class="section level3" number="12.1.5">
+<h3><span class="header-section-number">12.1.5</span> Quality Control and Validation</h3>
+<div id="data-integrity-checks" class="section level4" number="12.1.5.1">
+<h4><span class="header-section-number">12.1.5.1</span> Data Integrity Checks</h4>
+<p><strong>Individual identifier validation:</strong></p>
+<ul>
+<li>Warning system for unparseable sequence names</li>
+<li>Consistent individual ID extraction across sequences</li>
+<li>Error tolerance preventing pipeline failure</li>
+</ul>
+<p><strong>Matrix completeness:</strong></p>
+<ul>
+<li>All individuals scored for all proteins</li>
+<li>Binary encoding consistency (0/1 only)</li>
+<li>No missing data in final matrices</li>
+</ul>
+</div>
+<div id="statistical-considerations-1" class="section level4" number="12.1.5.2">
+<h4><span class="header-section-number">12.1.5.2</span> Statistical Considerations</h4>
+<p><strong>Sample size adequacy:</strong></p>
+<ul>
+<li>Sufficient individuals for population genetic inference</li>
+<li>Adequate representation of allelic diversity</li>
+<li>Power considerations for downstream statistical tests</li>
+</ul>
+<p><strong>Allelic representation:</strong></p>
+<ul>
+<li>Balance between common and rare alleles</li>
+<li>Technical artifact vs. authentic rare allele distinction</li>
+<li>Population-specific vs. universal allele identification</li>
+</ul>
+<p>This genotyping pipeline provides the essential data transformation step between molecular haplotype reconstruction and population genetic analysis, enabling comprehensive investigation of self-incompatibility system evolution and maintenance in natural populations.</p>
+</div>
+</div>
+</div>
+<div id="bioinformatics-7" class="section level2" number="12.2">
+<h2><span class="header-section-number">12.2</span> Bioinformatics</h2>
+<ul>
+<li>Goal: Genotype individuals based on protein data</li>
+<li>Script: <code>genotype_SRK_from_functional_proteins.py</code></li>
+<li>Input: <code>SRK_functional_protein_key.tsv</code></li>
+<li>Output:
+<ul>
+<li>Long table: SRK_individual_protein_table.tsv</li>
+<li>Genotype matrix: SRK_individual_genotypes.tsv</li>
+</ul></li>
+</ul>
+<pre><code>Individuals: 128
+Functional alleles: 94
+
+Outputs:
+SRK_individual_protein_table.tsv
+SRK_individual_genotypes.tsv</code></pre>
+<pre class="python"><code>#!/usr/bin/env python3
+
+import csv
+from collections import defaultdict, OrderedDict
+
+
+# ----------------------------
+# User input
+# ----------------------------
+
+protein_key_file = input(
+    &quot;Enter SRK_functional_protein_key.tsv: &quot;
+).strip()
+
+
+long_out = &quot;SRK_individual_protein_table.tsv&quot;
+
+wide_out = &quot;SRK_individual_genotypes.tsv&quot;
+
+
+
+# ----------------------------
+# Load protein assignments
+# ----------------------------
+
+individual_proteins = defaultdict(list)
+
+
+with open(protein_key_file, newline=&quot;&quot;) as f:
+
+    reader = csv.DictReader(f, delimiter=&quot;\t&quot;)
+
+    for row in reader:
+
+        seq_id = row[&quot;Original_sequence_ID&quot;]
+
+        protein = row[&quot;Protein&quot;]
+
+
+        parts = seq_id.split(&quot;_&quot;)
+
+
+        # FIXED extraction
+        if len(parts) &lt; 2:
+
+            print(&quot;WARNING: cannot parse:&quot;, seq_id)
+
+            continue
+
+
+        individual = f&quot;{parts[0]}_{parts[1]}&quot;
+
+
+        individual_proteins[individual].append(protein)
+
+
+
+print(&quot;Individuals found:&quot;, len(individual_proteins))
+
+
+
+# ----------------------------
+# Write long table
+# ----------------------------
+
+with open(long_out, &quot;w&quot;) as out:
+
+    out.write(&quot;Individual\tProtein\n&quot;)
+
+    for individual in sorted(individual_proteins):
+
+        for protein in individual_proteins[individual]:
+
+            out.write(f&quot;{individual}\t{protein}\n&quot;)
+
+
+
+# ----------------------------
+# Build genotype matrix
+# ----------------------------
+
+all_proteins = sorted({
+
+    protein
+
+    for proteins in individual_proteins.values()
+
+    for protein in proteins
+
+})
+
+
+genotype_matrix = OrderedDict()
+
+
+for individual in sorted(individual_proteins):
+
+    protein_set = set(individual_proteins[individual])
+
+    genotype_matrix[individual] = {
+
+        protein: 1 if protein in protein_set else 0
+
+        for protein in all_proteins
+
+    }
+
+
+
+# ----------------------------
+# Write matrix
+# ----------------------------
+
+with open(wide_out, &quot;w&quot;, newline=&quot;&quot;) as out:
+
+    writer = csv.writer(out, delimiter=&quot;\t&quot;)
+
+    header = [&quot;Individual&quot;] + all_proteins
+
+    writer.writerow(header)
+
+
+    for individual, geno in genotype_matrix.items():
+
+        row = [individual] + [
+
+            geno[p]
+
+            for p in all_proteins
+
+        ]
+
+        writer.writerow(row)
+
+
+
+# ----------------------------
+# Summary
+# ----------------------------
+
+print(&quot;\n✅ Functional protein genotyping complete&quot;)
+
+print(&quot;Individuals:&quot;, len(genotype_matrix))
+
+print(&quot;Functional alleles:&quot;, len(all_proteins))
+
+print(&quot;Outputs:&quot;)
+
+print(long_out)
+
+print(wide_out)</code></pre>
+</div>
+</div>
 
 
 

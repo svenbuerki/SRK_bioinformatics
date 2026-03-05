@@ -1,0 +1,305 @@
+##gff-version 3
+# This output was generated with AUGUSTUS (version 3.4.0).
+# AUGUSTUS is a gene prediction tool written by M. Stanke (mario.stanke@uni-greifswald.de),
+# O. Keller, S. König, L. Gerischer, L. Romoth and Katharina Hoff.
+# Please cite: Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008),
+# Using native and syntenically mapped cDNA alignments to improve de novo gene finding
+# Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013
+# No extrinsic information on sequences given.
+# Sources of extrinsic information: M RM 
+# arabidopsis version. Using default transition matrix.
+# We have hints for 0 sequences and for 0 of the sequences in the input set.
+#
+# ----- prediction on sequence number 1 (length = 3409, name = SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407) -----
+#
+# Predicted genes for sequence number 1 on both strands
+# start gene g1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	gene	1	3409	0.74	+	.	ID=g1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	transcript	1	3409	0.74	+	.	ID=g1.t1;Parent=g1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	start_codon	1	3	.	+	0	Parent=g1.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	intron	1304	1393	1	+	.	Parent=g1.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	intron	1505	1583	1	+	.	Parent=g1.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	intron	1799	1886	1	+	.	Parent=g1.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	intron	2098	2178	1	+	.	Parent=g1.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	intron	2417	2509	1	+	.	Parent=g1.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	intron	2658	3106	0.79	+	.	Parent=g1.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	CDS	1	1303	0.96	+	0	ID=g1.t1.cds;Parent=g1.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	exon	1	1303	.	+	.	Parent=g1.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	CDS	1394	1504	1	+	2	ID=g1.t1.cds;Parent=g1.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	exon	1394	1504	.	+	.	Parent=g1.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	CDS	1584	1798	1	+	2	ID=g1.t1.cds;Parent=g1.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	exon	1584	1798	.	+	.	Parent=g1.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	CDS	1887	2097	1	+	0	ID=g1.t1.cds;Parent=g1.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	exon	1887	2097	.	+	.	Parent=g1.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	CDS	2179	2416	1	+	2	ID=g1.t1.cds;Parent=g1.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	exon	2179	2416	.	+	.	Parent=g1.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	CDS	2510	2657	0.98	+	1	ID=g1.t1.cds;Parent=g1.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	exon	2510	2657	.	+	.	Parent=g1.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	CDS	3107	3409	0.79	+	0	ID=g1.t1.cds;Parent=g1.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407	AUGUSTUS	exon	3107	3409	.	+	.	Parent=g1.t1
+# coding sequence = [atggcaaaatgttccaaaaaccttactttcgtcacgacacttttggtgttggttcaattatgtatcatcgtatcttgtt
+# ccacaagcaacgaaattactaaaaaccacacgttacgagacggagattcactaatcagcgaggatgaaagcttcgagtttggattctttagccctaaa
+# gattcaactttaagatatgtcggaatatggtacaagaacatcgaaccacaaacagttgtttgggtcgctaatcgagagaagccattgttgaataacaa
+# aggagctttaaagattgcagatgatggaaatttagtggttataaacggtgaaaacgaaaccgtttggtctacaaatgctaaacttgagtctaacaaca
+# ctgtagctgttctgttggaaacagggaatttggttttgtcttcgaattctgacagaagctattggtgttgggagagttttaacagtcctaccgacact
+# tatttacctggtatgagagttcgtgtaaatcgttcggcaggagagaatcgagcttttattccatggaaatctgagaatgatccttcaccaggaaggta
+# ttcaatggggattgatccaattggagcattagagattgtgatttgggaaggagaaactagaaaatggcgaagtggaccgtggaattcacttatcttta
+# caggtataccagatatgtatcgagttacgacttatattttcggatttaagctctctcctcgtgaacaagatggtagcgtttacttcacgtatgttact
+# tcaaatagttcagatcttttgaggtttcggataaggtttgatggagtagaagagcaatttagatggaataaggatgataagaactggactttgcttca
+# aaggaaaccggatacaaaatgtgagagttataatcgttgcggtaataacagtgtatgtgatgatacaaaagatgttgattctggtaaatgcagttgca
+# ttgatgggtttaagccggtttatcaggatcaatggaacaatgggaatttttcaggtggctgcaagataagagttccattgaactgtactcagagtttg
+# gttgcaggtaaaggagatgggttcaaggtaattacgagagtaaagattcctgattttgggacagttgttacacataaaaacacagagacttgtaaaga
+# tgtctgcctgaggaattgctcgtgtagtgctcatgcgattgtatttgggatcgggtgcatgatttggaccggtgatttgatcgatctgcaacgttttg
+# agcgcggtggaaactcaatcaacatcaggcttgatagttctgaattaggaaatgggaacaacaaattgagactttggatcattctttcagccgttata
+# agtgtatttttgcttggattgtgtattgggatcttatggaagttcaagaaaacacttaaagctttcttgtggaagaagaaagatcttccggtttcaga
+# tatcaatgagagaacttactcggttaattcatcaagttcgctgatcaaaggtctagtaggggatcaagtagaaacacctgatttgcccattttcagtt
+# tcaacagtgtagcttcagcaactagagatttctctgaagataacaagcttggacaaggtggattcggtactgtatataagggaaactttgcaggagga
+# gaagagatcgctgtgaagagactatcagggagatctaagcaaggactagaggaatttaagaatgagatcttactaattgcgaaacttcagcatcgaaa
+# tcttgttagattactaggatgttgcattgaagacaatgagaagatgcttctctatgaatacctgccaaacaagagtttggatcgattccttttcgatg
+# aaactaaacgaggaagtttggattggagaagaagatgtgagatcattggaggaatagcgaggggactgctttacttgcatagagattcaagactaaag
+# atcattcaccgtgacctaaaagctagcaatatcttgctagacacggaaatgaatccaaagatctctgattttggtatggctaggatctttaactatcg
+# acaagatcatgacaacacaatcagagtcgttggtacatatggctatatggctcctgagtatgcaatggaaggaatcttctcagagaaatctgatgtgt
+# acagctttggagttttgatattggagattgttagtggaagaaaaaacgtcagctttcgtgggtctgatcatggaagtctcatcggttatgcgtggcat
+# ttatggagtcaaggaaagacaaaagagttgatagatccaatggttaaagacaatggagacgtaacggaagcaacgagatgcatccacgtgggaatgtt
+# atgtacacaagactcggtcaattaccgaccaaacatggcttctgttttgttgatgttagaaagtcgaaccagtcaacttccacgtccaagacagccta
+# acttccactcgttcttaaactccggtgagattgaggtccacatggacggtcaagatgcctcggtcaatgatgtttctatcactacaatcgttggtcga]
+# protein sequence = [MAKCSKNLTFVTTLLVLVQLCIIVSCSTSNEITKNHTLRDGDSLISEDESFEFGFFSPKDSTLRYVGIWYKNIEPQTV
+# VWVANREKPLLNNKGALKIADDGNLVVINGENETVWSTNAKLESNNTVAVLLETGNLVLSSNSDRSYWCWESFNSPTDTYLPGMRVRVNRSAGENRAF
+# IPWKSENDPSPGRYSMGIDPIGALEIVIWEGETRKWRSGPWNSLIFTGIPDMYRVTTYIFGFKLSPREQDGSVYFTYVTSNSSDLLRFRIRFDGVEEQ
+# FRWNKDDKNWTLLQRKPDTKCESYNRCGNNSVCDDTKDVDSGKCSCIDGFKPVYQDQWNNGNFSGGCKIRVPLNCTQSLVAGKGDGFKVITRVKIPDF
+# GTVVTHKNTETCKDVCLRNCSCSAHAIVFGIGCMIWTGDLIDLQRFERGGNSINIRLDSSELGNGNNKLRLWIILSAVISVFLLGLCIGILWKFKKTL
+# KAFLWKKKDLPVSDINERTYSVNSSSSLIKGLVGDQVETPDLPIFSFNSVASATRDFSEDNKLGQGGFGTVYKGNFAGGEEIAVKRLSGRSKQGLEEF
+# KNEILLIAKLQHRNLVRLLGCCIEDNEKMLLYEYLPNKSLDRFLFDETKRGSLDWRRRCEIIGGIARGLLYLHRDSRLKIIHRDLKASNILLDTEMNP
+# KISDFGMARIFNYRQDHDNTIRVVGTYGYMAPEYAMEGIFSEKSDVYSFGVLILEIVSGRKNVSFRGSDHGSLIGYAWHLWSQGKTKELIDPMVKDNG
+# DVTEATRCIHVGMLCTQDSVNYRPNMASVLLMLESRTSQLPRPRQPNFHSFLNSGEIEVHMDGQDASVNDVSITTIVGR]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 0
+# CDS exons: 0/7
+# CDS introns: 0/6
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 0
+# incompatible hint groups: 0
+# end gene g1
+###
+#
+# ----- prediction on sequence number 2 (length = 3373, name = SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371) -----
+#
+# Predicted genes for sequence number 2 on both strands
+# start gene g2
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	gene	1	3373	0.74	+	.	ID=g2
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	transcript	1	3373	0.74	+	.	ID=g2.t1;Parent=g2
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	start_codon	1	3	.	+	0	Parent=g2.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	intron	1304	1393	1	+	.	Parent=g2.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	intron	1505	1583	1	+	.	Parent=g2.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	intron	1799	1886	0.98	+	.	Parent=g2.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	intron	2098	2178	0.98	+	.	Parent=g2.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	intron	2417	2509	1	+	.	Parent=g2.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	intron	2658	3070	0.9	+	.	Parent=g2.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	CDS	1	1303	0.95	+	0	ID=g2.t1.cds;Parent=g2.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	exon	1	1303	.	+	.	Parent=g2.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	CDS	1394	1504	1	+	2	ID=g2.t1.cds;Parent=g2.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	exon	1394	1504	.	+	.	Parent=g2.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	CDS	1584	1798	0.98	+	2	ID=g2.t1.cds;Parent=g2.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	exon	1584	1798	.	+	.	Parent=g2.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	CDS	1887	2097	1	+	0	ID=g2.t1.cds;Parent=g2.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	exon	1887	2097	.	+	.	Parent=g2.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	CDS	2179	2416	0.98	+	2	ID=g2.t1.cds;Parent=g2.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	exon	2179	2416	.	+	.	Parent=g2.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	CDS	2510	2657	0.99	+	1	ID=g2.t1.cds;Parent=g2.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	exon	2510	2657	.	+	.	Parent=g2.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	CDS	3071	3373	0.82	+	0	ID=g2.t1.cds;Parent=g2.t1
+SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_2|h1tg000030l|1750079|3371	AUGUSTUS	exon	3071	3373	.	+	.	Parent=g2.t1
+# coding sequence = [atggcaaaatgttccaaaaaccttactttcgtcacgacacttttggtgttggttcaattttgtatcatcgtatcttgct
+# ccacaagcaacgaaattactaaaaaccacacgttacgagacggagattcactaatcagcgaggatgaaagcttcgagtttggattctttagccctaaa
+# gattcaactttaagatatgtcggaatatggtacaagaacatcgaaccacaaacagttgtttgggtcgctaatcgagagaagccattgttgaataacaa
+# aggagctttaaagattgcagatgatggaaatttagtggttataaacggtgaaaacgaaaccgtttggtctacaaatggtaaacttgagtctaacaaca
+# ctgtagctgttctgttggaaacagggaatttggttttgtcttcgaattctgacagaagctattggtgttgggagagttttaacagtcctaccgacact
+# tatttacctggtatgagagttcgtgtaaatcgttcggcaggagagaatcgagcttttattccatggaaatctgagaatgatccttcaccaggaaggta
+# ttcaatggggattgatccaattggagcattagagattgtgatttgggaaggagaaactagaaaatggcgaagtggaccgtggaattcacttatcttta
+# caggtataccagatatgtatcgagttacgacttatattttcggatttaagctctctcctcgtgaacgagatggtagcgtttacttcacgtatgttact
+# tcaaatagttcagatcttttgaggtttcggataaggtttgatggagtagaagagcagtttagatggaataaggatgataagaactggactttgcttca
+# aaggaaaccggatacagaatgtgagagttataatcgttgcggtaataacagtgtatgtgatgatacaaaagatgttgattctggtaaatgcagttgca
+# ttgatgggtttaagccggtttatcaggatcaatggaacaatgggaatttttcaggtggctgcaagataagagttccattgaactgtactcagagtttg
+# gttgcaggtaaaggagatgggttcaaggtaattacgagagtaaagattcctgattttgggacagttgttacacataaaaacacagagacttgtaaaga
+# tgtctgcctgaggaattgctcgtgtagtgctcatgcgattgtatttgggatcgggtgcatgatttggaccggtgatttgatcgatctgcaacgttttg
+# agcgcggtggaaactcaatcaacatcaggcttgatagttctgaattaggaaatgggaacaacaaattgagactttggatcattctttcagccgttata
+# agtgtatttttgcttggattgtgtattgggatcttatggaagttcaagaaaacacttaaagctttcttgtggaagaagaaagatcttccggtttcaga
+# tatcaatgagagaacttactcggttaattcatcaagttcgctgatcaaaggtcttgtaggggatcaggtagaaacacctgatttgcccattttcagtt
+# tcaacagtgtagcttcagcaactagagatttctctgaagataacaagcttggacaaggtggattcggtactgtatataagggaaactttgcaggagga
+# gaagagatcgctgtgaagagactatcagggagatctaagcaaggactagaggaatttaagaatgagatcttactaattgcgaaacttcagcatcgaaa
+# tcttgttagattactaggatgttgcattgaagacaatgagaagatgcttctctatgaatacctaccaaacaagagtttggatcgattccttttcgatg
+# aaactaaacgaggaagtttggattggagaagaagatgtgagatcattggaggaatagcgaggggattgctttacttgcatagagattcaagactaaag
+# atcatacaccgtgacctaaaagctagcaatatcttgctagacacggaaatgaatccaaagatctctgattttggtatggctaggatctttaactatcg
+# acaagatcatgacaacacaatcagagtcgttggtacatatggctatatggctcctgagtatgcaatggaaggaatattctcagagaaatctgatgtgt
+# acagctttggagttttgatattggagattgttagtggaagaaaaaacgtcagctttcgtgggtctgatcatggaagtctcatcggttatgcgtggcat
+# ttatggagtcaaggaaagacaaaagagttgatagatccaatggttaaagacaatggagacgtaacggaagcaacgagatgcatccacgtgggaatgtt
+# atgtacacaagactcggtcaattaccgaccaaacatggcttctgttttgttgatgttagaaagtcgaaccagtcaacttccacgtccaagacagccta
+# acttccactcgttcttaaactcaggtgagattgaggtccacatggacggtcaagatgcctcggtcaatgatgttactatcactacaatcgttggtcga]
+# protein sequence = [MAKCSKNLTFVTTLLVLVQFCIIVSCSTSNEITKNHTLRDGDSLISEDESFEFGFFSPKDSTLRYVGIWYKNIEPQTV
+# VWVANREKPLLNNKGALKIADDGNLVVINGENETVWSTNGKLESNNTVAVLLETGNLVLSSNSDRSYWCWESFNSPTDTYLPGMRVRVNRSAGENRAF
+# IPWKSENDPSPGRYSMGIDPIGALEIVIWEGETRKWRSGPWNSLIFTGIPDMYRVTTYIFGFKLSPRERDGSVYFTYVTSNSSDLLRFRIRFDGVEEQ
+# FRWNKDDKNWTLLQRKPDTECESYNRCGNNSVCDDTKDVDSGKCSCIDGFKPVYQDQWNNGNFSGGCKIRVPLNCTQSLVAGKGDGFKVITRVKIPDF
+# GTVVTHKNTETCKDVCLRNCSCSAHAIVFGIGCMIWTGDLIDLQRFERGGNSINIRLDSSELGNGNNKLRLWIILSAVISVFLLGLCIGILWKFKKTL
+# KAFLWKKKDLPVSDINERTYSVNSSSSLIKGLVGDQVETPDLPIFSFNSVASATRDFSEDNKLGQGGFGTVYKGNFAGGEEIAVKRLSGRSKQGLEEF
+# KNEILLIAKLQHRNLVRLLGCCIEDNEKMLLYEYLPNKSLDRFLFDETKRGSLDWRRRCEIIGGIARGLLYLHRDSRLKIIHRDLKASNILLDTEMNP
+# KISDFGMARIFNYRQDHDNTIRVVGTYGYMAPEYAMEGIFSEKSDVYSFGVLILEIVSGRKNVSFRGSDHGSLIGYAWHLWSQGKTKELIDPMVKDNG
+# DVTEATRCIHVGMLCTQDSVNYRPNMASVLLMLESRTSQLPRPRQPNFHSFLNSGEIEVHMDGQDASVNDVTITTIVGR]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 0
+# CDS exons: 0/7
+# CDS introns: 0/6
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 0
+# incompatible hint groups: 0
+# end gene g2
+###
+#
+# ----- prediction on sequence number 3 (length = 3409, name = SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407) -----
+#
+# Predicted genes for sequence number 3 on both strands
+# start gene g3
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	gene	1	3409	0.8	+	.	ID=g3
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	transcript	1	3409	0.8	+	.	ID=g3.t1;Parent=g3
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	start_codon	1	3	.	+	0	Parent=g3.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	intron	1304	1393	1	+	.	Parent=g3.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	intron	1505	1583	1	+	.	Parent=g3.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	intron	1799	1886	0.99	+	.	Parent=g3.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	intron	2098	2178	0.99	+	.	Parent=g3.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	intron	2417	2509	1	+	.	Parent=g3.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	intron	2658	3106	0.84	+	.	Parent=g3.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	CDS	1	1303	1	+	0	ID=g3.t1.cds;Parent=g3.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	exon	1	1303	.	+	.	Parent=g3.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	CDS	1394	1504	1	+	2	ID=g3.t1.cds;Parent=g3.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	exon	1394	1504	.	+	.	Parent=g3.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	CDS	1584	1798	0.99	+	2	ID=g3.t1.cds;Parent=g3.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	exon	1584	1798	.	+	.	Parent=g3.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	CDS	1887	2097	1	+	0	ID=g3.t1.cds;Parent=g3.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	exon	1887	2097	.	+	.	Parent=g3.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	CDS	2179	2416	0.99	+	2	ID=g3.t1.cds;Parent=g3.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	exon	2179	2416	.	+	.	Parent=g3.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	CDS	2510	2657	0.99	+	1	ID=g3.t1.cds;Parent=g3.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	exon	2510	2657	.	+	.	Parent=g3.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	CDS	3107	3409	0.83	+	0	ID=g3.t1.cds;Parent=g3.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_1|h2tg000017l|1700582|3407	AUGUSTUS	exon	3107	3409	.	+	.	Parent=g3.t1
+# coding sequence = [atggcaaaatgttccaaaaaccttactttcgtcacgacacttttggtgttggttcaattatgtatcatcgtatcttgtt
+# ccacaagcaacgaaattactaaaaaccacacgttacgagacggagattcactaatcagcgaggatgaaagcttcgagtttggattctttagccctaaa
+# gattcaactttaagatatgtcggaatatggtacaagaacatcgaaccacaaacagttgtttgggtcgctaatcgagagaagccattgttgaataacaa
+# aggagctttaaagattgcagatgatggaaatttagtggttataaacggtgaaaacgaaaccgtttggtctacaaatgctaaacttgagtctaacaaca
+# ctgtagctgttctgttggaaacagggaatttggttttgtcttcgaattctgacagaagctattggtgttgggagagttttaacagtcctaccgacact
+# tatttacctggtatgagagttcgtgtaaatcgttcggcaggagagaatcgagcttttattccatggaaatctgagaatgatccttcaccaggaaggta
+# ttcaatggggattgatccaattggagcattagagattgtgatttgggaaggagaaactagaaaatggcgaagtggaccgtggaattcacttatcttta
+# caggtataccagatatgtatcgagttacgacttatattttcggatttaagctctctcctcgtgaacaagatggtagcgtttacttcacgtatgttact
+# tcaaatagttcagatcttttgaggtttcggataaggtttgatggagtagaagagcaatttagatggaataaggatgataagaactggactttgcttca
+# aaggaaaccggatacaaaatgtgagagttataatcgttgcggtaataacagtgtatgtgatgatacaaaagatgttgattctggtaaatgcagttgca
+# ttgatgggtttaagccggtttatcaggatcaatggaacaatgggaatttttcaggtggctgcaagataagagttccattgaactgtactcagagtttg
+# gttgcaggtaaaggagatgggttcaaggtaattacgagagtaaagattcctgattttgggacagttgttacacataaaaacacagagacttgtaaaga
+# tgtctgcctgaggaattgctcgtgtagtgctcatgcgattgtatttgggatcgggtgcatgatttggaccggtgatttgatcgatctgcaacgttttg
+# agcgcggtggaaactcaatcaacatcaggcttgatagttctgaattaggaaatgggaacaacaaattgagactttggatcattctttcagccgttata
+# agtgtatttttgcttggattgtgtattgggatcttatggaagttcaagaaaacacttaaagctttcttgtggaagaagaaagatcttccggtttcaga
+# tatcaatgagagaacttactcggttaattcatcaagttcgctgatcaaaggtctagtaggggatcaagtagaaacacctgatttgcccattttcagtt
+# tcaacagtgtagcttcagcaactagagatttctctgaagataacaagcttggacaaggtggattcggtactgtatataagggaaactttgcaggagga
+# gaagagatcgctgtgaagagactatcagggagatctaagcaaggactagaggaatttaagaatgagatcttactaattgcgaaacttcagcatcgaaa
+# tcttgttagattactaggatgttgcattgaagacaatgagaagatgcttctctatgaatacctgccaaacaagagtttggatcgattccttttcgatg
+# aaactaaacgaggaagtttggattggagaagaagatgtgagatcattggaggaatagcgaggggactgctttacttgcatagagattcaagactaaag
+# atcattcaccgtgacctaaaagctagcaatatcttgctagacacggaaatgaatccaaagatctctgattttggtatggctaggatctttaactatcg
+# acaagatcatgacaacacaatcagagtcgttggtacatatggctatatggctcctgagtatgcaatggaaggaatcttctcagagaaatctgatgtgt
+# acagctttggagttttgatattggagattgttagtggaagaaaaaacgtcagctttcgtgggtctgatcatggaagtctcatcggttatgcgtggcat
+# ttatggagtcaaggaaagacaaaagagttgatagatccaatggttaaagacaatggagacgtaacggaagcaacgagatgcatccacgtgggaatgtt
+# atgtacacaagactcggtcaattaccgaccaaacatggcttctgttttgttgatgttagaaagtcgaaccagtcaacttccacgtccaagacagccta
+# acttccactcgttcttaaactccggtgagattgaggtccacatggacggtcaagatgcctcggtcaatgatgtttctatcactacaatcgttggtcga]
+# protein sequence = [MAKCSKNLTFVTTLLVLVQLCIIVSCSTSNEITKNHTLRDGDSLISEDESFEFGFFSPKDSTLRYVGIWYKNIEPQTV
+# VWVANREKPLLNNKGALKIADDGNLVVINGENETVWSTNAKLESNNTVAVLLETGNLVLSSNSDRSYWCWESFNSPTDTYLPGMRVRVNRSAGENRAF
+# IPWKSENDPSPGRYSMGIDPIGALEIVIWEGETRKWRSGPWNSLIFTGIPDMYRVTTYIFGFKLSPREQDGSVYFTYVTSNSSDLLRFRIRFDGVEEQ
+# FRWNKDDKNWTLLQRKPDTKCESYNRCGNNSVCDDTKDVDSGKCSCIDGFKPVYQDQWNNGNFSGGCKIRVPLNCTQSLVAGKGDGFKVITRVKIPDF
+# GTVVTHKNTETCKDVCLRNCSCSAHAIVFGIGCMIWTGDLIDLQRFERGGNSINIRLDSSELGNGNNKLRLWIILSAVISVFLLGLCIGILWKFKKTL
+# KAFLWKKKDLPVSDINERTYSVNSSSSLIKGLVGDQVETPDLPIFSFNSVASATRDFSEDNKLGQGGFGTVYKGNFAGGEEIAVKRLSGRSKQGLEEF
+# KNEILLIAKLQHRNLVRLLGCCIEDNEKMLLYEYLPNKSLDRFLFDETKRGSLDWRRRCEIIGGIARGLLYLHRDSRLKIIHRDLKASNILLDTEMNP
+# KISDFGMARIFNYRQDHDNTIRVVGTYGYMAPEYAMEGIFSEKSDVYSFGVLILEIVSGRKNVSFRGSDHGSLIGYAWHLWSQGKTKELIDPMVKDNG
+# DVTEATRCIHVGMLCTQDSVNYRPNMASVLLMLESRTSQLPRPRQPNFHSFLNSGEIEVHMDGQDASVNDVSITTIVGR]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 0
+# CDS exons: 0/7
+# CDS introns: 0/6
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 0
+# incompatible hint groups: 0
+# end gene g3
+###
+#
+# ----- prediction on sequence number 4 (length = 3373, name = SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371) -----
+#
+# Predicted genes for sequence number 4 on both strands
+# start gene g4
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	gene	1	3373	0.73	+	.	ID=g4
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	transcript	1	3373	0.73	+	.	ID=g4.t1;Parent=g4
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	start_codon	1	3	.	+	0	Parent=g4.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	intron	1304	1393	1	+	.	Parent=g4.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	intron	1505	1583	1	+	.	Parent=g4.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	intron	1799	1886	1	+	.	Parent=g4.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	intron	2098	2178	1	+	.	Parent=g4.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	intron	2417	2509	1	+	.	Parent=g4.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	intron	2658	3070	0.81	+	.	Parent=g4.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	CDS	1	1303	0.98	+	0	ID=g4.t1.cds;Parent=g4.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	exon	1	1303	.	+	.	Parent=g4.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	CDS	1394	1504	1	+	2	ID=g4.t1.cds;Parent=g4.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	exon	1394	1504	.	+	.	Parent=g4.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	CDS	1584	1798	1	+	2	ID=g4.t1.cds;Parent=g4.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	exon	1584	1798	.	+	.	Parent=g4.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	CDS	1887	2097	1	+	0	ID=g4.t1.cds;Parent=g4.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	exon	1887	2097	.	+	.	Parent=g4.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	CDS	2179	2416	1	+	2	ID=g4.t1.cds;Parent=g4.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	exon	2179	2416	.	+	.	Parent=g4.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	CDS	2510	2657	1	+	1	ID=g4.t1.cds;Parent=g4.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	exon	2510	2657	.	+	.	Parent=g4.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	CDS	3071	3373	0.75	+	0	ID=g4.t1.cds;Parent=g4.t1
+SRK_BEA_hybrid_bp_hap2_p_ctg_fa|amp_2|h2tg000032l|1750079|3371	AUGUSTUS	exon	3071	3373	.	+	.	Parent=g4.t1
+# coding sequence = [atggcaaaatgttccaaaaaccttactttcgtcacgacacttttggtgttggttcaattttgtatcatcgtatcttgct
+# ccacaagcaacgaaattactaaaaaccacacgttacgagacggagattcactaatcagcgaggatgaaagcttcgagtttggattctttagccctaaa
+# gattcaactttaagatatgtcggaatatggtacaagaacatcgaaccacaaacagttgtttgggtcgctaatcgagagaagccattgttgaataacaa
+# aggagctttaaagattgcagatgatggaaatttagtggttataaacggtgaaaacgaaaccgtttggtctacaaatggtaaacttgagtctaacaaca
+# ctgtagctgttctgttggaaacagggaatttggttttgtcttcgaattctgacagaagctattggtgttgggagagttttaacagtcctaccgacact
+# tatttacctggtatgagagttcgtgtaaatcgttcggcaggagagaatcgagcttttattccatggaaatctgagaatgatccttcaccaggaaggta
+# ttcaatggggattgatccaattggagcattagagattgtgatttgggaaggagaaactagaaaatggcgaagtggaccgtggaattcacttatcttta
+# caggtataccagatatgtatcgagttacgacttatattttcggatttaagctctctcctcgtgaacgagatggtagcgtttacttcacgtatgttact
+# tcaaatagttcagatcttttgaggtttcggataaggtttgatggagtagaagagcagtttagatggaataaggatgataagaactggactttgcttca
+# aaggaaaccggatacagaatgtgagagttataatcgttgcggtaataacagtgtatgtgatgatacaaaagatgttgattctggtaaatgcagttgca
+# ttgatgggtttaagccggtttatcaggatcaatggaacaatgggaatttttcaggtggctgcaagataagagttccattgaactgtactcagagtttg
+# gttgcaggtaaaggagatgggttcaaggtaattacgagagtaaagattcctgattttgggacagttgttacacataaaaacacagagacttgtaaaga
+# tgtctgcctgaggaattgctcgtgtagtgctcatgcgattgtatttgggatcgggtgcatgatttggaccggtgatttgatcgatctgcaacgttttg
+# agcgcggtggaaactcaatcaacatcaggcttgatagttctgaattaggaaatgggaacaacaaattgagactttggatcattctttcagccgttata
+# agtgtatttttgcttggattgtgtattgggatcttatggaagttcaagaaaacacttaaagctttcttgtggaagaagaaagatcttccggtttcaga
+# tatcaatgagagaacttactcggttaattcatcaagttcgctgatcaaaggtcttgtaggggatcaggtagaaacacctgatttgcccattttcagtt
+# tcaacagtgtagcttcagcaactagagatttctctgaagataacaagcttggacaaggtggattcggtactgtatataagggaaactttgcaggagga
+# gaagagatcgctgtgaagagactatcagggagatctaagcaaggactagaggaatttaagaatgagatcttactaattgcgaaacttcagcatcgaaa
+# tcttgttagattactaggatgttgcattgaagacaatgagaagatgcttctctatgaatacctaccaaacaagagtttggatcgattccttttcgatg
+# aaactaaacgaggaagtttggattggagaagaagatgtgagatcattggaggaatagcgaggggattgctttacttgcatagagattcaagactaaag
+# atcatacaccgtgacctaaaagctagcaatatcttgctagacacggaaatgaatccaaagatctctgattttggtatggctaggatctttaactatcg
+# acaagatcatgacaacacaatcagagtcgttggtacatatggctatatggctcctgagtatgcaatggaaggaatattctcagagaaatctgatgtgt
+# acagctttggagttttgatattggagattgttagtggaagaaaaaacgtcagctttcgtgggtctgatcatggaagtctcatcggttatgcgtggcat
+# ttatggagtcaaggaaagacaaaagagttgatagatccaatggttaaagacaatggagacgtaacggaagcaacgagatgcatccacgtgggaatgtt
+# atgtacacaagactcggtcaattaccgaccaaacatggcttctgttttgttgatgttagaaagtcgaaccagtcaacttccacgtccaagacagccta
+# acttccactcgttcttaaactcaggtgagattgaggtccacatggacggtcaagatgcctcggtcaatgatgttactatcactacaatcgttggtcga]
+# protein sequence = [MAKCSKNLTFVTTLLVLVQFCIIVSCSTSNEITKNHTLRDGDSLISEDESFEFGFFSPKDSTLRYVGIWYKNIEPQTV
+# VWVANREKPLLNNKGALKIADDGNLVVINGENETVWSTNGKLESNNTVAVLLETGNLVLSSNSDRSYWCWESFNSPTDTYLPGMRVRVNRSAGENRAF
+# IPWKSENDPSPGRYSMGIDPIGALEIVIWEGETRKWRSGPWNSLIFTGIPDMYRVTTYIFGFKLSPRERDGSVYFTYVTSNSSDLLRFRIRFDGVEEQ
+# FRWNKDDKNWTLLQRKPDTECESYNRCGNNSVCDDTKDVDSGKCSCIDGFKPVYQDQWNNGNFSGGCKIRVPLNCTQSLVAGKGDGFKVITRVKIPDF
+# GTVVTHKNTETCKDVCLRNCSCSAHAIVFGIGCMIWTGDLIDLQRFERGGNSINIRLDSSELGNGNNKLRLWIILSAVISVFLLGLCIGILWKFKKTL
+# KAFLWKKKDLPVSDINERTYSVNSSSSLIKGLVGDQVETPDLPIFSFNSVASATRDFSEDNKLGQGGFGTVYKGNFAGGEEIAVKRLSGRSKQGLEEF
+# KNEILLIAKLQHRNLVRLLGCCIEDNEKMLLYEYLPNKSLDRFLFDETKRGSLDWRRRCEIIGGIARGLLYLHRDSRLKIIHRDLKASNILLDTEMNP
+# KISDFGMARIFNYRQDHDNTIRVVGTYGYMAPEYAMEGIFSEKSDVYSFGVLILEIVSGRKNVSFRGSDHGSLIGYAWHLWSQGKTKELIDPMVKDNG
+# DVTEATRCIHVGMLCTQDSVNYRPNMASVLLMLESRTSQLPRPRQPNFHSFLNSGEIEVHMDGQDASVNDVTITTIVGR]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 0
+# CDS exons: 0/7
+# CDS introns: 0/6
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 0
+# incompatible hint groups: 0
+# end gene g4
+###
+# command line:
+# augustus --species=arabidopsis --strand=both --singlestrand=false --genemodel=partial --protein=on --codingseq=on --introns=on --start=on --stop=on --cds=on --gff3=on --sample=100 --keep_viterbi=true --alternatives-from-sampling=true --minexonintronprob=0.2 --minmeanexonintronprob=0.5 --maxtracks=2 SRK_canonical_haplotype_sequences_revcomp_ATGfixed.fasta --exonnames=on
