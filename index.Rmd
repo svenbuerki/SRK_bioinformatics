@@ -1730,4 +1730,322 @@ print("\n✅ Done!")
 print(f"Backfilled alignment written to: {out_fasta}")
 ```
 
+# DNA to Amino Acid Translation Pipeline
+
+## Rationale and Documentation
+
+### Overview
+
+This Python pipeline translates aligned DNA sequences to amino acid sequences using a specified reading frame and the standard nuclear genetic code. The workflow is essential for protein-level comparative analysis of coding sequences, enabling detection of selection pressures, functional domain identification, and phylogenetic analysis based on protein evolution rather than nucleotide changes.
+
+### Pipeline Steps
+
+1. Protein-Level Evolutionary Analysis
+
+Translation to amino acids serves critical functions in molecular evolution studies:
+
+- **Selection pressure detection**: Enables synonymous vs. non-synonymous substitution analysis
+- **Functional constraint identification**: Reveals structurally and functionally important regions
+- **Phylogenetic signal enhancement**: Reduces noise from synonymous changes in closely related sequences
+- **Protein structure analysis**: Facilitates domain identification and structural modeling
+
+2. Input Parameters and Validation
+
+The script requires two user-specified parameters:
+
+```python
+dna_fasta = input("Enter aligned DNA FASTA file: ").strip()
+frame = int(input("Enter translation frame (1, 2, or 3): ").strip())
+
+if frame not in (1, 2, 3):
+    raise ValueError("Frame must be 1, 2, or 3")
+```
+
+**Parameter specifications:**
+
+- **DNA FASTA file**: Aligned coding sequences from previous pipeline steps
+- **Translation frame**: Reading frame specification (1-based indexing)
+- **Frame validation**: Ensures valid frame selection to prevent downstream errors
+
+**Reading frame significance:**
+
+- **Frame 1**: Translation starting from first nucleotide (most common for complete CDS)
+- **Frame 2**: Translation starting from second nucleotide (for sequences with 5' extensions)
+- **Frame 3**: Translation starting from third nucleotide (for sequences with longer 5' extensions)
+
+3. Genetic Code Configuration
+
+Specifies the appropriate genetic code for translation:
+
+```python
+GENETIC_CODE = 1  # Standard nuclear code (plants)
+```
+
+**Genetic code selection:**
+
+- **Standard nuclear code**: Appropriate for plant nuclear genes including self-incompatibility loci
+- **Universal application**: Compatible with most eukaryotic nuclear genes
+- **Translation accuracy**: Ensures correct amino acid assignment for all codons
+
+4. Output File Generation
+
+Creates descriptive output filename incorporating processing parameters:
+
+```python
+out_fasta = dna_fasta.replace(".fasta", f"_frame{frame}_AA.fasta")
+```
+
+**Naming convention benefits:**
+
+- **Parameter documentation**: Records translation frame in filename
+- **Format specification**: Clearly indicates amino acid content with "_AA" suffix
+- **Traceability**: Maintains connection to source DNA file
+- **Workflow integration**: Enables automated downstream processing
+
+5. Sequence Processing and Gap Handling
+
+Processes each DNA sequence with gap removal and frame application:
+
+```python
+for record in SeqIO.parse(dna_fasta, "fasta"):
+    # Remove gaps
+    ungapped = str(record.seq).replace("-", "").replace("N", "N")
+    
+    # Apply frame
+    cds = ungapped[frame - 1 :]
+```
+
+**Gap handling strategy:**
+
+- **Alignment gap removal**: Eliminates "-" characters that disrupt reading frame
+- **Ambiguous nucleotide preservation**: Maintains "N" characters for downstream handling
+- **Frame offset application**: Adjusts start position based on specified reading frame
+- **Sequence integrity**: Preserves biological sequence content while removing alignment artifacts
+
+6. Codon Boundary Management
+
+Ensures translation occurs on complete codons only:
+
+```python
+# Trim to full codons
+trim_len = len(cds) - (len(cds) % 3)
+cds = cds[:trim_len]
+```
+
+**Codon trimming logic:**
+
+- **Modulo calculation**: Determines excess nucleotides beyond complete codons
+- **3' trimming**: Removes incomplete terminal codon to prevent translation errors
+- **Length preservation**: Maintains maximum possible coding sequence length
+- **Translation compatibility**: Ensures all sequences translate without frame errors
+
+7. Translation Execution
+
+Performs actual DNA to amino acid translation:
+
+```python
+if len(cds) == 0:
+    aa_seq = ""
+else:
+    aa_seq = str(Seq(cds).translate(table=GENETIC_CODE, to_stop=False))
+```
+
+**Translation parameters:**
+
+- **Genetic code table**: Uses specified genetic code for accurate translation
+- **Stop codon handling**: `to_stop=False` translates through internal stop codons
+- **Empty sequence handling**: Gracefully manages sequences with no translatable content
+- **Complete translation**: Processes entire coding sequence regardless of stop codons
+
+**Stop codon preservation rationale:**
+
+Internal stop codons may represent:
+- **Pseudogenization events**: Important for evolutionary analysis
+- **Sequencing errors**: Should be identified rather than truncated
+- **Rare allelic variants**: May have biological significance in population studies
+
+8. SeqRecord Creation and Metadata
+
+Creates properly formatted output records with descriptive metadata:
+
+```python
+aa_records.append(
+    SeqIO.SeqRecord(
+        Seq(aa_seq),
+        id=record.id,
+        description=f"frame={frame}"
+    )
+)
+```
+
+**Metadata preservation:**
+
+- **Identifier consistency**: Maintains original sequence identifiers
+- **Processing documentation**: Records translation frame in description
+- **BioPython compatibility**: Creates proper SeqRecord objects
+- **Downstream traceability**: Enables tracking of processing parameters
+
+9. Output Generation and Reporting
+
+Writes translated sequences and provides processing summary:
+
+```python
+SeqIO.write(aa_records, out_fasta, "fasta")
+
+print("\n✅ Translation complete")
+print(f"AA FASTA written to: {out_fasta}")
+```
+
+### Output Files
+
+#### Primary Output
+
+- `${input_basename}_frame${frame}_AA.fasta`: Amino acid sequences translated from specified reading frame
+
+**Output characteristics:**
+
+- Contains protein sequences corresponding to input DNA sequences
+- Maintains sequence identifier consistency with input
+- Documents translation frame in sequence descriptions
+- Ready for protein-level phylogenetic and evolutionary analysis
+
+### Quality Control Considerations
+
+#### Translation Validation
+
+**Frame selection verification:**
+
+- Correct frame identification crucial for meaningful protein analysis
+- Frame 1 typically appropriate for complete coding sequences
+- Alternative frames may be necessary for partial sequences or sequences with 5' extensions
+
+**Stop codon analysis:**
+
+- Internal stop codons may indicate pseudogenes or sequencing errors
+- Premature termination patterns can reveal evolutionary processes
+- Complete translation enables comprehensive analysis of all sequence variants
+
+#### Sequence Length Considerations
+
+**Codon trimming effects:**
+
+- 1-2 nucleotide loss at 3' end for sequences not divisible by 3
+- Minimal impact on overall protein analysis
+- Maintains reading frame consistency across all sequences
+
+### Scientific Applications
+
+#### Molecular Evolution Analysis
+
+**Selection pressure quantification:**
+
+- **dN/dS analysis**: Ratio of non-synonymous to synonymous substitution rates
+- **Site-specific selection**: Identification of amino acid positions under selection
+- **Functional constraint mapping**: Detection of structurally important regions
+
+**Phylogenetic reconstruction:**
+
+- **Protein-based trees**: Often more reliable for distant evolutionary relationships
+- **Reduced homoplasy**: Amino acid changes less prone to multiple hits than nucleotides
+- **Functional grouping**: Clustering based on protein similarity rather than DNA similarity
+
+#### Self-Incompatibility Research
+
+**Functional domain analysis:**
+
+- **Hypervariable regions**: Identification of specificity-determining domains
+- **Conserved motifs**: Detection of structurally essential amino acid patterns
+- **Binding site prediction**: Analysis of receptor-ligand interaction domains
+
+**Allelic classification:**
+
+- **Protein-based clustering**: Grouping alleles by amino acid similarity
+- **Functional prediction**: Inference of incompatibility phenotypes from protein sequences
+- **Evolutionary relationships**: Protein-level phylogenetic analysis of allelic lineages
+
+### Integration with Downstream Workflows
+
+The translated amino acid sequences serve as input for:
+
+1. **Phylogenetic analysis**: Maximum likelihood protein evolution models
+2. **Selection analysis**: PAML, HyPhy, and other selection detection software
+3. **Structural analysis**: Protein folding prediction and domain identification
+4. **Functional annotation**: Conserved domain searches and motif identification
+
+This translation step bridges the gap between nucleotide-level haplotype reconstruction and protein-level functional analysis, essential for understanding the molecular basis of self-incompatibility specificity and the evolutionary forces maintaining allelic diversity in natural populations.
+
+## Bioinformatics
+
+> POTENTIALLY NOT NEEDED BECAUSE IT APPLIES TO INDIVIDUAL LIBRARY!
+
+- `translate_filter_align_AA.py`
+- Only keep AA without stop codons in sequence
+- Input:
+	- Exon aligned fasta: all_Library006_Phased_haplotypes_filtered_min3250_aligned_exons_backfilled.fasta
+	- Position for translation (here, 1st)
+- Output:
+	- 4 files, but this one if important: `all_Library003_Phased_haplotypes_filtered_min3250_aligned_exons_backfilled_frame1_AA_filtered_aligned.fasta`
+	
+```python
+#!/usr/bin/env python3
+from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.Data import CodonTable
+
+# ----------------------------
+# User input
+# ----------------------------
+dna_fasta = input("Enter aligned DNA FASTA file: ").strip()
+frame = int(input("Enter translation frame (1, 2, or 3): ").strip())
+
+if frame not in (1, 2, 3):
+    raise ValueError("Frame must be 1, 2, or 3")
+
+# Plant nuclear code
+GENETIC_CODE = 1  # Standard nuclear code (plants)
+
+# ----------------------------
+# Output file
+# ----------------------------
+out_fasta = dna_fasta.replace(".fasta", f"_frame{frame}_AA.fasta")
+
+# ----------------------------
+# Translate sequences
+# ----------------------------
+aa_records = []
+
+for record in SeqIO.parse(dna_fasta, "fasta"):
+    # Remove gaps
+    ungapped = str(record.seq).replace("-", "").replace("N", "N")
+
+    # Apply frame
+    cds = ungapped[frame - 1 :]
+
+    # Trim to full codons
+    trim_len = len(cds) - (len(cds) % 3)
+    cds = cds[:trim_len]
+
+    if len(cds) == 0:
+        aa_seq = ""
+    else:
+        aa_seq = str(Seq(cds).translate(table=GENETIC_CODE, to_stop=False))
+
+    aa_records.append(
+        SeqIO.SeqRecord(
+            Seq(aa_seq),
+            id=record.id,
+            description=f"frame={frame}"
+        )
+    )
+
+# ----------------------------
+# Write output
+# ----------------------------
+SeqIO.write(aa_records, out_fasta, "fasta")
+
+print("\n✅ Translation complete")
+print(f"AA FASTA written to: {out_fasta}")
+
+```
+
 
