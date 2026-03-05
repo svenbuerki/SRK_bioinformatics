@@ -1,0 +1,1733 @@
+---
+title: "SRK Bioinformatics"
+subtitle: "Analyze SRK amplicon data to investigate self-incompatibility system"
+author: "Sven Buerki - Boise State University"
+date: "`r Sys.Date()`"
+output:
+  bookdown::html_document2: 
+    toc: TRUE
+    toc_float: TRUE
+    self_contained: TRUE
+link-citations: yes
+fontsize: 12pt
+urlcolor: blue
+editor_options: 
+  markdown: 
+    wrap: sentence
+---
+
+# Amplicon reconstruction
+
+- **Goal:** *De novo* reconstruct phased amplicon sequences for each barcode within a Library
+
+# Sampling
+
+- Sampling file (CSV): `sampling_metadata.csv`
+	- SampleID: Combination of libraryID and barcode
+	- Ingroup: if 1 then LEPA, else outgroup
+	- Pop: This is scored (now) at EO level and we want to use that for preliminary analyses
+	
+# Prepare Canonical Sequences
+
+> Warning: This need to be be done ONLY ONCE!
+> 
+
+- SRK paralogs are in `SRK_canonical_haplotype_sequences.fasta`. These sequences are the result of the genome mining, but they need to be curated prior to conducting our analyses:
+	1. Reverse complement sequences (the positions are aligned to genome, but preliminary annotation showed that the gene is on the negative strand)
+	2. Check that they start with start codon (ATG). (it seems that the automatic annotation did miss the start codon of the gene. We just need to manually add the first two nucleotides)
+	3. Annotate one sequence
+	4. Check AA product
+- **Folder:** `/Users/buerkilab/Documents/Amplicon_SRK/Canu_amplicon/Canonical_sequences`
+
+## Reverse Complement Sequences and Check Start Codon
+
+ - `reverse_complement_startcodon_fasta.py`
+
+```python
+#!/usr/bin/env python3
+
+from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+
+# ----------------------------
+# User input
+# ----------------------------
+in_fasta = input("Enter input DNA FASTA file: ").strip()
+
+out_fasta = in_fasta.replace(".fasta", "_revcomp_ATGfixed.fasta")
+log_file = in_fasta.replace(".fasta", "_startcodon_fix.log")
+
+# ----------------------------
+# Process sequences
+# ----------------------------
+records_out = []
+
+with open(log_file, "w") as log:
+    log.write("Sequence_ID\tAction\tNew_start\n")
+
+    for record in SeqIO.parse(in_fasta, "fasta"):
+        seq_rc = record.seq.reverse_complement()
+        seq_str = str(seq_rc)
+
+        action = "OK"
+
+        if seq_str.startswith("ATG"):
+            pass
+        elif seq_str.startswith("TG"):
+            seq_str = "A" + seq_str
+            action = "Added_A"
+        elif seq_str.startswith("G"):
+            seq_str = "AT" + seq_str
+            action = "Added_AT"
+        else:
+            action = "No_ATG_found"
+
+        log.write(f"{record.id}\t{action}\t{seq_str[:3]}\n")
+
+        records_out.append(
+            SeqRecord(
+                Seq(seq_str),
+                id=record.id,
+                description=record.description
+            )
+        )
+
+# ----------------------------
+# Write output
+# ----------------------------
+SeqIO.write(records_out, out_fasta, "fasta")
+
+print("\n✅ Reverse complement + start codon correction complete")
+print(f"Corrected FASTA: {out_fasta}")
+print(f"Log file:        {log_file}")
+
+```
+
+## Gene Annotation
+
+- Done with the lab linux computer (`/media/Artemisia/Slicksport_PacBio/BEA/Augustus`) and the `SRK_canonical_haplotype_sequences_revcomp_ATGfixed.fasta` as template. 
+- **Output:** `augustus_SRK_canonical_haplotype_sequences_revcomp_ATGfixed_arabidopsis.csv`
+
+```bash
+## Model = Arabidopsis
+# SRK_canonical_haplotype_sequences.fasta
+augustus --species=arabidopsis --strand=both --singlestrand=false --genemodel=partial --protein=on --codingseq=on --introns=on --start=on --stop=on --cds=on --gff3=on --sample=100 --keep_viterbi=true --alternatives-from-sampling=true --minexonintronprob=0.2 --minmeanexonintronprob=0.5 --maxtracks=2 SRK_canonical_haplotype_sequences_revcomp_ATGfixed.fasta --exonnames=on > augustus_SRK_canonical_haplotype_sequences_revcomp_ATGfixed_arabidopsis.gff
+```
+# Nanopore Amplicon Assembly and Phasing Pipeline
+
+## Rationale and Documentation
+
+### Overview
+
+This pipeline implements a multi-replicate CANU assembly approach optimized for rare haplotype detection in Nanopore amplicon sequencing data. The workflow follows the methodology described in the knowledge base for SRK amplicon reconstruction and haplotype phasing.
+
+### Pipeline Steps
+
+1. Amplicon Reconstruction and Haplotype Phasing
+
+Based on the knowledge base context: "For each individual, Nanopore reads from SRK amplicons are assembled de novo using CANU, followed by iterative polishing with RACON to improve consensus accuracy. Reads are then realigned to the polished assembly, and sequence variants are called using a polyploid-aware variant caller implemented in FreeBayes. Haplotypes are phased using read-backed phasing as implemented in WhatsHap, generating up to four phased SRK haplotypes per individual."
+
+2. Input Parameters
+
+The script requires three user inputs:
+
+- **Library name**: Identifier for the sequencing library (e.g., Library001)
+- **Starting barcode number**: First barcode to process (e.g., 01)
+- **Ending barcode number**: Last barcode to process (e.g., 10)
+
+3. FASTQ File Management
+
+The pipeline includes robust FASTQ concatenation logic:
+
+```bash
+# Concatenates individual .fastq.gz files if needed
+# Checks for existing concatenated files
+# Validates file integrity and timestamps
+```
+
+**Key features:**
+
+- Automatic detection of existing concatenated files
+- Validation of file completeness and timestamps
+- Error handling for missing or empty files
+
+4. Multi-Replicate CANU Assembly
+
+The pipeline runs four independent CANU assemblies per sample to maximize rare haplotype recovery:
+
+```bash
+REPS=4  # Number of CANU replicates
+
+canu \
+-p "${library}_${sample}_rep${rep}" \
+-d "CANU_rep${rep}" \
+genomeSize=5k \
+-nanopore "$reads" \
+useGrid=false \
+correctedErrorRate=0.15 \
+minInputCoverage=0 \
+stopOnLowCoverage=0 \
+corOutCoverage=10000 \
+batOptions="-dg 3 -db 3 -dr 1 -ca 500 -cp 50"
+```
+
+**Parameters optimized for amplicon assembly:**
+
+- `genomeSize=5k`: Appropriate for amplicon targets
+- `correctedErrorRate=0.15`: Accommodates Nanopore error rates
+- `minInputCoverage=0` and `stopOnLowCoverage=0`: Prevents assembly termination with low coverage
+- Custom `batOptions`: Fine-tuned for small amplicon assembly
+
+5. Contig Consolidation
+
+Combines contigs from multiple CANU replicates with proper naming:
+
+```bash
+# Renames contigs with replicate prefixes
+# Removes duplicate sequences using seqkit
+```
+
+6. Iterative RACON Polishing
+
+Implements three rounds of RACON polishing to improve consensus accuracy:
+
+```bash
+for round in 1 2 3; do
+    minimap2 -ax map-ont "$input" "$reads" > align.sam
+    racon "$reads" align.sam "$input" > polished_r${round}.fasta
+done
+```
+
+7. Read Alignment and Indexing
+
+Uses minimap2 for optimal Nanopore read alignment:
+
+```bash
+minimap2 -ax map-ont -t 8 "$polished_final" "$reads" | \
+samtools view -bS - | \
+samtools sort -o aligned.bam -
+```
+
+8. Polyploid-Aware Variant Calling
+
+Employs FreeBayes with tetraploid settings as specified in the knowledge base:
+
+```bash
+freebayes \
+-f "$polished_final" \
+-p 4 \
+aligned.bam > variants.vcf
+```
+
+9. Read-Backed Phasing
+
+Implements WhatsHap polyphase for tetraploid phasing:
+
+```bash
+whatshap polyphase \
+--ploidy 4 \
+--reference "$polished_final" \
+--ignore-read-groups \
+-o phased.vcf \
+variants.vcf.gz aligned.bam
+```
+
+10. Haplotype Export
+
+Generates up to four phased haplotypes per individual using bcftools consensus:
+
+```bash
+for i in 1 2 3 4; do
+    bcftools consensus \
+    -H $i \
+    -f "$polished_final" \
+    phased.vcf.gz \
+    > "${library}_${sample}_hap${i}.fasta"
+done
+```
+
+### Output Files
+
+For each sample, the pipeline generates:
+
+- `combined_unique_contigs.fasta`: Deduplicated contigs from all CANU replicates
+- `polished_r3.fasta`: Final polished assembly
+- `aligned.bam`: Sorted and indexed read alignments
+- `variants.vcf.gz`: Called variants
+- `phased.vcf.gz`: Phased variants
+- `${library}_${sample}_hap[1-4].fasta`: Individual haplotype sequences
+- `${library}_${sample}_Phased_haplotypes.fasta`: Combined haplotype file
+
+### Error Handling
+
+The script includes comprehensive error checking:
+
+- File existence validation
+- Empty file detection
+- Timestamp comparison for file freshness
+- Process failure detection with `set -euo pipefail`
+
+### Scientific Rationale
+
+This multi-replicate approach addresses the stochastic nature of long-read assembly algorithms, particularly important for detecting rare haplotypes in self-incompatibility systems where allelic diversity is crucial for population viability. The combination of multiple assembly attempts with rigorous polishing and polyploid-aware variant calling maximizes the recovery of authentic haplotype sequences from complex amplicon pools.
+
+## Bioinformatics
+
+- Load environment first by `conda activate nanopore_pipeline`.
+- LibraryID MUST be e.g. `Library0001`. Avoid underscore to support downstream analyses.
+- **Script:**  `./nanopore_assembly_pipeline_barcode_range.sh` and enter info when prompted (LibraryID and range of barcodes).
+- Run CANU 4 times on large read subsets to detect low frequency haplotypes, combine outputs and perform the rest of the analyses on this file.
+
+```python
+#!/bin/bash
+set -euo pipefail
+
+# ==========================================
+# Nanopore Amplicon Assembly & Phasing Script
+# Multi-CANU Rare Haplotype Optimized Version
+# WITH FASTQ CONCATENATION
+# ==========================================
+
+orig_dir=$(pwd)
+
+read -p "Enter library name (e.g., Library001): " library
+read -p "Enter starting barcode number (e.g., 01): " start_barcode
+read -p "Enter ending barcode number (e.g., 10): " end_barcode
+
+start_num=$((10#$start_barcode))
+end_num=$((10#$end_barcode))
+
+# Number of CANU replicates
+REPS=4
+
+for n in $(seq "$start_num" "$end_num"); do
+
+    sample=$(printf "barcode%02d" "$n")
+
+    echo ""
+    echo "========================================="
+    echo "Processing $library / $sample"
+    echo "========================================="
+
+    cd "$orig_dir/$library/$sample"
+
+    reads="${library}_${sample}.fastq.gz"
+
+    # ==========================================
+    # FASTQ CONCATENATION LOGIC
+    # ==========================================
+    
+    if [[ ! -f "$reads" ]]; then
+        echo "Concatenated FASTQ not found. Creating $reads..."
+        
+        # Check if there are individual .fastq.gz files to concatenate
+        if ls *.fastq.gz 1> /dev/null 2>&1; then
+            # Count existing .fastq.gz files (excluding the target file if it exists)
+            gz_count=$(ls *.fastq.gz 2>/dev/null | grep -v "^${reads}$" | wc -l || echo "0")
+            
+            if [[ $gz_count -gt 0 ]]; then
+                echo "Found $gz_count .fastq.gz files to concatenate"
+                
+                # Concatenate all .fastq.gz files except the target file
+                cat $(ls *.fastq.gz | grep -v "^${reads}$") > "$reads"
+                
+                echo "Created $reads from individual files"
+            else
+                echo "ERROR: No .fastq.gz files found to concatenate in $(pwd)"
+                echo "Available files:"
+                ls -la
+                exit 1
+            fi
+        else
+            echo "ERROR: No .fastq.gz files found in $(pwd)"
+            echo "Available files:"
+            ls -la
+            exit 1
+        fi
+    else
+        echo "Using existing $reads"
+        
+        # Optional: Check if the existing file is newer than individual files
+        if ls *.fastq.gz 1> /dev/null 2>&1; then
+            individual_files=$(ls *.fastq.gz | grep -v "^${reads}$" || true)
+            if [[ -n "$individual_files" ]]; then
+                # Check if any individual file is newer than the concatenated file
+                newer_files=$(find . -name "*.fastq.gz" -not -name "$reads" -newer "$reads" 2>/dev/null || true)
+                if [[ -n "$newer_files" ]]; then
+                    echo "WARNING: Some individual .fastq.gz files are newer than $reads"
+                    echo "Consider regenerating the concatenated file"
+                fi
+            fi
+        fi
+    fi
+
+    # Final check that the reads file exists and is not empty
+    if [[ ! -f "$reads" ]]; then
+        echo "ERROR: $reads still not found after concatenation attempt"
+        exit 1
+    fi
+    
+    if [[ ! -s "$reads" ]]; then
+        echo "ERROR: $reads exists but is empty"
+        exit 1
+    fi
+    
+    echo "Using reads file: $reads ($(du -h "$reads" | cut -f1))"
+
+    # ==========================================
+    # Run multiple CANU assemblies
+    # ==========================================
+
+    for rep in $(seq 1 $REPS); do
+
+        echo ""
+        echo "Running CANU replicate $rep"
+
+        canu \
+        -p "${library}_${sample}_rep${rep}" \
+        -d "CANU_rep${rep}" \
+        genomeSize=5k \
+        -nanopore "$reads" \
+        useGrid=false \
+        correctedErrorRate=0.15 \
+        minInputCoverage=0 \
+        stopOnLowCoverage=0 \
+        corOutCoverage=10000 \
+        batOptions="-dg 3 -db 3 -dr 1 -ca 500 -cp 50"
+
+    done
+
+    # ==========================================
+    # Combine contigs with proper renaming
+    # ==========================================
+
+    echo ""
+    echo "Combining contigs"
+
+    > combined_contigs.fasta
+
+    rep=1
+
+    for dir in CANU_rep*; do
+
+        fasta=$(ls $dir/*.contigs.fasta)
+
+        awk -v prefix="rep${rep}_" '
+        /^>/ {print ">" prefix substr($0,2); next}
+        {print}
+        ' "$fasta" >> combined_contigs.fasta
+
+        ((rep++))
+
+    done
+
+    echo "Removing duplicate sequences"
+
+    seqkit rmdup -s combined_contigs.fasta \
+    > combined_unique_contigs.fasta
+
+    assembly="combined_unique_contigs.fasta"
+
+    # ==========================================
+    # RACON polishing
+    # ==========================================
+
+    echo ""
+    echo "Running RACON polishing"
+
+    for round in 1 2 3; do
+
+        input=$([ $round -eq 1 ] && echo "$assembly" || echo "polished_r$((round-1)).fasta")
+
+        minimap2 -ax map-ont "$input" "$reads" > align.sam
+
+        racon "$reads" align.sam "$input" > polished_r${round}.fasta
+
+    done
+
+    polished_final="polished_r3.fasta"
+
+    # ==========================================
+    # Align reads
+    # ==========================================
+
+    echo ""
+    echo "Aligning reads"
+
+    minimap2 -ax map-ont -t 8 "$polished_final" "$reads" | \
+    samtools view -bS - | \
+    samtools sort -o aligned.bam -
+
+    samtools index aligned.bam
+
+    # ==========================================
+    # Variant Calling
+    # ==========================================
+
+    echo ""
+    echo "Calling variants"
+
+    freebayes \
+    -f "$polished_final" \
+    -p 4 \
+    aligned.bam > variants.vcf
+
+    bgzip -f variants.vcf
+
+    tabix -p vcf variants.vcf.gz
+
+    # ==========================================
+    # WhatsHap Phasing
+    # ==========================================
+
+    echo ""
+    echo "Phasing variants"
+
+    whatshap polyphase \
+    --ploidy 4 \
+    --reference "$polished_final" \
+    --ignore-read-groups \
+    -o phased.vcf \
+    variants.vcf.gz aligned.bam
+
+    bgzip -f phased.vcf
+
+    tabix -p vcf phased.vcf.gz
+
+    # ==========================================
+    # Export haplotypes
+    # ==========================================
+
+    echo ""
+    echo "Exporting haplotypes"
+
+    for i in 1 2 3 4; do
+
+        bcftools consensus \
+        -H $i \
+        -f "$polished_final" \
+        phased.vcf.gz \
+        > temp.fasta
+
+        sed "s/^>/>${library}_${sample}_hap${i}_/" temp.fasta \
+        > "${library}_${sample}_hap${i}.fasta"
+
+    done
+
+    cat ${library}_${sample}_hap*.fasta \
+    > ${library}_${sample}_Phased_haplotypes.fasta
+
+    rm temp.fasta
+
+    echo ""
+    echo "Finished $library $sample"
+
+    cd "$orig_dir"
+
+done
+
+echo ""
+echo "====================================="
+echo "ALL SAMPLES COMPLETE"
+echo "====================================="
+```
+
+# Haplotype Orientation and Consolidation Pipeline
+
+## Rationale and Documentation
+
+### Overview
+
+This pipeline standardizes the orientation of phased haplotypes across all samples within a sequencing library by aligning them to a reference sequence and reverse-complementing sequences that align in the antisense orientation. The workflow consolidates all oriented haplotypes into a single multi-FASTA file for downstream analysis.
+
+### Pipeline Steps
+
+1. Haplotype Orientation Standardization
+
+The pipeline addresses the inherent directionality ambiguity in amplicon sequencing data. Since PCR amplification can produce products in both forward and reverse orientations, and assembly algorithms may reconstruct haplotypes in either direction, standardization against a reference sequence ensures consistent orientation for comparative analyses.
+
+2. Input Parameters
+
+The script requires two user inputs:
+
+- **Library name**: Identifier for the sequencing library being processed
+- **Reference FASTA**: Path to reference sequence file for orientation determination
+
+```bash
+read -p "Enter Library name: " Library
+read -p "Enter reference FASTA: " REF_FASTA
+REF_FASTA=$(realpath "$REF_FASTA")
+```
+
+3. Output File Initialization
+
+Creates a consolidated output file for all oriented haplotypes:
+
+```bash
+FINAL_OUT="all_${Library}_Phased_haplotypes.fasta"
+> "$FINAL_OUT"  # Initialize empty file
+```
+
+4. Barcode Directory Processing
+
+Iterates through all barcode subdirectories within the specified library:
+
+```bash
+for BARCODE_DIR in "$Library"/barcode*/; do
+    BARCODE=$(basename "$BARCODE_DIR")
+    FULL_FASTA="${BARCODE_DIR}/${Library}_${BARCODE}_Phased_haplotypes.fasta"
+```
+
+**Key features:**
+
+- Automatic detection of barcode directories
+- Dynamic file path construction
+- Missing file handling with warning messages
+
+5. File Validation
+
+Implements robust error checking for missing input files:
+
+```bash
+if [[ ! -f "$FULL_FASTA" ]]; then
+    echo "WARNING missing $FULL_FASTA"
+    continue
+fi
+```
+
+This ensures the pipeline continues processing even if individual samples failed in upstream steps.
+
+6. Reference Alignment
+
+Uses minimap2 for sensitive alignment of haplotypes to the reference sequence:
+
+```bash
+minimap2 -a "$REF_FASTA" "$FILE" > hap_vs_ref.sam
+```
+
+**Alignment parameters:**
+
+- `-a`: Output in SAM format for downstream processing
+- Optimized for sequence similarity detection rather than read mapping
+
+7. Reverse-Complement Detection
+
+Identifies sequences aligned in antisense orientation using SAM flags:
+
+```bash
+samtools view -f 16 hap_vs_ref.sam \
+| cut -f1 \
+| sort -u \
+> to_reverse.txt
+```
+
+**SAM flag interpretation:**
+
+- Flag 16: Sequence is reverse-complemented in alignment
+- Extracts sequence identifiers requiring orientation correction
+
+8. Conditional Sequence Reversal
+
+Implements conditional logic for sequence orientation correction:
+
+```bash
+if [[ -s to_reverse.txt ]]; then
+    # Reverse-complement identified sequences
+    seqkit grep -f to_reverse.txt "$FILE" \
+    | seqkit seq -r -p \
+    > reversed.fasta
+    
+    # Keep forward-oriented sequences unchanged
+    seqkit grep -v -f to_reverse.txt "$FILE" \
+    > forward.fasta
+    
+    # Combine oriented sequences
+    cat forward.fasta reversed.fasta > "$ORIENTED"
+else
+    # No sequences require reversal
+    cp "$FILE" "$ORIENTED"
+fi
+```
+
+**Seqkit parameters:**
+
+- `-r`: Reverse-complement sequence
+- `-p`: Print sequence on single line
+- `-f`: Filter sequences by identifier list
+- `-v`: Invert selection (exclude listed sequences)
+
+9. File Consolidation
+
+Appends oriented haplotypes to the master output file:
+
+```bash
+cat "$ORIENTED" >> "$OLDPWD/$FINAL_OUT"
+```
+
+Uses `$OLDPWD` to maintain correct path reference when changing directories.
+
+10. Cleanup Operations
+
+Removes intermediate files to conserve disk space:
+
+```bash
+rm -f hap_vs_ref.sam forward.fasta reversed.fasta
+```
+
+### Output Files
+
+#### Per-Sample Outputs
+
+- `${Library}_${BARCODE}_Phased_haplotypes.oriented.fasta`: Oriented haplotypes for individual samples
+
+#### Consolidated Output
+
+- `all_${Library}_Phased_haplotypes.fasta`: Master file containing all oriented haplotypes from the library
+
+### Error Handling and Robustness
+
+The pipeline includes several robustness features:
+
+1. **Missing file tolerance**: Continues processing if individual samples are missing
+2. **Path resolution**: Uses `realpath` for absolute reference paths
+3. **Directory navigation**: Proper handling of working directory changes
+4. **Conditional processing**: Only performs reverse-complement operations when necessary
+5. **Process failure detection**: Uses `set -euo pipefail` for immediate error detection
+
+### Scientific Rationale
+
+Consistent haplotype orientation is critical for downstream phylogenetic and population genetic analyses. In self-incompatibility research, where allelic relationships and evolutionary patterns are paramount, standardized sequence orientation ensures:
+
+1. **Accurate sequence comparisons**: Prevents false divergence estimates due to orientation differences
+2. **Proper alignment preparation**: Facilitates multiple sequence alignment for phylogenetic reconstruction
+3. **Consistent annotation**: Enables uniform feature annotation across all haplotypes
+4. **Reproducible analyses**: Ensures consistent results across different analysis runs
+
+### Computational Efficiency
+
+The pipeline optimizes computational resources through:
+- **Single alignment per sample**: Minimizes computational overhead
+- **Conditional processing**: Only processes sequences requiring orientation correction
+- **Intermediate file cleanup**: Prevents disk space accumulation
+- **Batch processing**: Handles multiple samples in a single execution
+
+This approach is particularly valuable when processing large numbers of samples with variable haplotype counts, as commonly encountered in population-level studies of self-incompatibility systems.
+
+## Bioinformatics
+
+- For each barcode, find all `*_Phased_haplotypes.fasta`, orient haplotype sequences based on SRK haplotype sequences (canonical reference), produced final curated file
+- **Input:**
+	- Library folder name (e.g., `Library001`)
+	- Canonical fasta file (incl. path) (e.g., `/Users/buerkilab/Documents/Amplicon_SRK/Canu_amplicon/Canonical_sequences/SRK_canonical_haplotype_sequences_revcomp_ATGfixed.fasta`)
+- **Script:** `orient_haplotypes_library.sh`
+
+```python
+#!/bin/bash
+set -euo pipefail
+
+# ==========================================
+# Orient haplotypes for ALL barcodes
+# ==========================================
+
+read -p "Enter Library name: " Library
+read -p "Enter reference FASTA: " REF_FASTA
+
+REF_FASTA=$(realpath "$REF_FASTA")
+
+FINAL_OUT="all_${Library}_Phased_haplotypes.fasta"
+
+> "$FINAL_OUT"
+
+echo
+echo "Processing $Library"
+echo
+
+for BARCODE_DIR in "$Library"/barcode*/; do
+
+BARCODE=$(basename "$BARCODE_DIR")
+
+FULL_FASTA="${BARCODE_DIR}/${Library}_${BARCODE}_Phased_haplotypes.fasta"
+
+FILE=$(basename "$FULL_FASTA")
+
+
+if [[ ! -f "$FULL_FASTA" ]]; then
+
+echo "WARNING missing $FULL_FASTA"
+
+continue
+
+fi
+
+echo "Processing $FULL_FASTA"
+
+cd "$BARCODE_DIR"
+
+ORIENTED="${Library}_${BARCODE}_Phased_haplotypes.oriented.fasta"
+
+# Align
+
+minimap2 -a "$REF_FASTA" "$FILE" > hap_vs_ref.sam
+
+# Detect reverse
+
+samtools view -f 16 hap_vs_ref.sam \
+| cut -f1 \
+| sort -u \
+> to_reverse.txt
+
+# Reverse if needed
+
+if [[ -s to_reverse.txt ]]; then
+
+seqkit grep -f to_reverse.txt "$FILE" \
+| seqkit seq -r -p \
+> reversed.fasta
+
+seqkit grep -v -f to_reverse.txt "$FILE" \
+> forward.fasta
+
+
+cat forward.fasta reversed.fasta \
+> "$ORIENTED"
+
+else
+
+cp "$FILE" "$ORIENTED"
+
+fi
+
+rm -f hap_vs_ref.sam forward.fasta reversed.fasta
+
+cat "$ORIENTED" >> "$OLDPWD/$FINAL_OUT"
+
+cd "$OLDPWD"
+
+done
+
+echo
+echo "DONE"
+echo "Output: $FINAL_OUT"
+```
+
+# FASTA Sequence Filtering and Reference Integration Pipeline
+
+## Rationale and Documentation
+
+### Overview
+
+This pipeline filters haplotype sequences by minimum length criteria and integrates canonical reference sequences to create a comprehensive dataset for downstream phylogenetic and comparative analyses. The workflow is essential for preparing high-quality sequence datasets where length uniformity and reference inclusion are critical for accurate evolutionary inferences.
+
+### Pipeline Steps
+
+1. Quality Control Through Length Filtering
+
+Length filtering serves multiple scientific purposes in haplotype analysis:
+
+- **Assembly quality control**: Removes truncated or incomplete assemblies
+- **Alignment preparation**: Ensures sequences are suitable for multiple sequence alignment
+- **Phylogenetic reliability**: Excludes sequences with insufficient informative sites
+- **Comparative analysis**: Maintains dataset homogeneity for population genetic analyses
+
+2. Input Parameters and Validation
+
+The script requires three user-specified parameters:
+
+```bash
+read -p "Enter merged haplotype FASTA file: " MERGED_FASTA
+read -p "Enter canonical reference FASTA file: " REF_FASTA
+read -p "Enter minimum sequence length (bp): " MINLEN
+```
+
+**Parameter specifications:**
+
+- **Merged haplotype FASTA**: Output from previous haplotype consolidation step
+- **Canonical reference FASTA**: Known reference sequences for comparative context
+- **Minimum length threshold**: Quality control parameter (typically 80-90% of expected amplicon length)
+
+3. File Existence Validation
+
+Implements robust input validation to prevent downstream errors:
+
+```bash
+for f in "$MERGED_FASTA" "$REF_FASTA"; do
+    if [[ ! -f "$f" ]]; then
+        echo "ERROR: File not found: $f" >&2
+        exit 1
+    fi
+done
+```
+
+**Error handling features:**
+
+- Checks all input files before processing
+- Outputs errors to stderr (`>&2`)
+- Immediate termination on missing files
+- Prevents partial processing with invalid inputs
+
+4. Dynamic Output Naming
+
+Generates descriptive output filenames that preserve processing parameters:
+
+```bash
+BASENAME="${MERGED_FASTA%.fasta}"
+OUT="${BASENAME}_filtered_min${MINLEN}.fasta"
+```
+
+**Naming convention benefits:**
+
+- Preserves original filename stem
+- Documents filtering parameters in filename
+- Enables parameter tracking in complex workflows
+- Prevents accidental file overwrites
+
+5. Reference Integration
+
+Combines canonical references with experimental haplotypes before filtering:
+
+```bash
+TMP_COMBINED=$(mktemp)
+cat "$REF_FASTA" "$MERGED_FASTA" > "$TMP_COMBINED"
+```
+
+**Scientific rationale:**
+
+- **Phylogenetic rooting**: Provides known sequences for tree rooting
+- **Allelic classification**: Enables assignment of haplotypes to known allelic classes
+- **Evolutionary context**: Places novel haplotypes within established evolutionary framework
+- **Quality assessment**: Allows comparison with validated reference sequences
+
+6. Length-Based Filtering
+
+Applies minimum length threshold using seqkit for efficient processing:
+
+```bash
+seqkit seq -m "$MINLEN" "$TMP_COMBINED" > "$OUT"
+```
+
+**Seqkit parameters:**
+
+- `-m "$MINLEN"`: Minimum sequence length filter (3250 bp in our case)
+- Efficient processing of large FASTA files
+- Preserves sequence headers and formatting
+- Maintains sequence order from input
+
+7. Temporary File Management
+
+Implements proper cleanup of intermediate files:
+
+```bash
+TMP_COMBINED=$(mktemp)  # Creates secure temporary file
+# ... processing ...
+rm -f "$TMP_COMBINED"   # Cleanup after processing
+```
+
+**Security and efficiency features:**
+
+- Uses `mktemp` for secure temporary file creation
+- Prevents disk space accumulation
+- Avoids naming conflicts in concurrent executions
+- Maintains system cleanliness
+
+### Output Files
+
+#### Primary Output
+
+- `${BASENAME}_filtered_min${MINLEN}.fasta`: Filtered sequences meeting length criteria, including canonical references
+
+**Output characteristics:**
+
+- Contains both reference and experimental sequences
+- All sequences meet minimum length requirement
+- Preserves original sequence identifiers
+- Ready for downstream phylogenetic analysis
+
+### Quality Control Metrics
+
+The filtering process provides implicit quality metrics:
+
+1. **Sequence retention rate**: Proportion of sequences passing length filter
+2. **Length distribution**: Range of sequence lengths in final dataset
+3. **Reference inclusion**: Confirmation of canonical sequence integration
+4. **Dataset completeness**: Total number of sequences for analysis
+
+### Scientific Applications
+
+This filtered dataset serves multiple research objectives:
+
+#### Phylogenetic Analysis
+
+- **Tree construction**: Uniform sequence lengths improve alignment quality
+- **Bootstrap support**: Adequate sequence length enhances statistical confidence
+- **Evolutionary relationships**: Reference sequences provide phylogenetic context
+
+#### Population Genetics
+
+- **Allelic diversity**: Quantification of haplotype variation within populations
+- **Frequency estimation**: Accurate representation of allelic frequencies
+- **Selection analysis**: Detection of balancing selection signatures
+
+#### Self-Incompatibility Research
+
+- **Allele identification**: Classification of novel haplotypes relative to known alleles
+- **Functional prediction**: Sequence-based inference of incompatibility phenotypes
+- **Evolutionary dynamics**: Analysis of allelic turnover and maintenance
+
+### Parameter Optimization
+
+#### Length Threshold Selection
+
+Optimal minimum length depends on:
+
+- **Expected amplicon size**: Typically 80-90% of full-length sequence
+- **Assembly quality**: Balance between inclusivity and quality
+- **Downstream requirements**: Alignment and phylogenetic analysis needs
+- **Reference sequence lengths**: Consistency with canonical sequences
+
+#### Typical Thresholds
+
+- **SRK amplicons**: 3000-4000 bp (for ~4500 bp expected length)
+- **Partial sequences**: 1500-2000 bp (for targeted regions)
+- **Quality control**: 70-80% of expected full length
+
+### Integration with Upstream Workflows
+
+This pipeline integrates seamlessly with the haplotype orientation workflow:
+
+1. **Input compatibility**: Accepts consolidated haplotype files
+2. **Reference consistency**: Uses same reference sequences for orientation and filtering
+3. **Parameter continuity**: Maintains sample and library identifiers
+4. **Output formatting**: Produces analysis-ready FASTA files
+
+The filtered output serves as high-quality input for subsequent phylogenetic reconstruction, population genetic analysis, and functional annotation workflows essential for understanding self-incompatibility system evolution and maintenance.
+
+## Bioinformatics
+
+- Script: `filter_and_add_references.sh`
+- Input: 
+	- Merged haplotypes for a library (`all_Library006_Phased_haplotypes.fasta`)
+	- Canonical reference FASTA file (`/Users/buerkilab/Documents/Amplicon_SRK/Canu_amplicon/Canonical_sequences/SRK_canonical_haplotype_sequences_revcomp_ATGfixed.fasta`)
+	- Minimum length: 3250
+	- Output: `all_Library003_Phased_haplotypes_filtered_min3250.fasta`
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+# ==========================================
+# Filter FASTA sequences by minimum length
+# and add canonical references
+# ==========================================
+
+# ----------------------------
+# User input
+# ----------------------------
+read -p "Enter merged haplotype FASTA file: " MERGED_FASTA
+read -p "Enter canonical reference FASTA file: " REF_FASTA
+read -p "Enter minimum sequence length (bp): " MINLEN
+
+# Check if input files exist
+for f in "$MERGED_FASTA" "$REF_FASTA"; do
+    if [[ ! -f "$f" ]]; then
+        echo "ERROR: File not found: $f" >&2
+        exit 1
+    fi
+done
+
+# Determine output file name
+BASENAME="${MERGED_FASTA%.fasta}"
+OUT="${BASENAME}_filtered_min${MINLEN}.fasta"
+
+# ----------------------------
+# Step 1: Combine canonical references with merged FASTA
+# ----------------------------
+TMP_COMBINED=$(mktemp)
+cat "$REF_FASTA" "$MERGED_FASTA" > "$TMP_COMBINED"
+
+# ----------------------------
+# Step 2: Filter sequences by minimum length using seqkit
+# ----------------------------
+seqkit seq -m "$MINLEN" "$TMP_COMBINED" > "$OUT"
+
+# Cleanup
+rm -f "$TMP_COMBINED"
+
+echo "Filtered FASTA written to: $OUT"
+
+```
+# Multiple Sequence Alignment
+
+- Align sequences with `MAFFT`
+- Input: `all_Library003_Phased_haplotypes_filtered_min3250.fasta`
+
+```bash
+
+all_haplotypes=all_Library001_Phased_haplotypes_filtered_min3200.fasta
+
+# Library001
+mafft --auto --adjustdirection all_Library001_Phased_haplotypes_filtered_min3250.fasta > all_Library001_Phased_haplotypes_filtered_min3250_aligned.fasta
+
+# Library002
+mafft --auto --adjustdirection all_Library002_Phased_haplotypes_filtered_min3250.fasta > all_Library002_Phased_haplotypes_filtered_min3250_aligned.fasta
+
+# Library003
+mafft --auto --adjustdirection all_Library003_Phased_haplotypes_filtered_min3250.fasta > all_Library003_Phased_haplotypes_filtered_min3250_aligned.fasta
+
+# Library004
+mafft --auto --adjustdirection all_Library004_Phased_haplotypes_filtered_min3250.fasta > all_Library004_Phased_haplotypes_filtered_min3250_aligned.fasta
+
+# Library005
+mafft --auto --adjustdirection all_Library005_Phased_haplotypes_filtered_min3250.fasta > all_Library005_Phased_haplotypes_filtered_min3250_aligned.fasta
+
+# Library006
+mafft --auto --adjustdirection all_Library006_Phased_haplotypes_filtered_min3250.fasta > all_Library006_Phased_haplotypes_filtered_min3250_aligned.fasta
+```
+
+# Exon Extraction from Multiple Sequence Alignments Pipeline
+
+## Rationale and Documentation
+
+### Overview
+
+This Python pipeline extracts exonic sequences from multiple sequence alignments (MSAs) using gene structure annotations from AUGUSTUS gene prediction software. The workflow maps genomic coordinates to alignment positions and extracts coding sequences while preserving alignment-derived insertions and deletions, enabling comparative analysis of protein-coding regions across haplotypes.
+
+### Pipeline Steps
+
+1. Exon-Focused Comparative Analysis
+
+Exon extraction serves critical functions in self-incompatibility research:
+
+- **Functional sequence analysis**: Focuses on protein-coding regions
+- **Selection pressure detection**: Enables analysis of synonymous vs. non-synonymous changes
+- **Structural annotation**: Identifies conserved and variable coding domains
+- **Phylogenetic inference**: Improves signal-to-noise ratio for evolutionary analysis
+
+2. Input Parameters and Validation
+
+The script requires five user-specified parameters:
+
+```python
+msa_file = input("Enter MSA FASTA path (aligned sequences, including canonical reference): ").strip()
+canonical_id = input("Enter canonical reference ID (exact header in MSA): ").strip()
+augustus_csv = input("Enter AUGUSTUS CSV with exon positions: ").strip()
+strand = input("Enter strand of annotation for canonical reference (+/-): ").strip()
+min_exon_len = input("Enter minimum exon length (default 0): ").strip()
+```
+
+**Parameter specifications:**
+
+- **MSA FASTA**: Multiple sequence alignment including reference and haplotype sequences
+- **Canonical reference ID**: Exact sequence identifier for coordinate mapping
+- **AUGUSTUS CSV**: Gene structure annotation in CSV format from AUGUSTUS gene prediction
+- **Strand orientation**: Directionality of gene annotation (+ or -)
+- **Minimum exon length**: Quality filter for exon inclusion (default: 0 bp)
+
+3. Multiple Sequence Alignment Loading
+
+Loads and validates the input MSA using BioPython:
+
+```python
+msa = SeqIO.to_dict(SeqIO.parse(msa_file, "fasta"))
+
+if canonical_id not in msa:
+    raise ValueError("Canonical reference ID not found in MSA")
+
+canonical_seq = msa[canonical_id].seq
+```
+
+**Validation features:**
+
+- Dictionary conversion for efficient sequence access
+- Reference sequence validation
+- Error handling for missing canonical reference
+- Sequence object preservation for downstream processing
+
+4. AUGUSTUS Annotation Processing
+
+Parses gene structure annotations and applies quality filters:
+
+```python
+with open(augustus_csv, newline='') as csvfile:
+    reader = csv.DictReader(csvfile)
+    exons = [row for row in reader if row['V3'] == 'exon']
+
+# Filter by minimum exon length and sort by start
+exons = [e for e in exons if int(e['V5']) - int(e['V4']) + 1 >= min_exon_len]
+exons.sort(key=lambda x: int(x['V4']))
+```
+
+**Processing features:**
+
+- **Feature filtering**: Selects only exon annotations from AUGUSTUS output
+- **Length filtering**: Removes exons below minimum length threshold
+- **Coordinate sorting**: Orders exons by genomic start position
+- **Quality control**: Ensures reliable exon boundary definition
+
+5. Genomic-to-MSA Coordinate Mapping
+
+Creates position mapping between genomic coordinates and alignment positions:
+
+```python
+genomic_to_msa = {}
+seq_index = 0
+for i, nt in enumerate(canonical_seq):
+    if nt != '-':
+        genomic_to_msa[seq_index + 1] = i  # 1-based genomic positions
+        seq_index += 1
+```
+
+**Mapping algorithm:**
+
+- **Gap handling**: Skips alignment gaps in canonical reference
+- **Coordinate conversion**: Maps 1-based genomic positions to 0-based alignment indices
+- **Reference-based**: Uses canonical sequence as coordinate reference
+- **Insertion preservation**: Maintains alignment-derived insertions in other sequences
+
+6. Exon Sequence Extraction
+
+Extracts exonic sequences from all sequences in the MSA:
+
+```python
+for seq_name, seq_record in msa.items():
+    seq_aln = seq_record.seq
+    exon_seq = Seq("")
+
+    for e in exons:
+        start_gen = int(e['V4'])
+        end_gen = int(e['V5'])
+        try:
+            msa_start = genomic_to_msa[start_gen]
+            msa_end = genomic_to_msa[end_gen]
+        except KeyError:
+            continue  # skip if exon position not in mapping
+
+        exon_seq += seq_aln[msa_start:msa_end+1]
+```
+
+**Extraction features:**
+
+- **Concatenated exons**: Joins all exonic sequences into single sequence
+- **Error handling**: Skips exons with unmappable coordinates
+- **Sequence preservation**: Maintains gaps and insertions from alignment
+- **Universal processing**: Applies same extraction to all sequences
+
+7. Strand-Specific Processing
+
+Handles gene orientation through conditional reverse-complementation:
+
+```python
+if strand == '-':
+    exon_seq = exon_seq.reverse_complement()
+```
+
+**Biological significance:**
+
+- **Coding strand correction**: Ensures sequences represent actual coding strand
+- **Functional analysis**: Maintains proper reading frame orientation
+- **Comparative consistency**: Standardizes orientation across all sequences
+- **Translation compatibility**: Enables downstream protein analysis
+
+8. Output Generation
+
+Creates BioPython SeqRecord objects and writes output FASTA:
+
+```python
+exon_records.append(SeqRecord(exon_seq, id=seq_name, description=""))
+
+out_file = msa_file.replace(".fasta", "_exons.fasta")
+SeqIO.write(exon_records, out_file, "fasta")
+```
+
+**Output features:**
+
+- **Identifier preservation**: Maintains original sequence names
+- **Automatic naming**: Generates descriptive output filename
+- **Standard format**: Produces FASTA-compatible output
+- **Metadata retention**: Preserves sequence relationships
+
+### Output Files
+
+#### Primary Output
+
+- `${input_basename}_exons.fasta`: Concatenated exonic sequences for all input sequences
+
+**Output characteristics:**
+
+- Contains only protein-coding sequences
+- Preserves alignment-derived gaps and insertions
+- Maintains sequence identifier consistency
+- Ready for downstream protein analysis
+
+### Scientific Applications
+
+#### Molecular Evolution Analysis
+
+**Synonymous vs. Non-synonymous Analysis:**
+
+- Calculation of dN/dS ratios for selection detection
+- Identification of sites under positive or purifying selection
+- Comparative analysis of selection pressures across gene regions
+
+**Protein Structure Prediction:**
+
+- Translation to amino acid sequences for structural analysis
+- Domain identification and functional annotation
+- Comparative protein modeling across haplotypes
+
+#### Self-Incompatibility Research
+
+**Functional Domain Analysis:**
+- **Hypervariable regions**: Identification of polymorphic sites critical for specificity
+- **Conserved domains**: Detection of structurally important regions
+- **Binding sites**: Analysis of receptor-ligand interaction domains
+
+**Allelic Classification:**
+- Protein-based phylogenetic reconstruction
+- Functional group assignment based on coding sequence similarity
+- Prediction of incompatibility phenotypes from sequence data
+
+### Quality Control and Error Handling
+
+#### Coordinate Mapping Validation
+
+- **Boundary checking**: Ensures exon coordinates fall within sequence bounds
+- **Gap handling**: Properly manages alignment gaps in coordinate conversion
+- **Missing data**: Graceful handling of unmappable exon positions
+
+#### Sequence Integrity
+
+- **Length validation**: Confirms expected exon lengths after extraction
+- **Frame preservation**: Maintains reading frame consistency across sequences
+- **Quality metrics**: Implicit validation through successful coordinate mapping
+
+### Integration with Upstream Workflows
+
+This pipeline integrates with previous steps in the haplotype analysis workflow:
+
+1. **MSA dependency**: Requires high-quality multiple sequence alignment
+2. **Annotation integration**: Utilizes AUGUSTUS gene predictions for structural annotation
+3. **Reference consistency**: Uses same canonical reference across all analysis steps
+4. **Output compatibility**: Produces sequences suitable for phylogenetic and selection analysis
+
+The extracted exonic sequences provide the foundation for detailed molecular evolutionary analyses essential for understanding the functional significance of sequence variation in self-incompatibility systems, where protein-level changes directly impact reproductive compatibility and population genetic dynamics.
+
+## Bioinformatics
+
+- Activate container: source srk_env/bin/activate
+- Script: `extract_exons_with_annotation.py`
+
+Input:
+- MSA file: all_Library006_Phased_haplotypes_filtered_min3250_aligned.fasta
+- Name of ref sequence associated with Augustus annotation: `SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407`
+- Annotation file in csv: `/Users/buerkilab/Documents/Amplicon_SRK/Canu_amplicon/Canonical_sequences/augustus_SRK_canonical_haplotype_sequences_revcomp_ATGfixed_arabidopsis.csv`  -> This file was generated by annotating the canonical sequences using Augustus
+- Annotation strand: `+`
+- Min exon length: 0
+Output:
+	- `all_Library003_Phased_haplotypes_filtered_min3250_aligned_exons.fasta`
+
+```python
+#!/usr/bin/env python3
+import csv
+from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+
+# ----------------------------
+# User inputs
+# ----------------------------
+msa_file = input("Enter MSA FASTA path (aligned sequences, including canonical reference): ").strip()
+canonical_id = input("Enter canonical reference ID (exact header in MSA): ").strip()
+augustus_csv = input("Enter AUGUSTUS CSV with exon positions: ").strip()
+strand = input("Enter strand of annotation for canonical reference (+/-): ").strip()
+min_exon_len = input("Enter minimum exon length (default 0): ").strip()
+
+min_exon_len = int(min_exon_len) if min_exon_len else 0
+
+# ----------------------------
+# Load MSA
+# ----------------------------
+msa = SeqIO.to_dict(SeqIO.parse(msa_file, "fasta"))
+
+if canonical_id not in msa:
+    raise ValueError("Canonical reference ID not found in MSA")
+
+canonical_seq = msa[canonical_id].seq
+
+# ----------------------------
+# Read AUGUSTUS CSV
+# ----------------------------
+with open(augustus_csv, newline='') as csvfile:
+    reader = csv.DictReader(csvfile)
+    exons = [row for row in reader if row['V3'] == 'exon']
+
+# Filter by minimum exon length and sort by start
+exons = [e for e in exons if int(e['V5']) - int(e['V4']) + 1 >= min_exon_len]
+exons.sort(key=lambda x: int(x['V4']))
+
+# ----------------------------
+# Build genomic -> MSA mapping
+# ----------------------------
+genomic_to_msa = {}
+seq_index = 0
+for i, nt in enumerate(canonical_seq):
+    if nt != '-':
+        genomic_to_msa[seq_index + 1] = i  # 1-based genomic positions
+        seq_index += 1
+
+# ----------------------------
+# Extract exon sequences
+# ----------------------------
+exon_records = []
+
+for seq_name, seq_record in msa.items():
+    seq_aln = seq_record.seq
+    exon_seq = Seq("")
+
+    for e in exons:
+        start_gen = int(e['V4'])
+        end_gen = int(e['V5'])
+        try:
+            msa_start = genomic_to_msa[start_gen]
+            msa_end = genomic_to_msa[end_gen]
+        except KeyError:
+            continue  # skip if exon position not in mapping
+
+        exon_seq += seq_aln[msa_start:msa_end+1]
+
+    if strand == '-':
+        exon_seq = exon_seq.reverse_complement()
+
+    exon_records.append(SeqRecord(exon_seq, id=seq_name, description=""))
+
+# ----------------------------
+# Write exon-only FASTA
+# ----------------------------
+out_file = msa_file.replace(".fasta", "_exons.fasta")
+SeqIO.write(exon_records, out_file, "fasta")
+print(f"Exon DNA FASTA written to: {out_file}")
+
+```
+
+# MSA Gap Backfilling and Terminus Processing Pipeline
+
+## Rationale and Documentation
+
+### Overview
+
+This Python pipeline addresses alignment gaps in multiple sequence alignments (MSAs) by implementing a reference-based backfilling strategy combined with terminus gap replacement. The workflow improves alignment quality for downstream phylogenetic analysis by reducing the impact of assembly artifacts and sequencing limitations while preserving authentic biological variation.
+
+### Pipeline Steps
+
+1. Alignment Quality Enhancement Strategy
+
+Gap backfilling serves multiple analytical purposes in haplotype analysis:
+
+- **Assembly artifact correction**: Addresses incomplete terminal regions in de novo assemblies
+- **Phylogenetic signal preservation**: Maintains informative sites that may be lost due to technical limitations
+- **Alignment consistency**: Standardizes sequence termini for comparative analysis
+- **Reference-guided improvement**: Leverages high-quality reference sequences to fill technical gaps
+
+2. Input Parameters and Configuration
+
+The script requires two user-specified parameters with one hardcoded constant:
+
+```python
+msa_fasta = input("Enter MSA FASTA file: ").strip()
+ref_id = input("Enter canonical reference ID (exact FASTA header): ").strip()
+WINDOW = 25  # bp to backfill from reference
+```
+
+**Parameter specifications:**
+
+- **MSA FASTA file**: Multiple sequence alignment containing haplotypes and reference
+- **Canonical reference ID**: Exact sequence identifier for high-quality reference sequence
+- **Backfill window**: Fixed 25 bp window at sequence termini for reference-based gap filling
+
+3. MSA Loading and Validation
+
+Loads alignment data and performs reference sequence validation:
+
+```python
+records = list(SeqIO.parse(msa_fasta, "fasta"))
+seqs = {r.id: list(str(r.seq)) for r in records}
+
+if ref_id not in seqs:
+    raise ValueError("Reference ID not found in MSA")
+
+ref_seq = seqs[ref_id]
+aln_len = len(ref_seq)
+```
+
+**Data structure features:**
+
+- **Dictionary conversion**: Enables efficient sequence access by identifier
+- **List conversion**: Allows character-level sequence manipulation
+- **Length standardization**: Ensures uniform alignment length across sequences
+- **Reference validation**: Confirms canonical sequence availability
+
+4. Sequence Boundary Detection
+
+Implements helper function to identify authentic sequence boundaries:
+
+```python
+def real_bounds(seq):
+    start = next((i for i, x in enumerate(seq) if x != '-'), None)
+    end = next((i for i in range(len(seq)-1, -1, -1) if seq[i] != '-'), None)
+    return start, end
+```
+
+**Boundary detection algorithm:**
+
+- **Start boundary**: First non-gap character position
+- **End boundary**: Last non-gap character position (reverse iteration)
+- **Empty sequence handling**: Returns None for sequences with no real content
+- **Efficient search**: Uses generator expressions for optimal performance
+
+5. Terminal Region Backfilling
+
+Applies reference-based gap filling in terminal regions:
+
+```python
+# ---- Backfill first 25 bp ----
+for i in range(min(WINDOW, aln_len)):
+    if new_seq[i] == '-':
+        new_seq[i] = ref_seq[i]
+
+# ---- Backfill last 25 bp ----
+for i in range(max(0, aln_len - WINDOW), aln_len):
+    if new_seq[i] == '-':
+        new_seq[i] = ref_seq[i]
+```
+
+**Backfilling strategy:**
+
+- **Selective replacement**: Only fills gaps, preserves existing sequence data
+- **Boundary protection**: Uses `min()` and `max()` functions to prevent index errors
+- **Terminal focus**: Targets regions most likely affected by assembly truncation
+- **Reference-guided**: Uses high-quality canonical sequence as gap filler
+
+**Scientific rationale:**
+
+Terminal regions in amplicon assemblies are frequently incomplete due to:
+- **PCR primer effects**: Reduced coverage at amplicon termini
+- **Assembly algorithms**: Difficulty resolving terminal repeats or low-complexity regions
+- **Sequencing bias**: Reduced quality at read termini affecting assembly
+
+6. Extended Gap Processing
+
+Converts remaining gaps to ambiguous nucleotides outside sequence boundaries:
+
+```python
+# ---- Replace extra leading gaps with Ns ----
+for i in range(0, start):
+    if new_seq[i] == '-':
+        new_seq[i] = 'N'
+
+# ---- Replace extra trailing gaps with Ns ----
+for i in range(end + 1, aln_len):
+    if new_seq[i] == '-':
+        new_seq[i] = 'N'
+```
+
+**Gap replacement logic:**
+
+- **Leading gaps**: Converts gaps before first real nucleotide to 'N'
+- **Trailing gaps**: Converts gaps after last real nucleotide to 'N'
+- **Preservation principle**: Maintains internal gaps as authentic indels
+- **Phylogenetic compatibility**: 'N' characters are properly handled by most phylogenetic software
+
+7. Sequence Reconstruction and Output
+
+Creates new SeqRecord objects and writes processed alignment:
+
+```python
+new_records.append(
+    SeqIO.SeqRecord(
+        Seq("".join(new_seq)),
+        id=sid,
+        description=""
+    )
+)
+
+out_fasta = msa_fasta.replace(".fasta", "_backfilled.fasta")
+SeqIO.write(new_records, out_fasta, "fasta")
+```
+
+**Output features:**
+
+- **Identifier preservation**: Maintains original sequence names and order
+- **Clean descriptions**: Removes potentially confusing description fields
+- **Automatic naming**: Generates descriptive output filename
+- **BioPython compatibility**: Creates proper SeqRecord objects for downstream analysis
+
+### Output Files
+
+#### Primary Output
+
+- `${input_basename}_backfilled.fasta`: Processed MSA with gap-filled terminal regions
+
+**Output characteristics:**
+
+- Improved terminal region completeness through reference backfilling
+- Converted external gaps to 'N' characters for phylogenetic compatibility
+- Preserved internal gaps representing authentic biological variation
+- Maintained alignment structure and sequence relationships
+
+### Quality Control and Processing Logic
+
+#### Gap Classification System
+
+The pipeline implements a three-tier gap classification:
+
+1. **Terminal gaps within backfill window**: Filled with reference sequence
+2. **External gaps beyond sequence boundaries**: Converted to 'N' characters
+3. **Internal gaps within sequence boundaries**: Preserved as authentic indels
+
+#### Sequence Integrity Preservation
+
+**Biological variation protection:**
+
+- Internal gaps representing genuine insertions/deletions are preserved
+- Only technical gaps (assembly artifacts) are modified
+- Reference sequence provides high-confidence terminal sequence data
+
+**Phylogenetic analysis optimization:**
+
+- 'N' characters are treated as missing data by phylogenetic software
+- Reduces alignment ambiguity without introducing false homology
+- Maintains positional homology for comparative analysis
+
+### Scientific Applications
+
+#### Phylogenetic Analysis Enhancement
+
+**Tree reconstruction improvement:**
+
+- Reduced terminal gap artifacts improve branch length estimation
+- Enhanced signal-to-noise ratio in phylogenetic inference
+- Better resolution of closely related haplotypes
+
+**Bootstrap support enhancement:**
+
+- Increased informative sites through reference backfilling
+- Reduced alignment uncertainty in terminal regions
+- Improved statistical confidence in phylogenetic relationships
+
+#### Population Genetic Analysis
+
+**Allelic diversity assessment:**
+
+- More accurate sequence length estimates for diversity calculations
+- Improved detection of terminal sequence variation
+- Enhanced resolution of rare haplotype differences
+
+**Selection analysis:**
+- Better terminal region coverage for comprehensive selection scans
+- Reduced false positive signals from assembly artifacts
+- Improved power for detecting selection in terminal domains
+
+### Integration with Downstream Workflows
+
+This processed alignment serves as optimized input for:
+
+1. **Phylogenetic reconstruction**: Maximum likelihood and Bayesian inference
+2. **Selection analysis**: dN/dS calculations and site-specific selection tests
+3. **Population genetics**: Diversity indices and demographic inference
+4. **Functional annotation**: Improved terminal region analysis for domain identification
+
+The backfilled alignment provides a balance between technical artifact correction and biological variation preservation, essential for accurate evolutionary analysis of self-incompatibility haplotypes where terminal regions may contain functionally important domains.
+
+## Bioinformatics
+
+Add primer sequences to fill out ends of the exon sequences.
+
+- Script: `backfill_alignment_ends.py`
+- Input: 
+	- MSA fasta file (exon): `all_Library006_Phased_haplotypes_filtered_min3250_aligned_exons.fasta`
+	- Canonical reference ID (exact FASTA header): `SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407`
+- Output: `all_Library003_Phased_haplotypes_filtered_min3250_aligned_exons_backfilled.fasta`
+
+```python
+#!/usr/bin/env python3
+from Bio import SeqIO
+from Bio.Seq import Seq
+
+# ----------------------------
+# User input
+# ----------------------------
+msa_fasta = input("Enter MSA FASTA file: ").strip()
+ref_id = input("Enter canonical reference ID (exact FASTA header): ").strip()
+WINDOW = 25  # bp to backfill from reference
+
+# ----------------------------
+# Load MSA
+# ----------------------------
+records = list(SeqIO.parse(msa_fasta, "fasta"))
+seqs = {r.id: list(str(r.seq)) for r in records}
+
+if ref_id not in seqs:
+    raise ValueError("Reference ID not found in MSA")
+
+ref_seq = seqs[ref_id]
+aln_len = len(ref_seq)
+
+# ----------------------------
+# Helper: find real sequence bounds
+# ----------------------------
+def real_bounds(seq):
+    start = next((i for i, x in enumerate(seq) if x != '-'), None)
+    end = next((i for i in range(len(seq)-1, -1, -1) if seq[i] != '-'), None)
+    return start, end
+
+# ----------------------------
+# Process sequences
+# ----------------------------
+new_records = []
+
+for sid, seq in seqs.items():
+    new_seq = seq.copy()
+    start, end = real_bounds(seq)
+
+    if start is None:
+        continue  # skip empty sequence
+
+    # ---- Backfill first 25 bp ----
+    for i in range(min(WINDOW, aln_len)):
+        if new_seq[i] == '-':
+            new_seq[i] = ref_seq[i]
+
+    # ---- Backfill last 25 bp ----
+    for i in range(max(0, aln_len - WINDOW), aln_len):
+        if new_seq[i] == '-':
+            new_seq[i] = ref_seq[i]
+
+    # ---- Replace extra leading gaps with Ns ----
+    for i in range(0, start):
+        if new_seq[i] == '-':
+            new_seq[i] = 'N'
+
+    # ---- Replace extra trailing gaps with Ns ----
+    for i in range(end + 1, aln_len):
+        if new_seq[i] == '-':
+            new_seq[i] = 'N'
+
+    new_records.append(
+        SeqIO.SeqRecord(
+            Seq("".join(new_seq)),
+            id=sid,
+            description=""
+        )
+    )
+
+# ----------------------------
+# Write output
+# ----------------------------
+out_fasta = msa_fasta.replace(".fasta", "_backfilled.fasta")
+SeqIO.write(new_records, out_fasta, "fasta")
+
+print("\n✅ Done!")
+print(f"Backfilled alignment written to: {out_fasta}")
+```
+
+
