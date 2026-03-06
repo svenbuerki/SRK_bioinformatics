@@ -54,7 +54,9 @@ The pipeline consists of 11 main steps divided into two phases:
 10. [SRK Functional Protein Genotyping Pipeline](#SRKfunctionalprotgenotype) - Generate population genetic matrices
 11. [SRK Zygosity Analysis Pipeline for Tetraploid Species](#zygosity) - Tetraploid genotype classification and demographic inference
 
-# Prepare Canonical Sequences {#prepcanseq}
+# Phase 1: Within-Library Processing
+
+## Prepare Canonical Sequences {#prepcanseq}
 
 > Warning: This need to be be done ONLY ONCE!
 > 
@@ -66,7 +68,7 @@ The pipeline consists of 11 main steps divided into two phases:
 	4. Check AA product
 - **Folder:** `/Users/buerkilab/Documents/Amplicon_SRK/Canu_amplicon/Canonical_sequences`
 
-## Reverse Complement Sequences and Check Start Codon
+### Reverse Complement Sequences and Check Start Codon
 
  - `reverse_complement_startcodon_fasta.py`
 
@@ -131,7 +133,7 @@ print(f"Log file:        {log_file}")
 
 ```
 
-## Gene Annotation
+### Gene Annotation
 
 - Done with the lab linux computer (`/media/Artemisia/Slicksport_PacBio/BEA/Augustus`) and the `SRK_canonical_haplotype_sequences_revcomp_ATGfixed.fasta` as template. 
 - **Output:** `augustus_SRK_canonical_haplotype_sequences_revcomp_ATGfixed_arabidopsis.csv`
@@ -142,9 +144,7 @@ print(f"Log file:        {log_file}")
 augustus --species=arabidopsis --strand=both --singlestrand=false --genemodel=partial --protein=on --codingseq=on --introns=on --start=on --stop=on --cds=on --gff3=on --sample=100 --keep_viterbi=true --alternatives-from-sampling=true --minexonintronprob=0.2 --minmeanexonintronprob=0.5 --maxtracks=2 SRK_canonical_haplotype_sequences_revcomp_ATGfixed.fasta --exonnames=on > augustus_SRK_canonical_haplotype_sequences_revcomp_ATGfixed_arabidopsis.gff
 ```
 
-# Nanopore Amplicon Assembly and Phasing Pipeline {#nanampassphas}
-
-## Rationale and Documentation
+## Nanopore Amplicon Assembly and Phasing Pipeline {#nanampassphas}
 
 ### Overview
 
@@ -152,11 +152,11 @@ This pipeline implements a multi-replicate CANU assembly approach optimized for 
 
 ### Pipeline Steps
 
-1. Amplicon Reconstruction and Haplotype Phasing
+#### Amplicon Reconstruction and Haplotype Phasing
 
 Based on the knowledge base context: "For each individual, Nanopore reads from SRK amplicons are assembled de novo using CANU, followed by iterative polishing with RACON to improve consensus accuracy. Reads are then realigned to the polished assembly, and sequence variants are called using a polyploid-aware variant caller implemented in FreeBayes. Haplotypes are phased using read-backed phasing as implemented in WhatsHap, generating up to four phased SRK haplotypes per individual."
 
-2. Input Parameters
+#### Input Parameters
 
 The script requires three user inputs:
 
@@ -164,7 +164,7 @@ The script requires three user inputs:
 - **Starting barcode number**: First barcode to process (e.g., 01)
 - **Ending barcode number**: Last barcode to process (e.g., 10)
 
-3. FASTQ File Management
+#### FASTQ File Management
 
 The pipeline includes robust FASTQ concatenation logic:
 
@@ -180,7 +180,7 @@ The pipeline includes robust FASTQ concatenation logic:
 - Validation of file completeness and timestamps
 - Error handling for missing or empty files
 
-4. Multi-Replicate CANU Assembly
+#### Multi-Replicate CANU Assembly
 
 The pipeline runs four independent CANU assemblies per sample to maximize rare haplotype recovery:
 
@@ -207,7 +207,7 @@ batOptions="-dg 3 -db 3 -dr 1 -ca 500 -cp 50"
 - `minInputCoverage=0` and `stopOnLowCoverage=0`: Prevents assembly termination with low coverage
 - Custom `batOptions`: Fine-tuned for small amplicon assembly
 
-5. Contig Consolidation
+#### Contig Consolidation
 
 Combines contigs from multiple CANU replicates with proper naming:
 
@@ -216,7 +216,7 @@ Combines contigs from multiple CANU replicates with proper naming:
 # Removes duplicate sequences using seqkit
 ```
 
-6. Iterative RACON Polishing
+#### Iterative RACON Polishing
 
 Implements three rounds of RACON polishing to improve consensus accuracy:
 
@@ -227,7 +227,7 @@ for round in 1 2 3; do
 done
 ```
 
-7. Read Alignment and Indexing
+#### Read Alignment and Indexing
 
 Uses minimap2 for optimal Nanopore read alignment:
 
@@ -237,7 +237,7 @@ samtools view -bS - | \
 samtools sort -o aligned.bam -
 ```
 
-8. Polyploid-Aware Variant Calling
+#### Polyploid-Aware Variant Calling
 
 Employs FreeBayes with tetraploid settings as specified in the knowledge base:
 
@@ -248,7 +248,7 @@ freebayes \
 aligned.bam > variants.vcf
 ```
 
-9. Read-Backed Phasing
+#### Read-Backed Phasing
 
 Implements WhatsHap polyphase for tetraploid phasing:
 
@@ -261,7 +261,7 @@ whatshap polyphase \
 variants.vcf.gz aligned.bam
 ```
 
-10. Haplotype Export
+#### Haplotype Export
 
 Generates up to four phased haplotypes per individual using bcftools consensus:
 
@@ -300,7 +300,7 @@ The script includes comprehensive error checking:
 
 This multi-replicate approach addresses the stochastic nature of long-read assembly algorithms, particularly important for detecting rare haplotypes in self-incompatibility systems where allelic diversity is crucial for population viability. The combination of multiple assembly attempts with rigorous polishing and polyploid-aware variant calling maximizes the recovery of authentic haplotype sequences from complex amplicon pools.
 
-## Bioinformatics
+### Bioinformatics
 
 - Load environment first by `conda activate nanopore_pipeline`.
 - LibraryID MUST be e.g. `Library0001`. Avoid underscore to support downstream analyses.
@@ -561,9 +561,7 @@ echo "ALL SAMPLES COMPLETE"
 echo "====================================="
 ```
 
-# Haplotype Orientation and Consolidation Pipeline {#haporient}
-
-## Rationale and Documentation
+## Haplotype Orientation and Consolidation Pipeline {#haporient}
 
 ### Overview
 
@@ -571,11 +569,11 @@ This pipeline standardizes the orientation of phased haplotypes across all sampl
 
 ### Pipeline Steps
 
-1. Haplotype Orientation Standardization
+#### Haplotype Orientation Standardization
 
 The pipeline addresses the inherent directionality ambiguity in amplicon sequencing data. Since PCR amplification can produce products in both forward and reverse orientations, and assembly algorithms may reconstruct haplotypes in either direction, standardization against a reference sequence ensures consistent orientation for comparative analyses.
 
-2. Input Parameters
+#### Input Parameters
 
 The script requires two user inputs:
 
@@ -588,7 +586,7 @@ read -p "Enter reference FASTA: " REF_FASTA
 REF_FASTA=$(realpath "$REF_FASTA")
 ```
 
-3. Output File Initialization
+#### Output File Initialization
 
 Creates a consolidated output file for all oriented haplotypes:
 
@@ -597,7 +595,7 @@ FINAL_OUT="all_${Library}_Phased_haplotypes.fasta"
 > "$FINAL_OUT"  # Initialize empty file
 ```
 
-4. Barcode Directory Processing
+#### Barcode Directory Processing
 
 Iterates through all barcode subdirectories within the specified library:
 
@@ -613,7 +611,7 @@ for BARCODE_DIR in "$Library"/barcode*/; do
 - Dynamic file path construction
 - Missing file handling with warning messages
 
-5. File Validation
+#### File Validation
 
 Implements robust error checking for missing input files:
 
@@ -626,7 +624,7 @@ fi
 
 This ensures the pipeline continues processing even if individual samples failed in upstream steps.
 
-6. Reference Alignment
+#### Reference Alignment
 
 Uses minimap2 for sensitive alignment of haplotypes to the reference sequence:
 
@@ -639,7 +637,7 @@ minimap2 -a "$REF_FASTA" "$FILE" > hap_vs_ref.sam
 - `-a`: Output in SAM format for downstream processing
 - Optimized for sequence similarity detection rather than read mapping
 
-7. Reverse-Complement Detection
+#### Reverse-Complement Detection
 
 Identifies sequences aligned in antisense orientation using SAM flags:
 
@@ -655,7 +653,7 @@ samtools view -f 16 hap_vs_ref.sam \
 - Flag 16: Sequence is reverse-complemented in alignment
 - Extracts sequence identifiers requiring orientation correction
 
-8. Conditional Sequence Reversal
+#### Conditional Sequence Reversal
 
 Implements conditional logic for sequence orientation correction:
 
@@ -685,7 +683,7 @@ fi
 - `-f`: Filter sequences by identifier list
 - `-v`: Invert selection (exclude listed sequences)
 
-9. File Consolidation
+#### File Consolidation
 
 Appends oriented haplotypes to the master output file:
 
@@ -695,7 +693,7 @@ cat "$ORIENTED" >> "$OLDPWD/$FINAL_OUT"
 
 Uses `$OLDPWD` to maintain correct path reference when changing directories.
 
-10. Cleanup Operations
+#### Cleanup Operations
 
 Removes intermediate files to conserve disk space:
 
@@ -742,7 +740,7 @@ The pipeline optimizes computational resources through:
 
 This approach is particularly valuable when processing large numbers of samples with variable haplotype counts, as commonly encountered in population-level studies of self-incompatibility systems.
 
-## Bioinformatics
+### Bioinformatics
 
 - For each barcode, find all `*_Phased_haplotypes.fasta`, orient haplotype sequences based on SRK haplotype sequences (canonical reference), produced final curated file
 - **Input:**
@@ -839,9 +837,7 @@ echo "DONE"
 echo "Output: $FINAL_OUT"
 ```
 
-# FASTA Sequence Filtering and Reference Integration Pipeline {#fastafiltrefint}
-
-## Rationale and Documentation
+## FASTA Sequence Filtering and Reference Integration Pipeline {#fastafiltrefint}
 
 ### Overview
 
@@ -849,7 +845,7 @@ This pipeline filters haplotype sequences by minimum length criteria and integra
 
 ### Pipeline Steps
 
-1. Quality Control Through Length Filtering
+#### Quality Control Through Length Filtering
 
 Length filtering serves multiple scientific purposes in haplotype analysis:
 
@@ -858,7 +854,7 @@ Length filtering serves multiple scientific purposes in haplotype analysis:
 - **Phylogenetic reliability**: Excludes sequences with insufficient informative sites
 - **Comparative analysis**: Maintains dataset homogeneity for population genetic analyses
 
-2. Input Parameters and Validation
+#### Input Parameters and Validation
 
 The script requires three user-specified parameters:
 
@@ -874,7 +870,7 @@ read -p "Enter minimum sequence length (bp): " MINLEN
 - **Canonical reference FASTA**: Known reference sequences for comparative context
 - **Minimum length threshold**: Quality control parameter (typically 80-90% of expected amplicon length)
 
-3. File Existence Validation
+#### File Existence Validation
 
 Implements robust input validation to prevent downstream errors:
 
@@ -894,7 +890,7 @@ done
 - Immediate termination on missing files
 - Prevents partial processing with invalid inputs
 
-4. Dynamic Output Naming
+#### Dynamic Output Naming
 
 Generates descriptive output filenames that preserve processing parameters:
 
@@ -910,7 +906,7 @@ OUT="${BASENAME}_filtered_min${MINLEN}.fasta"
 - Enables parameter tracking in complex workflows
 - Prevents accidental file overwrites
 
-5. Reference Integration
+#### Reference Integration
 
 Combines canonical references with experimental haplotypes before filtering:
 
@@ -926,7 +922,7 @@ cat "$REF_FASTA" "$MERGED_FASTA" > "$TMP_COMBINED"
 - **Evolutionary context**: Places novel haplotypes within established evolutionary framework
 - **Quality assessment**: Allows comparison with validated reference sequences
 
-6. Length-Based Filtering
+#### Length-Based Filtering
 
 Applies minimum length threshold using seqkit for efficient processing:
 
@@ -941,7 +937,7 @@ seqkit seq -m "$MINLEN" "$TMP_COMBINED" > "$OUT"
 - Preserves sequence headers and formatting
 - Maintains sequence order from input
 
-7. Temporary File Management
+#### Temporary File Management
 
 Implements proper cleanup of intermediate files:
 
@@ -1030,7 +1026,7 @@ This pipeline integrates seamlessly with the haplotype orientation workflow:
 
 The filtered output serves as high-quality input for subsequent phylogenetic reconstruction, population genetic analysis, and functional annotation workflows essential for understanding self-incompatibility system evolution and maintenance.
 
-## Bioinformatics
+### Bioinformatics
 
 - Script: `filter_and_add_references.sh`
 - Input: 
@@ -1084,7 +1080,7 @@ rm -f "$TMP_COMBINED"
 echo "Filtered FASTA written to: $OUT"
 
 ```
-# Multiple Sequence Alignment {#msa}
+## Multiple Sequence Alignment {#msa}
 
 - Align sequences with `MAFFT`
 - Input: `all_Library003_Phased_haplotypes_filtered_min3250.fasta`
@@ -1112,9 +1108,7 @@ mafft --auto --adjustdirection all_Library005_Phased_haplotypes_filtered_min3250
 mafft --auto --adjustdirection all_Library006_Phased_haplotypes_filtered_min3250.fasta > all_Library006_Phased_haplotypes_filtered_min3250_aligned.fasta
 ```
 
-# Exon Extraction from Multiple Sequence Alignments Pipeline {#exonextract}
-
-## Rationale and Documentation
+## Exon Extraction from Multiple Sequence Alignments Pipeline {#exonextract}
 
 ### Overview
 
@@ -1122,7 +1116,7 @@ This Python pipeline extracts exonic sequences from multiple sequence alignments
 
 ### Pipeline Steps
 
-1. Exon-Focused Comparative Analysis
+#### Exon-Focused Comparative Analysis
 
 Exon extraction serves critical functions in self-incompatibility research:
 
@@ -1131,7 +1125,7 @@ Exon extraction serves critical functions in self-incompatibility research:
 - **Structural annotation**: Identifies conserved and variable coding domains
 - **Phylogenetic inference**: Improves signal-to-noise ratio for evolutionary analysis
 
-2. Input Parameters and Validation
+#### Input Parameters and Validation
 
 The script requires five user-specified parameters:
 
@@ -1151,7 +1145,7 @@ min_exon_len = input("Enter minimum exon length (default 0): ").strip()
 - **Strand orientation**: Directionality of gene annotation (+ or -)
 - **Minimum exon length**: Quality filter for exon inclusion (default: 0 bp)
 
-3. Multiple Sequence Alignment Loading
+#### Multiple Sequence Alignment Loading
 
 Loads and validates the input MSA using BioPython:
 
@@ -1171,7 +1165,7 @@ canonical_seq = msa[canonical_id].seq
 - Error handling for missing canonical reference
 - Sequence object preservation for downstream processing
 
-4. AUGUSTUS Annotation Processing
+#### AUGUSTUS Annotation Processing
 
 Parses gene structure annotations and applies quality filters:
 
@@ -1192,7 +1186,7 @@ exons.sort(key=lambda x: int(x['V4']))
 - **Coordinate sorting**: Orders exons by genomic start position
 - **Quality control**: Ensures reliable exon boundary definition
 
-5. Genomic-to-MSA Coordinate Mapping
+#### Genomic-to-MSA Coordinate Mapping
 
 Creates position mapping between genomic coordinates and alignment positions:
 
@@ -1212,7 +1206,7 @@ for i, nt in enumerate(canonical_seq):
 - **Reference-based**: Uses canonical sequence as coordinate reference
 - **Insertion preservation**: Maintains alignment-derived insertions in other sequences
 
-6. Exon Sequence Extraction
+#### Exon Sequence Extraction
 
 Extracts exonic sequences from all sequences in the MSA:
 
@@ -1240,7 +1234,7 @@ for seq_name, seq_record in msa.items():
 - **Sequence preservation**: Maintains gaps and insertions from alignment
 - **Universal processing**: Applies same extraction to all sequences
 
-7. Strand-Specific Processing
+#### Strand-Specific Processing
 
 Handles gene orientation through conditional reverse-complementation:
 
@@ -1256,7 +1250,7 @@ if strand == '-':
 - **Comparative consistency**: Standardizes orientation across all sequences
 - **Translation compatibility**: Enables downstream protein analysis
 
-8. Output Generation
+#### Output Generation
 
 Creates BioPython SeqRecord objects and writes output FASTA:
 
@@ -1340,7 +1334,7 @@ This pipeline integrates with previous steps in the haplotype analysis workflow:
 
 The extracted exonic sequences provide the foundation for detailed molecular evolutionary analyses essential for understanding the functional significance of sequence variation in self-incompatibility systems, where protein-level changes directly impact reproductive compatibility and population genetic dynamics.
 
-## Bioinformatics
+### Bioinformatics
 
 - Activate container: source srk_env/bin/activate
 - Script: `extract_exons_with_annotation.py`
@@ -1437,9 +1431,7 @@ print(f"Exon DNA FASTA written to: {out_file}")
 
 ```
 
-# MSA Gap Backfilling and Terminus Processing Pipeline {#msagapback}
-
-## Rationale and Documentation
+## MSA Gap Backfilling and Terminus Processing Pipeline {#msagapback}
 
 ### Overview
 
@@ -1447,7 +1439,7 @@ This Python pipeline addresses alignment gaps in multiple sequence alignments (M
 
 ### Pipeline Steps
 
-1. Alignment Quality Enhancement Strategy
+#### Alignment Quality Enhancement Strategy
 
 Gap backfilling serves multiple analytical purposes in haplotype analysis:
 
@@ -1456,7 +1448,7 @@ Gap backfilling serves multiple analytical purposes in haplotype analysis:
 - **Alignment consistency**: Standardizes sequence termini for comparative analysis
 - **Reference-guided improvement**: Leverages high-quality reference sequences to fill technical gaps
 
-2. Input Parameters and Configuration
+#### Input Parameters and Configuration
 
 The script requires two user-specified parameters with one hardcoded constant:
 
@@ -1472,7 +1464,7 @@ WINDOW = 25  # bp to backfill from reference
 - **Canonical reference ID**: Exact sequence identifier for high-quality reference sequence
 - **Backfill window**: Fixed 25 bp window at sequence termini for reference-based gap filling
 
-3. MSA Loading and Validation
+#### MSA Loading and Validation
 
 Loads alignment data and performs reference sequence validation:
 
@@ -1494,7 +1486,7 @@ aln_len = len(ref_seq)
 - **Length standardization**: Ensures uniform alignment length across sequences
 - **Reference validation**: Confirms canonical sequence availability
 
-4. Sequence Boundary Detection
+#### Sequence Boundary Detection
 
 Implements helper function to identify authentic sequence boundaries:
 
@@ -1512,7 +1504,7 @@ def real_bounds(seq):
 - **Empty sequence handling**: Returns None for sequences with no real content
 - **Efficient search**: Uses generator expressions for optimal performance
 
-5. Terminal Region Backfilling
+#### Terminal Region Backfilling
 
 Applies reference-based gap filling in terminal regions:
 
@@ -1542,7 +1534,7 @@ Terminal regions in amplicon assemblies are frequently incomplete due to:
 - **Assembly algorithms**: Difficulty resolving terminal repeats or low-complexity regions
 - **Sequencing bias**: Reduced quality at read termini affecting assembly
 
-6. Extended Gap Processing
+#### Extended Gap Processing
 
 Converts remaining gaps to ambiguous nucleotides outside sequence boundaries:
 
@@ -1565,7 +1557,7 @@ for i in range(end + 1, aln_len):
 - **Preservation principle**: Maintains internal gaps as authentic indels
 - **Phylogenetic compatibility**: 'N' characters are properly handled by most phylogenetic software
 
-7. Sequence Reconstruction and Output
+#### Sequence Reconstruction and Output
 
 Creates new SeqRecord objects and writes processed alignment:
 
@@ -1666,7 +1658,7 @@ This processed alignment serves as optimized input for:
 
 The backfilled alignment provides a balance between technical artifact correction and biological variation preservation, essential for accurate evolutionary analysis of self-incompatibility haplotypes where terminal regions may contain functionally important domains.
 
-## Bioinformatics
+### Bioinformatics
 
 Add primer sequences to fill out ends of the exon sequences.
 
@@ -1758,9 +1750,7 @@ print("\n✅ Done!")
 print(f"Backfilled alignment written to: {out_fasta}")
 ```
 
-# DNA to Amino Acid Translation Pipeline {#DNA2AA}
-
-## Rationale and Documentation
+## DNA to Amino Acid Translation Pipeline {#DNA2AA}
 
 ### Overview
 
@@ -1768,7 +1758,7 @@ This Python pipeline translates aligned DNA sequences to amino acid sequences us
 
 ### Pipeline Steps
 
-1. Protein-Level Evolutionary Analysis
+#### Protein-Level Evolutionary Analysis
 
 Translation to amino acids serves critical functions in molecular evolution studies:
 
@@ -1777,7 +1767,7 @@ Translation to amino acids serves critical functions in molecular evolution stud
 - **Phylogenetic signal enhancement**: Reduces noise from synonymous changes in closely related sequences
 - **Protein structure analysis**: Facilitates domain identification and structural modeling
 
-2. Input Parameters and Validation
+#### Input Parameters and Validation
 
 The script requires two user-specified parameters:
 
@@ -1801,7 +1791,7 @@ if frame not in (1, 2, 3):
 - **Frame 2**: Translation starting from second nucleotide (for sequences with 5' extensions)
 - **Frame 3**: Translation starting from third nucleotide (for sequences with longer 5' extensions)
 
-3. Genetic Code Configuration
+#### Genetic Code Configuration
 
 Specifies the appropriate genetic code for translation:
 
@@ -1815,7 +1805,7 @@ GENETIC_CODE = 1  # Standard nuclear code (plants)
 - **Universal application**: Compatible with most eukaryotic nuclear genes
 - **Translation accuracy**: Ensures correct amino acid assignment for all codons
 
-4. Output File Generation
+#### Output File Generation
 
 Creates descriptive output filename incorporating processing parameters:
 
@@ -1830,7 +1820,7 @@ out_fasta = dna_fasta.replace(".fasta", f"_frame{frame}_AA.fasta")
 - **Traceability**: Maintains connection to source DNA file
 - **Workflow integration**: Enables automated downstream processing
 
-5. Sequence Processing and Gap Handling
+#### Sequence Processing and Gap Handling
 
 Processes each DNA sequence with gap removal and frame application:
 
@@ -1850,7 +1840,7 @@ for record in SeqIO.parse(dna_fasta, "fasta"):
 - **Frame offset application**: Adjusts start position based on specified reading frame
 - **Sequence integrity**: Preserves biological sequence content while removing alignment artifacts
 
-6. Codon Boundary Management
+#### Codon Boundary Management
 
 Ensures translation occurs on complete codons only:
 
@@ -1867,7 +1857,7 @@ cds = cds[:trim_len]
 - **Length preservation**: Maintains maximum possible coding sequence length
 - **Translation compatibility**: Ensures all sequences translate without frame errors
 
-7. Translation Execution
+#### Translation Execution
 
 Performs actual DNA to amino acid translation:
 
@@ -1892,7 +1882,7 @@ Internal stop codons may represent:
 - **Sequencing errors**: Should be identified rather than truncated
 - **Rare allelic variants**: May have biological significance in population studies
 
-8. SeqRecord Creation and Metadata
+#### SeqRecord Creation and Metadata
 
 Creates properly formatted output records with descriptive metadata:
 
@@ -1913,7 +1903,7 @@ aa_records.append(
 - **BioPython compatibility**: Creates proper SeqRecord objects
 - **Downstream traceability**: Enables tracking of processing parameters
 
-9. Output Generation and Reporting
+#### Output Generation and Reporting
 
 Writes translated sequences and provides processing summary:
 
@@ -2002,7 +1992,7 @@ The translated amino acid sequences serve as input for:
 
 This translation step bridges the gap between nucleotide-level haplotype reconstruction and protein-level functional analysis, essential for understanding the molecular basis of self-incompatibility specificity and the evolutionary forces maintaining allelic diversity in natural populations.
 
-## Bioinformatics
+### Bioinformatics
 
 > POTENTIALLY NOT NEEDED BECAUSE IT APPLIES TO INDIVIDUAL LIBRARY!
 
@@ -2076,9 +2066,9 @@ print(f"AA FASTA written to: {out_fasta}")
 
 ```
 
-# SRK Protein Translation, Alignment, and Abundance Filtering Pipeline {#SRKprotandfilter}
+# Phase 2: Cross-Library Analysis
 
-## Rationale and Documentation
+## SRK Protein Translation, Alignment, and Abundance Filtering Pipeline {#SRKprotandfilter}
 
 ### Overview
 
@@ -2086,7 +2076,7 @@ This comprehensive Python pipeline translates DNA sequences to amino acids, perf
 
 ### Pipeline Steps
 
-1. SRK Protein Analysis Framework
+#### SRK Protein Analysis Framework
 
 This pipeline addresses critical aspects of self-incompatibility research:
 
@@ -2095,7 +2085,7 @@ This pipeline addresses critical aspects of self-incompatibility research:
 - **Self-compatibility detection**: Identifies individuals lacking functional SRK proteins
 - **Population-level analysis**: Enables comparative analysis across multiple individuals
 
-2. Input Parameters and Configuration
+#### Input Parameters and Configuration
 
 The script requires user-specified parameters with optional enhanced validation:
 
@@ -2115,7 +2105,7 @@ use_enhanced_validation = use_enhanced_validation == 'y'
 - **Minimum count**: Abundance threshold for protein validation (2-5 recommended)
 - **Enhanced validation**: Optional SRK-specific domain validation
 
-3. Enhanced SRK Domain Validation
+#### Enhanced SRK Domain Validation
 
 Implements optional domain-specific validation for SRK proteins:
 
@@ -2146,7 +2136,7 @@ def validate_srk_features(protein_seq):
 - **Catalytic motif**: Lysine and aspartate residues essential for kinase activity
 - **Motif requirement**: At least one kinase motif must be present
 
-4. Comprehensive Individual Tracking
+#### Comprehensive Individual Tracking
 
 Implements detailed tracking of sequence processing for each individual:
 
@@ -2166,7 +2156,7 @@ individual_status = defaultdict(lambda: {
 - **Failed reasons**: Detailed failure mode documentation
 - **Sequence details**: Per-sequence processing information
 
-5. DNA Translation and Quality Control
+#### DNA Translation and Quality Control
 
 Processes DNA sequences with comprehensive quality validation:
 
@@ -2204,7 +2194,7 @@ if "*" in prot:
 - **Premature stops**: Identification of internal stop codons
 - **Frame adjustment**: Proper reading frame application and codon boundary management
 
-6. Multiple Sequence Alignment
+#### Multiple Sequence Alignment
 
 Performs amino acid sequence alignment using MAFFT:
 
@@ -2222,7 +2212,7 @@ subprocess.run(
 - **Amino acid mode**: Optimized for protein sequence alignment
 - **Quality assurance**: Error checking for alignment completion
 
-7. Abundance-Based Filtering
+#### Abundance-Based Filtering
 
 Implements protein frequency filtering to identify authentic variants:
 
@@ -2247,7 +2237,7 @@ filtered = {
 - **Population genetics**: Rare alleles vs. technical artifacts distinction
 - **Statistical confidence**: Higher frequency increases reliability
 
-8. Enhanced Individual Status Reporting
+#### Enhanced Individual Status Reporting
 
 Generates comprehensive reports tracking abundance filtering effects:
 
@@ -2281,7 +2271,7 @@ def generate_individual_report(individual_status, individuals_in_final_key):
 - **low_functional_rate**: <50% of sequences produced functional proteins
 - **normal**: Standard processing with adequate functional proteins
 
-9. Self-Compatibility Candidate Identification
+#### Self-Compatibility Candidate Identification
 
 Identifies individuals potentially lacking functional SRK proteins:
 
@@ -2378,7 +2368,7 @@ with open("SRK_self_compatible_candidates.txt", "w") as f:
 
 This pipeline provides a robust framework for identifying functional SRK proteins and detecting potential self-compatibility evolution, essential for understanding the maintenance and breakdown of self-incompatibility systems in natural populations.
 
-## Bioinformatics
+### Bioinformatics
 
 - **Definition:** A functional allele is defined by the number of distinct functional protein sequences (isoforms) underpinning all DNA SRK sequences. We need to include frequency to remove bioinformatics and sequencing noise (set to 5)
  
@@ -2749,9 +2739,7 @@ print("SC candidates: SRK_self_compatible_candidates.txt")
 
 ```
 
-# SRK Functional Protein Genotyping Pipeline {#SRKfunctionalprotgenotype}
-
-## Rationale and Documentation
+## SRK Functional Protein Genotyping Pipeline {#SRKfunctionalprotgenotype}
 
 ### Overview
 
@@ -2759,7 +2747,7 @@ This Python pipeline converts individual SRK protein assignments into standardiz
 
 ### Pipeline Steps
 
-1. Genotype Matrix Construction for Population Analysis
+#### Genotype Matrix Construction for Population Analysis
 
 Genotype matrix generation serves critical functions in self-incompatibility research:
 
@@ -2768,7 +2756,7 @@ Genotype matrix generation serves critical functions in self-incompatibility res
 - **Demographic analysis**: Supports effective population size estimation and bottleneck detection
 - **Selection analysis**: Provides input for tests of balancing selection on S-loci
 
-2. Input Parameter Specification
+#### Input Parameter Specification
 
 The script requires a single input file from the previous pipeline step:
 
@@ -2787,7 +2775,7 @@ wide_out = "SRK_individual_genotypes.tsv"
 - **Long format output**: Individual-protein pairs for relational analysis
 - **Wide format output**: Binary genotype matrix for population genetic software
 
-3. Protein Assignment Loading and Parsing
+#### Protein Assignment Loading and Parsing
 
 Loads protein assignments with robust individual identifier extraction:
 
@@ -2824,7 +2812,7 @@ with open(protein_key_file, newline="") as f:
 - Combines first two underscore-separated components as individual identifier
 - Maintains consistency with upstream pipeline naming conventions
 
-4. Long-Format Table Generation
+#### Long-Format Table Generation
 
 Creates relational table format for flexible downstream analysis:
 
@@ -2843,7 +2831,7 @@ with open(long_out, "w") as out:
 - **Statistical software**: Compatible with R, Python pandas, and other analysis tools
 - **Visualization**: Enables creation of allele frequency plots and distribution analyses
 
-5. Comprehensive Protein Inventory
+#### Comprehensive Protein Inventory
 
 Generates complete catalog of functional proteins across all individuals:
 
@@ -2862,7 +2850,7 @@ all_proteins = sorted({
 - **Population-wide scope**: Captures complete allelic diversity in dataset
 - **Matrix preparation**: Establishes column structure for genotype matrix
 
-6. Binary Genotype Matrix Construction
+#### Binary Genotype Matrix Construction
 
 Creates presence/absence matrix for population genetic analysis:
 
@@ -2891,7 +2879,7 @@ for individual in sorted(individual_proteins):
 - **Hardy-Weinberg testing**: Supports tests of population genetic equilibrium
 - **Structure analysis**: Input for STRUCTURE, ADMIXTURE, and PCA analyses
 
-7. Wide-Format Matrix Output
+#### Wide-Format Matrix Output
 
 Writes standardized genotype matrix with proper formatting:
 
@@ -2916,7 +2904,7 @@ with open(wide_out, "w", newline="") as out:
 - **Consistent ordering**: Maintains individual and protein order across rows/columns
 - **Complete matrix**: No missing data in final output
 
-8. Summary Statistics and Reporting
+#### Summary Statistics and Reporting
 
 Provides comprehensive processing summary:
 
@@ -3044,7 +3032,7 @@ Library001_02 0               0               1
 
 This genotyping pipeline provides the essential data transformation step between molecular haplotype reconstruction and population genetic analysis, enabling comprehensive investigation of self-incompatibility system evolution and maintenance in natural populations.
 
-## Bioinformatics
+### Bioinformatics
 
 - Goal: Genotype individuals based on protein data
 - Script: `genotype_SRK_from_functional_proteins.py`
@@ -3217,9 +3205,7 @@ print(long_out)
 print(wide_out)
 ```
 
-# SRK Zygosity Analysis Pipeline for Tetraploid Species {#zygosity}
-
-## Rationale and Documentation
+## SRK Zygosity Analysis Pipeline for Tetraploid Species {#zygosity}
 
 ### Overview
 
@@ -3227,7 +3213,7 @@ This R pipeline analyzes S-locus zygosity patterns in tetraploid species by quan
 
 ### Pipeline Steps
 
-1. Polyploid Self-Incompatibility Analysis Framework
+#### Polyploid Self-Incompatibility Analysis Framework
 
 Zygosity analysis serves critical functions in polyploid self-incompatibility research:
 
@@ -3236,7 +3222,7 @@ Zygosity analysis serves critical functions in polyploid self-incompatibility re
 - **Population structure analysis**: Reveals demographic processes affecting S-locus diversity
 - **Evolutionary constraint evaluation**: Assesses maintenance of incompatibility function in polyploids
 
-2. Data Loading and Validation
+#### Data Loading and Validation
 
 Loads individual-protein assignments from the genotyping pipeline:
 
@@ -3256,7 +3242,7 @@ df <- read.table(
 - **Header row**: Column names for Individual and Protein
 - **String preservation**: Prevents automatic factor conversion for downstream analysis
 
-3. Protein Diversity Quantification
+#### Protein Diversity Quantification
 
 Calculates the number of distinct SRK proteins per individual:
 
@@ -3284,7 +3270,7 @@ In tetraploid species, the number of distinct S-proteins reflects:
 - **Demographic history**: Bottlenecks reduce within-individual diversity
 - **Mating patterns**: Outcrossing maintains higher diversity than selfing
 
-4. Binary Zygosity Classification
+#### Binary Zygosity Classification
 
 Assigns simplified homozygous vs. heterozygous categories:
 
@@ -3303,7 +3289,7 @@ zyg$Zygosity <- ifelse(
 - **Binary simplification**: Reduces complexity for basic population genetic analysis
 - **Functional relevance**: Homozygous individuals may exhibit compromised incompatibility
 
-5. Detailed Genotype Model Assignment
+#### Detailed Genotype Model Assignment
 
 Provides specific genotype configurations based on protein count:
 
@@ -3347,7 +3333,7 @@ zyg$Genotype <- case_when(
 - Indicates strong outcrossing and large effective population size
 - Optimal configuration for maintaining incompatibility function
 
-6. Data Export and Documentation
+#### Data Export and Documentation
 
 Saves zygosity analysis results with proper formatting:
 
@@ -3368,7 +3354,7 @@ write.table(
 - **No row names**: Prevents index column creation
 - **Header preservation**: Maintains column names for clarity
 
-7. Summary Statistics Generation
+#### Summary Statistics Generation
 
 Provides comprehensive descriptive statistics:
 
@@ -3385,7 +3371,7 @@ print(table(zyg$Zygosity))
 - **Population assessment**: Overall genetic diversity patterns
 - **Quality control**: Identification of unusual genotype frequencies
 
-8. Visualization Generation
+#### Visualization Generation
 
 Creates graphical summary of genotype diversity:
 
@@ -3507,7 +3493,7 @@ Library001_04   3          Heterozygous   AABC
 
 This zygosity analysis pipeline provides essential insights into the genetic architecture of self-incompatibility in polyploid species, enabling assessment of system functionality and population genetic health critical for both evolutionary understanding and conservation management.
 
-## Bioinformatics
+### Bioinformatics
 
 - Goal: Score individual zygosity from genotypes to AAAA, AABB, AABC, ABCD based on number of recovered protein types
 - Script: `SRK_zygosity_from_genotype.R`
