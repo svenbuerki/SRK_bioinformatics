@@ -4,7 +4,7 @@
 
 This repository contains a comprehensive bioinformatics pipeline for analyzing S-receptor kinase (SRK) haplotype diversity in self-incompatible plant species using Oxford Nanopore long-read sequencing. The pipeline is specifically designed for threatened plant species research, enabling assessment of self-incompatibility system integrity in populations where genetic diversity loss may compromise reproductive success.
 
-## Author
+## Authors
 
 **Sven Buerki, Ph.D.** (he/him)\
 Associate Professor\
@@ -14,6 +14,14 @@ Boise State University\
 Boise, Idaho, USA
 
 📧 [svenbuerki\@boisestate.edu](mailto:svenbuerki@boisestate.edu)
+
+**Jim Beck, Ph.D.**\
+Manager/HPC Engineer IV\
+Research Computing\
+Boise State University\
+Boise, Idaho, USA
+
+📧 [jimbeck\@boisestate.edu](mailto:jimbeck@boisestate.edu)
 
 ## Key Features
 
@@ -27,24 +35,30 @@ Boise, Idaho, USA
 
 ## Pipeline Workflow
 
-The pipeline consists of 11 main steps divided into two phases:
+The pipeline consists of **14 main steps organized into three phases**, progressing from within-library sequence processing to cross-library integration and final population genetic analyses.
 
-### Phase 1: Within-Library Processing (Steps 1-8)
+## Phase 1: Within-Library Processing
 
-1.  **Prepare Canonical Sequences** - Reference sequence preparation
-2.  **Nanopore Amplicon Assembly and Phasing** - Multi-CANU assembly with polyploid phasing
-3.  **Haplotype Orientation and Consolidation** - Standardize sequence orientation
-4.  **FASTA Sequence Filtering and Reference Integration** - Quality control and reference addition
-5.  **Multiple Sequence Alignment** - MAFFT-based alignment
-6.  **Exon Extraction** - Extract coding sequences using AUGUSTUS annotations
-7.  **MSA Gap Backfilling** - Reference-guided gap filling for terminal regions
-8.  **DNA to Amino Acid Translation** - Frame-specific protein translation
+1.  **Prepare Canonical Sequences** – Preparation of reference SRK sequences used for downstream assembly and validation.
+2.  **Nanopore Amplicon Assembly and Phasing Pipeline** – Multi-CANU assembly of Nanopore amplicons followed by haplotype phasing to reconstruct allelic sequences.
+3.  **Haplotype Orientation and Consolidation Pipeline** – Standardization of sequence orientation and consolidation of phased haplotypes.
+4.  **FASTA Sequence Filtering and Reference Integration Pipeline** – Quality filtering of sequences and integration of validated reference alleles.
+5.  **Multiple Sequence Alignment** – Alignment of nucleotide sequences using MAFFT.
+6.  **Exon Extraction from Multiple Sequence Alignments Pipeline** – Extraction of coding regions based on AUGUSTUS gene annotations.
+7.  **MSA Gap Backfilling and Terminus Processing Pipeline** – Reference-guided backfilling of terminal alignment gaps and sequence terminus correction.
+8.  **DNA to Amino Acid Translation Pipeline** – Frame-specific translation of nucleotide sequences into proteins. **Note:** This step is optional and may be skipped if protein sequences are not required.
 
-### Phase 2: Cross-Library Analysis (Steps 9-11)
+## Phase 2: Cross-Library Analysis
 
-9.  **SRK Protein Translation and Filtering** - Comprehensive protein validation and abundance filtering
-10. **Functional Protein Genotyping** - Generate population genetic matrices
-11. **Zygosity Analysis** - Tetraploid genotype classification and demographic inference
+9.  **SRK Protein Translation, Alignment, and Abundance Filtering Pipeline** – Translation of SRK alleles into proteins, alignment, and filtering based on abundance thresholds to retain functional candidates.
+10. **SRK Functional Protein Genotyping Pipeline** – Construction of individual-level genotype matrices and detection of functional SRK proteins across samples.
+11. **SRK Zygosity Analysis Pipeline for Tetraploid Species** – Classification of individuals as homozygous or heterozygous and estimation of population-level zygosity statistics in tetraploid species.
+
+## Phase 3: Data Analyses
+
+12. **Population Genetics Statistics** – Estimation of population-level diversity metrics, including heterozygosity, mean protein counts per individual, total allele counts, and effective allele numbers.
+13. **Allele Accumulation Curves** – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift.
+14. **Allele Frequency Analysis** – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under negative frequency-dependent selection.
 
 ## Requirements
 
@@ -172,10 +186,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-For questions or issues: 
+For questions or issues:
 
-- Open an [issue](https://github.com/svenbuerki/SRK_bioinformatics/issues) 
-- Contact: [[svenbuerki\@boisestate.edu](mailto:svenbuerki@boisestate.edu){.email}]
+-   Open an [issue](https://github.com/svenbuerki/SRK_bioinformatics/issues)
+-   Contact: [[svenbuerki\@boisestate.edu](mailto:svenbuerki@boisestate.edu){.email}]
 
 ## Acknowledgments
 
