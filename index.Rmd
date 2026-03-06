@@ -22,6 +22,8 @@ The companion repository for this webpage is available at:
 
 https://github.com/svenbuerki/SRK_bioinformatics/
 
+---
+
 # Introduction
 
 Self-incompatibility (SI) systems represent one of the most important mechanisms preventing inbreeding in flowering plants, with the sporophytic SI system found in the Brassicaceae being controlled by the highly polymorphic S-locus. The S-receptor kinase (SRK) gene, encoding the female determinant of incompatibility specificity, exhibits extraordinary allelic diversity maintained by balancing selection over evolutionary timescales. Understanding SRK haplotype diversity and population genetic structure is critical for assessing the evolutionary maintenance of outcrossing systems and identifying populations at risk of SI breakdown.
@@ -34,32 +36,37 @@ The pipeline is specifically designed for threatened plant species research, add
 
 Key innovations include multi-replicate assembly strategies for maximizing allelic recovery, reference-guided sequence orientation and gap-filling procedures, SRK-specific protein validation criteria, and tetraploid-aware zygosity analysis. The modular design allows adaptation to different species and study systems while maintaining rigorous quality control throughout the analysis workflow.
 
+---
+
 # Pipeline Overview
 
-The pipeline consists of 14 main steps divided into three phases:
+The pipeline consists of **14 main steps organized into three phases**, progressing from within-library sequence processing to cross-library integration and final population genetic analyses.
 
-### Phase 1: Within-Library Processing
+## Phase 1: Within-Library Processing
 
-1. [Prepare Canonical Sequences](#prepcanseq) - Reference sequence preparation
-2. [Nanopore Amplicon Assembly and Phasing Pipeline](#nanampassphas) - Multi-CANU assembly with polyploid phasing
-3. [Haplotype Orientation and Consolidation Pipeline](#haporient) - Standardize sequence orientation
-4. [FASTA Sequence Filtering and Reference Integration Pipeline](#fastafiltrefint) - Quality control and reference addition
-5. [Multiple Sequence Alignment](#msa) - MAFFT-based alignment
-6. [Exon Extraction from Multiple Sequence Alignments Pipeline](#exonextract) - Extract coding sequences using AUGUSTUS annotations
-7. [MSA Gap Backfilling and Terminus Processing Pipeline](#msagapback) - Reference-guided gap filling for terminal regions
-8. [DNA to Amino Acid Translation Pipeline](#DNA2AA) - Frame-specific protein translation (**Note:** This step is not mandatory)
+1. [Prepare Canonical Sequences](#prepcanseq) – Preparation of reference SRK sequences used for downstream assembly and validation.
+2. [Nanopore Amplicon Assembly and Phasing Pipeline](#nanampassphas) – Multi-CANU assembly of Nanopore amplicons followed by haplotype phasing to reconstruct allelic sequences.
+3. [Haplotype Orientation and Consolidation Pipeline](#haporient) – Standardization of sequence orientation and consolidation of phased haplotypes.
+4. [FASTA Sequence Filtering and Reference Integration Pipeline](#fastafiltrefint) – Quality filtering of sequences and integration of validated reference alleles.
+5. [Multiple Sequence Alignment](#msa) – Alignment of nucleotide sequences using MAFFT.
+6. [Exon Extraction from Multiple Sequence Alignments Pipeline](#exonextract) – Extraction of coding regions based on AUGUSTUS gene annotations.
+7. [MSA Gap Backfilling and Terminus Processing Pipeline](#msagapback) – Reference-guided backfilling of terminal alignment gaps and sequence terminus correction.
+8. [DNA to Amino Acid Translation Pipeline](#DNA2AA) – Frame-specific translation of nucleotide sequences into proteins.
+   **Note:** This step is optional and may be skipped if protein sequences are not required.
 
-### Phase 2: Cross-Library Analysis
+## Phase 2: Cross-Library Analysis
 
-9. [SRK Protein Translation, Alignment, and Abundance Filtering Pipeline](#SRKprotandfilter) - Comprehensive protein validation and abundance filtering
-10. [SRK Functional Protein Genotyping Pipeline](#SRKfunctionalprotgenotype) - Generate population genetic matrices
-11. [SRK Zygosity Analysis Pipeline for Tetraploid Species](#zygosity) - Tetraploid genotype classification and demographic inference
+9. [SRK Protein Translation, Alignment, and Abundance Filtering Pipeline](#SRKprotandfilter) – Translation of SRK alleles into proteins, alignment, and filtering based on abundance thresholds to retain functional candidates.
+10. [SRK Functional Protein Genotyping Pipeline](#SRKfunctionalprotgenotype) – Construction of individual-level genotype matrices and detection of functional SRK proteins across samples.
+11. [SRK Zygosity Analysis Pipeline for Tetraploid Species](#zygosity) – Classification of individuals as homozygous or heterozygous and estimation of population-level zygosity statistics in tetraploid species.
 
-### Phase 3: Data Analyses
+## Phase 3: Data Analyses
 
-12. [Population Genetics Statistics](#popgenetics)
-13. [Allele Accumulation Curves](#alleleaccum)
-14. [Allele Frequency Analysis](#allelefrqanalysis)
+12. [Population Genetics Statistics](#popgenetics) – Estimation of population-level diversity metrics, including heterozygosity, mean protein counts per individual, total allele counts, and effective allele numbers.
+13. [Allele Accumulation Curves](#alleleaccum) – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift.
+14. [Allele Frequency Analysis](#allelefrqanalysis) – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under negative frequency-dependent selection.
+
+---
 
 # Phase 1: Within-Library Processing
 
@@ -2073,6 +2080,8 @@ print(f"AA FASTA written to: {out_fasta}")
 
 ```
 
+---
+
 # Phase 2: Cross-Library Analysis
 
 ## SRK Protein Translation, Alignment, and Abundance Filtering Pipeline {#SRKprotandfilter}
@@ -3653,6 +3662,8 @@ cat("SRK_individual_zygosity.tsv\n")
 cat("SRK_zygosity_distribution.pdf\n")
 ```
 
+---
+
 # Phase 3: Data Analyses
 
 ## Population Genetic Statistics {#popgenetics}
@@ -4322,3 +4333,238 @@ For SRK loci, accumulation dynamics reflect:
 * strength of balancing selection across populations.
 
 ## Allele Frequency Analysis {#allelefrqanalysis}
+
+### Overview
+
+While **negative frequency-dependent selection (NFDS)** maintains high allelic diversity at the **SRK self-incompatibility locus**, allele **frequencies may still deviate from equal expectations** due to demographic processes such as genetic drift, population structure, or recent allele turnover.
+
+This analysis evaluates whether observed **SRK allele frequency distributions deviate from the theoretical NFDS expectation**, where all alleles should occur at approximately equal frequencies.
+
+The pipeline:
+
+* Filters **ingroup individuals only**
+* Links genotype data to **sampling metadata**
+* Performs **χ² goodness-of-fit tests** at the species and population levels
+* Generates **allele frequency plots**
+* Outputs a **summary table of statistical tests**
+
+### Pipeline Steps
+
+#### Input Data Integration
+
+Two input datasets are required:
+
+* **SRK protein assignment table** containing allele identities per individual
+* **Sampling metadata** containing population information and ingroup status
+
+Individuals classified as outgroups (`Ingroup == 0`) are excluded to ensure that only relevant samples are analysed.
+
+Individual identifiers in the genotype dataset are matched with the `SampleID` column of the metadata table to assign population membership.
+
+#### Allele Frequency Estimation
+
+For each analysis level (species and populations), allele counts are calculated as:
+
+$$
+p_i = \frac{n_i}{\sum n_i}
+$$
+
+where
+
+* ( n_i ) is the number of observations of allele (i)
+* ( \sum n_i ) is the total number of allele observations
+
+Under **ideal NFDS expectations**, all alleles should have equal frequency:
+
+$$
+p_{expected} = \frac{1}{k}
+$$
+
+where (k) is the number of alleles present.
+
+#### χ² Goodness-of-Fit Test
+
+To test for deviations from equal allele frequencies, a **chi-square goodness-of-fit test** is performed:
+
+$$
+\chi^2 = \sum \frac{(O_i - E_i)^2}{E_i}
+$$
+
+where:
+
+* (O_i) = observed allele counts
+* (E_i) = expected allele counts assuming equal frequencies
+
+A significant result indicates that **allele frequencies are uneven**, which may reflect:
+
+* genetic drift
+* population subdivision
+* sampling effects
+* transient demographic processes
+
+#### Population-Level Filtering
+
+Population-level analyses are restricted to populations with:
+
+* **at least 5 individuals**
+
+This filtering avoids unstable statistical estimates caused by very small sample sizes.
+
+#### Allele Frequency Visualization
+
+For each analysis level, the pipeline produces a **frequency distribution plot** including:
+
+* **Observed allele frequencies** (black line)
+* **NFDS expectation** (1/k) (blue dashed line)
+* **LOESS smoothed trend** of the observed distribution (red line)
+
+These visualizations allow rapid inspection of:
+
+* dominant alleles
+* rare allele tails
+* deviations from theoretical NFDS equilibrium.
+
+### Output Files
+
+#### Statistical Results
+
+`SRK_chisq_species_population.tsv`
+
+This table summarizes the χ² test statistics at the species and population levels.
+
+| Column          | Description                            |
+| --------------- | -------------------------------------- |
+| `N_individuals` | Number of individuals analyzed         |
+| `N_alleles`     | Number of SRK alleles detected         |
+| `X2`            | Chi-square statistic                   |
+| `df`            | Degrees of freedom                     |
+| `p_value`       | Significance level                     |
+| `Level`         | Analysis level (Species or Population) |
+| `Population`    | Population identifier                  |
+
+Example output:
+
+| N_individuals | N_alleles | X2     | df | p_value  | Level      | Population |
+| ------------- | --------- | ------ | -- | -------- | ---------- | ---------- |
+| 97            | 73        | 619.34 | 72 | 5.37e-88 | Species    | All        |
+| 30            | 24        | 321.72 | 23 | 1.82e-54 | Population | 25         |
+| 26            | 21        | 153.11 | 20 | 1.59e-22 | Population | 76         |
+
+#### Frequency Plots
+
+`SRK_chisq_species_population_frequency_plots.pdf`
+
+The PDF file contains **allele frequency plots for each analysis level**, allowing visual comparison between observed allele distributions and NFDS expectations.
+
+### Biological Interpretation
+
+Results can be interpreted using the following guidelines:
+
+#### Non-significant deviation
+
+If the chi-square test is not significant:
+
+> A chi-square test revealed no significant deviation from equal allele frequencies ((\chi^2 = X), df = (Y), (p = Z)), consistent with negative frequency-dependent selection maintaining SRK allele diversity.
+
+#### Significant deviation
+
+If the chi-square test is significant:
+
+> Allele frequencies deviated significantly from equal expectations ((\chi^2 = X), df = (Y), (p = Z)), suggesting that additional evolutionary or demographic processes may influence SRK allele frequencies.
+
+Possible explanations include:
+
+* population bottlenecks
+* local drift
+* unequal migration rates
+* recent allele turnover
+
+### Bioinformatics
+
+* Script: `SRK_chisq_species_population.R`
+* Run command:
+
+```bash
+Rscript SRK_chisq_species_population.R
+```
+
+#### Input Files
+
+* `SRK_individual_protein_table.tsv`
+* `sampling_metadata.csv`
+
+#### Output Files
+
+* `SRK_chisq_species_population.tsv`
+* `SRK_chisq_species_population_frequency_plots.pdf`
+
+#### R Script
+
+```r
+############################################################
+# SRK allele frequency χ² tests
+# Updated for protein pipeline (2026)
+############################################################
+
+cat("\nStarting SRK chi-square analysis\n")
+
+############################################################
+# 1. Load files
+############################################################
+
+protein_file <- "SRK_individual_protein_table.tsv"
+meta_file    <- "sampling_metadata.csv"
+
+if (!file.exists(protein_file)) {
+  stop(paste("ERROR: Cannot find", protein_file))
+}
+
+if (!file.exists(meta_file)) {
+  stop(paste("ERROR: Cannot find", meta_file))
+}
+
+allele_df <- read.table(
+  protein_file,
+  header = TRUE,
+  sep = "\t",
+  stringsAsFactors = FALSE,
+  quote = ""
+)
+
+meta_df <- read.csv(
+  meta_file,
+  stringsAsFactors = FALSE
+)
+
+############################################################
+# 2. Check required columns
+############################################################
+
+required_cols <- c("Individual", "Protein")
+
+missing_cols <- setdiff(required_cols, colnames(allele_df))
+
+if (length(missing_cols) > 0) {
+  stop(paste("Missing columns:", paste(missing_cols, collapse=", ")))
+}
+
+############################################################
+# 3. Keep ingroup only
+############################################################
+
+meta_df <- meta_df[meta_df$Ingroup == 1, ]
+
+allele_df <- allele_df[
+  allele_df$Individual %in% meta_df$SampleID,
+]
+
+allele_df$Population <- meta_df$Pop[
+  match(allele_df$Individual, meta_df$SampleID)
+]
+
+cat("Individuals analysed:",
+    length(unique(allele_df$Individual)), "\n")
+
+cat("Proteins detected:",
+    length(unique(allele_df$Protein)), "\n")
+```

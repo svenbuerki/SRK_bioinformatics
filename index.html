@@ -1478,6 +1478,7 @@ border-radius: 0px;
 <h1><span class="header-section-number">1</span> GitHub Repository</h1>
 <p>The companion repository for this webpage is available at:</p>
 <p><a href="https://github.com/svenbuerki/SRK_bioinformatics/" class="uri">https://github.com/svenbuerki/SRK_bioinformatics/</a></p>
+<hr />
 </div>
 <div id="introduction" class="section level1" number="2">
 <h1><span class="header-section-number">2</span> Introduction</h1>
@@ -1486,38 +1487,41 @@ border-radius: 0px;
 <p>This comprehensive pipeline integrates Nanopore amplicon assembly, haplotype phasing, and population genetic analysis to provide a complete workflow for SRK diversity assessment. The approach combines multiple CANU assembly replicates optimized for rare haplotype recovery with polyploid-aware variant calling and read-backed phasing to generate high-confidence haplotype reconstructions. Downstream analysis components translate DNA sequences to functional proteins, apply abundance-based filtering to distinguish authentic alleles from technical artifacts, and generate population genetic datasets suitable for demographic inference and conservation assessment.</p>
 <p>The pipeline is specifically designed for threatened plant species research, addressing the critical need to assess SI system integrity in small or fragmented populations where genetic diversity loss may compromise reproductive success. By providing both molecular-level haplotype reconstruction and population-level genetic analysis, this workflow enables comprehensive evaluation of self-incompatibility system evolution and maintenance in natural populations facing conservation challenges.</p>
 <p>Key innovations include multi-replicate assembly strategies for maximizing allelic recovery, reference-guided sequence orientation and gap-filling procedures, SRK-specific protein validation criteria, and tetraploid-aware zygosity analysis. The modular design allows adaptation to different species and study systems while maintaining rigorous quality control throughout the analysis workflow.</p>
+<hr />
 </div>
 <div id="pipeline-overview" class="section level1" number="3">
 <h1><span class="header-section-number">3</span> Pipeline Overview</h1>
-<p>The pipeline consists of 14 main steps divided into three phases:</p>
-<div id="phase-1-within-library-processing" class="section level3" number="3.0.1">
-<h3><span class="header-section-number">3.0.1</span> Phase 1: Within-Library Processing</h3>
+<p>The pipeline consists of <strong>14 main steps organized into three phases</strong>, progressing from within-library sequence processing to cross-library integration and final population genetic analyses.</p>
+<div id="phase-1-within-library-processing" class="section level2" number="3.1">
+<h2><span class="header-section-number">3.1</span> Phase 1: Within-Library Processing</h2>
 <ol style="list-style-type: decimal">
-<li><a href="#prepcanseq">Prepare Canonical Sequences</a> - Reference sequence preparation</li>
-<li><a href="#nanampassphas">Nanopore Amplicon Assembly and Phasing Pipeline</a> - Multi-CANU assembly with polyploid phasing</li>
-<li><a href="#haporient">Haplotype Orientation and Consolidation Pipeline</a> - Standardize sequence orientation</li>
-<li><a href="#fastafiltrefint">FASTA Sequence Filtering and Reference Integration Pipeline</a> - Quality control and reference addition</li>
-<li><a href="#msa">Multiple Sequence Alignment</a> - MAFFT-based alignment</li>
-<li><a href="#exonextract">Exon Extraction from Multiple Sequence Alignments Pipeline</a> - Extract coding sequences using AUGUSTUS annotations</li>
-<li><a href="#msagapback">MSA Gap Backfilling and Terminus Processing Pipeline</a> - Reference-guided gap filling for terminal regions</li>
-<li><a href="#DNA2AA">DNA to Amino Acid Translation Pipeline</a> - Frame-specific protein translation (<strong>Note:</strong> This step is not mandatory)</li>
+<li><a href="#prepcanseq">Prepare Canonical Sequences</a> – Preparation of reference SRK sequences used for downstream assembly and validation.</li>
+<li><a href="#nanampassphas">Nanopore Amplicon Assembly and Phasing Pipeline</a> – Multi-CANU assembly of Nanopore amplicons followed by haplotype phasing to reconstruct allelic sequences.</li>
+<li><a href="#haporient">Haplotype Orientation and Consolidation Pipeline</a> – Standardization of sequence orientation and consolidation of phased haplotypes.</li>
+<li><a href="#fastafiltrefint">FASTA Sequence Filtering and Reference Integration Pipeline</a> – Quality filtering of sequences and integration of validated reference alleles.</li>
+<li><a href="#msa">Multiple Sequence Alignment</a> – Alignment of nucleotide sequences using MAFFT.</li>
+<li><a href="#exonextract">Exon Extraction from Multiple Sequence Alignments Pipeline</a> – Extraction of coding regions based on AUGUSTUS gene annotations.</li>
+<li><a href="#msagapback">MSA Gap Backfilling and Terminus Processing Pipeline</a> – Reference-guided backfilling of terminal alignment gaps and sequence terminus correction.</li>
+<li><a href="#DNA2AA">DNA to Amino Acid Translation Pipeline</a> – Frame-specific translation of nucleotide sequences into proteins.
+<strong>Note:</strong> This step is optional and may be skipped if protein sequences are not required.</li>
 </ol>
 </div>
-<div id="phase-2-cross-library-analysis" class="section level3" number="3.0.2">
-<h3><span class="header-section-number">3.0.2</span> Phase 2: Cross-Library Analysis</h3>
+<div id="phase-2-cross-library-analysis" class="section level2" number="3.2">
+<h2><span class="header-section-number">3.2</span> Phase 2: Cross-Library Analysis</h2>
 <ol start="9" style="list-style-type: decimal">
-<li><a href="#SRKprotandfilter">SRK Protein Translation, Alignment, and Abundance Filtering Pipeline</a> - Comprehensive protein validation and abundance filtering</li>
-<li><a href="#SRKfunctionalprotgenotype">SRK Functional Protein Genotyping Pipeline</a> - Generate population genetic matrices</li>
-<li><a href="#zygosity">SRK Zygosity Analysis Pipeline for Tetraploid Species</a> - Tetraploid genotype classification and demographic inference</li>
+<li><a href="#SRKprotandfilter">SRK Protein Translation, Alignment, and Abundance Filtering Pipeline</a> – Translation of SRK alleles into proteins, alignment, and filtering based on abundance thresholds to retain functional candidates.</li>
+<li><a href="#SRKfunctionalprotgenotype">SRK Functional Protein Genotyping Pipeline</a> – Construction of individual-level genotype matrices and detection of functional SRK proteins across samples.</li>
+<li><a href="#zygosity">SRK Zygosity Analysis Pipeline for Tetraploid Species</a> – Classification of individuals as homozygous or heterozygous and estimation of population-level zygosity statistics in tetraploid species.</li>
 </ol>
 </div>
-<div id="phase-3-data-analyses" class="section level3" number="3.0.3">
-<h3><span class="header-section-number">3.0.3</span> Phase 3: Data Analyses</h3>
+<div id="phase-3-data-analyses" class="section level2" number="3.3">
+<h2><span class="header-section-number">3.3</span> Phase 3: Data Analyses</h2>
 <ol start="12" style="list-style-type: decimal">
-<li><a href="#popgenetics">Population Genetics Statistics</a></li>
-<li><a href="#alleleaccum">Allele Accumulation Curves</a></li>
-<li><a href="#allelefrqanalysis">Allele Frequency Analysis</a></li>
+<li><a href="#popgenetics">Population Genetics Statistics</a> – Estimation of population-level diversity metrics, including heterozygosity, mean protein counts per individual, total allele counts, and effective allele numbers.</li>
+<li><a href="#alleleaccum">Allele Accumulation Curves</a> – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift.</li>
+<li><a href="#allelefrqanalysis">Allele Frequency Analysis</a> – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under negative frequency-dependent selection.</li>
 </ol>
+<hr />
 </div>
 </div>
 <div id="phase-1-within-library-processing-1" class="section level1" number="4">
@@ -3462,6 +3466,7 @@ SeqIO.write(aa_records, out_fasta, &quot;fasta&quot;)
 print(&quot;\n✅ Translation complete&quot;)
 print(f&quot;AA FASTA written to: {out_fasta}&quot;)
 </code></pre>
+<hr />
 </div>
 </div>
 </div>
@@ -4997,6 +5002,7 @@ dev.off()
 cat(&quot;\nOutput files:\n&quot;)
 cat(&quot;SRK_individual_zygosity.tsv\n&quot;)
 cat(&quot;SRK_zygosity_distribution.pdf\n&quot;)</code></pre>
+<hr />
 </div>
 </div>
 </div>
@@ -5754,6 +5760,310 @@ Late_fraction &lt; 0.10 → drift-dominated diversity</code></pre>
 </div>
 <div id="allelefrqanalysis" class="section level2" number="6.3">
 <h2><span class="header-section-number">6.3</span> Allele Frequency Analysis</h2>
+<div id="overview-11" class="section level3" number="6.3.1">
+<h3><span class="header-section-number">6.3.1</span> Overview</h3>
+<p>While <strong>negative frequency-dependent selection (NFDS)</strong> maintains high allelic diversity at the <strong>SRK self-incompatibility locus</strong>, allele <strong>frequencies may still deviate from equal expectations</strong> due to demographic processes such as genetic drift, population structure, or recent allele turnover.</p>
+<p>This analysis evaluates whether observed <strong>SRK allele frequency distributions deviate from the theoretical NFDS expectation</strong>, where all alleles should occur at approximately equal frequencies.</p>
+<p>The pipeline:</p>
+<ul>
+<li>Filters <strong>ingroup individuals only</strong></li>
+<li>Links genotype data to <strong>sampling metadata</strong></li>
+<li>Performs <strong>χ² goodness-of-fit tests</strong> at the species and population levels</li>
+<li>Generates <strong>allele frequency plots</strong></li>
+<li>Outputs a <strong>summary table of statistical tests</strong></li>
+</ul>
+</div>
+<div id="pipeline-steps-11" class="section level3" number="6.3.2">
+<h3><span class="header-section-number">6.3.2</span> Pipeline Steps</h3>
+<div id="input-data-integration" class="section level4" number="6.3.2.1">
+<h4><span class="header-section-number">6.3.2.1</span> Input Data Integration</h4>
+<p>Two input datasets are required:</p>
+<ul>
+<li><strong>SRK protein assignment table</strong> containing allele identities per individual</li>
+<li><strong>Sampling metadata</strong> containing population information and ingroup status</li>
+</ul>
+<p>Individuals classified as outgroups (<code>Ingroup == 0</code>) are excluded to ensure that only relevant samples are analysed.</p>
+<p>Individual identifiers in the genotype dataset are matched with the <code>SampleID</code> column of the metadata table to assign population membership.</p>
+</div>
+<div id="allele-frequency-estimation-1" class="section level4" number="6.3.2.2">
+<h4><span class="header-section-number">6.3.2.2</span> Allele Frequency Estimation</h4>
+<p>For each analysis level (species and populations), allele counts are calculated as:</p>
+<p><span class="math display">\[
+p_i = \frac{n_i}{\sum n_i}
+\]</span></p>
+<p>where</p>
+<ul>
+<li>( n_i ) is the number of observations of allele (i)</li>
+<li>( n_i ) is the total number of allele observations</li>
+</ul>
+<p>Under <strong>ideal NFDS expectations</strong>, all alleles should have equal frequency:</p>
+<p><span class="math display">\[
+p_{expected} = \frac{1}{k}
+\]</span></p>
+<p>where (k) is the number of alleles present.</p>
+</div>
+<div id="χ²-goodness-of-fit-test" class="section level4" number="6.3.2.3">
+<h4><span class="header-section-number">6.3.2.3</span> χ² Goodness-of-Fit Test</h4>
+<p>To test for deviations from equal allele frequencies, a <strong>chi-square goodness-of-fit test</strong> is performed:</p>
+<p><span class="math display">\[
+\chi^2 = \sum \frac{(O_i - E_i)^2}{E_i}
+\]</span></p>
+<p>where:</p>
+<ul>
+<li>(O_i) = observed allele counts</li>
+<li>(E_i) = expected allele counts assuming equal frequencies</li>
+</ul>
+<p>A significant result indicates that <strong>allele frequencies are uneven</strong>, which may reflect:</p>
+<ul>
+<li>genetic drift</li>
+<li>population subdivision</li>
+<li>sampling effects</li>
+<li>transient demographic processes</li>
+</ul>
+</div>
+<div id="population-level-filtering" class="section level4" number="6.3.2.4">
+<h4><span class="header-section-number">6.3.2.4</span> Population-Level Filtering</h4>
+<p>Population-level analyses are restricted to populations with:</p>
+<ul>
+<li><strong>at least 5 individuals</strong></li>
+</ul>
+<p>This filtering avoids unstable statistical estimates caused by very small sample sizes.</p>
+</div>
+<div id="allele-frequency-visualization" class="section level4" number="6.3.2.5">
+<h4><span class="header-section-number">6.3.2.5</span> Allele Frequency Visualization</h4>
+<p>For each analysis level, the pipeline produces a <strong>frequency distribution plot</strong> including:</p>
+<ul>
+<li><strong>Observed allele frequencies</strong> (black line)</li>
+<li><strong>NFDS expectation</strong> (1/k) (blue dashed line)</li>
+<li><strong>LOESS smoothed trend</strong> of the observed distribution (red line)</li>
+</ul>
+<p>These visualizations allow rapid inspection of:</p>
+<ul>
+<li>dominant alleles</li>
+<li>rare allele tails</li>
+<li>deviations from theoretical NFDS equilibrium.</li>
+</ul>
+</div>
+</div>
+<div id="output-files-13" class="section level3" number="6.3.3">
+<h3><span class="header-section-number">6.3.3</span> Output Files</h3>
+<div id="statistical-results" class="section level4" number="6.3.3.1">
+<h4><span class="header-section-number">6.3.3.1</span> Statistical Results</h4>
+<p><code>SRK_chisq_species_population.tsv</code></p>
+<p>This table summarizes the χ² test statistics at the species and population levels.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>N_individuals</code></td>
+<td>Number of individuals analyzed</td>
+</tr>
+<tr class="even">
+<td><code>N_alleles</code></td>
+<td>Number of SRK alleles detected</td>
+</tr>
+<tr class="odd">
+<td><code>X2</code></td>
+<td>Chi-square statistic</td>
+</tr>
+<tr class="even">
+<td><code>df</code></td>
+<td>Degrees of freedom</td>
+</tr>
+<tr class="odd">
+<td><code>p_value</code></td>
+<td>Significance level</td>
+</tr>
+<tr class="even">
+<td><code>Level</code></td>
+<td>Analysis level (Species or Population)</td>
+</tr>
+<tr class="odd">
+<td><code>Population</code></td>
+<td>Population identifier</td>
+</tr>
+</tbody>
+</table>
+<p>Example output:</p>
+<table>
+<colgroup>
+<col width="22%" />
+<col width="15%" />
+<col width="10%" />
+<col width="3%" />
+<col width="13%" />
+<col width="17%" />
+<col width="17%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>N_individuals</th>
+<th>N_alleles</th>
+<th>X2</th>
+<th>df</th>
+<th>p_value</th>
+<th>Level</th>
+<th>Population</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>97</td>
+<td>73</td>
+<td>619.34</td>
+<td>72</td>
+<td>5.37e-88</td>
+<td>Species</td>
+<td>All</td>
+</tr>
+<tr class="even">
+<td>30</td>
+<td>24</td>
+<td>321.72</td>
+<td>23</td>
+<td>1.82e-54</td>
+<td>Population</td>
+<td>25</td>
+</tr>
+<tr class="odd">
+<td>26</td>
+<td>21</td>
+<td>153.11</td>
+<td>20</td>
+<td>1.59e-22</td>
+<td>Population</td>
+<td>76</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="frequency-plots" class="section level4" number="6.3.3.2">
+<h4><span class="header-section-number">6.3.3.2</span> Frequency Plots</h4>
+<p><code>SRK_chisq_species_population_frequency_plots.pdf</code></p>
+<p>The PDF file contains <strong>allele frequency plots for each analysis level</strong>, allowing visual comparison between observed allele distributions and NFDS expectations.</p>
+</div>
+</div>
+<div id="biological-interpretation-1" class="section level3" number="6.3.4">
+<h3><span class="header-section-number">6.3.4</span> Biological Interpretation</h3>
+<p>Results can be interpreted using the following guidelines:</p>
+<div id="non-significant-deviation" class="section level4" number="6.3.4.1">
+<h4><span class="header-section-number">6.3.4.1</span> Non-significant deviation</h4>
+<p>If the chi-square test is not significant:</p>
+<blockquote>
+<p>A chi-square test revealed no significant deviation from equal allele frequencies ((^2 = X), df = (Y), (p = Z)), consistent with negative frequency-dependent selection maintaining SRK allele diversity.</p>
+</blockquote>
+</div>
+<div id="significant-deviation" class="section level4" number="6.3.4.2">
+<h4><span class="header-section-number">6.3.4.2</span> Significant deviation</h4>
+<p>If the chi-square test is significant:</p>
+<blockquote>
+<p>Allele frequencies deviated significantly from equal expectations ((^2 = X), df = (Y), (p = Z)), suggesting that additional evolutionary or demographic processes may influence SRK allele frequencies.</p>
+</blockquote>
+<p>Possible explanations include:</p>
+<ul>
+<li>population bottlenecks</li>
+<li>local drift</li>
+<li>unequal migration rates</li>
+<li>recent allele turnover</li>
+</ul>
+</div>
+</div>
+<div id="bioinformatics-11" class="section level3" number="6.3.5">
+<h3><span class="header-section-number">6.3.5</span> Bioinformatics</h3>
+<ul>
+<li>Script: <code>SRK_chisq_species_population.R</code></li>
+<li>Run command:</li>
+</ul>
+<pre class="bash"><code>Rscript SRK_chisq_species_population.R</code></pre>
+<div id="input-files-2" class="section level4" number="6.3.5.1">
+<h4><span class="header-section-number">6.3.5.1</span> Input Files</h4>
+<ul>
+<li><code>SRK_individual_protein_table.tsv</code></li>
+<li><code>sampling_metadata.csv</code></li>
+</ul>
+</div>
+<div id="output-files-14" class="section level4" number="6.3.5.2">
+<h4><span class="header-section-number">6.3.5.2</span> Output Files</h4>
+<ul>
+<li><code>SRK_chisq_species_population.tsv</code></li>
+<li><code>SRK_chisq_species_population_frequency_plots.pdf</code></li>
+</ul>
+</div>
+<div id="r-script" class="section level4" number="6.3.5.3">
+<h4><span class="header-section-number">6.3.5.3</span> R Script</h4>
+<pre class="r"><code>############################################################
+# SRK allele frequency χ² tests
+# Updated for protein pipeline (2026)
+############################################################
+
+cat(&quot;\nStarting SRK chi-square analysis\n&quot;)
+
+############################################################
+# 1. Load files
+############################################################
+
+protein_file &lt;- &quot;SRK_individual_protein_table.tsv&quot;
+meta_file    &lt;- &quot;sampling_metadata.csv&quot;
+
+if (!file.exists(protein_file)) {
+  stop(paste(&quot;ERROR: Cannot find&quot;, protein_file))
+}
+
+if (!file.exists(meta_file)) {
+  stop(paste(&quot;ERROR: Cannot find&quot;, meta_file))
+}
+
+allele_df &lt;- read.table(
+  protein_file,
+  header = TRUE,
+  sep = &quot;\t&quot;,
+  stringsAsFactors = FALSE,
+  quote = &quot;&quot;
+)
+
+meta_df &lt;- read.csv(
+  meta_file,
+  stringsAsFactors = FALSE
+)
+
+############################################################
+# 2. Check required columns
+############################################################
+
+required_cols &lt;- c(&quot;Individual&quot;, &quot;Protein&quot;)
+
+missing_cols &lt;- setdiff(required_cols, colnames(allele_df))
+
+if (length(missing_cols) &gt; 0) {
+  stop(paste(&quot;Missing columns:&quot;, paste(missing_cols, collapse=&quot;, &quot;)))
+}
+
+############################################################
+# 3. Keep ingroup only
+############################################################
+
+meta_df &lt;- meta_df[meta_df$Ingroup == 1, ]
+
+allele_df &lt;- allele_df[
+  allele_df$Individual %in% meta_df$SampleID,
+]
+
+allele_df$Population &lt;- meta_df$Pop[
+  match(allele_df$Individual, meta_df$SampleID)
+]
+
+cat(&quot;Individuals analysed:&quot;,
+    length(unique(allele_df$Individual)), &quot;\n&quot;)
+
+cat(&quot;Proteins detected:&quot;,
+    length(unique(allele_df$Protein)), &quot;\n&quot;)</code></pre>
+</div>
+</div>
 </div>
 </div>
 
