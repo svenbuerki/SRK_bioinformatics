@@ -8,7 +8,7 @@ This project models allopolyploid genetics for **slickspot peppergrass** (*Lepid
 
 - **Ploidy**: Tetraploid (4 allele copies per individual at the S-locus)
 - **Allopolyploid**: The genome contains subgenomes from different ancestral species, meaning alleles from distinct origins coexist
-- **S-locus alleles**: The population carries a large pool of possible S-alleles (50–100+ distinct alleles). Each individual holds exactly 4 of these.
+- **S-locus alleles**: The population carries a pool of SRK proteins (94 detected, 92 in ingroup). Each individual holds exactly 4 copies (with possible duplicates per the zygosity pattern).
 - **Genotype notation**: A sorted tuple/frozenset of 4 integer or string allele IDs (e.g., (1, 5, 23, 47)). Order does not matter — (1,5,23,47) == (47,23,5,1). Always store in sorted canonical form.
 - **Equivalence**: Genotypes are unordered multisets of 4 alleles. An individual can carry duplicate alleles (e.g., (1,1,5,23)) but may also carry 4 unique alleles.
 - **Crossing**: Each parent contributes 2 alleles (diploid gametes) to offspring. For a tetraploid, gamete formation involves choosing 2 of 4 alleles (C(4,2) = 6 gamete types per parent).
@@ -21,7 +21,8 @@ This project focuses on the **S-locus** controlling self-incompatibility:
 - **Negative frequency-dependent selection (NFDS)**: Rare S-alleles confer a fitness advantage because their carriers are compatible with a larger fraction of the population. Common alleles are at a disadvantage — more potential mates will reject pollen carrying them.
 - **Equilibrium target**: Under NFDS, the expected equilibrium is **equal frequency of all S-alleles** in the population. This is driven by frequency-dependent compatibility — rare alleles are naturally favored — not by the assumptions of classical Hardy-Weinberg (random mating, no selection). The optimization accelerates what NFDS already does naturally, rather than overriding it.
 - **Practical goal**: Given a real population with known genotypes, determine which crosses to prioritize to most efficiently drive allele frequencies toward equilibrium (equalize rare vs. common alleles).
-- **Scale**: With 50–100 S-alleles and 4 copies per individual, the number of unique genotypes is C(n+3, 4) (multiset combinations). For n=50, this is ~316,251 possible genotypes — but real populations will only contain a subset.
+- **Scale**: With 92 SRK proteins in the ingroup and 4 copies per individual, the number of unique genotypes is C(n+3, 4) (multiset combinations). The real population of 124 individuals spans 24 populations and contains a small subset of possible genotypes.
+- **Population grouping**: Individuals are grouped by the **Pop** field (biological populations / element occurrences), not by sequencing library. Analysis supports both within-population and cross-population crossing strategies.
 
 ## Core Goals
 
@@ -77,44 +78,58 @@ Offspring genotype = union of one maternal gamete + one compatible paternal game
 - **Compatibility constraint**: Only SI-compatible crosses are valid
 - **Optimization**: Gradient descent (or discrete optimization) over crossing strategy space to minimize generations to equilibrium
 
-## Real Data: SRK Allele Genotyping
+### Random Mating vs. Optimized Crossing: Model Behavior
 
-Two real data files in `data/` contain SRK (S-locus Receptor Kinase) genotyping results for 119 *L. papilliferum* individuals across 5 library/population groups:
+The simulation compares two strategies: **random mating** (uniform random parent pairing) and **optimized crossing** (gradient-descent weighted crosses). Under random mating, the model correctly projects that common alleles increase in frequency over time — the opposite of the NFDS equilibrium goal. This is expected behavior, not an artifact, for the following reasons:
 
-- **`SRK_individual_genotypes.tsv`** — Binary presence/absence matrix (119 individuals x 172 alleles). Each cell is 0 or 1 indicating whether that allele was detected in that individual.
-- **`SRK_individual_allele_table.tsv`** — Long-format read-level data (648 rows). Each row is one sequencing read mapping an allele to an individual. Multiple rows per (individual, allele) pair reflect read depth.
+1. **SI filtering does not compensate for frequency skew under random mating.** The compatibility check rejects pollen gametes sharing any allele with the maternal plant, but random parent selection still disproportionately picks parents carrying common alleles. Offspring are therefore enriched for those alleles.
 
-### Data Quality Limitations
+2. **Genetic drift in small populations** amplifies this effect. With 15–31 individuals per population, random sampling variance is high. Common alleles are statistically more likely to persist while rare alleles can be lost entirely through drift.
 
-- **Incomplete genotyping**: Only 6/119 individuals have exactly 4 detected alleles. Most have 1-3 due to low sequencing depth.
-- **Singletons**: ~126/172 alleles appear in only 1 individual, which may reflect sequencing artifacts or genuinely rare alleles.
-- **Low read depth**: ~35% of allele calls are supported by a single read, making them unreliable.
-- **Population structure**: Individuals come from 5 library groups (Library001-005) plus 1 hybrid, representing distinct populations.
+3. **No NFDS mating advantage in the random model.** In nature, NFDS gives rare-allele carriers a reproductive advantage (they are compatible with more mates). The random mating model does not weight by compatibility advantage — parents are chosen uniformly, so rare-allele carriers get no preferential selection. This represents a worst-case scenario: reproduction without natural or managed selection pressure favoring rare alleles.
 
-## Imputation Strategy
+4. **The optimized strategy counteracts this** by weighting crosses that boost rare alleles and suppress overrepresented ones, explicitly accelerating what NFDS does naturally.
 
-Since *L. papilliferum* is tetraploid (4 allele copies per individual), all individuals must have exactly 4 alleles assigned. The imputation rules below convert variable-depth sequencing data into tetraploid genotypes.
+The divergence between random (blue) and optimized (red) trajectories in the simulation plots is the core result of the model — it quantifies the benefit of strategic crossing management over unmanaged reproduction.
 
-**WARNING: All real-data results depend on these imputed genotypes. Interpret with caution.**
+## Real Data: SRK Protein Genotyping (Revised)
 
-| Detected alleles | Rule | Example |
-|---|---|---|
-| 1 | Homozygous: (A,A,A,A) | 1 allele, any reads -> 4 copies |
-| 2 | Proportional to read counts, fill 4 slots | A(6) B(2) -> (A,A,A,B) |
-| 3 | Proportional to read counts, fill 4 slots | A(5) B(2) C(1) -> (A,A,B,C) |
-| 4 | Direct: one copy each | A,B,C,D -> (A,B,C,D) regardless of reads |
-| >4 | **Strategy A:** top 4 by reads, proportional fill | Drops lowest-read alleles |
-| >4 | **Strategy B:** top 3 fixed, rotate 4th through remaining | Creates multiple genotype entries |
+Five revised data files in `data/revised/` provide SRK (S-locus Receptor Kinase) genotyping results for 128 *L. papilliferum* individuals across 6 sequencing libraries. The revised data includes a **zygosity file** that directly specifies each individual's genotype pattern, eliminating the need for imputation.
 
-### Largest Remainder Method (Slot Allocation)
+### Revised Data Files
 
-1. Compute each allele's proportion of total reads
-2. Multiply by 4 to get ideal (fractional) slot counts
-3. Floor each value to get guaranteed slots
-4. Distribute remaining slots to alleles with largest fractional remainders
-5. Ties broken alphabetically (by allele name)
+| File | Description |
+|---|---|
+| `SRK_individual_zygosity.tsv` | N_proteins, Zygosity (Homozygous/Heterozygous), Genotype pattern (AAAA/AABB/AABC/ABCD) per individual |
+| `SRK_individual_genotypes.tsv` | Binary presence/absence matrix (128 individuals x 94 SRK proteins) |
+| `SRK_individual_protein_table.tsv` | Long-format read-level data (1,079 rows); used to resolve AABC doubled allele |
+| `SRK_individual_status_report.tsv` | QC classification and filtering status (154 individuals, 128 passed) |
+| `sampling_metadata.csv` | Population (Pop), Ingroup/Outgroup flag, Library, sample identifiers (156 samples) |
 
-For exactly 4 detected alleles, skip proportional allocation and assign 1 copy each.
+### Legacy Data Files (in `data/deprecated/`)
+
+The original data files and their generated outputs have been moved to `data/deprecated/` and are **no longer used** in the pipeline.
+
+### Data Quality
+
+- **94 distinct SRK proteins** detected across all individuals
+- **92 proteins** detected in ingroup individuals; 39 are singletons (1 individual only), 53 are shared (2+ individuals)
+- **128 individuals** passed QC into genotype data; 124 are ingroup *L. papilliferum*
+- **4 excluded**: 3 outgroup species (2 *L. montanum*, 1 *L. philonitron*) + 1 with no metadata (SRK_BEA)
+- **Population structure**: 24 distinct populations (Pop field); 4 major populations (25, 76, 67, 27) contain 95/124 ingroup individuals
+
+## Genotype Assignment (No Imputation)
+
+The zygosity file directly specifies genotype patterns, enabling **deterministic assignment** for all individuals. No imputation or proportional read-count allocation is needed.
+
+| Pattern | N proteins | Rule | Ambiguity | Count |
+|---|---|---|---|---|
+| AAAA | 1 | 4 copies of the single protein | None | 64 |
+| AABB | 2 | 2 copies of each protein | None | 49 |
+| ABCD | 4 | 1 copy of each protein | None | 6 |
+| AABC | 3 | Highest read-count protein gets 2 copies; other 2 get 1 each | Resolved by read depth | 5 |
+
+119/124 genotypes are fully deterministic. Only 5 AABC individuals require read-depth resolution from the protein table.
 
 ## Project Structure
 
@@ -123,18 +138,27 @@ polyploid-model/
   CLAUDE.md                    # This file
   environment.yml              # Mamba/conda environment specification
   data/
-    SRK_individual_genotypes.tsv      # Binary presence/absence matrix (raw)
-    SRK_individual_allele_table.tsv   # Long-format read-level data (raw)
-    imputed_population.pkl            # Generated by notebook 00: imputed genotypes + metadata
-    imputed_genotypes.tsv             # Generated by notebook 00: imputed genotypes (human-readable)
+    revised/                          # Current data (used by pipeline)
+      SRK_individual_zygosity.tsv     #   Zygosity pattern per individual
+      SRK_individual_genotypes.tsv    #   Binary presence/absence matrix (128 x 94)
+      SRK_individual_protein_table.tsv#   Long-format read-level data
+      SRK_individual_status_report.tsv#   QC classification per individual
+      sampling_metadata.csv           #   Population, Ingroup flag, sample IDs
+    deprecated/                        # Legacy data files (no longer used)
+      SRK_individual_genotypes.tsv    #   Old presence/absence matrix (119 x 172)
+      SRK_individual_allele_table.tsv #   Old read-level data
+      imputed_population.pkl          #   Old imputed genotypes pickle
+      imputed_genotypes.tsv           #   Old imputed genotypes TSV
+    population.pkl                    # Generated by notebook 00: assigned genotypes + pop groups
+    assigned_genotypes.tsv            # Generated by notebook 00: human-readable genotype assignments
   notebooks/
-    00_load_data.ipynb         # Data loading, EDA, imputation, export (run first for real data)
+    00_load_data.ipynb         # Data loading, EDA, genotype assignment, export (run first)
     01_genotypes.ipynb         # Genotype enumeration, canonical forms, allele pool setup
     02_crossing.ipynb          # Gamete formation, SI compatibility, pairwise crosses
     03_equilibrium.ipynb       # Allele frequency analysis, distance from equilibrium
     04_optimize.ipynb          # Fitness landscape, gradient descent, crossing strategy
     05_visualize.ipynb         # Comprehensive visualizations and final output
-    06_real_analysis.ipynb     # Full pipeline on real imputed population data
+    06_real_analysis.ipynb     # Full pipeline on real population data
 ```
 
 ## Conventions
@@ -158,6 +182,6 @@ jupyter lab                           # Launch Jupyter Lab
 # Open notebooks in order: 01 → 02 → 03 → 04 → 05
 
 # Real data analysis:
-# 1. Run 00_load_data.ipynb first (generates data/imputed_population.pkl)
+# 1. Run 00_load_data.ipynb first (generates data/population.pkl)
 # 2. Run 06_real_analysis.ipynb (loads pickle, runs full pipeline)
 ```
