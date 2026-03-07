@@ -22,6 +22,8 @@ The companion repository for this webpage is available at:
 
 https://github.com/svenbuerki/SRK_bioinformatics/
 
+---
+
 # Introduction
 
 Self-incompatibility (SI) systems represent one of the most important mechanisms preventing inbreeding in flowering plants, with the sporophytic SI system found in the Brassicaceae being controlled by the highly polymorphic S-locus. The S-receptor kinase (SRK) gene, encoding the female determinant of incompatibility specificity, exhibits extraordinary allelic diversity maintained by balancing selection over evolutionary timescales. Understanding SRK haplotype diversity and population genetic structure is critical for assessing the evolutionary maintenance of outcrossing systems and identifying populations at risk of SI breakdown.
@@ -34,25 +36,37 @@ The pipeline is specifically designed for threatened plant species research, add
 
 Key innovations include multi-replicate assembly strategies for maximizing allelic recovery, reference-guided sequence orientation and gap-filling procedures, SRK-specific protein validation criteria, and tetraploid-aware zygosity analysis. The modular design allows adaptation to different species and study systems while maintaining rigorous quality control throughout the analysis workflow.
 
+---
+
 # Pipeline Overview
-The pipeline consists of 11 main steps divided into two phases:
 
-### Phase 1: Within-Library Processing (Steps 1-8)
+The pipeline consists of **14 main steps organized into three phases**, progressing from within-library sequence processing to cross-library integration and final population genetic analyses.
 
-1. [Prepare Canonical Sequences](#prepcanseq) - Reference sequence preparation
-2. [Nanopore Amplicon Assembly and Phasing Pipeline](#nanampassphas) - Multi-CANU assembly with polyploid phasing
-3. [Haplotype Orientation and Consolidation Pipeline](#haporient) - Standardize sequence orientation
-4. [FASTA Sequence Filtering and Reference Integration Pipeline](#fastafiltrefint) - Quality control and reference addition
-5. [Multiple Sequence Alignment](#msa) - MAFFT-based alignment
-6. [Exon Extraction from Multiple Sequence Alignments Pipeline](#exonextract) - Extract coding sequences using AUGUSTUS annotations
-7. [MSA Gap Backfilling and Terminus Processing Pipeline](#msagapback) - Reference-guided gap filling for terminal regions
-8. [DNA to Amino Acid Translation Pipeline](#DNA2AA) - Frame-specific protein translation (**Note:** This step is not mandatory)
+## Phase 1: Within-Library Processing
 
-### Phase 2: Cross-Library Analysis (Steps 9-11)
+1. [Prepare Canonical Sequences](#prepcanseq) – Preparation of reference SRK sequences used for downstream assembly and validation.
+2. [Nanopore Amplicon Assembly and Phasing Pipeline](#nanampassphas) – Multi-CANU assembly of Nanopore amplicons followed by haplotype phasing to reconstruct allelic sequences.
+3. [Haplotype Orientation and Consolidation Pipeline](#haporient) – Standardization of sequence orientation and consolidation of phased haplotypes.
+4. [FASTA Sequence Filtering and Reference Integration Pipeline](#fastafiltrefint) – Quality filtering of sequences and integration of validated reference alleles.
+5. [Multiple Sequence Alignment](#msa) – Alignment of nucleotide sequences using MAFFT.
+6. [Exon Extraction from Multiple Sequence Alignments Pipeline](#exonextract) – Extraction of coding regions based on AUGUSTUS gene annotations.
+7. [MSA Gap Backfilling and Terminus Processing Pipeline](#msagapback) – Reference-guided backfilling of terminal alignment gaps and sequence terminus correction.
+8. [DNA to Amino Acid Translation Pipeline](#DNA2AA) – Frame-specific translation of nucleotide sequences into proteins.
+   **Note:** This step is optional and may be skipped if protein sequences are not required.
 
-9. [SRK Protein Translation, Alignment, and Abundance Filtering Pipeline](#SRKprotandfilter) - Comprehensive protein validation and abundance filtering
-10. [SRK Functional Protein Genotyping Pipeline](#SRKfunctionalprotgenotype) - Generate population genetic matrices
-11. [SRK Zygosity Analysis Pipeline for Tetraploid Species](#zygosity) - Tetraploid genotype classification and demographic inference
+## Phase 2: Cross-Library Analysis
+
+9. [SRK Protein Translation, Alignment, and Abundance Filtering Pipeline](#SRKprotandfilter) – Translation of SRK alleles into proteins, alignment, and filtering based on abundance thresholds to retain functional candidates.
+10. [SRK Functional Protein Genotyping Pipeline](#SRKfunctionalprotgenotype) – Construction of individual-level genotype matrices and detection of functional SRK proteins across samples.
+11. [SRK Zygosity Analysis Pipeline for Tetraploid Species](#zygosity) – Classification of individuals as homozygous or heterozygous and estimation of population-level zygosity statistics in tetraploid species.
+
+## Phase 3: Data Analyses
+
+12. [Population Genetics Statistics](#popgenetics) – Estimation of population-level diversity metrics, including heterozygosity, mean protein counts per individual, total allele counts, and effective allele numbers.
+13. [Allele Accumulation Curves](#alleleaccum) – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift.
+14. [Allele Frequency Analysis](#allelefrqanalysis) – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under negative frequency-dependent selection.
+
+---
 
 # Phase 1: Within-Library Processing
 
@@ -1078,8 +1092,8 @@ seqkit seq -m "$MINLEN" "$TMP_COMBINED" > "$OUT"
 rm -f "$TMP_COMBINED"
 
 echo "Filtered FASTA written to: $OUT"
-
 ```
+
 ## Multiple Sequence Alignment {#msa}
 
 - Align sequences with `MAFFT`
@@ -2065,6 +2079,8 @@ print("\n✅ Translation complete")
 print(f"AA FASTA written to: {out_fasta}")
 
 ```
+
+---
 
 # Phase 2: Cross-Library Analysis
 
@@ -3646,5 +3662,909 @@ cat("SRK_individual_zygosity.tsv\n")
 cat("SRK_zygosity_distribution.pdf\n")
 ```
 
+---
 
+# Phase 3: Data Analyses
 
+## Population Genetic Statistics {#popgenetics}
+
+### Overview
+
+This pipeline calculates key population genetic statistics from SRK genotyping data in order to evaluate whether **self-incompatibility allele diversity is maintained by negative frequency-dependent selection (NFDS)** or instead influenced by **genetic drift or demographic bottlenecks**.
+
+The analysis integrates individual genotype data, inferred zygosity states, and population metadata to produce summary statistics at the population level. These statistics provide insight into the evolutionary dynamics governing the SRK self-incompatibility system.
+
+For SRK genes under a functional self-incompatibility system, theoretical expectations include:
+
+* **High allelic diversity**
+* **High heterozygosity**
+* **High effective number of alleles (Ne)**
+
+Deviations from these expectations can indicate demographic or evolutionary processes affecting allele maintenance.
+
+### Pipeline Steps
+
+#### Biological Expectations for SRK Systems
+
+In gametophytic or sporophytic self-incompatibility systems, SRK alleles are typically maintained by **negative frequency-dependent selection (NFDS)**. Under this model, rare alleles gain a reproductive advantage because they encounter fewer incompatible mates.
+
+##### Expected patterns under strong NFDS
+
+* High heterozygosity among individuals
+* High effective number of alleles (Ne)
+* High allele richness within populations
+* Low frequency of homozygous individuals
+
+#### Expected patterns under genetic drift or demographic bottlenecks
+
+* Reduced effective number of alleles (Ne)
+* Reduced allele richness
+* Increased proportion of homozygous individuals
+* Skewed allele frequency distributions
+
+These statistics therefore provide a quantitative framework for distinguishing **selection-driven allele maintenance** from **demographic erosion of diversity**.
+
+#### Input Data
+
+The pipeline integrates three datasets produced earlier in the SRK genotyping workflow.
+
+##### Individual genotype matrix
+
+```
+SRK_individual_genotypes.tsv
+```
+
+Binary presence/absence matrix indicating whether each individual carries a given SRK protein allele.
+
+Example structure:
+
+| Individual | Protein_1 | Protein_2 | Protein_3 | ... |
+| ---------- | --------- | --------- | --------- | --- |
+
+##### Individual zygosity table
+
+```
+SRK_individual_zygosity.tsv
+```
+
+Table summarizing the number of SRK proteins detected in each individual and their inferred zygosity status.
+
+Example:
+
+| Individual           | N_proteins | Zygosity     | Genotype |
+| -------------------- | ---------- | ------------ | -------- |
+| Library001_barcode01 | 2          | Heterozygous | AABB     |
+| Library001_barcode02 | 1          | Homozygous   | AAAA     |
+
+##### Sampling metadata
+
+```
+sampling_metadata.csv
+```
+
+Metadata describing each sampled individual, including:
+
+* population identity
+* ingroup/outgroup status
+* sampling information
+
+#### Output Files
+
+The analysis generates two output files.
+
+##### Population summary statistics
+
+```
+SRK_population_genetic_summary.tsv
+```
+
+This table summarizes key statistics for each population:
+
+| Population | N_individuals | N_alleles | Effective_alleles_Ne | Prop_heterozygous | Prop_homozygous | Mean_proteins |
+| ---------- | ------------- | --------- | -------------------- | ----------------- | --------------- | ------------- |
+
+Example results:
+
+| Population | N_individuals | N_alleles | Effective_alleles_Ne | Prop_heterozygous | Prop_homozygous | Mean_proteins |
+| ---------- | ------------- | --------- | -------------------- | ----------------- | --------------- | ------------- |
+| 25         | 30            | 24        | 15.158               | 0.5               | 0.5             | 1.6           |
+| 67         | 10            | 10        | 8.909                | 0.4               | 0.6             | 1.4           |
+| 76         | 26            | 21        | 14.857               | 0.615             | 0.385           | 2             |
+
+##### Summary plots
+
+```
+SRK_population_genetic_summary.pdf
+```
+
+This PDF file contains four visual summaries:
+
+1. Effective number of alleles per population
+2. Population heterozygosity
+3. Allele richness
+4. Sample size per population
+
+These plots facilitate visual comparison among populations and help identify potential signatures of **drift-driven allele loss**.
+
+#### Computational Workflow
+
+###### Loading and filtering input data
+
+The script first loads genotype, zygosity, and metadata files. Only **ingroup samples** are retained for downstream analysis.
+
+```r
+geno <- read.table(
+  "SRK_individual_genotypes.tsv",
+  header = TRUE,
+  sep = "\t",
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+
+zyg <- read.table(
+  "SRK_individual_zygosity.tsv",
+  header = TRUE,
+  sep = "\t",
+  stringsAsFactors = FALSE
+)
+
+meta <- read.csv(
+  "sampling_metadata.csv",
+  stringsAsFactors = FALSE
+)
+
+meta <- meta[meta$Ingroup == 1, ]
+```
+
+This filtering step ensures that only biologically relevant individuals are included in the population genetic analysis.
+
+##### Standardized genotype matrix processing
+
+The genotype matrix may contain mixed data types or missing values. The script therefore converts all genotype columns into a **clean numeric matrix**.
+
+This step:
+
+* identifies protein allele columns
+* converts character or factor values to numeric
+* replaces missing values with zeros
+* produces a binary presence/absence matrix
+
+The standardized matrix ensures compatibility with downstream population genetic calculations.
+
+##### Population-level allele counting
+
+For each population:
+
+1. All individuals belonging to the population are extracted.
+2. Allele presence is summed across individuals.
+3. Alleles with non-zero counts are considered present.
+
+This procedure determines the **number of alleles segregating within each population**.
+
+##### Allele frequency estimation
+
+Allele frequencies are calculated as:
+
+$$
+p_i = \frac{n_i}{\sum n_i}
+$$
+
+where:
+
+* ( n_i ) is the count of allele *i*
+* the denominator is the total number of allele observations in the population.
+
+These frequencies are used to estimate the **effective number of alleles**.
+
+##### Effective number of alleles
+
+The effective number of alleles (Ne) is calculated using:
+
+$$
+N_e = \frac{1}{\sum p_i^2}
+$$
+
+This metric accounts for both **allele richness and frequency evenness**.
+
+Interpretation:
+
+* **High Ne** → many alleles with balanced frequencies (NFDS expected)
+* **Low Ne** → skewed frequencies or allele loss (drift signal)
+
+##### Population heterozygosity
+
+Heterozygosity is estimated using the zygosity table:
+
+$$
+H = \frac{\text{number of heterozygous individuals}}{\text{total individuals}}
+$$
+
+The script also calculates:
+
+* proportion of homozygous individuals
+* mean number of proteins per individual
+
+These metrics provide additional insight into **functional diversity within populations**.
+
+### Population Genetic Interpretation
+
+The combined statistics allow evaluation of selection vs drift:
+
+#### Indicators of strong NFDS
+
+* High allele richness
+* High effective allele number
+* High heterozygosity
+* Balanced allele frequencies
+
+#### Indicators of drift or demographic bottlenecks
+
+* Reduced allele richness
+* Low effective allele number
+* Increased homozygosity
+* Dominance of a few alleles
+
+Comparing these metrics across populations can identify **populations experiencing allele erosion or reduced mating compatibility**.
+
+### Bioinformatics
+
+#### Script
+
+```
+SRK_population_genetic_summary.R
+```
+
+#### Execution
+
+```bash
+Rscript SRK_population_genetic_summary.R
+```
+
+#### Input files
+
+* `SRK_individual_genotypes.tsv`
+* `SRK_individual_zygosity.tsv`
+* `sampling_metadata.csv`
+
+#### Output files
+
+* `SRK_population_genetic_summary.tsv`
+* `SRK_population_genetic_summary.pdf`
+
+#### Full Script
+
+```r
+############################################################
+# SRK population genetic summary
+############################################################
+
+cat("Starting SRK population genetic summary analysis\n")
+
+geno <- read.table(
+  "SRK_individual_genotypes.tsv",
+  header = TRUE,
+  sep = "\t",
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+
+zyg <- read.table(
+  "SRK_individual_zygosity.tsv",
+  header = TRUE,
+  sep = "\t",
+  stringsAsFactors = FALSE
+)
+
+meta <- read.csv(
+  "sampling_metadata.csv",
+  stringsAsFactors = FALSE
+)
+
+meta <- meta[meta$Ingroup == 1, ]
+
+geno <- geno[geno$Individual %in% meta$SampleID, ]
+zyg  <- zyg[zyg$Individual %in% meta$SampleID, ]
+
+geno$Population <- meta$Pop[match(geno$Individual, meta$SampleID)]
+zyg$Population  <- meta$Pop[match(zyg$Individual, meta$SampleID)]
+
+allele_cols <- setdiff(colnames(geno), c("Individual","Population"))
+
+geno[allele_cols] <- lapply(geno[allele_cols], function(x){
+  x <- as.numeric(as.character(x))
+  x[is.na(x)] <- 0
+  return(x)
+})
+
+geno_matrix <- as.matrix(geno[,allele_cols])
+
+analyze_population <- function(pop){
+
+  g <- geno[geno$Population == pop,]
+  z <- zyg[zyg$Population == pop,]
+
+  mat <- as.matrix(g[,allele_cols])
+
+  allele_counts <- colSums(mat)
+  present <- allele_counts > 0
+
+  N_alleles <- sum(present)
+
+  freqs <- allele_counts[present] / sum(allele_counts[present])
+
+  Ne <- if(length(freqs)>0) 1/sum(freqs^2) else NA
+
+  prop_het <- mean(z$Zygosity=="Heterozygous",na.rm=TRUE)
+
+  mean_prot <- mean(z$N_proteins,na.rm=TRUE)
+
+  data.frame(
+    Population=pop,
+    N_individuals=nrow(g),
+    N_alleles=N_alleles,
+    Effective_alleles_Ne=round(Ne,3),
+    Prop_heterozygous=round(prop_het,3),
+    Prop_homozygous=round(1-prop_het,3),
+    Mean_proteins=round(mean_prot,3)
+  )
+}
+
+pops <- sort(unique(geno$Population))
+
+results <- do.call(rbind,lapply(pops,analyze_population))
+
+write.table(
+  results,
+  "SRK_population_genetic_summary.tsv",
+  sep="\t",
+  quote=FALSE,
+  row.names=FALSE
+)
+
+cat("Analysis complete\n")
+```
+
+## Allele Accumulation Curves {#alleleaccum}
+
+### Overview
+
+Allele accumulation curves quantify how rapidly new alleles are discovered as additional individuals are sampled. In systems under **negative frequency-dependent selection (NFDS)**, such as plant self-incompatibility loci, rare alleles are continuously maintained in populations. This leads to a characteristic accumulation pattern where new alleles continue to appear even after substantial sampling effort.
+
+In contrast, populations evolving primarily under **genetic drift** show rapid early allele discovery followed by saturation, indicating that most diversity is captured quickly.
+
+This pipeline calculates allele accumulation curves at two hierarchical levels:
+
+* **Species level** – using all ingroup individuals
+* **Population level** – for populations with sufficient sampling (≥5 individuals)
+
+From these curves, several statistics are extracted that provide quantitative indicators of **NFDS versus drift**.
+
+### Pipeline Steps
+
+#### Data Integration
+
+Two input datasets are combined:
+
+1. **SRK genotype matrix**
+2. **Sampling metadata**
+
+The genotype table contains binary allele presence/absence data for each individual, while the metadata provides population assignments and ingroup/outgroup classification.
+
+```r
+geno <- read.table(
+  "SRK_individual_genotypes.tsv",
+  header = TRUE,
+  sep = "\t",
+  check.names = FALSE,
+  stringsAsFactors = FALSE
+)
+
+sample_info <- read.csv(
+  "sampling_metadata.csv",
+  stringsAsFactors = FALSE
+)
+```
+
+#### Ingroup Filtering and Individual Matching
+
+Outgroup samples are excluded to focus the analysis on the focal species.
+
+Individuals in the genotype matrix are then matched to metadata entries using the **SampleID field**, ensuring consistent population assignment.
+
+```r
+sample_info <- sample_info[sample_info$Ingroup == 1, ]
+geno <- geno[geno$Individual %in% sample_info$SampleID, ]
+
+geno$Population <- sample_info$Pop[match(geno$Individual, sample_info$SampleID)]
+```
+
+This step ensures:
+
+* Accurate population assignments
+* Removal of external species
+* Consistency between genotype and metadata datasets
+
+#### Genotype Matrix Construction
+
+Allele presence/absence columns begin at column 2 of the genotype table. These columns are extracted to construct the allele matrix used for accumulation analyses.
+
+```r
+allele_start_col <- 2
+allele_end_col <- ncol(geno) - 1
+
+allele_matrix <- as.matrix(geno[, allele_start_col:allele_end_col])
+
+allele_matrix <- apply(allele_matrix, 2, as.numeric)
+allele_matrix[is.na(allele_matrix)] <- 0
+
+rownames(allele_matrix) <- geno$Individual
+```
+
+Key processing steps include:
+
+* Conversion to numeric format
+* Replacement of missing values with zero
+* Assignment of individual identifiers as row names
+
+This produces a **binary allele matrix** with:
+
+```
+rows = individuals
+columns = SRK alleles
+values = presence (1) or absence (0)
+```
+
+#### Allele Accumulation Algorithm
+
+Allele accumulation curves are calculated using **randomized sampling permutations**.
+
+For each permutation:
+
+1. Individuals are randomly ordered
+2. The number of unique alleles is counted cumulatively
+3. The process is repeated across many permutations (default = 1000)
+
+The average accumulation trajectory and variance are then computed.
+
+```r
+allele_counts <- colSums(mat)
+present_alleles <- allele_counts > 0
+true_alleles <- sum(present_alleles)
+```
+
+Allele presence is determined using the condition:
+
+```
+colSums(matrix) > 0
+```
+
+This counts alleles that occur in at least one individual.
+
+#### Species-Level Analysis
+
+The first analysis considers the entire ingroup dataset as a single population.
+
+```r
+species_res <- allele_accumulation(allele_matrix, "Species")
+```
+
+This produces:
+
+* Mean allele accumulation curve
+* Standard deviation across permutations
+* Summary statistics describing the curve shape
+
+The resulting curve represents **total SRK allelic diversity across the species**.
+
+#### Population-Level Analysis
+
+Population-level curves are calculated for populations with **sufficient sampling effort**.
+
+Only populations with at least five individuals are retained:
+
+```r
+pop_counts <- table(geno$Population)
+valid_pops <- names(pop_counts[pop_counts >= 5])
+```
+
+Each population is analyzed independently using the same accumulation algorithm.
+
+```r
+for (pop in valid_pops) {
+  pop_geno <- geno[geno$Population == pop, ]
+  pop_allele_matrix <- as.matrix(pop_geno[, allele_start_col:allele_end_col])
+}
+```
+
+This allows direct comparison between:
+
+* **species-wide diversity**
+* **local population diversity**
+
+#### Curve Visualization
+
+Accumulation curves are exported to a multi-page PDF file.
+
+```r
+pdf(
+  "SRK_allele_accumulation_curves.pdf",
+  width = 8,
+  height = 6
+)
+```
+
+Each plot includes:
+
+* Mean accumulation curve
+* Confidence envelope (± SD)
+* Number of individuals sampled
+* Total alleles detected
+
+These plots allow visual evaluation of **diversity saturation patterns**.
+
+### Output Files
+
+#### Primary Outputs
+
+**SRK_allele_accumulation_curves.pdf**
+
+Contains:
+
+* Species-level allele accumulation curve
+* Individual curves for each sufficiently sampled population
+
+**SRK_allele_accumulation_stats.tsv**
+
+Tabulated statistics extracted from each curve.
+
+Example output structure:
+
+| Level      | Population | N_individuals | N_alleles | Initial_slope | Tail_slope | Late_fraction |
+| ---------- | ---------- | ------------- | --------- | ------------- | ---------- | ------------- |
+| Species    | All        | 124           | 92        | 1.54          | 0.32       | 0.32          |
+| Population | 25         | 31            | 26        | 1.36          | 0.48       | 0.37          |
+| Population | 27         | 15            | 17        | 1.30          | 0.94       | 0.47          |
+
+### Biological Interpretation
+
+Three statistics extracted from accumulation curves provide insight into the evolutionary forces shaping allele diversity.
+
+#### Initial Slope
+
+Measures how rapidly new alleles appear early in sampling.
+
+```
+Initial_slope > 1   → high rare allele diversity
+Initial_slope < 0.5 → few dominant alleles
+```
+
+High values are expected under **negative frequency-dependent selection**.
+
+#### Tail Slope
+
+Measures whether new alleles continue appearing late in sampling.
+
+```
+Tail_slope ≈ 0 → curve saturation (drift)
+Tail_slope > 0.2 → ongoing rare allele discovery (NFDS)
+```
+
+Persistent discovery of alleles is characteristic of balancing selection.
+
+#### Late Fraction
+
+Quantifies how much allelic diversity is composed of rare alleles appearing late in sampling.
+
+```
+Late_fraction =
+(alleles_total − alleles_half) / alleles_total
+```
+
+Interpretation:
+
+```
+Late_fraction > 0.30 → strong NFDS
+Late_fraction < 0.10 → drift-dominated diversity
+```
+
+This metric captures the **proportion of diversity contributed by rare alleles**.
+
+### Evolutionary Interpretation Framework
+
+Comparing species-level and population-level statistics provides insight into evolutionary dynamics.
+
+| Pattern                                    | Interpretation                    |
+| ------------------------------------------ | --------------------------------- |
+| High species slopes, low population slopes | Migration + local drift           |
+| High slopes at both levels                 | Strong NFDS maintaining diversity |
+| Low slopes at both levels                  | Genetic drift dominates           |
+
+This framework complements traditional neutrality tests by directly analyzing **allele discovery dynamics**.
+
+### Bioinformatics
+
+* Script: `SRK_allele_accumulation_analysis.R`
+* Execution:
+
+```bash
+Rscript SRK_allele_accumulation_analysis.R
+```
+
+#### Input files
+
+* `SRK_individual_genotypes.tsv`
+* `sampling_metadata.csv`
+
+Filtering criteria:
+
+* Exclude outgroups (`Ingroup == 0`)
+* Match individuals using `SampleID`
+* Retain populations with **≥ 5 individuals**
+
+#### Output files
+
+* `SRK_allele_accumulation_curves.pdf`
+* `SRK_allele_accumulation_stats.tsv`
+
+#### Scientific Applications
+
+Allele accumulation curves provide an empirical framework for testing evolutionary hypotheses in self-incompatibility systems.
+
+Applications include:
+
+#### Detection of Balancing Selection
+
+NFDS maintains many rare alleles, producing accumulation curves with persistent allele discovery.
+
+#### Population Genetic Comparisons
+
+Differences among populations can reveal:
+
+* bottlenecks
+* founder effects
+* migration patterns
+
+#### Self-Incompatibility Evolution
+
+For SRK loci, accumulation dynamics reflect:
+
+* maintenance of allelic diversity
+* turnover of functional incompatibility alleles
+* strength of balancing selection across populations.
+
+## Allele Frequency Analysis {#allelefrqanalysis}
+
+### Overview
+
+While **negative frequency-dependent selection (NFDS)** maintains high allelic diversity at the **SRK self-incompatibility locus**, allele **frequencies may still deviate from equal expectations** due to demographic processes such as genetic drift, population structure, or recent allele turnover.
+
+This analysis evaluates whether observed **SRK allele frequency distributions deviate from the theoretical NFDS expectation**, where all alleles should occur at approximately equal frequencies.
+
+The pipeline:
+
+* Filters **ingroup individuals only**
+* Links genotype data to **sampling metadata**
+* Performs **χ² goodness-of-fit tests** at the species and population levels
+* Generates **allele frequency plots**
+* Outputs a **summary table of statistical tests**
+
+### Pipeline Steps
+
+#### Input Data Integration
+
+Two input datasets are required:
+
+* **SRK protein assignment table** containing allele identities per individual
+* **Sampling metadata** containing population information and ingroup status
+
+Individuals classified as outgroups (`Ingroup == 0`) are excluded to ensure that only relevant samples are analysed.
+
+Individual identifiers in the genotype dataset are matched with the `SampleID` column of the metadata table to assign population membership.
+
+#### Allele Frequency Estimation
+
+For each analysis level (species and populations), allele counts are calculated as:
+
+$$
+p_i = \frac{n_i}{\sum n_i}
+$$
+
+where
+
+* ( n_i ) is the number of observations of allele (i)
+* ( \sum n_i ) is the total number of allele observations
+
+Under **ideal NFDS expectations**, all alleles should have equal frequency:
+
+$$
+p_{expected} = \frac{1}{k}
+$$
+
+where (k) is the number of alleles present.
+
+#### χ² Goodness-of-Fit Test
+
+To test for deviations from equal allele frequencies, a **chi-square goodness-of-fit test** is performed:
+
+$$
+\chi^2 = \sum \frac{(O_i - E_i)^2}{E_i}
+$$
+
+where:
+
+* (O_i) = observed allele counts
+* (E_i) = expected allele counts assuming equal frequencies
+
+A significant result indicates that **allele frequencies are uneven**, which may reflect:
+
+* genetic drift
+* population subdivision
+* sampling effects
+* transient demographic processes
+
+#### Population-Level Filtering
+
+Population-level analyses are restricted to populations with:
+
+* **at least 5 individuals**
+
+This filtering avoids unstable statistical estimates caused by very small sample sizes.
+
+#### Allele Frequency Visualization
+
+For each analysis level, the pipeline produces a **frequency distribution plot** including:
+
+* **Observed allele frequencies** (black line)
+* **NFDS expectation** (1/k) (blue dashed line)
+* **LOESS smoothed trend** of the observed distribution (red line)
+
+These visualizations allow rapid inspection of:
+
+* dominant alleles
+* rare allele tails
+* deviations from theoretical NFDS equilibrium.
+
+### Output Files
+
+#### Statistical Results
+
+`SRK_chisq_species_population.tsv`
+
+This table summarizes the χ² test statistics at the species and population levels.
+
+| Column          | Description                            |
+| --------------- | -------------------------------------- |
+| `N_individuals` | Number of individuals analyzed         |
+| `N_alleles`     | Number of SRK alleles detected         |
+| `X2`            | Chi-square statistic                   |
+| `df`            | Degrees of freedom                     |
+| `p_value`       | Significance level                     |
+| `Level`         | Analysis level (Species or Population) |
+| `Population`    | Population identifier                  |
+
+Example output:
+
+| N_individuals | N_alleles | X2     | df | p_value  | Level      | Population |
+| ------------- | --------- | ------ | -- | -------- | ---------- | ---------- |
+| 97            | 73        | 619.34 | 72 | 5.37e-88 | Species    | All        |
+| 30            | 24        | 321.72 | 23 | 1.82e-54 | Population | 25         |
+| 26            | 21        | 153.11 | 20 | 1.59e-22 | Population | 76         |
+
+#### Frequency Plots
+
+`SRK_chisq_species_population_frequency_plots.pdf`
+
+The PDF file contains **allele frequency plots for each analysis level**, allowing visual comparison between observed allele distributions and NFDS expectations.
+
+### Biological Interpretation
+
+Results can be interpreted using the following guidelines:
+
+#### Non-significant deviation
+
+If the chi-square test is not significant:
+
+> A chi-square test revealed no significant deviation from equal allele frequencies ((\chi^2 = X), df = (Y), (p = Z)), consistent with negative frequency-dependent selection maintaining SRK allele diversity.
+
+#### Significant deviation
+
+If the chi-square test is significant:
+
+> Allele frequencies deviated significantly from equal expectations ((\chi^2 = X), df = (Y), (p = Z)), suggesting that additional evolutionary or demographic processes may influence SRK allele frequencies.
+
+Possible explanations include:
+
+* population bottlenecks
+* local drift
+* unequal migration rates
+* recent allele turnover
+
+### Bioinformatics
+
+* Script: `SRK_chisq_species_population.R`
+* Run command:
+
+```bash
+Rscript SRK_chisq_species_population.R
+```
+
+#### Input Files
+
+* `SRK_individual_protein_table.tsv`
+* `sampling_metadata.csv`
+
+#### Output Files
+
+* `SRK_chisq_species_population.tsv`
+* `SRK_chisq_species_population_frequency_plots.pdf`
+
+#### R Script
+
+```r
+############################################################
+# SRK allele frequency χ² tests
+# Updated for protein pipeline (2026)
+############################################################
+
+cat("\nStarting SRK chi-square analysis\n")
+
+############################################################
+# 1. Load files
+############################################################
+
+protein_file <- "SRK_individual_protein_table.tsv"
+meta_file    <- "sampling_metadata.csv"
+
+if (!file.exists(protein_file)) {
+  stop(paste("ERROR: Cannot find", protein_file))
+}
+
+if (!file.exists(meta_file)) {
+  stop(paste("ERROR: Cannot find", meta_file))
+}
+
+allele_df <- read.table(
+  protein_file,
+  header = TRUE,
+  sep = "\t",
+  stringsAsFactors = FALSE,
+  quote = ""
+)
+
+meta_df <- read.csv(
+  meta_file,
+  stringsAsFactors = FALSE
+)
+
+############################################################
+# 2. Check required columns
+############################################################
+
+required_cols <- c("Individual", "Protein")
+
+missing_cols <- setdiff(required_cols, colnames(allele_df))
+
+if (length(missing_cols) > 0) {
+  stop(paste("Missing columns:", paste(missing_cols, collapse=", ")))
+}
+
+############################################################
+# 3. Keep ingroup only
+############################################################
+
+meta_df <- meta_df[meta_df$Ingroup == 1, ]
+
+allele_df <- allele_df[
+  allele_df$Individual %in% meta_df$SampleID,
+]
+
+allele_df$Population <- meta_df$Pop[
+  match(allele_df$Individual, meta_df$SampleID)
+]
+
+cat("Individuals analysed:",
+    length(unique(allele_df$Individual)), "\n")
+
+cat("Proteins detected:",
+    length(unique(allele_df$Protein)), "\n")
+```
