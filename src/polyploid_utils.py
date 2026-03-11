@@ -32,6 +32,10 @@ __all__ = [
     "select_elites",
     # Simulation
     "simulate_generation",
+    # Demography
+    "logistic_n_offspring",
+    "effective_population_size",
+    "ne_harmonic_mean",
     # Optimization
     "enumerate_compatible_crosses",
     "compute_greedy_weights",
@@ -345,6 +349,126 @@ def simulate_generation(population, n_offspring=None, crossing_plan=None,
                     next_gen.append(population[chosen])
 
     return next_gen
+
+
+# ---------------------------------------------------------------------------
+# Demography
+# ---------------------------------------------------------------------------
+
+def logistic_n_offspring(N, K, r=0.5, stochastic=True):
+    """Compute next-generation population size using discrete logistic growth.
+
+    Parameters
+    ----------
+    N : int
+        Current census population size.
+    K : int
+        Carrying capacity (maximum sustainable population size).
+    r : float
+        Intrinsic growth rate (per-generation). Default 0.5.
+    stochastic : bool
+        If True, draw from Poisson(expected_N) to model demographic noise.
+
+    Returns
+    -------
+    int
+        Number of offspring for the next generation (minimum 2 to avoid
+        extinction from stochasticity alone).
+    """
+    expected = N + N * r * (1 - N / K)
+    expected = max(expected, 2.0)
+    if stochastic:
+        return max(2, int(np.random.poisson(expected)))
+    return max(2, int(round(expected)))
+
+
+def effective_population_size(population, allele_pool):
+    """Estimate effective population size (Ne) from SI compatibility structure.
+
+    Computes Ne from the number of successful mating pairs possible under
+    self-incompatibility.  Uses the formula Ne = 4 * Nf * Nm / (Nf + Nm)
+    where Nf = Nm = number of individuals that can participate in at least
+    one compatible cross.  Then discounts by average compatibility fraction
+    to account for restricted mate availability.
+
+    Parameters
+    ----------
+    population : list of tuple
+        Current population genotypes.
+    allele_pool : set or list
+        Complete set of allele IDs.
+
+    Returns
+    -------
+    dict
+        Keys: 'Ne' (effective size), 'N' (census size),
+        'ratio' (Ne/N), 'n_breeders' (individuals with >=1 mate),
+        'mean_compatibility' (average pairwise compatibility),
+        'total_compatible_pairs' (directed pair count).
+    """
+    N = len(population)
+    if N < 2:
+        return {"Ne": N, "N": N, "ratio": 1.0, "n_breeders": N,
+                "mean_compatibility": 0.0, "total_compatible_pairs": 0}
+
+    # Build compatibility info
+    can_breed = set()
+    total_compat = 0.0
+    n_compatible_pairs = 0
+    n_pairs = 0
+
+    for i in range(N):
+        for j in range(N):
+            if i == j:
+                continue
+            c = crossing_compatibility(population[i], population[j])
+            n_pairs += 1
+            total_compat += c
+            if c > 0:
+                can_breed.add(i)
+                can_breed.add(j)
+                n_compatible_pairs += 1
+
+    n_breeders = len(can_breed)
+    mean_compat = total_compat / n_pairs if n_pairs > 0 else 0.0
+
+    # Ne from breeder count, discounted by mean compatibility
+    # Rationale: SI restricts mate choice, reducing Ne below the breeder count
+    Ne = n_breeders * mean_compat if n_breeders > 0 else 0.0
+    # Floor at 1 if any breeders exist
+    if n_breeders > 0:
+        Ne = max(1.0, Ne)
+
+    return {
+        "Ne": Ne,
+        "N": N,
+        "ratio": Ne / N if N > 0 else 0.0,
+        "n_breeders": n_breeders,
+        "mean_compatibility": mean_compat,
+        "total_compatible_pairs": n_compatible_pairs,
+    }
+
+
+def ne_harmonic_mean(ne_series):
+    """Compute harmonic mean Ne across generations.
+
+    The harmonic mean reflects that bottleneck generations dominate
+    long-term effective size.  Zeros are excluded from the calculation.
+
+    Parameters
+    ----------
+    ne_series : list or array of float
+        Ne values for each generation.
+
+    Returns
+    -------
+    float
+        Harmonic mean of non-zero Ne values.
+    """
+    vals = [v for v in ne_series if v > 0]
+    if not vals:
+        return 0.0
+    return len(vals) / sum(1.0 / v for v in vals)
 
 
 # ---------------------------------------------------------------------------
