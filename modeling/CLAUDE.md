@@ -33,6 +33,13 @@ Three strategies compared in simulations:
 
 **Tradeoff**: Preservation slightly slows convergence but prevents irreversible allele loss.
 
+4. **Optimized + Preservation + Demography** (green, diamond): Extends strategy 3 with realistic population dynamics:
+   - **Logistic growth** (`logistic_n_offspring`): `N_{t+1} = N + N*r*(1 - N/K)` with Poisson noise
+   - **Effective population size** (`effective_population_size`): Ne estimated from SI compatibility structure
+   - **Harmonic mean Ne** (`ne_harmonic_mean`): Long-term Ne dominated by bottleneck generations
+
+**Demographic parameters**: `carrying_capacity=K`, `growth_rate=0.5`, `demographic_stochastic=True`
+
 ## Technical Stack
 
 Python 3: `itertools`, `numpy`, `scipy.optimize`, `matplotlib`/`seaborn`, `pandas`, `networkx`
@@ -74,6 +81,7 @@ polyploid-model/
     04_optimize.ipynb          # Fitness landscape, gradient descent, crossing strategy
     05_visualize.ipynb         # Comprehensive visualizations
     06_real_analysis.ipynb     # Full pipeline on real population data
+    07_demography.ipynb        # Population size dynamics, Ne estimation
 ```
 
 ## Conventions
@@ -92,4 +100,5 @@ jupyter lab                           # Launch Jupyter Lab
 
 # Conceptual walkthrough: notebooks 01 → 02 → 03 → 04 → 05
 # Real data: run 00_load_data.ipynb first, then 06_real_analysis.ipynb
+# Demography exploration: run 00 first, then 07_demography.ipynb
 ```
