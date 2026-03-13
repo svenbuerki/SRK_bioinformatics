@@ -80,8 +80,9 @@ polyploid-model/
     03_equilibrium.ipynb       # Allele frequency analysis, distance from equilibrium
     04_optimize.ipynb          # Fitness landscape, gradient descent, crossing strategy
     05_visualize.ipynb         # Comprehensive visualizations
-    06_real_analysis.ipynb     # Full pipeline on real population data
-    07_demography.ipynb        # Population size dynamics, Ne estimation
+    06_demography.ipynb        # Population size dynamics, Ne estimation
+    07_collapse_prediction.ipynb  # Collapse cascade & intervention windows
+    08_real_analysis.ipynb     # Full pipeline on real population data
 ```
 
 ## Conventions
@@ -99,6 +100,6 @@ mamba activate polyploid-model        # Activate it
 jupyter lab                           # Launch Jupyter Lab
 
 # Conceptual walkthrough: notebooks 01 → 02 → 03 → 04 → 05
-# Real data: run 00_load_data.ipynb first, then 06_real_analysis.ipynb
-# Demography exploration: run 00 first, then 07_demography.ipynb
+# Demography & collapse: run 00 first, then 06 → 07
+# Real data: run 00 first, then 08_real_analysis.ipynb
 ```
