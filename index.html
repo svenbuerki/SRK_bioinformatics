@@ -4686,16 +4686,696 @@ print(f&quot;  {long_out}&quot;)
 print(f&quot;  {wide_out}&quot;)</code></pre>
 </div>
 </div>
-<div id="zygosity" class="section level2" number="5.3">
-<h2><span class="header-section-number">5.3</span> SRK Zygosity Analysis Pipeline for Tetraploid Species</h2>
+<div id="SRKclasses" class="section level2" number="5.3">
+<h2><span class="header-section-number">5.3</span> SRK Class Assignment and Dominance Prediction Pipeline</h2>
 <div id="overview-8" class="section level3" number="5.3.1">
 <h3><span class="header-section-number">5.3.1</span> Overview</h3>
+<p>This Python pipeline takes the functional SRK protein alignment and individual genotype data, filters to ingroup individuals, infers a maximum-likelihood phylogenetic tree, and automatically assigns proteins to Class I or Class II based on tree topology. Per-individual class genotypes are then derived to predict dominance behaviour for crossing decisions in a conservation breeding program.</p>
+</div>
+<div id="biological-background" class="section level3" number="5.3.2">
+<h3><span class="header-section-number">5.3.2</span> Biological Background</h3>
+<div id="the-two-class-system" class="section level4" number="5.3.2.1">
+<h4><span class="header-section-number">5.3.2.1</span> The Two-Class System</h4>
+<p>SRK alleles in Brassicaceae self-incompatibility (SI) systems are phylogenetically structured into two ancient classes with a strict dominance hierarchy:</p>
+<ul>
+<li><strong>Class I</strong>: fewer alleles; dominant over Class II alleles in heterozygous individuals</li>
+<li><strong>Class II</strong>: more alleles; codominant within class; recessive to Class I</li>
+</ul>
+<p>This hierarchy directly determines which S-allele is expressed in a given individual and therefore which crosses will be compatible (produce seed) or incompatible (rejected):</p>
+<table>
+<thead>
+<tr class="header">
+<th>Individual A genotype</th>
+<th>Individual B genotype</th>
+<th>Compatibility</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Class I allele X</td>
+<td>Class II only</td>
+<td>Compatible if B lacks allele X</td>
+</tr>
+<tr class="even">
+<td>Class I allele X</td>
+<td>Class I allele X</td>
+<td>Incompatible</td>
+</tr>
+<tr class="odd">
+<td>Class II only</td>
+<td>Class II only</td>
+<td>Compatible if no shared alleles</td>
+</tr>
+<tr class="even">
+<td>No functional SRK</td>
+<td>Any</td>
+<td>Potentially self-compatible</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="the-grade-problem-and-rooting" class="section level4" number="5.3.2.2">
+<h4><span class="header-section-number">5.3.2.2</span> The Grade Problem and Rooting</h4>
+<p>Class I forms a <strong>paraphyletic grade</strong> at the base of the SRK phylogeny; Class II is the <strong>derived monophyletic</strong> clade. The typical topology is:</p>
+<pre><code>    ┌── C1a
+────┤         ┌── C1b
+    └─────────┤
+              └──────────── [Class II — monophyletic]
+                      └──── C1c</code></pre>
+<p>This means standard midpoint rooting followed by a simple “two clades from the root” split will misclassify basal Class I sequences. The correct automated approach is to identify the <strong>longest internal branch</strong> in the unrooted tree, which separates the two classes due to extreme divergence accumulated under ancient balancing selection. The subtree connected by that branch is Class II; everything else is Class I. This is independent of rooting and correctly handles the grade structure.</p>
+<p>Midpoint rooting is still produced as a separate output file for visual validation in FigTree or iTOL.</p>
+</div>
+</div>
+<div id="pipeline-steps-8" class="section level3" number="5.3.3">
+<h3><span class="header-section-number">5.3.3</span> Pipeline Steps</h3>
+<div id="output-file-management-and-overwrite-safeguard-2" class="section level4" number="5.3.3.1">
+<h4><span class="header-section-number">5.3.3.1</span> Output File Management and Overwrite Safeguard</h4>
+<p>Output files and IQ-TREE outputs are registered before any analysis. The script checks for existing files and prompts for confirmation before overwriting — consistent with the rest of the pipeline.</p>
+</div>
+<div id="iq-tree3-executable-detection" class="section level4" number="5.3.3.2">
+<h4><span class="header-section-number">5.3.3.2</span> IQ-TREE3 Executable Detection</h4>
+<p>The script automatically searches for the IQ-TREE3 executable in the following order, without requiring it to be on the system PATH:</p>
+<pre class="python"><code>for candidate in [&quot;./iqtree3&quot;, &quot;./iqtree&quot;, &quot;iqtree3&quot;, &quot;iqtree&quot;]:</code></pre>
+<p>If not found automatically, the user is prompted for the full path.</p>
+</div>
+<div id="step-1-load-ingroup-individuals-from-metadata" class="section level4" number="5.3.3.3">
+<h4><span class="header-section-number">5.3.3.3</span> Step 1: Load Ingroup Individuals from Metadata</h4>
+<p>Reads <code>sampling_metadata.csv</code> and collects individuals where <code>Ingroup == 1</code>:</p>
+<pre class="python"><code>with open(metadata_file, newline=&quot;&quot;, encoding=&quot;utf-8-sig&quot;) as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+        if row.get(&quot;Ingroup&quot;, &quot;&quot;).strip() == &quot;1&quot;:
+            library = row[&quot;Library&quot;].strip()
+            barcode = row[&quot;barcode&quot;].strip()
+            if library.lstrip(&quot;-&quot;).isdigit():
+                library = f&quot;Library{int(library):03d}&quot;
+            if barcode.lstrip(&quot;-&quot;).isdigit():
+                barcode = f&quot;barcode{int(barcode):02d}&quot;
+            individual_id = f&quot;{library}_{barcode}&quot;
+            ingroup_individuals.add(individual_id)</code></pre>
+<p><strong>Key features:</strong></p>
+<ul>
+<li><strong>BOM-safe reading</strong>: <code>encoding=&quot;utf-8-sig&quot;</code> handles files that have been opened in Excel</li>
+<li><strong>ID normalisation</strong>: bare numbers in the <code>Library</code> and <code>barcode</code> columns (e.g. <code>1</code>, <code>45</code>) are automatically converted to the <code>Library001_barcode45</code> format used in the genotype file</li>
+<li><strong>Metadata columns used</strong>: <code>Library</code>, <code>barcode</code>, <code>Ingroup</code></li>
+</ul>
+</div>
+<div id="step-2-load-genotype-matrix" class="section level4" number="5.3.3.4">
+<h4><span class="header-section-number">5.3.3.4</span> Step 2: Load Genotype Matrix</h4>
+<p>Reads <code>SRK_individual_genotypes.tsv</code> and collects, for each ingroup individual, the set of proteins they carry (presence = 1):</p>
+<pre class="python"><code>proteins = {p for p in protein_columns if row.get(p, &quot;0&quot;).strip() == &quot;1&quot;}
+ingroup_individual_proteins[individual] = proteins
+ingroup_proteins.update(proteins)</code></pre>
+<p>Two data structures are built:
+- <code>ingroup_proteins</code>: union of all proteins present in any ingroup individual — used to filter the alignment
+- <code>ingroup_individual_proteins</code>: per-individual protein sets — used in Step 5 for class genotype assignment</p>
+<p><strong>Diagnostic:</strong> individuals present in the metadata but absent from the genotype file are reported as a <code>NOTE</code>. This is expected for individuals excluded by the abundance filter or <code>max_alleles</code> filter in <code>define_functional_proteins.py</code>. A <code>WARNING</code> is only raised if &gt;50% of ingroup individuals are missing, which would indicate an ID format mismatch.</p>
+</div>
+<div id="step-3-filter-alignment-to-ingroup-proteins" class="section level4" number="5.3.3.5">
+<h4><span class="header-section-number">5.3.3.5</span> Step 3: Filter Alignment to Ingroup Proteins</h4>
+<p>Reads <code>SRK_functional_proteins_aligned.fasta</code> and retains only sequences whose ID is in <code>ingroup_proteins</code>:</p>
+<pre class="python"><code>filtered_records = [rec for rec in all_records if rec.id in ingroup_proteins]
+SeqIO.write(filtered_records, filtered_alignment, &quot;fasta&quot;)</code></pre>
+<p>Proteins from outgroup individuals or those not present in any ingroup individual are excluded from the tree. Any expected proteins missing from the alignment are reported as warnings.</p>
+</div>
+<div id="step-4-maximum-likelihood-phylogenetic-analysis-with-iq-tree3" class="section level4" number="5.3.3.6">
+<h4><span class="header-section-number">5.3.3.6</span> Step 4: Maximum-Likelihood Phylogenetic Analysis with IQ-TREE3</h4>
+<p>Runs IQ-TREE3 on the filtered ingroup alignment with automatic model selection optimised for SRK protein evolution:</p>
+<pre class="python"><code>cmd = [
+    iqtree_exe,
+    &quot;-s&quot;, filtered_alignment,
+    &quot;-m&quot;, &quot;TEST&quot;,
+    &quot;-mset&quot;, &quot;LG,WAG,JTT&quot;,
+    &quot;-mfreq&quot;, &quot;FU&quot;,
+    &quot;-mrate&quot;, &quot;G4,I,R4&quot;,
+    &quot;-bb&quot;, &quot;1000&quot;,
+    &quot;-alrt&quot;, &quot;1000&quot;,
+    &quot;-redo&quot;,
+    &quot;-nt&quot;, &quot;AUTO&quot;,
+    &quot;-pre&quot;, iqtree_prefix
+]</code></pre>
+<p><strong>Parameter rationale:</strong></p>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Value</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>-m TEST</code></td>
+<td>Automatic model selection</td>
+<td>Selects best-fit substitution model from the candidate set</td>
+</tr>
+<tr class="even">
+<td><code>-mset</code></td>
+<td><code>LG,WAG,JTT</code></td>
+<td>Standard empirical protein models; LG and WAG are widely used for plant proteins</td>
+</tr>
+<tr class="odd">
+<td><code>-mfreq FU</code></td>
+<td>Empirical frequencies from alignment</td>
+<td>More accurate than equal frequencies for divergent sequences</td>
+</tr>
+<tr class="even">
+<td><code>-mrate G4,I,R4</code></td>
+<td>Gamma + invariant + FreeRate</td>
+<td>Tests rate heterogeneity models; important for SRK given strong balancing selection creating unequal rates</td>
+</tr>
+<tr class="odd">
+<td><code>-bb 1000</code></td>
+<td>1000 ultrafast bootstrap replicates</td>
+<td>Branch support for tree topology</td>
+</tr>
+<tr class="even">
+<td><code>-alrt 1000</code></td>
+<td>1000 SH-aLRT replicates</td>
+<td>Additional branch support metric</td>
+</tr>
+<tr class="odd">
+<td><code>-nt AUTO</code></td>
+<td>Automatic thread detection</td>
+<td>Uses all available CPU cores</td>
+</tr>
+<tr class="even">
+<td><code>-redo</code></td>
+<td>Overwrite existing output</td>
+<td>Required for re-runs; user confirmation is handled before IQ-TREE is called</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="step-5-srk-class-assignment-by-longest-internal-branch" class="section level4" number="5.3.3.7">
+<h4><span class="header-section-number">5.3.3.7</span> Step 5: SRK Class Assignment by Longest Internal Branch</h4>
+<p>Parses the unrooted IQ-TREE tree and identifies the longest internal branch:</p>
+<pre class="python"><code>for clade in tree.find_clades(order=&quot;level&quot;):
+    if clade == tree.root or clade.is_terminal():
+        continue
+    if clade.branch_length and clade.branch_length &gt; max_branch_len:
+        max_branch_len = clade.branch_length
+        best_clade = clade</code></pre>
+<p>The subtree connected by this branch defines one group; all remaining leaves define the other:</p>
+<pre class="python"><code>group_A = {t.name for t in best_clade.get_terminals()}
+group_B  = all_leaves - group_A
+# Class I = smaller (dominant), Class II = larger (recessive)
+if len(group_A) &lt;= len(group_B):
+    class_I, class_II = group_A, group_B
+else:
+    class_I, class_II = group_B, group_A</code></pre>
+<p><strong>Why this works for the grade structure:</strong> The branch connecting the Class II clade to the rest of the tree is systematically the longest internal branch in SRK phylogenies, because Class I and Class II diverged over an exceptionally long evolutionary time under strong balancing selection. This criterion is independent of rooting and correctly places all paraphyletic Class I sequences outside the Class II clade without requiring an outgroup.</p>
+<p>A midpoint-rooted version of the tree is also written for visual validation:</p>
+<pre class="python"><code>tree_viz.root_at_midpoint()
+Phylo.write(tree_viz, rooted_treefile, &quot;newick&quot;)</code></pre>
+<p><strong>Important:</strong> this automated classification should be validated by opening <code>SRK_phylogeny_midpoint_rooted.treefile</code> in FigTree or iTOL. For higher confidence, published SRK sequences with known class assignments (e.g. from <em>Arabidopsis halleri</em> or <em>Brassica</em>) can be added to the alignment as anchors before running the pipeline.</p>
+</div>
+<div id="per-individual-class-genotype-and-dominance-prediction" class="section level4" number="5.3.3.8">
+<h4><span class="header-section-number">5.3.3.8</span> Per-Individual Class Genotype and Dominance Prediction</h4>
+<p>For each ingroup individual, the proteins they carry are split by class assignment and a dominance prediction is derived:</p>
+<pre class="python"><code>c1 = sorted(proteins &amp; class_I)
+c2 = sorted(proteins &amp; class_II)
+
+if c1 and c2:
+    prediction = &quot;Class_I_dominant&quot;
+elif c1:
+    prediction = &quot;Class_I_only_dominant&quot;
+elif c2:
+    prediction = &quot;Class_II_only_codominant&quot;
+else:
+    prediction = &quot;no_functional_SRK&quot;</code></pre>
+<p><strong>Dominance prediction categories:</strong></p>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Category</th>
+<th>Meaning</th>
+<th>Crossing implication</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Class_I_dominant</code></td>
+<td>Carries Class I and Class II alleles</td>
+<td>Class I allele expressed; incompatible with any plant sharing that Class I allele</td>
+</tr>
+<tr class="even">
+<td><code>Class_I_only_dominant</code></td>
+<td>Carries only Class I alleles</td>
+<td>Class I allele(s) expressed; compatible with Class II-only plants</td>
+</tr>
+<tr class="odd">
+<td><code>Class_II_only_codominant</code></td>
+<td>Carries only Class II alleles</td>
+<td>Both alleles co-expressed; incompatible only with plants sharing the exact same allele(s)</td>
+</tr>
+<tr class="even">
+<td><code>no_functional_SRK</code></td>
+<td>No functional proteins detected</td>
+<td>Potentially self-compatible; will set seed with most partners</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="output-files-8" class="section level3" number="5.3.4">
+<h3><span class="header-section-number">5.3.4</span> Output Files</h3>
+<div id="primary-outputs-2" class="section level4" number="5.3.4.1">
+<h4><span class="header-section-number">5.3.4.1</span> Primary Outputs</h4>
+<ul>
+<li><strong><code>SRK_ingroup_proteins_aligned.fasta</code></strong>: filtered alignment of ingroup proteins used as input to IQ-TREE</li>
+<li><strong><code>SRK_protein_classes.tsv</code></strong>: two-column table mapping each protein to <code>Class_I</code> or <code>Class_II</code></li>
+<li><strong><code>SRK_individual_class_genotype.tsv</code></strong>: per-individual class genotype and dominance prediction</li>
+</ul>
+</div>
+<div id="tree-files" class="section level4" number="5.3.4.2">
+<h4><span class="header-section-number">5.3.4.2</span> Tree Files</h4>
+<ul>
+<li><strong><code>SRK_phylogeny.treefile</code></strong>: maximum-likelihood tree (unrooted, Newick format) — primary tree output</li>
+<li><strong><code>SRK_phylogeny_midpoint_rooted.treefile</code></strong>: midpoint-rooted version for visualisation in FigTree/iTOL</li>
+<li><strong><code>SRK_phylogeny.iqtree</code></strong>: full IQ-TREE log including model selection results and tree statistics</li>
+<li><strong><code>SRK_phylogeny.contree</code></strong>: consensus tree from bootstrap replicates</li>
+</ul>
+</div>
+<div id="srk_individual_class_genotype.tsv-column-description" class="section level4" number="5.3.4.3">
+<h4><span class="header-section-number">5.3.4.3</span> <code>SRK_individual_class_genotype.tsv</code> Column Description</h4>
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Individual</code></td>
+<td>Individual identifier (<code>Library_barcode</code> format)</td>
+</tr>
+<tr class="even">
+<td><code>n_Class_I</code></td>
+<td>Number of distinct Class I proteins carried</td>
+</tr>
+<tr class="odd">
+<td><code>Class_I_proteins</code></td>
+<td>Semicolon-separated list of Class I protein names</td>
+</tr>
+<tr class="even">
+<td><code>n_Class_II</code></td>
+<td>Number of distinct Class II proteins carried</td>
+</tr>
+<tr class="odd">
+<td><code>Class_II_proteins</code></td>
+<td>Semicolon-separated list of Class II protein names</td>
+</tr>
+<tr class="even">
+<td><code>Dominance_prediction</code></td>
+<td>Predicted dominance category for crossing decisions</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="example-output" class="section level4" number="5.3.4.4">
+<h4><span class="header-section-number">5.3.4.4</span> Example output</h4>
+<pre><code>Individual              n_Class_I  Class_I_proteins   n_Class_II  Class_II_proteins              Dominance_prediction
+Library001_barcode01    1          SRK_protein_003    2           SRK_protein_041;SRK_protein_078 Class_I_dominant
+Library001_barcode05    0                             3           SRK_protein_012;SRK_protein_033 Class_II_only_codominant
+Library002_barcode14    0                             0                                           no_functional_SRK</code></pre>
+</div>
+</div>
+<div id="bioinformatics-8" class="section level3" number="5.3.5">
+<h3><span class="header-section-number">5.3.5</span> Bioinformatics</h3>
+<ul>
+<li><strong>Goal:</strong> Assign functional SRK proteins to Class I or Class II using phylogenetic topology, then predict dominance behaviour for ingroup individuals to guide crossing decisions in the breeding program</li>
+<li><strong>Script:</strong> <code>srk_phylogenetic_analysis.py</code></li>
+<li><strong>Inputs:</strong>
+<ul>
+<li><code>SRK_functional_proteins_aligned.fasta</code> — one aligned sequence per functional protein (from <code>define_functional_proteins.py</code>)</li>
+<li><code>SRK_individual_genotypes.tsv</code> — binary presence/absence matrix (from <code>genotype_SRK_from_functional_proteins.py</code>)</li>
+<li><code>sampling_metadata.csv</code> — sample metadata; must contain <code>Library</code>, <code>barcode</code>, and <code>Ingroup</code> columns</li>
+</ul></li>
+<li><strong>Parameters:</strong>
+<ul>
+<li>IQ-TREE model set: <code>LG,WAG,JTT</code></li>
+<li>Bootstrap replicates: 1000 (UFBoot + SH-aLRT)</li>
+<li>Class split: longest internal branch (automated)</li>
+</ul></li>
+<li><strong>Outputs:</strong>
+<ul>
+<li><code>SRK_ingroup_proteins_aligned.fasta</code> — filtered alignment (ingroup proteins only)</li>
+<li><code>SRK_phylogeny.treefile</code> — ML tree (unrooted)</li>
+<li><code>SRK_phylogeny_midpoint_rooted.treefile</code> — midpoint-rooted tree for visualisation</li>
+<li><code>SRK_phylogeny.iqtree</code> — IQ-TREE full log</li>
+<li><code>SRK_protein_classes.tsv</code> — protein → Class I / Class II assignment</li>
+<li><code>SRK_individual_class_genotype.tsv</code> — per-individual class genotype and dominance prediction</li>
+</ul></li>
+</ul>
+<pre><code>Using IQ-TREE executable: ./iqtree3
+Loading metadata...
+Ingroup individuals found in metadata: 170
+
+Loading genotype matrix...
+Individuals in genotype file:        160
+Ingroup individuals matched:         152
+Proteins present in ingroup:         202
+
+NOTE: 18 ingroup individuals from metadata absent from genotype file.
+  These were likely excluded by the abundance or max_alleles filter upstream.
+  Absent individuals: [&#39;Library001_barcode13&#39;, &#39;Library001_barcode22&#39;, ...]
+
+Filtering alignment to ingroup proteins...
+Sequences in full alignment:         228
+Sequences retained for ingroup:      202
+Filtered alignment written: SRK_ingroup_proteins_aligned.fasta
+
+Running IQ-TREE3...
+Command: ./iqtree3 -s SRK_ingroup_proteins_aligned.fasta -m TEST -mset LG,WAG,JTT -mfreq FU -mrate G4,I,R4 -bb 1000 -alrt 1000 -redo -nt AUTO -pre SRK_phylogeny
+
+[IQ-TREE3 output...]
+
+Classifying proteins into SRK classes...
+Longest internal branch length:  1.2847
+Class I  (dominant,  smaller):   52 proteins
+Class II (recessive, larger):    150 proteins
+
+NOTE: Validate this split in FigTree using the midpoint-rooted tree.
+      For higher confidence, add published SRK reference sequences with
+      known class assignments to anchor the tree.
+
+FINAL SUMMARY
+
+Ingroup individuals:     152
+Ingroup proteins:        202
+Sequences in tree:       202
+
+Class I  (dominant):     52 proteins
+Class II (recessive):    150 proteins
+
+Filtered alignment:      SRK_ingroup_proteins_aligned.fasta
+Tree file (unrooted):    SRK_phylogeny.treefile
+Tree file (midpt rooted):SRK_phylogeny_midpoint_rooted.treefile
+IQ-TREE log:             SRK_phylogeny.iqtree
+Protein classes:         SRK_protein_classes.tsv
+Individual class geno:   SRK_individual_class_genotype.tsv</code></pre>
+<p>CODE</p>
+<pre class="python"><code>#!/usr/bin/env python3
+
+import csv
+import os
+import shutil
+import subprocess
+import sys
+from Bio import Phylo, SeqIO
+
+# ----------------------------
+# Files
+# ----------------------------
+metadata_file      = &quot;sampling_metadata.csv&quot;
+genotype_file      = &quot;SRK_individual_genotypes.tsv&quot;
+alignment_file     = &quot;SRK_functional_proteins_aligned.fasta&quot;
+filtered_alignment = &quot;SRK_ingroup_proteins_aligned.fasta&quot;
+iqtree_prefix      = &quot;SRK_phylogeny&quot;
+
+IQTREE_EXTENSIONS = [&quot;treefile&quot;, &quot;iqtree&quot;, &quot;log&quot;, &quot;model.gz&quot;, &quot;contree&quot;, &quot;splits.nex&quot;, &quot;bionj&quot;, &quot;mldist&quot;]
+iqtree_outputs = [f&quot;{iqtree_prefix}.{ext}&quot; for ext in IQTREE_EXTENSIONS]
+
+class_file      = &quot;SRK_protein_classes.tsv&quot;
+ind_class_file  = &quot;SRK_individual_class_genotype.tsv&quot;
+rooted_treefile = f&quot;{iqtree_prefix}_midpoint_rooted.treefile&quot;
+
+OUTPUT_FILES = [filtered_alignment, class_file, ind_class_file,
+                rooted_treefile] + iqtree_outputs
+
+# ----------------------------
+# Locate IQ-TREE3 executable
+# ----------------------------
+iqtree_exe = None
+for candidate in [&quot;./iqtree3&quot;, &quot;./iqtree&quot;, &quot;iqtree3&quot;, &quot;iqtree&quot;]:
+    if candidate.startswith(&quot;./&quot;):
+        if os.path.isfile(candidate[2:]):
+            iqtree_exe = candidate
+            break
+    elif shutil.which(candidate):
+        iqtree_exe = candidate
+        break
+
+if iqtree_exe is None:
+    user_path = input(&quot;IQ-TREE3 not found. Enter path to executable (e.g. ./iqtree3): &quot;).strip()
+    if not os.path.isfile(user_path.lstrip(&quot;./&quot;)):
+        print(f&quot;ERROR: File not found: {user_path}&quot;)
+        sys.exit(1)
+    iqtree_exe = user_path
+print(f&quot;Using IQ-TREE executable: {iqtree_exe}&quot;)
+
+# ----------------------------
+# Overwrite check
+# ----------------------------
+existing = [f for f in OUTPUT_FILES if os.path.exists(f)]
+if existing:
+    print(&quot;\nWARNING: The following output files already exist and will be overwritten:&quot;)
+    for f in existing:
+        print(f&quot;  {f}&quot;)
+    confirm = input(&quot;\nProceed and overwrite? (y/n): &quot;).strip().lower()
+    if confirm != &#39;y&#39;:
+        print(&quot;Aborted. No files were modified.&quot;)
+        sys.exit(0)
+
+# ----------------------------
+# Step 1: Load ingroup individuals from metadata
+# ----------------------------
+print(&quot;Loading metadata...&quot;)
+ingroup_individuals = set()
+
+with open(metadata_file, newline=&quot;&quot;, encoding=&quot;utf-8-sig&quot;) as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+        if row.get(&quot;Ingroup&quot;, &quot;&quot;).strip() == &quot;1&quot;:
+            library = row[&quot;Library&quot;].strip()
+            barcode = row[&quot;barcode&quot;].strip()
+            if library.lstrip(&quot;-&quot;).isdigit():
+                library = f&quot;Library{int(library):03d}&quot;
+            if barcode.lstrip(&quot;-&quot;).isdigit():
+                barcode = f&quot;barcode{int(barcode):02d}&quot;
+            individual_id = f&quot;{library}_{barcode}&quot;
+            ingroup_individuals.add(individual_id)
+
+print(f&quot;Ingroup individuals found in metadata: {len(ingroup_individuals)}&quot;)
+
+if not ingroup_individuals:
+    print(&quot;ERROR: No ingroup individuals found.&quot;)
+    print(&quot;  Check that the &#39;Ingroup&#39; column contains 1 for ingroup samples.&quot;)
+    sys.exit(1)
+
+# ----------------------------
+# Step 2: Load genotype matrix and collect proteins present in ingroup
+# ----------------------------
+print(&quot;\nLoading genotype matrix...&quot;)
+ingroup_proteins = set()
+genotype_individuals = set()
+matched_individuals = set()
+ingroup_individual_proteins = {}
+
+with open(genotype_file, newline=&quot;&quot;, encoding=&quot;utf-8-sig&quot;) as f:
+    reader = csv.DictReader(f, delimiter=&quot;\t&quot;)
+    protein_columns = [col for col in (reader.fieldnames or []) if col != &quot;Individual&quot;]
+
+    for row in reader:
+        individual = row[&quot;Individual&quot;]
+        genotype_individuals.add(individual)
+        if individual in ingroup_individuals:
+            matched_individuals.add(individual)
+            proteins = {p for p in protein_columns if row.get(p, &quot;0&quot;).strip() == &quot;1&quot;}
+            ingroup_individual_proteins[individual] = proteins
+            ingroup_proteins.update(proteins)
+
+print(f&quot;Individuals in genotype file:        {len(genotype_individuals)}&quot;)
+print(f&quot;Ingroup individuals matched:         {len(matched_individuals)}&quot;)
+print(f&quot;Proteins present in ingroup:         {len(ingroup_proteins)}&quot;)
+
+unmatched = ingroup_individuals - genotype_individuals
+if unmatched:
+    print(f&quot;\nNOTE: {len(unmatched)} ingroup individuals from metadata absent from genotype file.&quot;)
+    print(f&quot;  These were likely excluded by the abundance or max_alleles filter upstream.&quot;)
+    print(f&quot;  Absent individuals: {sorted(unmatched)[:5]}{&#39; ...&#39; if len(unmatched) &gt; 5 else &#39;&#39;}&quot;)
+    if len(unmatched) &gt; len(ingroup_individuals) * 0.5:
+        print(f&quot;  WARNING: &gt;50% of ingroup individuals are missing — check ID format.&quot;)
+        print(f&quot;  Example metadata IDs:  {sorted(ingroup_individuals)[:3]}&quot;)
+        print(f&quot;  Example genotype IDs:  {sorted(genotype_individuals)[:3]}&quot;)
+
+if not ingroup_proteins:
+    print(&quot;\nERROR: No proteins found for ingroup individuals. Cannot build tree.&quot;)
+    sys.exit(1)
+
+# ----------------------------
+# Step 3: Filter alignment to ingroup proteins
+# ----------------------------
+print(&quot;\nFiltering alignment to ingroup proteins...&quot;)
+all_records = list(SeqIO.parse(alignment_file, &quot;fasta&quot;))
+filtered_records = [rec for rec in all_records if rec.id in ingroup_proteins]
+
+print(f&quot;Sequences in full alignment:         {len(all_records)}&quot;)
+print(f&quot;Sequences retained for ingroup:      {len(filtered_records)}&quot;)
+
+missing_from_alignment = ingroup_proteins - {rec.id for rec in all_records}
+if missing_from_alignment:
+    print(f&quot;\nWARNING: {len(missing_from_alignment)} ingroup proteins not found in alignment:&quot;)
+    for p in sorted(missing_from_alignment):
+        print(f&quot;  {p}&quot;)
+
+if not filtered_records:
+    print(&quot;\nERROR: No sequences matched ingroup proteins in the alignment.&quot;)
+    sys.exit(1)
+
+if len(filtered_records) &lt; 4:
+    print(f&quot;\nWARNING: Only {len(filtered_records)} sequences — tree may not be informative.&quot;)
+
+SeqIO.write(filtered_records, filtered_alignment, &quot;fasta&quot;)
+print(f&quot;\nFiltered alignment written: {filtered_alignment}&quot;)
+
+# ----------------------------
+# Step 4: Run IQ-TREE3
+# ----------------------------
+print(&quot;\nRunning IQ-TREE3...&quot;)
+
+cmd = [
+    iqtree_exe,
+    &quot;-s&quot;, filtered_alignment,
+    &quot;-m&quot;, &quot;TEST&quot;,
+    &quot;-mset&quot;, &quot;LG,WAG,JTT&quot;,
+    &quot;-mfreq&quot;, &quot;FU&quot;,
+    &quot;-mrate&quot;, &quot;G4,I,R4&quot;,
+    &quot;-bb&quot;, &quot;1000&quot;,
+    &quot;-alrt&quot;, &quot;1000&quot;,
+    &quot;-redo&quot;,
+    &quot;-nt&quot;, &quot;AUTO&quot;,
+    &quot;-pre&quot;, iqtree_prefix
+]
+
+print(&quot;Command:&quot;, &quot; &quot;.join(cmd))
+print()
+subprocess.run(cmd, check=True)
+
+# ----------------------------
+# Step 5: Classify proteins into SRK Class I and Class II
+# ----------------------------
+# Strategy: find the longest internal branch in the unrooted tree.
+# In SRK phylogenies the two classes are separated by an exceptionally long
+# branch due to ancient balancing selection. The subtree connected by that
+# branch = Class II (larger, recessive); everything else = Class I (smaller,
+# dominant). This avoids the rooting problem and handles the Class I grade.
+
+print(&quot;\nClassifying proteins into SRK classes...&quot;)
+treefile = f&quot;{iqtree_prefix}.treefile&quot;
+tree = Phylo.read(treefile, &quot;newick&quot;)
+
+max_branch_len = 0
+best_clade = None
+
+for clade in tree.find_clades(order=&quot;level&quot;):
+    if clade == tree.root or clade.is_terminal():
+        continue
+    if clade.branch_length and clade.branch_length &gt; max_branch_len:
+        max_branch_len = clade.branch_length
+        best_clade = clade
+
+if best_clade is None:
+    print(&quot;WARNING: Could not identify a splitting branch. Check tree file.&quot;)
+    class_I, class_II = set(), {t.name for t in tree.get_terminals()}
+else:
+    all_leaves = {t.name for t in tree.get_terminals()}
+    group_A    = {t.name for t in best_clade.get_terminals()}
+    group_B    = all_leaves - group_A
+    if len(group_A) &lt;= len(group_B):
+        class_I, class_II = group_A, group_B
+    else:
+        class_I, class_II = group_B, group_A
+
+print(f&quot;Longest internal branch length:  {max_branch_len:.4f}&quot;)
+print(f&quot;Class I  (dominant,  smaller):   {len(class_I)} proteins&quot;)
+print(f&quot;Class II (recessive, larger):    {len(class_II)} proteins&quot;)
+print()
+print(&quot;NOTE: Validate this split in FigTree using the midpoint-rooted tree.&quot;)
+print(&quot;      For higher confidence, add published SRK reference sequences with&quot;)
+print(&quot;      known class assignments to anchor the tree.&quot;)
+
+# Write protein class assignments
+with open(class_file, &quot;w&quot;) as f:
+    f.write(&quot;Protein\tClass\n&quot;)
+    for p in sorted(class_I):
+        f.write(f&quot;{p}\tClass_I\n&quot;)
+    for p in sorted(class_II):
+        f.write(f&quot;{p}\tClass_II\n&quot;)
+
+# Write midpoint-rooted tree for visualisation
+tree_viz = Phylo.read(treefile, &quot;newick&quot;)
+tree_viz.root_at_midpoint()
+Phylo.write(tree_viz, rooted_treefile, &quot;newick&quot;)
+
+# Per-individual class genotype and dominance prediction
+with open(ind_class_file, &quot;w&quot;) as f:
+    f.write(&quot;Individual\t&quot;
+            &quot;n_Class_I\tClass_I_proteins\t&quot;
+            &quot;n_Class_II\tClass_II_proteins\t&quot;
+            &quot;Dominance_prediction\n&quot;)
+    for individual in sorted(ingroup_individual_proteins):
+        proteins = ingroup_individual_proteins[individual]
+        c1 = sorted(proteins &amp; class_I)
+        c2 = sorted(proteins &amp; class_II)
+
+        if c1 and c2:
+            prediction = &quot;Class_I_dominant&quot;
+        elif c1:
+            prediction = &quot;Class_I_only_dominant&quot;
+        elif c2:
+            prediction = &quot;Class_II_only_codominant&quot;
+        else:
+            prediction = &quot;no_functional_SRK&quot;
+
+        f.write(f&quot;{individual}\t&quot;
+                f&quot;{len(c1)}\t{&#39;;&#39;.join(c1)}\t&quot;
+                f&quot;{len(c2)}\t{&#39;;&#39;.join(c2)}\t&quot;
+                f&quot;{prediction}\n&quot;)
+
+# ----------------------------
+# Summary
+# ----------------------------
+print(&quot;\nFINAL SUMMARY&quot;)
+print(f&quot;\nIngroup individuals:     {len(matched_individuals)}&quot;)
+print(f&quot;Ingroup proteins:        {len(ingroup_proteins)}&quot;)
+print(f&quot;Sequences in tree:       {len(filtered_records)}&quot;)
+print(f&quot;\nClass I  (dominant):     {len(class_I)} proteins&quot;)
+print(f&quot;Class II (recessive):    {len(class_II)} proteins&quot;)
+print(f&quot;\nFiltered alignment:      {filtered_alignment}&quot;)
+print(f&quot;Tree file (unrooted):    {iqtree_prefix}.treefile&quot;)
+print(f&quot;Tree file (midpt rooted):{rooted_treefile}&quot;)
+print(f&quot;IQ-TREE log:             {iqtree_prefix}.iqtree&quot;)
+print(f&quot;Protein classes:         {class_file}&quot;)
+print(f&quot;Individual class geno:   {ind_class_file}&quot;)</code></pre>
+</div>
+</div>
+<div id="zygosity" class="section level2" number="5.4">
+<h2><span class="header-section-number">5.4</span> SRK Zygosity Analysis Pipeline for Tetraploid Species</h2>
+<div id="overview-9" class="section level3" number="5.4.1">
+<h3><span class="header-section-number">5.4.1</span> Overview</h3>
 <p>This R pipeline analyzes S-locus zygosity patterns in tetraploid species by quantifying the number of distinct SRK proteins per individual and classifying genotype configurations. The workflow addresses the complex genetics of polyploid self-incompatibility systems, where individuals can carry multiple S-alleles with varying degrees of heterozygosity, providing insights into mating system evolution and population genetic structure.</p>
 </div>
-<div id="pipeline-steps-8" class="section level3" number="5.3.2">
-<h3><span class="header-section-number">5.3.2</span> Pipeline Steps</h3>
-<div id="polyploid-self-incompatibility-analysis-framework" class="section level4" number="5.3.2.1">
-<h4><span class="header-section-number">5.3.2.1</span> Polyploid Self-Incompatibility Analysis Framework</h4>
+<div id="pipeline-steps-9" class="section level3" number="5.4.2">
+<h3><span class="header-section-number">5.4.2</span> Pipeline Steps</h3>
+<div id="polyploid-self-incompatibility-analysis-framework" class="section level4" number="5.4.2.1">
+<h4><span class="header-section-number">5.4.2.1</span> Polyploid Self-Incompatibility Analysis Framework</h4>
 <p>Zygosity analysis serves critical functions in polyploid self-incompatibility research:</p>
 <ul>
 <li><strong>Genotype complexity assessment</strong>: Quantifies S-allele diversity within individuals</li>
@@ -4704,8 +5384,8 @@ print(f&quot;  {wide_out}&quot;)</code></pre>
 <li><strong>Evolutionary constraint evaluation</strong>: Assesses maintenance of incompatibility function in polyploids</li>
 </ul>
 </div>
-<div id="data-loading-and-validation" class="section level4" number="5.3.2.2">
-<h4><span class="header-section-number">5.3.2.2</span> Data Loading and Validation</h4>
+<div id="data-loading-and-validation" class="section level4" number="5.4.2.2">
+<h4><span class="header-section-number">5.4.2.2</span> Data Loading and Validation</h4>
 <p>Loads individual-protein assignments from the genotyping pipeline:</p>
 <pre class="r"><code>df &lt;- read.table(
     &quot;SRK_individual_protein_table.tsv&quot;,
@@ -4721,8 +5401,8 @@ print(f&quot;  {wide_out}&quot;)</code></pre>
 <li><strong>String preservation</strong>: Prevents automatic factor conversion for downstream analysis</li>
 </ul>
 </div>
-<div id="protein-diversity-quantification" class="section level4" number="5.3.2.3">
-<h4><span class="header-section-number">5.3.2.3</span> Protein Diversity Quantification</h4>
+<div id="protein-diversity-quantification" class="section level4" number="5.4.2.3">
+<h4><span class="header-section-number">5.4.2.3</span> Protein Diversity Quantification</h4>
 <p>Calculates the number of distinct SRK proteins per individual:</p>
 <pre class="r"><code>library(dplyr)
 
@@ -4744,8 +5424,8 @@ zyg &lt;- df %&gt;%
 - <strong>Demographic history</strong>: Bottlenecks reduce within-individual diversity
 - <strong>Mating patterns</strong>: Outcrossing maintains higher diversity than selfing</p>
 </div>
-<div id="binary-zygosity-classification" class="section level4" number="5.3.2.4">
-<h4><span class="header-section-number">5.3.2.4</span> Binary Zygosity Classification</h4>
+<div id="binary-zygosity-classification" class="section level4" number="5.4.2.4">
+<h4><span class="header-section-number">5.4.2.4</span> Binary Zygosity Classification</h4>
 <p>Assigns simplified homozygous vs. heterozygous categories:</p>
 <pre class="r"><code>zyg$Zygosity &lt;- ifelse(
     zyg$N_proteins == 1,
@@ -4760,8 +5440,8 @@ zyg &lt;- df %&gt;%
 <li><strong>Functional relevance</strong>: Homozygous individuals may exhibit compromised incompatibility</li>
 </ul>
 </div>
-<div id="detailed-genotype-model-assignment" class="section level4" number="5.3.2.5">
-<h4><span class="header-section-number">5.3.2.5</span> Detailed Genotype Model Assignment</h4>
+<div id="detailed-genotype-model-assignment" class="section level4" number="5.4.2.5">
+<h4><span class="header-section-number">5.4.2.5</span> Detailed Genotype Model Assignment</h4>
 <p>Provides specific genotype configurations based on protein count:</p>
 <pre class="r"><code>zyg$Genotype &lt;- case_when(
     zyg$N_proteins == 1 ~ &quot;AAAA&quot;,
@@ -4800,8 +5480,8 @@ zyg &lt;- df %&gt;%
 <li>Optimal configuration for maintaining incompatibility function</li>
 </ul>
 </div>
-<div id="data-export-and-documentation" class="section level4" number="5.3.2.6">
-<h4><span class="header-section-number">5.3.2.6</span> Data Export and Documentation</h4>
+<div id="data-export-and-documentation" class="section level4" number="5.4.2.6">
+<h4><span class="header-section-number">5.4.2.6</span> Data Export and Documentation</h4>
 <p>Saves zygosity analysis results with proper formatting:</p>
 <pre class="r"><code>write.table(
     zyg,
@@ -4818,8 +5498,8 @@ zyg &lt;- df %&gt;%
 <li><strong>Header preservation</strong>: Maintains column names for clarity</li>
 </ul>
 </div>
-<div id="summary-statistics-generation" class="section level4" number="5.3.2.7">
-<h4><span class="header-section-number">5.3.2.7</span> Summary Statistics Generation</h4>
+<div id="summary-statistics-generation" class="section level4" number="5.4.2.7">
+<h4><span class="header-section-number">5.4.2.7</span> Summary Statistics Generation</h4>
 <p>Provides comprehensive descriptive statistics:</p>
 <pre class="r"><code>cat(&quot;\nSummary:\n&quot;)
 print(table(zyg$N_proteins))
@@ -4832,8 +5512,8 @@ print(table(zyg$Zygosity))</code></pre>
 <li><strong>Quality control</strong>: Identification of unusual genotype frequencies</li>
 </ul>
 </div>
-<div id="visualization-generation" class="section level4" number="5.3.2.8">
-<h4><span class="header-section-number">5.3.2.8</span> Visualization Generation</h4>
+<div id="visualization-generation" class="section level4" number="5.4.2.8">
+<h4><span class="header-section-number">5.4.2.8</span> Visualization Generation</h4>
 <p>Creates graphical summary of genotype diversity:</p>
 <pre class="r"><code>pdf(&quot;SRK_zygosity_distribution.pdf&quot;)
 
@@ -4854,10 +5534,10 @@ dev.off()</code></pre>
 </ul>
 </div>
 </div>
-<div id="output-files-8" class="section level3" number="5.3.3">
-<h3><span class="header-section-number">5.3.3</span> Output Files</h3>
-<div id="primary-outputs-2" class="section level4" number="5.3.3.1">
-<h4><span class="header-section-number">5.3.3.1</span> Primary Outputs</h4>
+<div id="output-files-9" class="section level3" number="5.4.3">
+<h3><span class="header-section-number">5.4.3</span> Output Files</h3>
+<div id="primary-outputs-3" class="section level4" number="5.4.3.1">
+<h4><span class="header-section-number">5.4.3.1</span> Primary Outputs</h4>
 <p><strong>Zygosity table (<code>SRK_individual_zygosity.tsv</code>):</strong></p>
 <ul>
 <li>Individual identifiers with protein counts</li>
@@ -4872,8 +5552,8 @@ dev.off()</code></pre>
 <li>Publication-ready figure for manuscript inclusion</li>
 </ul>
 </div>
-<div id="data-structure-example" class="section level4" number="5.3.3.2">
-<h4><span class="header-section-number">5.3.3.2</span> Data Structure Example</h4>
+<div id="data-structure-example" class="section level4" number="5.4.3.2">
+<h4><span class="header-section-number">5.4.3.2</span> Data Structure Example</h4>
 <pre><code>Individual      N_proteins  Zygosity      Genotype
 Library001_01   2          Heterozygous   AABB
 Library001_02   1          Homozygous     AAAA
@@ -4881,11 +5561,11 @@ Library001_03   4          Heterozygous   ABCD
 Library001_04   3          Heterozygous   AABC</code></pre>
 </div>
 </div>
-<div id="scientific-applications-6" class="section level3" number="5.3.4">
-<h3><span class="header-section-number">5.3.4</span> Scientific Applications</h3>
+<div id="scientific-applications-6" class="section level3" number="5.4.4">
+<h3><span class="header-section-number">5.4.4</span> Scientific Applications</h3>
 </div>
-<div id="population-genetic-inference" class="section level3" number="5.3.5">
-<h3><span class="header-section-number">5.3.5</span> Population Genetic Inference</h3>
+<div id="population-genetic-inference" class="section level3" number="5.4.5">
+<h3><span class="header-section-number">5.4.5</span> Population Genetic Inference</h3>
 <p><strong>Demographic history reconstruction:</strong></p>
 <ul>
 <li><strong>High ABCD frequency</strong>: Large, outcrossing populations with minimal drift</li>
@@ -4899,8 +5579,8 @@ Library001_04   3          Heterozygous   AABC</code></pre>
 <li>Homozygosity excess indicates small population effects</li>
 <li>Heterozygosity patterns reveal demographic constraints</li>
 </ul>
-<div id="self-incompatibility-system-analysis-1" class="section level4" number="5.3.5.1">
-<h4><span class="header-section-number">5.3.5.1</span> Self-Incompatibility System Analysis</h4>
+<div id="self-incompatibility-system-analysis-1" class="section level4" number="5.4.5.1">
+<h4><span class="header-section-number">5.4.5.1</span> Self-Incompatibility System Analysis</h4>
 <p><strong>Functional assessment:</strong></p>
 <ul>
 <li><strong>AAAA individuals</strong>: Likely self-compatible due to S-allele homozygosity</li>
@@ -4914,8 +5594,8 @@ Library001_04   3          Heterozygous   AABC</code></pre>
 <li>Population size thresholds for incompatibility maintenance</li>
 </ul>
 </div>
-<div id="conservation-genetics-applications" class="section level4" number="5.3.5.2">
-<h4><span class="header-section-number">5.3.5.2</span> Conservation Genetics Applications</h4>
+<div id="conservation-genetics-applications" class="section level4" number="5.4.5.2">
+<h4><span class="header-section-number">5.4.5.2</span> Conservation Genetics Applications</h4>
 <p><strong>Population viability assessment:</strong></p>
 <ul>
 <li>S-locus diversity as indicator of reproductive potential</li>
@@ -4930,10 +5610,10 @@ Library001_04   3          Heterozygous   AABC</code></pre>
 </ul>
 </div>
 </div>
-<div id="statistical-considerations-2" class="section level3" number="5.3.6">
-<h3><span class="header-section-number">5.3.6</span> Statistical Considerations</h3>
-<div id="sample-size-requirements" class="section level4" number="5.3.6.1">
-<h4><span class="header-section-number">5.3.6.1</span> Sample Size Requirements</h4>
+<div id="statistical-considerations-2" class="section level3" number="5.4.6">
+<h3><span class="header-section-number">5.4.6</span> Statistical Considerations</h3>
+<div id="sample-size-requirements" class="section level4" number="5.4.6.1">
+<h4><span class="header-section-number">5.4.6.1</span> Sample Size Requirements</h4>
 <p><strong>Minimum sample sizes:</strong></p>
 <ul>
 <li>At least 20-30 individuals for basic frequency estimation</li>
@@ -4941,8 +5621,8 @@ Library001_04   3          Heterozygous   AABC</code></pre>
 <li>Population-specific considerations based on expected diversity</li>
 </ul>
 </div>
-<div id="interpretation-guidelines" class="section level4" number="5.3.6.2">
-<h4><span class="header-section-number">5.3.6.2</span> Interpretation Guidelines</h4>
+<div id="interpretation-guidelines" class="section level4" number="5.4.6.2">
+<h4><span class="header-section-number">5.4.6.2</span> Interpretation Guidelines</h4>
 <p><strong>Genotype frequency expectations:</strong></p>
 <ul>
 <li><strong>Random mating</strong>: Hardy-Weinberg proportions modified for polyploidy</li>
@@ -4958,8 +5638,8 @@ Library001_04   3          Heterozygous   AABC</code></pre>
 <p>This zygosity analysis pipeline provides essential insights into the genetic architecture of self-incompatibility in polyploid species, enabling assessment of system functionality and population genetic health critical for both evolutionary understanding and conservation management.</p>
 </div>
 </div>
-<div id="bioinformatics-8" class="section level3" number="5.3.7">
-<h3><span class="header-section-number">5.3.7</span> Bioinformatics</h3>
+<div id="bioinformatics-9" class="section level3" number="5.4.7">
+<h3><span class="header-section-number">5.4.7</span> Bioinformatics</h3>
 <ul>
 <li>Goal: Score individual zygosity from genotypes to AAAA, AABB, AABC, ABCD based on number of recovered protein types</li>
 <li>Script: <code>SRK_zygosity_from_genotype.R</code></li>
@@ -5115,7 +5795,7 @@ cat(&quot;SRK_zygosity_distribution.pdf\n&quot;)</code></pre>
 <h1><span class="header-section-number">6</span> Phase 3: Data Analyses</h1>
 <div id="popgenetics" class="section level2" number="6.1">
 <h2><span class="header-section-number">6.1</span> Population Genetic Statistics</h2>
-<div id="overview-9" class="section level3" number="6.1.1">
+<div id="overview-10" class="section level3" number="6.1.1">
 <h3><span class="header-section-number">6.1.1</span> Overview</h3>
 <p>This pipeline calculates key population genetic statistics from SRK genotyping data in order to evaluate whether <strong>self-incompatibility allele diversity is maintained by negative frequency-dependent selection (NFDS)</strong> or instead influenced by <strong>genetic drift or demographic bottlenecks</strong>.</p>
 <p>The analysis integrates individual genotype data, inferred zygosity states, and population metadata to produce summary statistics at the population level. These statistics provide insight into the evolutionary dynamics governing the SRK self-incompatibility system.</p>
@@ -5127,7 +5807,7 @@ cat(&quot;SRK_zygosity_distribution.pdf\n&quot;)</code></pre>
 </ul>
 <p>Deviations from these expectations can indicate demographic or evolutionary processes affecting allele maintenance.</p>
 </div>
-<div id="pipeline-steps-9" class="section level3" number="6.1.2">
+<div id="pipeline-steps-10" class="section level3" number="6.1.2">
 <h3><span class="header-section-number">6.1.2</span> Pipeline Steps</h3>
 <div id="biological-expectations-for-srk-systems" class="section level4" number="6.1.2.1">
 <h4><span class="header-section-number">6.1.2.1</span> Biological Expectations for SRK Systems</h4>
@@ -5215,7 +5895,7 @@ cat(&quot;SRK_zygosity_distribution.pdf\n&quot;)</code></pre>
 </ul>
 </div>
 </div>
-<div id="output-files-9" class="section level4" number="6.1.2.4">
+<div id="output-files-10" class="section level4" number="6.1.2.4">
 <h4><span class="header-section-number">6.1.2.4</span> Output Files</h4>
 <p>The analysis generates two output files.</p>
 <div id="population-summary-statistics" class="section level5" number="6.1.2.4.1">
@@ -5426,7 +6106,7 @@ H = \frac{\text{number of heterozygous individuals}}{\text{total individuals}}
 <p>Comparing these metrics across populations can identify <strong>populations experiencing allele erosion or reduced mating compatibility</strong>.</p>
 </div>
 </div>
-<div id="bioinformatics-9" class="section level3" number="6.1.4">
+<div id="bioinformatics-10" class="section level3" number="6.1.4">
 <h3><span class="header-section-number">6.1.4</span> Bioinformatics</h3>
 <div id="script" class="section level4" number="6.1.4.1">
 <h4><span class="header-section-number">6.1.4.1</span> Script</h4>
@@ -5444,7 +6124,7 @@ H = \frac{\text{number of heterozygous individuals}}{\text{total individuals}}
 <li><code>sampling_metadata.csv</code></li>
 </ul>
 </div>
-<div id="output-files-10" class="section level4" number="6.1.4.4">
+<div id="output-files-11" class="section level4" number="6.1.4.4">
 <h4><span class="header-section-number">6.1.4.4</span> Output files</h4>
 <ul>
 <li><code>SRK_population_genetic_summary.tsv</code></li>
@@ -5546,7 +6226,7 @@ cat(&quot;Analysis complete\n&quot;)</code></pre>
 </div>
 <div id="alleleaccum" class="section level2" number="6.2">
 <h2><span class="header-section-number">6.2</span> Allele Accumulation Curves</h2>
-<div id="overview-10" class="section level3" number="6.2.1">
+<div id="overview-11" class="section level3" number="6.2.1">
 <h3><span class="header-section-number">6.2.1</span> Overview</h3>
 <p>Allele accumulation curves quantify how rapidly new alleles are discovered as additional individuals are sampled. In systems under <strong>negative frequency-dependent selection (NFDS)</strong>, such as plant self-incompatibility loci, rare alleles are continuously maintained in populations. This leads to a characteristic accumulation pattern where new alleles continue to appear even after substantial sampling effort.</p>
 <p>In contrast, populations evolving primarily under <strong>genetic drift</strong> show rapid early allele discovery followed by saturation, indicating that most diversity is captured quickly.</p>
@@ -5557,7 +6237,7 @@ cat(&quot;Analysis complete\n&quot;)</code></pre>
 </ul>
 <p>From these curves, several statistics are extracted that provide quantitative indicators of <strong>NFDS versus drift</strong>.</p>
 </div>
-<div id="pipeline-steps-10" class="section level3" number="6.2.2">
+<div id="pipeline-steps-11" class="section level3" number="6.2.2">
 <h3><span class="header-section-number">6.2.2</span> Pipeline Steps</h3>
 <div id="data-integration" class="section level4" number="6.2.2.1">
 <h4><span class="header-section-number">6.2.2.1</span> Data Integration</h4>
@@ -5682,9 +6362,9 @@ valid_pops &lt;- names(pop_counts[pop_counts &gt;= 5])</code></pre>
 <p>These plots allow visual evaluation of <strong>diversity saturation patterns</strong>.</p>
 </div>
 </div>
-<div id="output-files-11" class="section level3" number="6.2.3">
+<div id="output-files-12" class="section level3" number="6.2.3">
 <h3><span class="header-section-number">6.2.3</span> Output Files</h3>
-<div id="primary-outputs-3" class="section level4" number="6.2.3.1">
+<div id="primary-outputs-4" class="section level4" number="6.2.3.1">
 <h4><span class="header-section-number">6.2.3.1</span> Primary Outputs</h4>
 <p><strong>SRK_allele_accumulation_curves.pdf</strong></p>
 <p>Contains:</p>
@@ -5807,7 +6487,7 @@ Late_fraction &lt; 0.10 → drift-dominated diversity</code></pre>
 </table>
 <p>This framework complements traditional neutrality tests by directly analyzing <strong>allele discovery dynamics</strong>.</p>
 </div>
-<div id="bioinformatics-10" class="section level3" number="6.2.6">
+<div id="bioinformatics-11" class="section level3" number="6.2.6">
 <h3><span class="header-section-number">6.2.6</span> Bioinformatics</h3>
 <ul>
 <li>Script: <code>SRK_allele_accumulation_analysis.R</code></li>
@@ -5827,7 +6507,7 @@ Late_fraction &lt; 0.10 → drift-dominated diversity</code></pre>
 <li>Retain populations with <strong>≥ 5 individuals</strong></li>
 </ul>
 </div>
-<div id="output-files-12" class="section level4" number="6.2.6.2">
+<div id="output-files-13" class="section level4" number="6.2.6.2">
 <h4><span class="header-section-number">6.2.6.2</span> Output files</h4>
 <ul>
 <li><code>SRK_allele_accumulation_curves.pdf</code></li>
@@ -5865,7 +6545,7 @@ Late_fraction &lt; 0.10 → drift-dominated diversity</code></pre>
 </div>
 <div id="allelefrqanalysis" class="section level2" number="6.3">
 <h2><span class="header-section-number">6.3</span> Allele Frequency Analysis</h2>
-<div id="overview-11" class="section level3" number="6.3.1">
+<div id="overview-12" class="section level3" number="6.3.1">
 <h3><span class="header-section-number">6.3.1</span> Overview</h3>
 <p>While <strong>negative frequency-dependent selection (NFDS)</strong> maintains high allelic diversity at the <strong>SRK self-incompatibility locus</strong>, allele <strong>frequencies may still deviate from equal expectations</strong> due to demographic processes such as genetic drift, population structure, or recent allele turnover.</p>
 <p>This analysis evaluates whether observed <strong>SRK allele frequency distributions deviate from the theoretical NFDS expectation</strong>, where all alleles should occur at approximately equal frequencies.</p>
@@ -5878,7 +6558,7 @@ Late_fraction &lt; 0.10 → drift-dominated diversity</code></pre>
 <li>Outputs a <strong>summary table of statistical tests</strong></li>
 </ul>
 </div>
-<div id="pipeline-steps-11" class="section level3" number="6.3.2">
+<div id="pipeline-steps-12" class="section level3" number="6.3.2">
 <h3><span class="header-section-number">6.3.2</span> Pipeline Steps</h3>
 <div id="input-data-integration" class="section level4" number="6.3.2.1">
 <h4><span class="header-section-number">6.3.2.1</span> Input Data Integration</h4>
@@ -5950,7 +6630,7 @@ p_{expected} = \frac{1}{k}
 </ul>
 </div>
 </div>
-<div id="output-files-13" class="section level3" number="6.3.3">
+<div id="output-files-14" class="section level3" number="6.3.3">
 <h3><span class="header-section-number">6.3.3</span> Output Files</h3>
 <div id="statistical-results" class="section level4" number="6.3.3.1">
 <h4><span class="header-section-number">6.3.3.1</span> Statistical Results</h4>
@@ -6078,7 +6758,7 @@ p_{expected} = \frac{1}{k}
 </ul>
 </div>
 </div>
-<div id="bioinformatics-11" class="section level3" number="6.3.5">
+<div id="bioinformatics-12" class="section level3" number="6.3.5">
 <h3><span class="header-section-number">6.3.5</span> Bioinformatics</h3>
 <ul>
 <li>Script: <code>SRK_chisq_species_population.R</code></li>
@@ -6092,7 +6772,7 @@ p_{expected} = \frac{1}{k}
 <li><code>sampling_metadata.csv</code></li>
 </ul>
 </div>
-<div id="output-files-14" class="section level4" number="6.3.5.2">
+<div id="output-files-15" class="section level4" number="6.3.5.2">
 <h4><span class="header-section-number">6.3.5.2</span> Output Files</h4>
 <ul>
 <li><code>SRK_chisq_species_population.tsv</code></li>

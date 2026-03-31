@@ -42,9 +42,17 @@ protein_key_file = input(
 individual_proteins = defaultdict(list)
 
 
-with open(protein_key_file, newline="") as f:
+with open(protein_key_file, newline="", encoding="utf-8-sig") as f:
 
     reader = csv.DictReader(f, delimiter="\t")
+
+    # Validate expected columns before processing rows
+    expected = {"Original_sequence_ID", "Protein"}
+    if not expected.issubset(set(reader.fieldnames or [])):
+        print(f"ERROR: Expected columns {expected}")
+        print(f"       Found columns:    {reader.fieldnames}")
+        print("Check that you provided the correct file (SRK_functional_protein_key.tsv).")
+        sys.exit(1)
 
     for row in reader:
 

@@ -18,13 +18,14 @@ pattern = "*_exons_backfilled.fasta"
 raw_fasta = "SRK_proteins_raw.fasta"
 aligned_fasta = "SRK_proteins_aligned.fasta"
 final_fasta = "SRK_functional_proteins.fasta"
+repr_aligned_fasta = "SRK_functional_proteins_aligned.fasta"
 key_file = "SRK_functional_protein_key.tsv"
 report_file = "SRK_individual_status_report.tsv"
 sc_file = "SRK_self_compatible_candidates.txt"
 too_many_file = "SRK_too_many_alleles.txt"
 
-OUTPUT_FILES = [raw_fasta, aligned_fasta, final_fasta, key_file,
-                report_file, sc_file, too_many_file]
+OUTPUT_FILES = [raw_fasta, aligned_fasta, final_fasta, repr_aligned_fasta,
+                key_file, report_file, sc_file, too_many_file]
 
 # ----------------------------
 # Overwrite check
@@ -253,6 +254,17 @@ for seq, name in protein_names.items():
 SeqIO.write(final_records, final_fasta, "fasta")
 
 # ----------------------------
+# Step 6b: Align representative sequences (one per protein) for phylogenetic analysis
+# ----------------------------
+print("\nAligning representative protein sequences for phylogenetic analysis...")
+subprocess.run(
+    f"mafft --auto --amino {final_fasta} > {repr_aligned_fasta}",
+    shell=True,
+    check=True
+)
+print(f"Representative alignment written: {repr_aligned_fasta}")
+
+# ----------------------------
 # Step 7: Build per-individual protein sets and filter by max_alleles
 # ----------------------------
 
@@ -340,6 +352,7 @@ with open(too_many_file, "w") as f:
 print("\nFINAL SUMMARY")
 print(f"\nFinal functional proteins: {len(protein_names)}")
 print(f"Protein FASTA: {final_fasta}")
+print(f"Aligned representatives (phylogenetics): {repr_aligned_fasta}")
 print(f"Protein key: {key_file}")
 
 classification_counts = Counter([row['Classification'] for row in report_data])
