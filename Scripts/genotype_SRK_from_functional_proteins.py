@@ -1,8 +1,29 @@
 #!/usr/bin/env python3
 
 import csv
+import os
+import sys
 from collections import defaultdict, OrderedDict
 
+
+# ----------------------------
+# Output files & overwrite check
+# ----------------------------
+
+long_out = "SRK_individual_protein_table.tsv"
+wide_out = "SRK_individual_genotypes.tsv"
+
+OUTPUT_FILES = [long_out, wide_out]
+
+existing = [f for f in OUTPUT_FILES if os.path.exists(f)]
+if existing:
+    print("\nWARNING: The following output files already exist and will be overwritten:")
+    for f in existing:
+        print(f"  {f}")
+    confirm = input("\nProceed and overwrite? (y/n): ").strip().lower()
+    if confirm != 'y':
+        print("Aborted. No files were modified.")
+        sys.exit(0)
 
 # ----------------------------
 # User input
@@ -11,11 +32,6 @@ from collections import defaultdict, OrderedDict
 protein_key_file = input(
     "Enter SRK_functional_protein_key.tsv: "
 ).strip()
-
-
-long_out = "SRK_individual_protein_table.tsv"
-
-wide_out = "SRK_individual_genotypes.tsv"
 
 
 
@@ -138,14 +154,9 @@ with open(wide_out, "w", newline="") as out:
 # Summary
 # ----------------------------
 
-print("\n✅ Functional protein genotyping complete")
-
-print("Individuals:", len(genotype_matrix))
-
-print("Functional alleles:", len(all_proteins))
-
-print("Outputs:")
-
-print(long_out)
-
-print(wide_out)
+print("\nFINAL SUMMARY")
+print(f"\nIndividuals genotyped: {len(genotype_matrix)}")
+print(f"Functional proteins: {len(all_proteins)}")
+print(f"\nOutputs:")
+print(f"  {long_out}")
+print(f"  {wide_out}")

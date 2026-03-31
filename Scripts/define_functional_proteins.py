@@ -6,9 +6,38 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from collections import Counter, defaultdict
 import glob
+import os
 import subprocess
 import sys
 import re
+
+# ----------------------------
+# Files
+# ----------------------------
+pattern = "*_exons_backfilled.fasta"
+raw_fasta = "SRK_proteins_raw.fasta"
+aligned_fasta = "SRK_proteins_aligned.fasta"
+final_fasta = "SRK_functional_proteins.fasta"
+key_file = "SRK_functional_protein_key.tsv"
+report_file = "SRK_individual_status_report.tsv"
+sc_file = "SRK_self_compatible_candidates.txt"
+too_many_file = "SRK_too_many_alleles.txt"
+
+OUTPUT_FILES = [raw_fasta, aligned_fasta, final_fasta, key_file,
+                report_file, sc_file, too_many_file]
+
+# ----------------------------
+# Overwrite check
+# ----------------------------
+existing = [f for f in OUTPUT_FILES if os.path.exists(f)]
+if existing:
+    print("\nWARNING: The following output files already exist and will be overwritten:")
+    for f in existing:
+        print(f"  {f}")
+    confirm = input("\nProceed and overwrite? (y/n): ").strip().lower()
+    if confirm != 'y':
+        print("Aborted. No files were modified.")
+        sys.exit(0)
 
 # ----------------------------
 # Parameters
@@ -16,6 +45,7 @@ import re
 frame = int(input("Translation frame (1,2,3): ")) - 1
 min_length = 100
 min_count = int(input("Minimum sequences per protein (recommended 2-5): "))
+max_alleles = int(input("Maximum functional proteins per individual (e.g. 4 for allotetraploid): "))
 
 # Add option for enhanced validation
 use_enhanced_validation = input("Use enhanced SRK domain validation? (y/n, default=n): ").strip().lower()
@@ -42,7 +72,7 @@ def validate_srk_features(protein_seq):
     motif_count = sum(1 for motif in kinase_motifs if re.search(motif, protein_seq))
     return motif_count >= 1
 
-def generate_individual_report(individual_status, individuals_in_final_key):
+def generate_individual_report(individual_status, individuals_in_final_key, max_alleles):
     """Generate comprehensive individual status report with abundance filtering tracking"""
     
     report_data = []
@@ -60,8 +90,10 @@ def generate_individual_report(individual_status, individuals_in_final_key):
             classification = "no_sequences"
         elif functional == 0:
             classification = "no_functional_proteins"
+        elif not in_final_data and individual_status[individual].get('too_many_alleles', False):
+            classification = "too_many_alleles"
         elif not in_final_data:
-            classification = "dropped_abundance_filter"  # NEW CATEGORY
+            classification = "dropped_abundance_filter"
         elif functional < total_seq * 0.5:
             classification = "low_functional_rate"
         else:
@@ -95,15 +127,6 @@ individual_status = defaultdict(lambda: {
 })
 
 # ----------------------------
-# Files
-# ----------------------------
-pattern = "*_exons_backfilled.fasta"
-raw_fasta = "SRK_proteins_raw.fasta"
-aligned_fasta = "SRK_proteins_aligned.fasta"
-final_fasta = "SRK_functional_proteins.fasta"
-key_file = "SRK_functional_protein_key.tsv"
-
-# ----------------------------
 # Step 1: Translate and store mapping (ORIGINAL LOGIC + tracking)
 # ----------------------------
 print("\nTranslating sequences with enhanced tracking...")
@@ -111,7 +134,8 @@ print("\nTranslating sequences with enhanced tracking...")
 raw_records = []
 original_to_protein = {}
 
-for fasta in glob.glob(pattern):
+# Exclude known output files in case they accidentally match the input pattern
+for fasta in sorted(set(glob.glob(pattern)) - set(OUTPUT_FILES)):
     print(f"Processing {fasta}...")
     
     for record in SeqIO.parse(fasta, "fasta"):
@@ -229,15 +253,39 @@ for seq, name in protein_names.items():
 SeqIO.write(final_records, final_fasta, "fasta")
 
 # ----------------------------
-# Step 7: Write key (ORIGINAL)
+# Step 7: Build per-individual protein sets and filter by max_alleles
 # ----------------------------
+
+# Build per-individual set of distinct protein names that passed all filters
+individual_to_proteins = defaultdict(set)
+for seq_id, prot in original_to_protein.items():
+    if prot in protein_names:
+        individual_id = "_".join(seq_id.split('_')[:2])
+        individual_to_proteins[individual_id].add(protein_names[prot])
+
+# Identify overloaded individuals
+overloaded_individuals = {
+    ind for ind, proteins in individual_to_proteins.items()
+    if len(proteins) > max_alleles
+}
+
+if overloaded_individuals:
+    print(f"\nFiltering {len(overloaded_individuals)} individuals with >{max_alleles} distinct proteins...")
+    for ind in sorted(overloaded_individuals):
+        n = len(individual_to_proteins[ind])
+        print(f"  {ind}: {n} proteins (excluded)")
+        individual_status[ind]['too_many_alleles'] = True
+
+# Write key excluding overloaded individuals
 with open(key_file, "w") as out:
     out.write("Original_sequence_ID\tProtein\tCount\n")
     for seq_id, prot in original_to_protein.items():
         if prot in protein_names:
-            name = protein_names[prot]
-            count = filtered[prot]
-            out.write(f"{seq_id}\t{name}\t{count}\n")
+            individual_id = "_".join(seq_id.split('_')[:2])
+            if individual_id not in overloaded_individuals:
+                name = protein_names[prot]
+                count = filtered[prot]
+                out.write(f"{seq_id}\t{name}\t{count}\n")
 
 # ----------------------------
 # NEW: Track which individuals made it to final data
@@ -248,15 +296,16 @@ individuals_in_final_key = defaultdict(int)
 for seq_id, prot in original_to_protein.items():
     if prot in protein_names:
         individual_id = "_".join(seq_id.split('_')[:2])
-        individuals_in_final_key[individual_id] += 1
+        if individual_id not in overloaded_individuals:
+            individuals_in_final_key[individual_id] += 1
 
 # ----------------------------
 # NEW: Generate enhanced reports with abundance tracking
 # ----------------------------
-report_data = generate_individual_report(individual_status, individuals_in_final_key)
+report_data = generate_individual_report(individual_status, individuals_in_final_key, max_alleles)
 
 # Save individual status report with new columns
-with open("SRK_individual_status_report.tsv", "w") as f:
+with open(report_file, "w") as f:
     f.write("Individual\tTotal_sequences\tFunctional_proteins\tFunctional_rate\t"
             "Proteins_in_final_data\tIn_final_genotype_data\tClassification\tTop_failure_reasons\n")
     for row in report_data:
@@ -268,35 +317,53 @@ with open("SRK_individual_status_report.tsv", "w") as f:
 sc_candidates = [row['Individual'] for row in report_data
                 if row['Classification'] in ['no_functional_proteins', 'low_functional_rate', 'dropped_abundance_filter']]
 
-with open("SRK_self_compatible_candidates.txt", "w") as f:
+with open(sc_file, "w") as f:
     f.write("# Individuals with no or low functional SRK proteins\n")
     f.write("# These may be self-compatible\n")
     for individual in sc_candidates:
         f.write(f"{individual}\n")
 
+# Write separate file for individuals excluded by allele count filter
+too_many = [row['Individual'] for row in report_data
+            if row['Classification'] == 'too_many_alleles']
+
+with open(too_many_file, "w") as f:
+    f.write(f"# Individuals excluded: >{max_alleles} distinct functional proteins\n")
+    f.write("# Likely reflects assembly artefacts, contamination, or mixed samples\n")
+    for individual in too_many:
+        n = len(individual_to_proteins.get(individual, set()))
+        f.write(f"{individual}\t{n}_proteins\n")
+
 # ----------------------------
 # Final summary with abundance filtering stats
 # ----------------------------
 print("\nFINAL SUMMARY")
-print("Final functional proteins:", len(protein_names))
-print("Protein FASTA:", final_fasta)
-print("Protein key:", key_file)
+print(f"\nFinal functional proteins: {len(protein_names)}")
+print(f"Protein FASTA: {final_fasta}")
+print(f"Protein key: {key_file}")
 
-# Print summary of individual classifications
 classification_counts = Counter([row['Classification'] for row in report_data])
 print("\nIndividual classifications:")
-for classification, count in classification_counts.items():
+for classification, count in sorted(classification_counts.items(), key=lambda x: -x[1]):
     print(f"  {classification}: {count}")
 
-# Specific stats about abundance filtering
 dropped_abundance = [row for row in report_data if row['Classification'] == 'dropped_abundance_filter']
 print(f"\nIndividuals dropped by abundance filter (min_count={min_count}): {len(dropped_abundance)}")
 if dropped_abundance:
-    print("Dropped individuals:")
+    print("\nDropped individuals:")
     for row in dropped_abundance:
         print(f"  {row['Individual']}: {row['Functional_proteins']} functional proteins → 0 in final data")
 
+too_many = [row['Individual'] for row in report_data if row['Classification'] == 'too_many_alleles']
+print(f"\nIndividuals excluded by allele count filter (max_alleles={max_alleles}): {len(too_many)}")
+if too_many:
+    print("\nExcluded individuals:")
+    for ind in too_many:
+        n = len(individual_to_proteins.get(ind, set()))
+        print(f"  {ind}: {n} distinct proteins (exceeds max {max_alleles})")
+
 print(f"\nPotential self-compatible individuals: {len(sc_candidates)}")
-print("Detailed report: SRK_individual_status_report.tsv")
-print("SC candidates: SRK_self_compatible_candidates.txt")
+print(f"\nDetailed report: {report_file}")
+print(f"SC candidates: {sc_file}")
+print(f"Too-many-alleles exclusions: {too_many_file}")
 
