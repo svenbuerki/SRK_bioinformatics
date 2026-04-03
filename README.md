@@ -205,6 +205,16 @@ This pipeline is designed for:
 -   **Self-compatibility evolution** studies
 -   **Polyploid genetics** research
 
+## Case Study: *LEPA* (Threatened Brassicaceae)
+
+For a full worked example of results produced by this pipeline, see [LEPA_SRK_report.md](LEPA_SRK_report.md).
+
+Key findings from 152 individuals across four Element Occurrences:
+- **43 observed SRK alleles** species-wide, with a predicted total of **59** (Michaelis-Menten model)
+- All Element Occurrences retain only 20–42% of the species-level SI repertoire
+- Allele frequencies are significantly skewed from NFDS expectations at every level (χ² *p* < 10⁻⁷)
+- 57% of individuals carry an AAAA genotype, flagging a high risk of reduced SI function
+
 ## Citation
 
 TBD
