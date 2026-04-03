@@ -34,7 +34,7 @@ The species optimum of 59 alleles is the critical baseline for seed production p
 
 **Allele richness deficit (Figure 3: [SRK_allele_accumulation_curves.pdf](figures/SRK_allele_accumulation_curves.pdf)):**
 
-All four Element Occurrences (EOs) with sufficient sample sizes (≥25 individuals) fall far short of the species optimum of 59 alleles:
+All four EOs with sufficient sample sizes (≥25 individuals) fall far short of the species optimum of 59 alleles:
 
 | Element Occurrence | N individuals | Observed alleles | Predicted alleles (MM) | % of species optimum |
 |--------------------|--------------|-----------------|----------------------|---------------------|
@@ -43,7 +43,7 @@ All four Element Occurrences (EOs) with sufficient sample sizes (≥25 individua
 | EO67 | 32 | 12 | 16 | 27% |
 | EO76 | 25 |  9 | 12 | 20% |
 
-EO27 retains the most allele diversity, yet even its asymptotic estimate of 25 alleles represents less than half the species optimum. Alleles are also largely non-overlapping across Element Occurrences (Figure 4: [Venn_diagram_Alleles_EOs.png](figures/Venn_diagram_Alleles_EOs.png)), meaning that no single Element Occurrence captures the full SI diversity of the species.
+EO27 retains the most allele diversity, yet even its asymptotic estimate of 25 alleles represents less than half the species optimum. Alleles are also largely non-overlapping across EOs (Figure 4: [Venn_diagram_Alleles_EOs.png](figures/Venn_diagram_Alleles_EOs.png)), meaning that no single EO captures the full SI diversity of the species.
 
 ![Allele sharing among Element Occurrences](figures/Venn_diagram_Alleles_EOs.png)
 
@@ -59,7 +59,7 @@ Under NFDS, alleles are expected to be maintained at approximately equal frequen
 | EO67 | 12 | 84.2 | < 10⁻¹² |
 | EO76 |  9 | 47.1 | < 10⁻⁷ |
 
-A small number of alleles dominate in each Element Occurrence (e.g., Allele_044 accounts for 23 copies in EO25; Allele_047 accounts for 24 copies in EO67), while many alleles are rare or absent entirely.
+A small number of alleles dominate in each EO (e.g., Allele_044 accounts for 23 copies in EO25; Allele_047 accounts for 24 copies in EO67), while many alleles are rare or absent entirely.
 
 **Zygosity and self-compatibility risk:**
 
@@ -69,4 +69,4 @@ Genotype reconstruction reveals that 86 of 152 individuals (57%) carry only a si
 
 ### 5. Conclusion
 
-Genetic drift, promoted by habitat fragmentation, is eroding allele diversity and frequency balance in *LEPA* Element Occurrences. Each Element Occurrence retains only 20–42% of the estimated species-level SI repertoire, alleles are skewed toward high-frequency dominance rather than the equal distribution expected under NFDS, and the majority of sampled individuals carry genotypes consistent with reduced SI function. Collectively, these findings indicate that reproductive success is currently constrained by SI allele depletion, and that seed production efforts must prioritise crosses that maximise allele complementarity across Element Occurrences to restore a functional SI system.
+Genetic drift, promoted by habitat fragmentation, is eroding allele diversity and frequency balance in *LEPA* EOs. Each EO retains only 20–42% of the estimated species-level SI repertoire, alleles are skewed toward high-frequency dominance rather than the equal distribution expected under NFDS, and the majority of sampled individuals carry genotypes consistent with reduced SI function. Collectively, these findings indicate that reproductive success is currently constrained by SI allele depletion, and that seed production efforts must prioritise crosses that maximise allele complementarity across EOs to restore a functional SI system.
