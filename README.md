@@ -32,12 +32,13 @@ Boise, Idaho, USA
 -   **Abundance-based filtering** to distinguish authentic alleles from technical artifacts
 -   **Tetraploid zygosity analysis** for complex polyploid genetics
 -   **Population genetic dataset generation** for demographic inference
+-   **Species allele richness estimation** using Michaelis-Menten, Chao1, and iNEXT estimators to quantify total SRK diversity and population deficits relative to the species optimum
 
 ## Pipeline Workflow
 
-The pipeline consists of **14 main steps organized into three phases**, progressing from within-library sequence processing to cross-library integration and final population genetic analyses.
+The pipeline consists of **15 main steps organized into three phases**, progressing from within-library sequence assembly to cross-library integration and final population genetic analyses.
 
-## Phase 1: Within-Library Processing
+## Phase 1: SRK Amplicon Sequence Assembly
 
 1.  **Prepare Canonical Sequences** – Preparation of reference SRK sequences used for downstream assembly and validation.
 2.  **Nanopore Amplicon Assembly and Phasing Pipeline** – Multi-CANU assembly of Nanopore amplicons followed by haplotype phasing to reconstruct allelic sequences.
@@ -48,17 +49,18 @@ The pipeline consists of **14 main steps organized into three phases**, progress
 7.  **MSA Gap Backfilling and Terminus Processing Pipeline** – Reference-guided backfilling of terminal alignment gaps and sequence terminus correction.
 8.  **DNA to Amino Acid Translation Pipeline** – Frame-specific translation of nucleotide sequences into proteins. **Note:** This step is optional and may be skipped if protein sequences are not required.
 
-## Phase 2: Cross-Library Analysis
+## Phase 2: Functional Proteins, S Alleles and Genotyping
 
 9.  **SRK Protein Translation, Alignment, and Abundance Filtering Pipeline** – Translation of SRK alleles into proteins, alignment, and filtering based on abundance thresholds to retain functional candidates.
-10. **SRK Functional Protein Genotyping Pipeline** – Construction of individual-level genotype matrices and detection of functional SRK proteins across samples.
-11. **SRK Zygosity Analysis Pipeline for Tetraploid Species** – Classification of individuals as homozygous or heterozygous and estimation of population-level zygosity statistics in tetraploid species.
+10. **Distance-Based SRK S-Allele Definition** – Grouping of functional proteins into allele bins using pairwise amino acid p-distance on the S-domain ectodomain, with sensitivity analysis and amino acid variation heatmaps.
+11. **SRK S-Allele Genotyping Pipeline** – Assignment of distance-defined S-allele bins to individuals, producing long-format allele tables and binary genotype matrices for population genetic analysis.
+12. **SRK Zygosity Analysis Pipeline for Tetraploid Species** – Classification of individuals as homozygous or heterozygous and estimation of population-level zygosity statistics in tetraploid species.
 
 ## Phase 3: Data Analyses
 
-12. **Population Genetics Statistics** – Estimation of population-level diversity metrics, including heterozygosity, mean protein counts per individual, total allele counts, and effective allele numbers.
-13. **Allele Accumulation Curves** – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift.
-14. **Allele Frequency Analysis** – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under negative frequency-dependent selection.
+13. **Population Genetics Statistics** – Estimation of population-level diversity metrics, including heterozygosity, mean protein counts per individual, total allele counts, and effective allele numbers.
+14. **Allele Accumulation Curves** – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators. Outputs an empirical species optimum used as a baseline in step 15.
+15. **Allele Frequency Analysis** – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under NFDS. The estimated species allele richness from step 14 is used as the optimum, quantifying how many alleles each population is missing relative to the species pool.
 
 ## Requirements
 
@@ -83,7 +85,10 @@ pip install biopython pandas numpy
 ### R Dependencies
 
 ``` r
-install.packages(c("dplyr", "ggplot2"))
+install.packages(c("dplyr", "ggplot2", "bookdown"))
+
+# Optional — required for iNEXT richness estimation in step 14:
+install.packages("iNEXT")
 ```
 
 ## Installation
@@ -132,13 +137,28 @@ project/
 # Continue with remaining steps...
 ```
 
-3.  **Run cross-library analysis:**
+3.  **Run cross-library analysis (Phase 2):**
 
 ``` bash
-# Steps 9-11: Protein analysis and genotyping
+# Steps 9-12: Protein filtering, allele definition, genotyping, zygosity
 python scripts/09_srk_protein_filtering.py
-python scripts/10_functional_genotyping.py
-Rscript scripts/11_zygosity_analysis.R
+Rscript scripts/10_srk_allele_definition.R
+Rscript scripts/11_srk_allele_genotyping.R
+Rscript scripts/12_zygosity_analysis.R
+```
+
+4.  **Run population genetic analyses (Phase 3):**
+
+``` bash
+# Step 13: Population genetics statistics
+Rscript SRK_popgen_statistics.R
+
+# Step 14: Allele accumulation curves and richness estimation
+# (must run before step 15)
+Rscript SRK_allele_accumulation_analysis.R
+
+# Step 15: Allele frequency analysis (reads SRK_species_richness_estimates.tsv)
+Rscript SRK_chisq_species_population.R
 ```
 
 ### Detailed Usage
@@ -157,9 +177,18 @@ See the [Pipeline Documentation](https://svenbuerki.github.io/SRK_bioinformatics
 ### Key Outputs
 
 -   `SRK_functional_proteins.fasta` - Validated SRK protein sequences
--   `SRK_individual_genotypes.tsv` - Population genetic matrix
+-   `SRK_individual_allele_genotypes.tsv` - Binary allele presence/absence matrix
+-   `SRK_individual_allele_table.tsv` - Long-format allele assignment table
 -   `SRK_individual_zygosity.tsv` - Zygosity classifications
 -   `SRK_self_compatible_candidates.txt` - Potentially self-compatible individuals
+
+### Population Genetic Outputs (Phase 3)
+
+-   `SRK_allele_accumulation_curves.pdf` - Species- and population-level accumulation curves with estimated asymptotes
+-   `SRK_allele_accumulation_stats.tsv` - Curve statistics including MM, Chao1, and iNEXT richness estimates per level
+-   `SRK_species_richness_estimates.tsv` - Consensus species allele richness estimate (input to step 15)
+-   `SRK_chisq_species_population.tsv` - χ² test statistics at species and population levels
+-   `SRK_chisq_species_population_frequency_plots.pdf` - Allele frequency plots showing observed distribution, NFDS expectation, and missing alleles relative to estimated optimum
 
 ### Quality Control Reports
 
