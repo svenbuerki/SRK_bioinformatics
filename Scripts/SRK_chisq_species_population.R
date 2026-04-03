@@ -253,6 +253,31 @@ for (i in seq_len(nrow(final_results))) {
     length(obs_freq)
   )
 
+  n_alleles_plot <- final_results$N_alleles[i]
+  p_val_plot     <- final_results$p_value[i]
+
+  p_stars <- if (is.na(p_val_plot)) {
+    ""
+  } else if (p_val_plot < 0.001) {
+    "***"
+  } else if (p_val_plot < 0.01) {
+    "**"
+  } else if (p_val_plot < 0.05) {
+    "*"
+  } else {
+    "ns"
+  }
+
+  p_label <- if (is.na(p_val_plot)) {
+    "p = NA"
+  } else if (p_val_plot < 0.001) {
+    paste0("p = ", formatC(p_val_plot, format = "e", digits = 2))
+  } else {
+    paste0("p = ", round(p_val_plot, 3))
+  }
+
+  plot_sub <- paste0(n_alleles_plot, " alleles observed  |  ", p_label, "  ", p_stars)
+
   bp <- barplot(
 
     obs_freq,
@@ -270,6 +295,7 @@ for (i in seq_len(nrow(final_results))) {
     ),
 
     main = paste(level, pop, sep = " – "),
+    sub  = plot_sub,
     ylab = "Allele frequency",
     xlab = "Allele (ranked)"
   )
