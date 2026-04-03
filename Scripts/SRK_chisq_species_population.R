@@ -6,11 +6,42 @@
 cat("\nStarting SRK chi-square analysis\n")
 
 ###############################
+# Load species richness estimate
+# (produced by SRK_allele_accumulation_analysis.R)
+# Used as the "optimum" allele count for frequency plots.
+###############################
+
+species_optimum <- 50L  # fallback default
+
+est_file <- "SRK_species_richness_estimates.tsv"
+if (file.exists(est_file)) {
+  est_df <- read.table(est_file, header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+  # Prefer MM: its asymptote directly reflects the observed accumulation curve.
+  # Chao1 can be unreliable (very high SE) when many alleles are rare, which
+  # is common under NFDS. Fall back to Chao1 only if MM failed, then consensus.
+  if (!is.na(est_df$MM_estimate[1])) {
+    species_optimum <- as.integer(est_df$MM_estimate[1])
+    cat("Species richness optimum (MM):", species_optimum, "alleles\n")
+  } else if (!is.na(est_df$Chao1_estimate[1])) {
+    species_optimum <- as.integer(est_df$Chao1_estimate[1])
+    cat("Species richness optimum (Chao1):", species_optimum, "alleles\n")
+  } else if (!is.na(est_df$Consensus_estimate[1])) {
+    species_optimum <- as.integer(est_df$Consensus_estimate[1])
+    cat("Species richness optimum (consensus):", species_optimum, "alleles\n")
+  } else {
+    cat("No richness estimate available — using default optimum:", species_optimum, "\n")
+  }
+} else {
+  cat("Richness estimates file not found — using default optimum:", species_optimum, "\n")
+  cat("Run SRK_allele_accumulation_analysis.R first to generate estimates.\n")
+}
+
+###############################
 # Load data
 ###############################
 
 allele_df <- read.table(
-  "SRK_individual_protein_table.tsv",
+  "SRK_individual_allele_table.tsv",
   header = TRUE,
   sep = "\t",
   stringsAsFactors = FALSE
@@ -25,15 +56,15 @@ meta_df <- read.csv(
 # Detect allele/protein column automatically
 ###############################
 
-if ("Protein" %in% colnames(allele_df)) {
+if ("Allele" %in% colnames(allele_df)) {
+
+  allele_col <- "Allele"
+  cat("Detected distance-defined allele column\n")
+
+} else if ("Protein" %in% colnames(allele_df)) {
 
   allele_col <- "Protein"
   cat("Detected functional protein column\n")
-
-} else if ("Allele" %in% colnames(allele_df)) {
-
-  allele_col <- "Allele"
-  cat("Detected phylogenetic allele column\n")
 
 } else {
 
@@ -222,12 +253,16 @@ for (i in seq_len(nrow(final_results))) {
     length(obs_freq)
   )
 
-  barplot(
+  bp <- barplot(
 
     obs_freq,
 
-    border = NA,
+    space  = 0,
+    border = "white",
     col = "gray70",
+    names.arg = rep("", length(obs_freq)),
+
+    xlim = c(0, species_optimum),
 
     ylim = c(
       0,
@@ -235,9 +270,57 @@ for (i in seq_len(nrow(final_results))) {
     ),
 
     main = paste(level, pop, sep = " – "),
-    ylab = "Protein frequency",
-    xlab = "Proteins (ranked)"
+    ylab = "Allele frequency",
+    xlab = "Allele (ranked)"
   )
+
+  # --- Missing alleles zone ---
+  # Dry-run the legend first to obtain its bounding box, so the rectangle
+  # can be capped exactly at the legend's bottom edge with no overlap.
+  lgd <- legend(
+    "topright",
+    legend = c(
+      "Observed",
+      "NFDS expectation",
+      "Drift-smoothed",
+      "Missing to optimum"
+    ),
+    col    = c("black", "blue", "red", "tomato"),
+    lwd    = c(2, 2, 2, NA),
+    lty    = c(1, 2, 1, NA),
+    pch    = c(NA, NA, NA, 22),
+    pt.bg  = c(NA, NA, NA, adjustcolor("tomato", alpha.f = 0.3)),
+    pt.cex = 1.5,
+    bty    = "n",
+    plot   = FALSE
+  )
+
+  n_obs     <- length(obs_freq)
+  n_missing <- max(0L, species_optimum - n_obs)
+
+  if (n_missing > 0) {
+
+    last_x   <- max(bp) + 0.5
+    zone_mid <- (last_x + species_optimum) / 2
+    rect_top <- lgd$rect$top - lgd$rect$h  # bottom edge of legend bounding box
+
+    rect(
+      last_x, 0, species_optimum, rect_top,
+      col    = adjustcolor("tomato", alpha.f = 0.15),
+      border = adjustcolor("tomato", alpha.f = 0.5),
+      lty    = 2
+    )
+
+    text(
+      x      = zone_mid,
+      y      = rect_top / 2,
+      labels = paste0(n_missing, " alleles\nto optimum"),
+      col    = "tomato4",
+      cex    = 0.85,
+      font   = 2
+    )
+
+  }
 
   abline(
     h = exp_freq[1],
@@ -267,18 +350,23 @@ for (i in seq_len(nrow(final_results))) {
     legend = c(
       "Observed",
       "NFDS expectation",
-      "Drift-smoothed"
+      "Drift-smoothed",
+      "Missing to optimum"
     ),
 
     col = c(
       "black",
       "blue",
-      "red"
+      "red",
+      "tomato"
     ),
 
-    lwd = 2,
-    lty = c(1,2,1),
-    bty = "n"
+    lwd  = c(2, 2, 2, NA),
+    lty  = c(1, 2, 1, NA),
+    pch  = c(NA, NA, NA, 22),
+    pt.bg  = c(NA, NA, NA, adjustcolor("tomato", alpha.f = 0.3)),
+    pt.cex = 1.5,
+    bty  = "n"
   )
 }
 

@@ -11,7 +11,7 @@
 
 <meta name="author" content="Sven Buerki - Boise State University" />
 
-<meta name="date" content="2026-03-31" />
+<meta name="date" content="2026-04-02" />
 
 <title>SRK Bioinformatics</title>
 
@@ -1469,7 +1469,7 @@ border-radius: 0px;
 <h1 class="title toc-ignore">SRK Bioinformatics</h1>
 <h3 class="subtitle">Nanopore-Based SRK Haplotype Reconstruction and Population Analysis Pipeline</h3>
 <h4 class="author">Sven Buerki - Boise State University</h4>
-<h4 class="date">2026-03-31</h4>
+<h4 class="date">2026-04-02</h4>
 
 </div>
 
@@ -1491,9 +1491,9 @@ border-radius: 0px;
 </div>
 <div id="pipeline-overview" class="section level1" number="3">
 <h1><span class="header-section-number">3</span> Pipeline Overview</h1>
-<p>The pipeline consists of <strong>14 main steps organized into three phases</strong>, progressing from within-library sequence processing to cross-library integration and final population genetic analyses.</p>
-<div id="phase-1-within-library-processing" class="section level2" number="3.1">
-<h2><span class="header-section-number">3.1</span> Phase 1: Within-Library Processing</h2>
+<p>The pipeline consists of <strong>15 main steps organized into three phases</strong>, progressing from within-library sequence assembly to cross-library integration and final population genetic analyses.</p>
+<div id="phase-1-srk-amplicon-sequence-assembly" class="section level2" number="3.1">
+<h2><span class="header-section-number">3.1</span> Phase 1: SRK amplicon sequence assembly</h2>
 <ol style="list-style-type: decimal">
 <li><a href="#prepcanseq">Prepare Canonical Sequences</a> – Preparation of reference SRK sequences used for downstream assembly and validation.</li>
 <li><a href="#nanampassphas">Nanopore Amplicon Assembly and Phasing Pipeline</a> – Multi-CANU assembly of Nanopore amplicons followed by haplotype phasing to reconstruct allelic sequences.</li>
@@ -1506,11 +1506,12 @@ border-radius: 0px;
 <strong>Note:</strong> This step is optional and may be skipped if protein sequences are not required.</li>
 </ol>
 </div>
-<div id="phase-2-cross-library-analysis" class="section level2" number="3.2">
-<h2><span class="header-section-number">3.2</span> Phase 2: Cross-Library Analysis</h2>
+<div id="phase-2-functional-proteins-s-alleles-and-genotyping" class="section level2" number="3.2">
+<h2><span class="header-section-number">3.2</span> Phase 2: Functional proteins, S alleles and genotyping</h2>
 <ol start="9" style="list-style-type: decimal">
 <li><a href="#SRKprotandfilter">SRK Protein Translation, Alignment, and Abundance Filtering Pipeline</a> – Translation of SRK alleles into proteins, alignment, and filtering based on abundance thresholds to retain functional candidates.</li>
-<li><a href="#SRKfunctionalprotgenotype">SRK Functional Protein Genotyping Pipeline</a> – Construction of individual-level genotype matrices and detection of functional SRK proteins across samples.</li>
+<li><a href="#SRKalleledist">Distance-Based SRK S-Allele Definition</a> – Grouping of functional proteins into allele bins using pairwise amino acid p-distance on the S-domain ectodomain, with sensitivity analysis and amino acid variation heatmaps.</li>
+<li><a href="#SRKfunctionalprotgenotype">SRK S-Allele Genotyping Pipeline</a> – Assignment of distance-defined S-allele bins to individuals, producing long-format allele tables and binary genotype matrices for population genetic analysis.</li>
 <li><a href="#zygosity">SRK Zygosity Analysis Pipeline for Tetraploid Species</a> – Classification of individuals as homozygous or heterozygous and estimation of population-level zygosity statistics in tetraploid species.</li>
 </ol>
 </div>
@@ -1518,14 +1519,14 @@ border-radius: 0px;
 <h2><span class="header-section-number">3.3</span> Phase 3: Data Analyses</h2>
 <ol start="12" style="list-style-type: decimal">
 <li><a href="#popgenetics">Population Genetics Statistics</a> – Estimation of population-level diversity metrics, including heterozygosity, mean protein counts per individual, total allele counts, and effective allele numbers.</li>
-<li><a href="#alleleaccum">Allele Accumulation Curves</a> – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift.</li>
-<li><a href="#allelefrqanalysis">Allele Frequency Analysis</a> – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under negative frequency-dependent selection.</li>
+<li><a href="#alleleaccum">Allele Accumulation Curves</a> – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators.</li>
+<li><a href="#allelefrqanalysis">Allele Frequency Analysis</a> – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under negative frequency-dependent selection. The estimated species allele richness (from step 13) is used as the NFDS optimum baseline.</li>
 </ol>
 <hr />
 </div>
 </div>
-<div id="phase-1-within-library-processing-1" class="section level1" number="4">
-<h1><span class="header-section-number">4</span> Phase 1: Within-Library Processing</h1>
+<div id="phase-1-srk-amplicon-sequence-assembly-1" class="section level1" number="4">
+<h1><span class="header-section-number">4</span> Phase 1: SRK amplicon sequence assembly</h1>
 <div id="prepcanseq" class="section level2" number="4.1">
 <h2><span class="header-section-number">4.1</span> Prepare Canonical Sequences</h2>
 <blockquote>
@@ -3470,8 +3471,8 @@ print(f&quot;AA FASTA written to: {out_fasta}&quot;)
 </div>
 </div>
 </div>
-<div id="phase-2-cross-library-analysis-1" class="section level1" number="5">
-<h1><span class="header-section-number">5</span> Phase 2: Cross-Library Analysis</h1>
+<div id="phase-2-functional-proteins-s-alleles-and-genotyping-1" class="section level1" number="5">
+<h1><span class="header-section-number">5</span> Phase 2: Functional proteins, S alleles and genotyping</h1>
 <div id="SRKprotandfilter" class="section level2" number="5.1">
 <h2><span class="header-section-number">5.1</span> SRK Protein Translation, Alignment, and Abundance Filtering Pipeline</h2>
 <div id="overview-6" class="section level3" number="5.1.1">
@@ -4241,461 +4242,763 @@ print(f&quot;SC candidates: {sc_file}&quot;)
 print(f&quot;Too-many-alleles exclusions: {too_many_file}&quot;)</code></pre>
 </div>
 </div>
-<div id="SRKfunctionalprotgenotype" class="section level2" number="5.2">
-<h2><span class="header-section-number">5.2</span> SRK Functional Protein Genotyping Pipeline</h2>
+<div id="SRKalleledist" class="section level2" number="5.2">
+<h2><span class="header-section-number">5.2</span> Distance-Based SRK S-Allele Definition</h2>
 <div id="overview-7" class="section level3" number="5.2.1">
 <h3><span class="header-section-number">5.2.1</span> Overview</h3>
-<p>This Python pipeline converts individual SRK protein assignments into standardized genotype matrices suitable for population genetic analysis. The workflow transforms sequence-to-protein mappings into both long-format tables and wide-format binary matrices, enabling downstream analysis of S-allele frequencies, mating compatibility, and population genetic structure in self-incompatibility systems. The script is designed to be re-run as new sequencing libraries are added, with a built-in overwrite safeguard consistent with the upstream pipeline.</p>
+<p>This step addresses a fundamental limitation of the upstream protein pipeline: treating every unique protein sequence as a distinct S-allele overestimates allelic diversity because Nanopore sequencing noise and assembly artefacts generate near-identical sequence variants that do not represent biologically distinct recognition specificities. Two scripts implement a distance-based proxy for functional allele identity, mirroring the biological criterion used in crossing experiments (where two proteins specify the same allele if pollen bearing one is rejected by a pistil expressing the other).</p>
+<p>Two complementary outputs are produced: an allele assignment table grouping proteins into bins, and amino acid variation heatmaps that visualise where along the protein sequence the informative differences are located and how frequent each amino acid is at each variable position.</p>
+<p><strong>Input:</strong> <code>SRK_functional_proteins_aligned.fasta</code> (228 aligned functional proteins, 848 alignment positions)</p>
+<hr />
 </div>
-<div id="pipeline-steps-7" class="section level3" number="5.2.2">
-<h3><span class="header-section-number">5.2.2</span> Pipeline Steps</h3>
-<div id="genotype-matrix-construction-for-population-analysis" class="section level4" number="5.2.2.1">
-<h4><span class="header-section-number">5.2.2.1</span> Genotype Matrix Construction for Population Analysis</h4>
-<p>Genotype matrix generation serves critical functions in self-incompatibility research:</p>
+<div id="motivation" class="section level3" number="5.2.2">
+<h3><span class="header-section-number">5.2.2</span> Motivation</h3>
+<p>The standard pipeline identifies functional SRK proteins by abundance filtering and translation quality, then treats every unique protein sequence as a separate allele. This approach is likely to <strong>overestimate allele diversity</strong> for several reasons:</p>
 <ul>
-<li><strong>Population genetic analysis</strong>: Enables calculation of allele frequencies and genetic diversity</li>
-<li><strong>Mating compatibility prediction</strong>: Facilitates incompatibility matrix construction</li>
-<li><strong>Demographic analysis</strong>: Supports effective population size estimation and bottleneck detection</li>
-<li><strong>Selection analysis</strong>: Provides input for tests of balancing selection on S-loci</li>
+<li><strong>Nanopore sequencing error</strong> introduces ~1–2% per-base noise, creating near-identical sequence variants that do not represent distinct biological entities.</li>
+<li><strong>Assembly and phasing artefacts</strong> can produce spurious haplotypes from the same template.</li>
+<li><strong>SRK allele identity is functionally defined by crosses</strong>: two proteins specify the same allele if pollen bearing one is rejected by a pistil expressing the other. This functional criterion does not map one-to-one onto sequence uniqueness.</li>
 </ul>
+<p>In <em>Brassica</em> and <em>Arabidopsis</em>, SRK alleles from different recognition classes typically differ by <strong>20–50%</strong> in the ectodomain (S-domain). Within the same recognition class, variants may differ by only a few percent. A distance-based grouping approach — well established in the allele-typing literature — provides a principled proxy for functional allele identity without requiring crossing experiments.</p>
+<hr />
 </div>
-<div id="output-file-management-and-overwrite-safeguard-1" class="section level4" number="5.2.2.2">
-<h4><span class="header-section-number">5.2.2.2</span> Output File Management and Overwrite Safeguard</h4>
-<p>Before prompting for any input, the script defines its output files and checks whether they already exist:</p>
-<pre class="python"><code>long_out = &quot;SRK_individual_protein_table.tsv&quot;
-wide_out = &quot;SRK_individual_genotypes.tsv&quot;
-
-OUTPUT_FILES = [long_out, wide_out]
-
-existing = [f for f in OUTPUT_FILES if os.path.exists(f)]
-if existing:
-    print(&quot;\nWARNING: The following output files already exist and will be overwritten:&quot;)
-    for f in existing:
-        print(f&quot;  {f}&quot;)
-    confirm = input(&quot;\nProceed and overwrite? (y/n): &quot;).strip().lower()
-    if confirm != &#39;y&#39;:
-        print(&quot;Aborted. No files were modified.&quot;)
-        sys.exit(0)</code></pre>
-<p><strong>Design rationale:</strong></p>
-<ul>
-<li>The check runs <strong>before</strong> the input file prompt so the user can abort without entering anything</li>
-<li>Entering anything other than <code>y</code> exits cleanly with no files modified</li>
-<li>If no existing files are found, the check is silent and execution continues</li>
-</ul>
+<div id="approach" class="section level3" number="5.2.3">
+<h3><span class="header-section-number">5.2.3</span> Approach</h3>
+<div id="sequence-distance-metric" class="section level4" number="5.2.3.1">
+<h4><span class="header-section-number">5.2.3.1</span> Sequence distance metric</h4>
+<p>Pairwise amino acid <strong>p-distance</strong> is computed between all protein pairs:</p>
+<pre><code>p-distance = (number of differing positions) / (number of valid aligned positions)</code></pre>
+<p>Gap columns are excluded from both the numerator and denominator. This gives a value between 0 (identical) and 1 (completely divergent).</p>
 </div>
-<div id="input-parameter-specification" class="section level4" number="5.2.2.3">
-<h4><span class="header-section-number">5.2.2.3</span> Input Parameter Specification</h4>
-<p>After the overwrite check, the script prompts for the single input file:</p>
-<pre class="python"><code>protein_key_file = input(
-    &quot;Enter SRK_functional_protein_key.tsv: &quot;
-).strip()</code></pre>
-<p><strong>File specifications:</strong></p>
-<ul>
-<li><strong>Protein key file</strong>: Output from <code>define_functional_proteins.py</code> — individuals excluded by the abundance filter or the <code>max_alleles</code> filter are already absent from this file and will not appear in genotype outputs</li>
-<li><strong>Long format output</strong>: Individual-protein pairs for relational analysis</li>
-<li><strong>Wide format output</strong>: Binary genotype matrix for population genetic software</li>
-</ul>
+<div id="region-of-interest-s-domain-ectodomain" class="section level4" number="5.2.3.2">
+<h4><span class="header-section-number">5.2.3.2</span> Region of interest: S-domain (ectodomain)</h4>
+<p>Distance is computed <strong>on the S-domain only</strong> (alignment columns 31–430 by default), not on the full protein. The S-domain ectodomain is the receptor-binding region that determines pollination specificity. The kinase domain is much more conserved and would dilute the signal from specificity-determining positions.</p>
+<p>Approximate domain structure of Brassicaceae SRK (~858 aa):</p>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Domain</th>
+<th>Alignment positions</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Signal peptide</td>
+<td>1–30</td>
+<td>Secretion targeting</td>
+</tr>
+<tr class="even">
+<td><strong>S-domain (ectodomain)</strong></td>
+<td><strong>31–430</strong></td>
+<td><strong>Allele specificity — key region</strong></td>
+</tr>
+<tr class="odd">
+<td>Transmembrane domain</td>
+<td>431–455</td>
+<td>Membrane anchor</td>
+</tr>
+<tr class="even">
+<td>Kinase domain</td>
+<td>456–848</td>
+<td>Intracellular signalling</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>These boundaries are approximate and based on published Brassicaceae SRK structures. Adjust <code>DOMAIN_REGION</code> in the script if species-specific annotation is available.</p>
+</blockquote>
 </div>
-<div id="protein-assignment-loading-and-parsing" class="section level4" number="5.2.2.4">
-<h4><span class="header-section-number">5.2.2.4</span> Protein Assignment Loading and Parsing</h4>
-<p>Loads protein assignments with robust individual identifier extraction:</p>
-<pre class="python"><code>individual_proteins = defaultdict(list)
-
-with open(protein_key_file, newline=&quot;&quot;) as f:
-    reader = csv.DictReader(f, delimiter=&quot;\t&quot;)
-    for row in reader:
-        seq_id = row[&quot;Original_sequence_ID&quot;]
-        protein = row[&quot;Protein&quot;]
-
-        parts = seq_id.split(&quot;_&quot;)
-
-        if len(parts) &lt; 2:
-            print(&quot;WARNING: cannot parse:&quot;, seq_id)
-            continue
-
-        individual = f&quot;{parts[0]}_{parts[1]}&quot;
-        individual_proteins[individual].append(protein)</code></pre>
-<p><strong>Parsing features:</strong></p>
-<ul>
-<li><strong>Flexible identifier handling</strong>: Extracts individual IDs from sequence names</li>
-<li><strong>Error tolerance</strong>: Continues processing despite malformed identifiers</li>
-<li><strong>Warning system</strong>: Reports unparseable sequence identifiers</li>
-<li><strong>Data aggregation</strong>: Groups all proteins by individual identifier</li>
-</ul>
-<p><strong>Individual ID extraction logic:</strong></p>
-<ul>
-<li>Assumes sequence naming convention: <code>{library}_{barcode}_{additional_info}</code></li>
-<li>Combines first two underscore-separated components as individual identifier</li>
-<li>Maintains consistency with upstream pipeline naming conventions</li>
-</ul>
+<div id="hierarchical-clustering" class="section level4" number="5.2.3.3">
+<h4><span class="header-section-number">5.2.3.3</span> Hierarchical clustering</h4>
+<p>All pairwise distances are clustered using <strong>average-linkage hierarchical clustering (UPGMA)</strong>. A flat partition is obtained by cutting the dendrogram at a user-defined <strong>distance threshold</strong>: all proteins within a cluster have average pairwise distance below this threshold and are treated as the same allele. A <strong>sensitivity analysis</strong> sweeps the threshold from 0% to 5% and records the resulting allele count. The plot of allele count versus threshold is used to identify the “elbow” where further lumping slows down, which should correspond to genuine allele boundaries.</p>
 </div>
-<div id="long-format-table-generation" class="section level4" number="5.2.2.5">
-<h4><span class="header-section-number">5.2.2.5</span> Long-Format Table Generation</h4>
-<p>Creates relational table format for flexible downstream analysis:</p>
-<pre class="python"><code>with open(long_out, &quot;w&quot;) as out:
-    out.write(&quot;Individual\tProtein\n&quot;)
-    for individual in sorted(individual_proteins):
-        for protein in individual_proteins[individual]:
-            out.write(f&quot;{individual}\t{protein}\n&quot;)</code></pre>
-<p><strong>Long format advantages:</strong></p>
-<ul>
-<li><strong>Database compatibility</strong>: Suitable for SQL queries and relational analysis</li>
-<li><strong>Flexible filtering</strong>: Easy subsetting by individual or protein</li>
-<li><strong>Statistical software</strong>: Compatible with R, Python pandas, and other analysis tools</li>
-<li><strong>Visualization</strong>: Enables creation of allele frequency plots and distribution analyses</li>
-</ul>
-</div>
-<div id="comprehensive-protein-inventory" class="section level4" number="5.2.2.6">
-<h4><span class="header-section-number">5.2.2.6</span> Comprehensive Protein Inventory</h4>
-<p>Generates complete catalog of functional proteins across all individuals:</p>
-<pre class="python"><code>all_proteins = sorted({
-    protein
-    for proteins in individual_proteins.values()
-    for protein in proteins
-})</code></pre>
-<p><strong>Inventory features:</strong></p>
-<ul>
-<li><strong>Set comprehension</strong>: Eliminates duplicate proteins across individuals</li>
-<li><strong>Sorted ordering</strong>: Provides consistent protein ordering across analyses</li>
-<li><strong>Population-wide scope</strong>: Captures complete allelic diversity in dataset</li>
-<li><strong>Matrix preparation</strong>: Establishes column structure for genotype matrix</li>
-</ul>
-</div>
-<div id="binary-genotype-matrix-construction" class="section level4" number="5.2.2.7">
-<h4><span class="header-section-number">5.2.2.7</span> Binary Genotype Matrix Construction</h4>
-<p>Creates presence/absence matrix for population genetic analysis:</p>
-<pre class="python"><code>genotype_matrix = OrderedDict()
-
-for individual in sorted(individual_proteins):
-    protein_set = set(individual_proteins[individual])
-    genotype_matrix[individual] = {
-        protein: 1 if protein in protein_set else 0
-        for protein in all_proteins
-    }</code></pre>
-<p><strong>Matrix construction logic:</strong></p>
-<ul>
-<li><strong>Binary encoding</strong>: 1 for protein presence, 0 for absence</li>
-<li><strong>Complete coverage</strong>: Every individual scored for every protein</li>
-<li><strong>Set-based lookup</strong>: Efficient and deduplicated presence/absence determination — multiple sequences from the same individual mapping to the same protein are counted once</li>
-<li><strong>Ordered structure</strong>: Maintains consistent individual and protein ordering</li>
-</ul>
-<p><strong>Population genetic applications:</strong></p>
-<ul>
-<li><strong>Allele frequency calculation</strong>: Column sums provide allele counts</li>
-<li><strong>Genetic diversity metrics</strong>: Enables Shannon diversity and evenness calculations</li>
-<li><strong>Hardy-Weinberg testing</strong>: Supports tests of population genetic equilibrium</li>
-<li><strong>Structure analysis</strong>: Input for STRUCTURE, ADMIXTURE, and PCA analyses</li>
-</ul>
-</div>
-<div id="wide-format-matrix-output" class="section level4" number="5.2.2.8">
-<h4><span class="header-section-number">5.2.2.8</span> Wide-Format Matrix Output</h4>
-<p>Writes standardized genotype matrix with proper formatting:</p>
-<pre class="python"><code>with open(wide_out, &quot;w&quot;, newline=&quot;&quot;) as out:
-    writer = csv.writer(out, delimiter=&quot;\t&quot;)
-    header = [&quot;Individual&quot;] + all_proteins
-    writer.writerow(header)
-
-    for individual, geno in genotype_matrix.items():
-        row = [individual] + [
-            geno[p]
-            for p in all_proteins
-        ]
-        writer.writerow(row)</code></pre>
-<p><strong>Output format features:</strong></p>
-<ul>
-<li><strong>Header row</strong>: Clear column identification for downstream analysis</li>
-<li><strong>Tab-delimited</strong>: Standard format for population genetic software</li>
-<li><strong>Consistent ordering</strong>: Maintains individual and protein order across rows/columns</li>
-<li><strong>Complete matrix</strong>: No missing data in final output</li>
-</ul>
-</div>
-<div id="summary-statistics-and-reporting" class="section level4" number="5.2.2.9">
-<h4><span class="header-section-number">5.2.2.9</span> Summary Statistics and Reporting</h4>
-<p>Provides a concise processing summary:</p>
-<pre class="python"><code>print(&quot;\nFINAL SUMMARY&quot;)
-print(f&quot;\nIndividuals genotyped: {len(genotype_matrix)}&quot;)
-print(f&quot;Functional proteins: {len(all_proteins)}&quot;)
-print(f&quot;\nOutputs:&quot;)
-print(f&quot;  {long_out}&quot;)
-print(f&quot;  {wide_out}&quot;)</code></pre>
-<p><strong>Summary metrics:</strong></p>
-<ul>
-<li><strong>Sample size</strong>: Total number of individuals successfully genotyped</li>
-<li><strong>Allelic diversity</strong>: Number of distinct functional proteins identified</li>
-<li><strong>Output confirmation</strong>: File paths for generated datasets</li>
-</ul>
+<div id="representative-sequence-per-allele" class="section level4" number="5.2.3.4">
+<h4><span class="header-section-number">5.2.3.4</span> Representative sequence per allele</h4>
+<p>For each allele cluster, the <strong>most central sequence</strong> (minimum mean p-distance to all other cluster members) is selected as the representative and written to the output FASTA.</p>
+<hr />
 </div>
 </div>
-<div id="output-files-7" class="section level3" number="5.2.3">
-<h3><span class="header-section-number">5.2.3</span> Output Files</h3>
-<div id="primary-outputs-1" class="section level4" number="5.2.3.1">
-<h4><span class="header-section-number">5.2.3.1</span> Primary Outputs</h4>
-<p><strong>Long-format table (<code>SRK_individual_protein_table.tsv</code>):</strong></p>
-<ul>
-<li>Two-column format: Individual, Protein</li>
-<li>One row per individual-protein combination</li>
-<li>Suitable for relational database operations and flexible analysis</li>
-</ul>
-<p><strong>Wide-format matrix (<code>SRK_individual_genotypes.tsv</code>):</strong></p>
-<ul>
-<li>Binary presence/absence matrix</li>
-<li>Rows: individuals, Columns: proteins</li>
-<li>Standard format for population genetic analysis software</li>
-</ul>
+<div id="pipeline-steps-7" class="section level3" number="5.2.4">
+<h3><span class="header-section-number">5.2.4</span> Pipeline Steps</h3>
+<div id="step-1-distance-based-allele-grouping-define_srk_alleles_from_distance.py" class="section level4" number="5.2.4.1">
+<h4><span class="header-section-number">5.2.4.1</span> Step 1 — Distance-based allele grouping (<code>define_SRK_alleles_from_distance.py</code>)</h4>
+<p><strong>Key parameters:</strong></p>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>INPUT_FASTA</code></td>
+<td><code>SRK_functional_proteins_aligned.fasta</code></td>
+<td>Aligned protein FASTA</td>
+</tr>
+<tr class="even">
+<td><code>N_ALLELES</code></td>
+<td><code>None</code></td>
+<td><strong>Option A</strong> — fix the number of alleles directly (overrides <code>DIST_THRESHOLD</code> when not <code>None</code>). Use when you can identify the elbow on the sensitivity curve but cannot read the exact distance.</td>
+</tr>
+<tr class="odd">
+<td><code>DIST_THRESHOLD</code></td>
+<td><code>0.01</code> (1%)</td>
+<td><strong>Option B</strong> — fix the distance cutoff. Used only when <code>N_ALLELES</code> is <code>None</code>. Adjust based on the sensitivity plot elbow.</td>
+</tr>
+<tr class="even">
+<td><code>DOMAIN_REGION</code></td>
+<td><code>(31, 430)</code></td>
+<td>Alignment columns used for distance (1-based)</td>
+</tr>
+<tr class="odd">
+<td><code>THRESH_MIN/MAX/STEP</code></td>
+<td><code>0.0 / 0.05 / 0.0005</code></td>
+<td>Sensitivity analysis range</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Outputs:</strong></p>
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SRK_protein_allele_assignments.tsv</code></td>
+<td>Protein → allele mapping table</td>
+</tr>
+<tr class="even">
+<td><code>SRK_protein_allele_representatives.fasta</code></td>
+<td>One representative sequence per allele</td>
+</tr>
+<tr class="odd">
+<td><code>SRK_protein_distance_analysis.pdf</code></td>
+<td>Sensitivity curve + pairwise distance heatmap</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Output table columns (<code>SRK_protein_allele_assignments.tsv</code>):</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Protein</code></td>
+<td>Protein ID from input FASTA</td>
+</tr>
+<tr class="even">
+<td><code>Allele</code></td>
+<td>Assigned allele bin (e.g. <code>Allele_021</code>)</td>
+</tr>
+<tr class="odd">
+<td><code>Cluster_id</code></td>
+<td>Numeric cluster identifier</td>
+</tr>
+<tr class="even">
+<td><code>Is_representative</code></td>
+<td><code>True</code> for the cluster centroid</td>
+</tr>
+</tbody>
+</table>
 </div>
-<div id="data-structure-examples" class="section level4" number="5.2.3.2">
-<h4><span class="header-section-number">5.2.3.2</span> Data Structure Examples</h4>
-<p><strong>Long format:</strong></p>
-<pre><code>Individual      Protein
-Library001_01   SRK_protein_001
-Library001_01   SRK_protein_015
-Library001_02   SRK_protein_003</code></pre>
-<p><strong>Wide format:</strong></p>
-<pre><code>Individual      SRK_protein_001  SRK_protein_002  SRK_protein_003
-Library001_01   1                0                0
-Library001_02   0                0                1</code></pre>
+<div id="step-2-amino-acid-variation-heatmaps-srk_aa_mutation_heatmap.py" class="section level4" number="5.2.4.2">
+<h4><span class="header-section-number">5.2.4.2</span> Step 2 — Amino acid variation heatmaps (<code>SRK_AA_mutation_heatmap.py</code>)</h4>
+<p>Produces two complementary figures sharing the same set of variable positions and domain annotation track.</p>
+<p><strong>Key parameters:</strong></p>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>INPUT_FASTA</code></td>
+<td><code>SRK_functional_proteins_aligned.fasta</code></td>
+<td>Aligned protein FASTA</td>
+</tr>
+<tr class="even">
+<td><code>ALLELE_TSV</code></td>
+<td><code>SRK_protein_allele_assignments.tsv</code></td>
+<td>Orders rows by allele cluster (Figure 1)</td>
+</tr>
+<tr class="odd">
+<td><code>MAX_GAP_FREQ</code></td>
+<td><code>0.20</code></td>
+<td>Excludes positions where &gt;20% of sequences have a gap</td>
+</tr>
+<tr class="even">
+<td><code>ENTROPY_MIN</code></td>
+<td><code>0.0</code></td>
+<td>Minimum Shannon entropy (bits) to include a position</td>
+</tr>
+<tr class="odd">
+<td><code>MAX_POSITIONS</code></td>
+<td><code>300</code></td>
+<td>Maximum variable positions to display</td>
+</tr>
+<tr class="even">
+<td><code>DOMAIN_REGIONS</code></td>
+<td>See script</td>
+<td>List of <code>(name, start, end, color)</code> tuples</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Outputs:</strong></p>
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SRK_AA_mutation_heatmap.pdf</code></td>
+<td>Figure 1: protein × position heatmap (AA physicochemical class)</td>
+</tr>
+<tr class="even">
+<td><code>SRK_AA_frequency_heatmap.pdf</code></td>
+<td>Figure 2: AA × position frequency heatmap</td>
+</tr>
+<tr class="odd">
+<td><code>SRK_AA_variable_positions.tsv</code></td>
+<td>Variable positions with entropy and AA composition</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Figure 1 — Protein × position heatmap:</strong></p>
+<ul>
+<li>Rows = proteins sorted by allele cluster; columns = variable alignment positions</li>
+<li>Cell colour = amino acid physicochemical class (aliphatic: grey; aromatic: gold; positive: blue; negative: red; polar: green; cysteine: orange; proline: orchid; gap: white)</li>
+<li>Top strip = domain annotation band</li>
+</ul>
+<p><strong>Figure 2 — AA frequency heatmap:</strong></p>
+<p>Three stacked panels: (i) domain annotation strip; (ii) 20 AAs (rows) × variable positions (columns), white = absent, dark red = high frequency, black dot = consensus AA, white dividers separate physicochemical groups, coloured left margin strip shows AA class; (iii) Shannon entropy bar chart per position.</p>
+<hr />
 </div>
 </div>
-<div id="scientific-applications-5" class="section level3" number="5.2.4">
-<h3><span class="header-section-number">5.2.4</span> Scientific Applications</h3>
-<div id="population-genetic-analysis-1" class="section level4" number="5.2.4.1">
-<h4><span class="header-section-number">5.2.4.1</span> Population Genetic Analysis</h4>
-<p><strong>Allele frequency estimation:</strong></p>
-<ul>
-<li>Direct calculation from column sums in binary matrix</li>
-<li>Temporal and spatial frequency comparisons</li>
-<li>Rare vs. common allele identification</li>
-</ul>
-<p><strong>Genetic diversity quantification:</strong></p>
-<ul>
-<li>Shannon diversity index calculation</li>
-<li>Allelic richness and evenness metrics</li>
-<li>Comparison across populations or time points</li>
-</ul>
+<div id="interpreting-the-sensitivity-curve" class="section level3" number="5.2.5">
+<h3><span class="header-section-number">5.2.5</span> Interpreting the sensitivity curve</h3>
+<p>The left panel of <code>SRK_protein_distance_analysis.pdf</code> shows allele count as a function of distance threshold. Three reference lines are drawn:</p>
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Line</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Dotted grey (horizontal)</td>
+<td>Total proteins in input (n = 228)</td>
+</tr>
+<tr class="even">
+<td>Dashed grey (horizontal)</td>
+<td>Unique S-domain sequences at threshold = 0 (n = 109) — 119 proteins share their S-domain exactly with at least one other protein, differing only in the kinase domain or elsewhere</td>
+</tr>
+<tr class="odd">
+<td><strong>Option B</strong> — Dashed red (vertical)</td>
+<td>Current <code>DIST_THRESHOLD</code> value set in the script — <strong>not computed algorithmically</strong></td>
+</tr>
+<tr class="even">
+<td><strong>Option A</strong> — Dashed red (horizontal)</td>
+<td>Target allele count set by <code>N_ALLELES</code></td>
+</tr>
+<tr class="odd">
+<td><strong>Option A</strong> — Dotted red (vertical)</td>
+<td>Implied distance threshold — the smallest distance at which allele count ≤ <code>N_ALLELES</code> (derived from the sensitivity sweep)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why the curve starts at 109, not 228:</strong> distance is computed on the S-domain only. Of the 228 functional proteins, 119 are S-domain identical to at least one other protein (they differ only in the kinase domain). These are merged at threshold = 0, so the curve begins at 109. This is biologically correct: two proteins with an identical ectodomain present the same recognition specificity.</p>
+<p><strong>How to choose the threshold:</strong> look for the <strong>elbow</strong> — the point where the curve transitions from a steep descent (merging genuine alleles) to a shallow plateau (absorbing only sequencing noise). If you can identify the elbow on the y-axis (allele count) but cannot read the exact distance, use <code>N_ALLELES</code> (Option A) — the script will derive the corresponding distance and annotate the plot. Alternatively, set <code>DIST_THRESHOLD</code> directly (Option B).</p>
+<hr />
 </div>
-<div id="self-incompatibility-system-analysis" class="section level4" number="5.2.4.2">
-<h4><span class="header-section-number">5.2.4.2</span> Self-Incompatibility System Analysis</h4>
-<p><strong>Mating compatibility prediction:</strong></p>
-<ul>
-<li>Construction of incompatibility matrices from genotype data</li>
-<li>Prediction of successful vs. unsuccessful crosses</li>
-<li>Identification of universally compatible individuals</li>
-</ul>
-<p><strong>Effective population size estimation:</strong></p>
-<ul>
-<li>S-allele-based demographic inference</li>
-<li>Detection of population bottlenecks through allelic diversity loss</li>
-<li>Historical population size reconstruction</li>
-</ul>
+<div id="interpreting-the-aa-frequency-heatmap" class="section level3" number="5.2.6">
+<h3><span class="header-section-number">5.2.6</span> Interpreting the AA frequency heatmap</h3>
+<p>At genuine allele-discriminating positions (high Shannon entropy bar), <strong>exactly two rows light up</strong> in the frequency heatmap with roughly equal intensity — one for each of the two competing amino acids. A near-50:50 split is the molecular signature of balancing selection (NFDS) maintaining two SRK recognition specificities at equal frequency. Positions where the black dot (consensus) sits in a very dark cell with all other rows near white reflect fixed differences rather than balanced polymorphism.</p>
+<hr />
 </div>
-<div id="evolutionary-analysis" class="section level4" number="5.2.4.3">
-<h4><span class="header-section-number">5.2.4.3</span> Evolutionary Analysis</h4>
-<p><strong>Balancing selection detection:</strong></p>
+<div id="findings" class="section level3" number="5.2.7">
+<h3><span class="header-section-number">5.2.7</span> Findings</h3>
+<div id="pairwise-distance-distribution" class="section level4" number="5.2.7.1">
+<h4><span class="header-section-number">5.2.7.1</span> Pairwise distance distribution</h4>
+<table>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>S-domain (cols 31–430)</th>
+<th>Full protein</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Minimum</td>
+<td>0.000</td>
+<td>0.000</td>
+</tr>
+<tr class="even">
+<td>Maximum</td>
+<td>4.76%</td>
+<td>3.44%</td>
+</tr>
+<tr class="odd">
+<td>Mean</td>
+<td>1.26%</td>
+<td>0.95%</td>
+</tr>
+</tbody>
+</table>
+<p>This is strikingly low relative to the 20–50% divergence expected between different SRK recognition classes in <em>Brassica</em> and <em>Arabidopsis</em>, confirming that the pipeline substantially overestimates allele diversity when treating each unique protein as a distinct allele.</p>
+</div>
+<div id="s-domain-uniqueness" class="section level4" number="5.2.7.2">
+<h4><span class="header-section-number">5.2.7.2</span> S-domain uniqueness</h4>
+<p>Of the 228 functional proteins, <strong>109 have a unique S-domain sequence</strong>. The remaining 119 proteins are S-domain identical to at least one other protein (differing only in the kinase domain or elsewhere). The effective starting point for allele grouping is therefore 109, not 228.</p>
+</div>
+<div id="sensitivity-analysis" class="section level4" number="5.2.7.3">
+<h4><span class="header-section-number">5.2.7.3</span> Sensitivity analysis</h4>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Threshold</th>
+<th>Alleles</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0%</td>
+<td>109</td>
+<td>S-domain unique sequences (exact duplicates already merged)</td>
+</tr>
+<tr class="even">
+<td>0.5%</td>
+<td>~50–80</td>
+<td>Still capturing most sequencing noise as alleles</td>
+</tr>
+<tr class="odd">
+<td><strong>1.0%</strong></td>
+<td><strong>24</strong></td>
+<td>Working intermediate; 131 proteins in the largest cluster</td>
+</tr>
+<tr class="even">
+<td>2.0%</td>
+<td>few</td>
+<td>Most noise absorbed; 2–5 genuine alleles likely visible</td>
+</tr>
+<tr class="odd">
+<td>4.0%+</td>
+<td>1–3</td>
+<td>Near-complete lumping</td>
+</tr>
+</tbody>
+</table>
+<p>A threshold of <strong>1–2%</strong> is biologically motivated: above typical Nanopore per-base error rates (~1%) but well below inter-allele divergence values from the literature. Use the sensitivity plot to confirm the elbow position for this dataset.</p>
+</div>
+<div id="allele-composition-at-1-threshold" class="section level4" number="5.2.7.4">
+<h4><span class="header-section-number">5.2.7.4</span> Allele composition at 1% threshold</h4>
 <ul>
-<li>Tests for excess heterozygosity at S-loci</li>
-<li>Comparison of S-locus vs. neutral marker diversity</li>
-<li>Identification of selection signatures maintaining allelic diversity</li>
+<li><strong>24 allele clusters</strong> from 228 proteins</li>
+<li><strong>Largest cluster</strong> (<code>Allele_021</code>): 131 proteins (57%)</li>
+<li><strong>Second largest</strong> (<code>Allele_009</code>): 35 proteins (15%)</li>
+<li>Together: 73% of all proteins in two clusters</li>
+<li>9 singleton clusters (likely rare alleles or residual artefacts)</li>
 </ul>
-<p><strong>Population structure analysis:</strong></p>
-<ul>
-<li>Principal component analysis of S-allele composition</li>
-<li>STRUCTURE analysis for population subdivision</li>
-<li>Migration pattern inference from allele sharing</li>
-</ul>
+<p>The dominance of 2–3 large clusters is consistent with a population carrying a <strong>small number of true SRK alleles</strong>, expected for a small or historically bottlenecked threatened species.</p>
+</div>
+<div id="variable-positions-and-domain-distribution" class="section level4" number="5.2.7.5">
+<h4><span class="header-section-number">5.2.7.5</span> Variable positions and domain distribution</h4>
+<p>152 variable positions identified (out of 848; 18%), all with only 2–4 amino acid variants — diagnostic of a small number of alleles rather than high diversity.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Domain</th>
+<th>Variable positions</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Signal peptide (1–30)</td>
+<td>8</td>
+</tr>
+<tr class="even">
+<td><strong>S-domain (31–430)</strong></td>
+<td><strong>82</strong></td>
+</tr>
+<tr class="odd">
+<td>TM domain (431–455)</td>
+<td>8</td>
+</tr>
+<tr class="even">
+<td>Kinase domain (456–848)</td>
+<td>54</td>
+</tr>
+</tbody>
+</table>
+<p>The most variable S-domain position is alignment position 118 (A:113 / G:115, entropy = 1.000 bits — near-equal split), the strongest signal of two balanced allele classes maintained by NFDS.</p>
+<hr />
 </div>
 </div>
-<div id="quality-control-and-validation-1" class="section level3" number="5.2.5">
-<h3><span class="header-section-number">5.2.5</span> Quality Control and Validation</h3>
-<div id="data-integrity-checks" class="section level4" number="5.2.5.1">
-<h4><span class="header-section-number">5.2.5.1</span> Data Integrity Checks</h4>
-<p><strong>Individual identifier validation:</strong></p>
-<ul>
-<li>Warning system for unparseable sequence names</li>
-<li>Consistent individual ID extraction across sequences</li>
-<li>Error tolerance preventing pipeline failure</li>
-</ul>
-<p><strong>Upstream filtering compatibility:</strong></p>
-<ul>
-<li>Individuals excluded by the abundance filter or <code>max_alleles</code> filter in <code>define_functional_proteins.py</code> are absent from the key file and will not appear in either output — no additional filtering is needed here</li>
-</ul>
-<p><strong>Matrix completeness:</strong></p>
-<ul>
-<li>All individuals scored for all proteins</li>
-<li>Binary encoding consistency (0/1 only)</li>
-<li>No missing data in final matrices</li>
-</ul>
+<div id="recommendations" class="section level3" number="5.2.8">
+<h3><span class="header-section-number">5.2.8</span> Recommendations</h3>
+<ol style="list-style-type: decimal">
+<li><strong>Calibrate <code>DIST_THRESHOLD</code></strong> using the sensitivity plot elbow. A value between 1–2% is recommended as a starting point.</li>
+<li><strong>Validate against crossing data</strong>: if crossing experiments are available (<code>Crosses_w_seeds_LEPA.csv</code>), test whether incompatible pairs share the same distance-defined allele to empirically calibrate the threshold.</li>
+<li><strong>Use distance-defined alleles</strong> in downstream population genetic analyses (allele accumulation, chi-square tests) to avoid inflated allele counts.</li>
+<li><strong>Adjust domain boundaries</strong> (<code>DOMAIN_REGIONS</code> / <code>DOMAIN_REGION</code>) if species-specific SRK annotation is available.</li>
+<li><strong>Inspect singletons</strong> at the chosen threshold: they may represent genuine rare alleles or residual assembly artefacts.</li>
+</ol>
+<hr />
 </div>
-<div id="statistical-considerations-1" class="section level4" number="5.2.5.2">
-<h4><span class="header-section-number">5.2.5.2</span> Statistical Considerations</h4>
-<p><strong>Sample size adequacy:</strong></p>
-<ul>
-<li>Sufficient individuals for population genetic inference</li>
-<li>Adequate representation of allelic diversity</li>
-<li>Power considerations for downstream statistical tests</li>
-</ul>
-<p><strong>Allelic representation:</strong></p>
-<ul>
-<li>Balance between common and rare alleles</li>
-<li>Technical artifact vs. authentic rare allele distinction</li>
-<li>Population-specific vs. universal allele identification</li>
-</ul>
-<p>This genotyping pipeline provides the essential data transformation step between molecular haplotype reconstruction and population genetic analysis, enabling comprehensive investigation of self-incompatibility system evolution and maintenance in natural populations.</p>
+<div id="bioinformatics-7" class="section level3" number="5.2.9">
+<h3><span class="header-section-number">5.2.9</span> Bioinformatics</h3>
+<div id="scripts" class="section level4" number="5.2.9.1">
+<h4><span class="header-section-number">5.2.9.1</span> Scripts</h4>
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Script</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>define_SRK_alleles_from_distance.py</code></td>
+<td>Pairwise p-distance, clustering, sensitivity analysis</td>
+</tr>
+<tr class="even">
+<td><code>SRK_AA_mutation_heatmap.py</code></td>
+<td>AA class heatmap (Figure 1) and frequency heatmap (Figure 2)</td>
+</tr>
+</tbody>
+</table>
 </div>
+<div id="execution" class="section level4" number="5.2.9.2">
+<h4><span class="header-section-number">5.2.9.2</span> Execution</h4>
+<p>Run Step 1 first so allele assignments are available for Figure 1 row ordering in Step 2.</p>
+<pre class="bash"><code>source srk_env/bin/activate
+python define_SRK_alleles_from_distance.py
+python SRK_AA_mutation_heatmap.py</code></pre>
 </div>
-<div id="bioinformatics-7" class="section level3" number="5.2.6">
-<h3><span class="header-section-number">5.2.6</span> Bioinformatics</h3>
-<ul>
-<li><strong>Goal:</strong> Genotype individuals based on functional protein data produced by <code>define_functional_proteins.py</code></li>
-<li><strong>Script:</strong> <code>genotype_SRK_from_functional_proteins.py</code></li>
-<li><strong>Input:</strong> <code>SRK_functional_protein_key.tsv</code>
-<ul>
-<li>Individuals excluded by the abundance filter or <code>max_alleles</code> filter are already absent from this file</li>
-</ul></li>
-<li><strong>Output:</strong>
-<ul>
-<li>Long table: <code>SRK_individual_protein_table.tsv</code></li>
-<li>Genotype matrix: <code>SRK_individual_genotypes.tsv</code></li>
-</ul></li>
-</ul>
-<pre><code>FINAL SUMMARY
-
-Individuals genotyped: 128
-Functional proteins: 94
-
-Outputs:
-  SRK_individual_protein_table.tsv
-  SRK_individual_genotypes.tsv</code></pre>
-<p>CODE</p>
+<div id="define_srk_alleles_from_distance.py" class="section level4" number="5.2.9.3">
+<h4><span class="header-section-number">5.2.9.3</span> <code>define_SRK_alleles_from_distance.py</code></h4>
 <pre class="python"><code>#!/usr/bin/env python3
+# See full script in repository.
+# Key user-settings block (top of file):
 
-import csv
-import os
-import sys
-from collections import defaultdict, OrderedDict
+INPUT_FASTA    = &quot;SRK_functional_proteins_aligned.fasta&quot;
 
+# ── Clustering mode: choose ONE ──────────────────────────────────────────────
+# Option A — fix the NUMBER OF ALLELES (set N_ALLELES; DIST_THRESHOLD ignored)
+N_ALLELES = None   # e.g. 50 — set to None to use Option B instead
+# Option B — fix the DISTANCE THRESHOLD (used only when N_ALLELES is None)
+DIST_THRESHOLD = 0.01   # ← adjust based on sensitivity plot elbow
+# ─────────────────────────────────────────────────────────────────────────────
 
-# ----------------------------
-# Output files &amp; overwrite check
-# ----------------------------
+DOMAIN_REGION  = (31, 430)  # S-domain columns (1-based, inclusive)
+OUT_TSV        = &quot;SRK_protein_allele_assignments.tsv&quot;
+OUT_FASTA      = &quot;SRK_protein_allele_representatives.fasta&quot;
+OUT_PDF        = &quot;SRK_protein_distance_analysis.pdf&quot;
+THRESH_MIN, THRESH_MAX, THRESH_STEP = 0.0, 0.05, 0.0005</code></pre>
+</div>
+<div id="srk_aa_mutation_heatmap.py" class="section level4" number="5.2.9.4">
+<h4><span class="header-section-number">5.2.9.4</span> <code>SRK_AA_mutation_heatmap.py</code></h4>
+<pre class="python"><code>#!/usr/bin/env python3
+# See full script in repository.
+# Key user-settings block (top of file):
 
-long_out = &quot;SRK_individual_protein_table.tsv&quot;
-wide_out = &quot;SRK_individual_genotypes.tsv&quot;
-
-OUTPUT_FILES = [long_out, wide_out]
-
-existing = [f for f in OUTPUT_FILES if os.path.exists(f)]
-if existing:
-    print(&quot;\nWARNING: The following output files already exist and will be overwritten:&quot;)
-    for f in existing:
-        print(f&quot;  {f}&quot;)
-    confirm = input(&quot;\nProceed and overwrite? (y/n): &quot;).strip().lower()
-    if confirm != &#39;y&#39;:
-        print(&quot;Aborted. No files were modified.&quot;)
-        sys.exit(0)
-
-# ----------------------------
-# User input
-# ----------------------------
-
-protein_key_file = input(
-    &quot;Enter SRK_functional_protein_key.tsv: &quot;
-).strip()
-
-
-# ----------------------------
-# Load protein assignments
-# ----------------------------
-
-individual_proteins = defaultdict(list)
-
-with open(protein_key_file, newline=&quot;&quot;) as f:
-    reader = csv.DictReader(f, delimiter=&quot;\t&quot;)
-    for row in reader:
-        seq_id = row[&quot;Original_sequence_ID&quot;]
-        protein = row[&quot;Protein&quot;]
-
-        parts = seq_id.split(&quot;_&quot;)
-
-        if len(parts) &lt; 2:
-            print(&quot;WARNING: cannot parse:&quot;, seq_id)
-            continue
-
-        individual = f&quot;{parts[0]}_{parts[1]}&quot;
-        individual_proteins[individual].append(protein)
-
-print(&quot;Individuals found:&quot;, len(individual_proteins))
-
-
-# ----------------------------
-# Write long table
-# ----------------------------
-
-with open(long_out, &quot;w&quot;) as out:
-    out.write(&quot;Individual\tProtein\n&quot;)
-    for individual in sorted(individual_proteins):
-        for protein in individual_proteins[individual]:
-            out.write(f&quot;{individual}\t{protein}\n&quot;)
-
-
-# ----------------------------
-# Build genotype matrix
-# ----------------------------
-
-all_proteins = sorted({
-    protein
-    for proteins in individual_proteins.values()
-    for protein in proteins
-})
-
-genotype_matrix = OrderedDict()
-
-for individual in sorted(individual_proteins):
-    protein_set = set(individual_proteins[individual])
-    genotype_matrix[individual] = {
-        protein: 1 if protein in protein_set else 0
-        for protein in all_proteins
-    }
-
-
-# ----------------------------
-# Write matrix
-# ----------------------------
-
-with open(wide_out, &quot;w&quot;, newline=&quot;&quot;) as out:
-    writer = csv.writer(out, delimiter=&quot;\t&quot;)
-    header = [&quot;Individual&quot;] + all_proteins
-    writer.writerow(header)
-
-    for individual, geno in genotype_matrix.items():
-        row = [individual] + [
-            geno[p]
-            for p in all_proteins
-        ]
-        writer.writerow(row)
-
-
-# ----------------------------
-# Summary
-# ----------------------------
-
-print(&quot;\nFINAL SUMMARY&quot;)
-print(f&quot;\nIndividuals genotyped: {len(genotype_matrix)}&quot;)
-print(f&quot;Functional proteins: {len(all_proteins)}&quot;)
-print(f&quot;\nOutputs:&quot;)
-print(f&quot;  {long_out}&quot;)
-print(f&quot;  {wide_out}&quot;)</code></pre>
+INPUT_FASTA   = &quot;SRK_functional_proteins_aligned.fasta&quot;
+ALLELE_TSV    = &quot;SRK_protein_allele_assignments.tsv&quot;  # set None to skip
+MAX_GAP_FREQ  = 0.20
+ENTROPY_MIN   = 0.0
+MAX_POSITIONS = 300
+OUT_PDF       = &quot;SRK_AA_mutation_heatmap.pdf&quot;
+OUT_FREQ_PDF  = &quot;SRK_AA_frequency_heatmap.pdf&quot;
+OUT_VAR_TSV   = &quot;SRK_AA_variable_positions.tsv&quot;
+# Domain regions: list of (name, start, end, color) — adjust for your species
+DOMAIN_REGIONS = [
+    (&quot;Signal peptide&quot;,  1,   30,  &quot;#b0c4de&quot;),
+    (&quot;S-domain&quot;,        31,  430, &quot;#90ee90&quot;),
+    (&quot;TM domain&quot;,       431, 455, &quot;#ffa07a&quot;),
+    (&quot;Kinase domain&quot;,   456, 848, &quot;#d3a4d3&quot;),
+]</code></pre>
+<hr />
 </div>
 </div>
-<div id="SRKclasses" class="section level2" number="5.3">
-<h2><span class="header-section-number">5.3</span> SRK Class Assignment and Dominance Prediction Pipeline</h2>
+</div>
+<div id="SRKfunctionalprotgenotype" class="section level2" number="5.3">
+<h2><span class="header-section-number">5.3</span> SRK S-Allele Genotyping Pipeline</h2>
 <div id="overview-8" class="section level3" number="5.3.1">
 <h3><span class="header-section-number">5.3.1</span> Overview</h3>
+<p>This Python pipeline genotypes individuals based on <strong>distance-defined S-allele bins</strong> rather than raw functional protein sequences. The workflow joins two upstream outputs — the functional protein key (sequence → protein) and the allele assignment table (protein → allele) — to produce per-individual allele lists and a binary genotype matrix suitable for population genetic analysis. Reference sequences are automatically excluded; only <code>Library*</code> individuals are retained.</p>
+<p><strong>Data flow:</strong></p>
+<pre><code>SRK_functional_protein_key.tsv      (Original_sequence_ID → Protein)
+        +
+SRK_protein_allele_assignments.tsv  (Protein → Allele)
+        ↓  join + deduplicate per individual
+SRK_individual_allele_table.tsv     (long format: Individual | Protein | Allele)
+SRK_individual_allele_genotypes.tsv (wide binary matrix: individuals × alleles)</code></pre>
+</div>
+<div id="inputs" class="section level3" number="5.3.2">
+<h3><span class="header-section-number">5.3.2</span> Inputs</h3>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Source</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SRK_functional_protein_key.tsv</code></td>
+<td>Step 9</td>
+<td>Maps every sequence ID to its functional protein</td>
+</tr>
+<tr class="even">
+<td><code>SRK_protein_allele_assignments.tsv</code></td>
+<td>Step 10</td>
+<td>Maps every protein to its distance-defined allele bin</td>
+</tr>
+<tr class="odd">
+<td><code>sampling_metadata.csv</code></td>
+<td>Field data</td>
+<td>Sample metadata; used to restrict genotyping to ingroup individuals (optional)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="pipeline-steps-8" class="section level3" number="5.3.3">
+<h3><span class="header-section-number">5.3.3</span> Pipeline Steps</h3>
+<div id="ingroup-filtering-optional" class="section level4" number="5.3.3.1">
+<h4><span class="header-section-number">5.3.3.1</span> Ingroup filtering (optional)</h4>
+<p>If <code>METADATA_FILE</code> is set, <code>sampling_metadata.csv</code> is read and individuals with <code>Ingroup == 1</code> are collected into an allow-list. Only these individuals are retained in the genotype outputs. Setting <code>INGROUP_ONLY = False</code> disables the filter and includes all <code>Library*</code> individuals regardless of ingroup status. Setting <code>METADATA_FILE = None</code> skips metadata loading entirely.</p>
+</div>
+<div id="individual-id-extraction" class="section level4" number="5.3.3.2">
+<h4><span class="header-section-number">5.3.3.2</span> Individual ID extraction</h4>
+<p>Individual IDs are parsed from the sequence name by splitting on <code>_</code> and combining the first two components (e.g. <code>Library001_barcode01_hap1_rep1_tig00000001</code> → <code>Library001_barcode01</code>). Sequences whose parsed ID does not start with <code>Library</code> (e.g. reference sequences <code>SRK_BEA_*</code>) are excluded.</p>
+</div>
+<div id="protein-allele-join" class="section level4" number="5.3.3.3">
+<h4><span class="header-section-number">5.3.3.3</span> Protein → Allele join</h4>
+<p>For each sequence assigned to an individual, the protein name is looked up in the allele assignment table. Sequences whose protein has no allele mapping are skipped with a warning count.</p>
+</div>
+<div id="deduplication" class="section level4" number="5.3.3.4">
+<h4><span class="header-section-number">5.3.3.4</span> Deduplication</h4>
+<p>Multiple sequences from the same individual may map to the same protein, and multiple proteins may belong to the same allele bin. Both levels of redundancy are collapsed: the final allele set per individual contains only unique alleles.</p>
+</div>
+<div id="output-generation-1" class="section level4" number="5.3.3.5">
+<h4><span class="header-section-number">5.3.3.5</span> Output generation</h4>
+<p>A long-format table (one row per individual–protein–allele triple) and a wide binary presence/absence matrix (individuals × alleles) are written. The long table retains protein-level information so the protein → allele mapping can be traced if needed.</p>
+</div>
+</div>
+<div id="output-files-7" class="section level3" number="5.3.4">
+<h3><span class="header-section-number">5.3.4</span> Output Files</h3>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Format</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SRK_individual_allele_table.tsv</code></td>
+<td>Long (Individual, Protein, Allele)</td>
+<td>One row per unique individual–protein–allele combination</td>
+</tr>
+<tr class="even">
+<td><code>SRK_individual_allele_genotypes.tsv</code></td>
+<td>Wide binary matrix</td>
+<td>Rows = individuals, columns = allele bins</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Long format example:</strong></p>
+<pre><code>Individual            Protein          Allele
+Library001_barcode01  SRK_protein_001  Allele_021
+Library001_barcode01  SRK_protein_045  Allele_009
+Library001_barcode02  SRK_protein_001  Allele_021</code></pre>
+<p><strong>Wide format example:</strong></p>
+<pre><code>Individual            Allele_001  Allele_009  Allele_021
+Library001_barcode01  0           1           1
+Library001_barcode02  0           0           1</code></pre>
+</div>
+<div id="results" class="section level3" number="5.3.5">
+<h3><span class="header-section-number">5.3.5</span> Results</h3>
+<p>Running with the current dataset (N_ALLELES = 50, implied distance ≈ 0.006, ingroup only):</p>
+<pre><code>Metadata loaded: 170 ingroup, 8 outgroup samples
+INGROUP_ONLY = True  →  restricting to 170 ingroup samples
+Loaded 228 protein → allele mappings
+Reference sequences excluded : 4
+Proteins with no allele match: 0
+Individuals found            : 152
+
+── FINAL SUMMARY ──
+Individuals genotyped : 152
+S-alleles in matrix   : 43
+Min alleles/individual: 1
+Max alleles/individual: 3
+Mean alleles/individual: 1.47</code></pre>
+<p>152 ingroup individuals genotyped; 8 outgroup samples excluded. 43 of the 50 defined allele bins are observed in the ingroup. Two alleles dominate: <code>Allele_044</code> (43 individuals) and <code>Allele_047</code> (40 individuals), together accounting for ~54% of the ingroup.</p>
+</div>
+<div id="bioinformatics-8" class="section level3" number="5.3.6">
+<h3><span class="header-section-number">5.3.6</span> Bioinformatics</h3>
+<ul>
+<li><strong>Script:</strong> <code>genotype_SRK_from_alleles.py</code></li>
+<li><strong>Inputs:</strong> <code>SRK_functional_protein_key.tsv</code>, <code>SRK_protein_allele_assignments.tsv</code>, <code>sampling_metadata.csv</code> (optional, for ingroup filtering)</li>
+<li><strong>Outputs:</strong> <code>SRK_individual_allele_table.tsv</code>, <code>SRK_individual_allele_genotypes.tsv</code></li>
+</ul>
+<pre class="python"><code>#!/usr/bin/env python3
+&quot;&quot;&quot;
+genotype_SRK_from_alleles.py
+
+Builds individual-level genotype matrices based on distance-defined S-allele
+bins rather than raw functional protein sequences.
+
+Data flow
+---------
+  SRK_functional_protein_key.tsv     Original_sequence_ID -&gt; Protein
+        + (parse individual from sequence ID)
+  SRK_protein_allele_assignments.tsv  Protein -&gt; Allele
+        + (join + deduplicate)
+  Per-individual allele set
+        +
+  SRK_individual_allele_table.tsv     long format  (Individual, Protein, Allele)
+  SRK_individual_allele_genotypes.tsv wide matrix  (individuals x alleles, binary)
+
+Reference sequences (IDs not starting with &quot;Library&quot;) are excluded.
+&quot;&quot;&quot;
+
+import csv, os, sys
+from collections import defaultdict, OrderedDict
+
+PROTEIN_KEY_FILE  = &quot;SRK_functional_protein_key.tsv&quot;
+ALLELE_TSV_FILE   = &quot;SRK_protein_allele_assignments.tsv&quot;
+LONG_OUT          = &quot;SRK_individual_allele_table.tsv&quot;
+WIDE_OUT          = &quot;SRK_individual_allele_genotypes.tsv&quot;
+INDIVIDUAL_PREFIX = &quot;Library&quot;
+
+existing = [f for f in [LONG_OUT, WIDE_OUT] if os.path.exists(f)]
+if existing:
+    for f in existing: print(f&quot;WARNING: will overwrite {f}&quot;)
+    if input(&quot;Proceed? (y/n): &quot;).strip().lower() != &quot;y&quot;: sys.exit(0)
+
+protein_to_allele = {}
+with open(ALLELE_TSV_FILE, newline=&quot;&quot;, encoding=&quot;utf-8-sig&quot;) as f:
+    for row in csv.DictReader(f, delimiter=&quot;\t&quot;):
+        protein_to_allele[row[&quot;Protein&quot;]] = row[&quot;Allele&quot;]
+
+individual_data = defaultdict(list)
+n_skipped_ref = n_skipped_nomap = 0
+with open(PROTEIN_KEY_FILE, newline=&quot;&quot;, encoding=&quot;utf-8-sig&quot;) as f:
+    for row in csv.DictReader(f, delimiter=&quot;\t&quot;):
+        parts = row[&quot;Original_sequence_ID&quot;].split(&quot;_&quot;)
+        if len(parts) &lt; 2: continue
+        individual = f&quot;{parts[0]}_{parts[1]}&quot;
+        if not individual.startswith(INDIVIDUAL_PREFIX):
+            n_skipped_ref += 1; continue
+        allele = protein_to_allele.get(row[&quot;Protein&quot;])
+        if allele is None:
+            n_skipped_nomap += 1; continue
+        individual_data[individual].append((row[&quot;Protein&quot;], allele))
+
+individual_pairs   = {ind: sorted(set(pairs), key=lambda x: (x[1], x[0]))
+                      for ind, pairs in individual_data.items()}
+individual_alleles = {ind: sorted({a for _, a in pairs})
+                      for ind, pairs in individual_pairs.items()}
+
+with open(LONG_OUT, &quot;w&quot;, newline=&quot;&quot;) as out:
+    w = csv.writer(out, delimiter=&quot;\t&quot;)
+    w.writerow([&quot;Individual&quot;, &quot;Protein&quot;, &quot;Allele&quot;])
+    for ind in sorted(individual_pairs):
+        for protein, allele in individual_pairs[ind]:
+            w.writerow([ind, protein, allele])
+
+all_alleles = sorted({a for v in individual_alleles.values() for a in v})
+with open(WIDE_OUT, &quot;w&quot;, newline=&quot;&quot;) as out:
+    w = csv.writer(out, delimiter=&quot;\t&quot;)
+    w.writerow([&quot;Individual&quot;] + all_alleles)
+    for ind in sorted(individual_alleles):
+        aset = set(individual_alleles[ind])
+        w.writerow([ind] + [1 if a in aset else 0 for a in all_alleles])
+
+counts = [len(v) for v in individual_alleles.values()]
+print(f&quot;Individuals genotyped  : {len(individual_alleles)}&quot;)
+print(f&quot;S-alleles in matrix    : {len(all_alleles)}&quot;)
+print(f&quot;Max alleles/individual : {max(counts)}&quot;)
+print(f&quot;Mean alleles/individual: {sum(counts)/len(counts):.2f}&quot;)</code></pre>
+</div>
+</div>
+<div id="SRKclasses" class="section level2" number="5.4">
+<h2><span class="header-section-number">5.4</span> SRK Class Assignment and Dominance Prediction Pipeline</h2>
+<div id="overview-9" class="section level3" number="5.4.1">
+<h3><span class="header-section-number">5.4.1</span> Overview</h3>
 <p>This Python pipeline takes the functional SRK protein alignment and individual genotype data, filters to ingroup individuals, infers a maximum-likelihood phylogenetic tree, and automatically assigns proteins to Class I or Class II based on tree topology. Per-individual class genotypes are then derived to predict dominance behaviour for crossing decisions in a conservation breeding program.</p>
 </div>
-<div id="biological-background" class="section level3" number="5.3.2">
-<h3><span class="header-section-number">5.3.2</span> Biological Background</h3>
-<div id="the-two-class-system" class="section level4" number="5.3.2.1">
-<h4><span class="header-section-number">5.3.2.1</span> The Two-Class System</h4>
+<div id="biological-background" class="section level3" number="5.4.2">
+<h3><span class="header-section-number">5.4.2</span> Biological Background</h3>
+<div id="the-two-class-system" class="section level4" number="5.4.2.1">
+<h4><span class="header-section-number">5.4.2.1</span> The Two-Class System</h4>
 <p>SRK alleles in Brassicaceae self-incompatibility (SI) systems are phylogenetically structured into two ancient classes with a strict dominance hierarchy:</p>
 <ul>
 <li><strong>Class I</strong>: fewer alleles; dominant over Class II alleles in heterozygous individuals</li>
@@ -4734,8 +5037,8 @@ print(f&quot;  {wide_out}&quot;)</code></pre>
 </tbody>
 </table>
 </div>
-<div id="the-grade-problem-and-rooting" class="section level4" number="5.3.2.2">
-<h4><span class="header-section-number">5.3.2.2</span> The Grade Problem and Rooting</h4>
+<div id="the-grade-problem-and-rooting" class="section level4" number="5.4.2.2">
+<h4><span class="header-section-number">5.4.2.2</span> The Grade Problem and Rooting</h4>
 <p>Class I forms a <strong>paraphyletic grade</strong> at the base of the SRK phylogeny; Class II is the <strong>derived monophyletic</strong> clade. The typical topology is:</p>
 <pre><code>    ┌── C1a
 ────┤         ┌── C1b
@@ -4746,20 +5049,20 @@ print(f&quot;  {wide_out}&quot;)</code></pre>
 <p>Midpoint rooting is still produced as a separate output file for visual validation in FigTree or iTOL.</p>
 </div>
 </div>
-<div id="pipeline-steps-8" class="section level3" number="5.3.3">
-<h3><span class="header-section-number">5.3.3</span> Pipeline Steps</h3>
-<div id="output-file-management-and-overwrite-safeguard-2" class="section level4" number="5.3.3.1">
-<h4><span class="header-section-number">5.3.3.1</span> Output File Management and Overwrite Safeguard</h4>
+<div id="pipeline-steps-9" class="section level3" number="5.4.3">
+<h3><span class="header-section-number">5.4.3</span> Pipeline Steps</h3>
+<div id="output-file-management-and-overwrite-safeguard-1" class="section level4" number="5.4.3.1">
+<h4><span class="header-section-number">5.4.3.1</span> Output File Management and Overwrite Safeguard</h4>
 <p>Output files and IQ-TREE outputs are registered before any analysis. The script checks for existing files and prompts for confirmation before overwriting — consistent with the rest of the pipeline.</p>
 </div>
-<div id="iq-tree3-executable-detection" class="section level4" number="5.3.3.2">
-<h4><span class="header-section-number">5.3.3.2</span> IQ-TREE3 Executable Detection</h4>
+<div id="iq-tree3-executable-detection" class="section level4" number="5.4.3.2">
+<h4><span class="header-section-number">5.4.3.2</span> IQ-TREE3 Executable Detection</h4>
 <p>The script automatically searches for the IQ-TREE3 executable in the following order, without requiring it to be on the system PATH:</p>
 <pre class="python"><code>for candidate in [&quot;./iqtree3&quot;, &quot;./iqtree&quot;, &quot;iqtree3&quot;, &quot;iqtree&quot;]:</code></pre>
 <p>If not found automatically, the user is prompted for the full path.</p>
 </div>
-<div id="step-1-load-ingroup-individuals-from-metadata" class="section level4" number="5.3.3.3">
-<h4><span class="header-section-number">5.3.3.3</span> Step 1: Load Ingroup Individuals from Metadata</h4>
+<div id="step-1-load-ingroup-individuals-from-metadata" class="section level4" number="5.4.3.3">
+<h4><span class="header-section-number">5.4.3.3</span> Step 1: Load Ingroup Individuals from Metadata</h4>
 <p>Reads <code>sampling_metadata.csv</code> and collects individuals where <code>Ingroup == 1</code>:</p>
 <pre class="python"><code>with open(metadata_file, newline=&quot;&quot;, encoding=&quot;utf-8-sig&quot;) as f:
     reader = csv.DictReader(f)
@@ -4780,8 +5083,8 @@ print(f&quot;  {wide_out}&quot;)</code></pre>
 <li><strong>Metadata columns used</strong>: <code>Library</code>, <code>barcode</code>, <code>Ingroup</code></li>
 </ul>
 </div>
-<div id="step-2-load-genotype-matrix" class="section level4" number="5.3.3.4">
-<h4><span class="header-section-number">5.3.3.4</span> Step 2: Load Genotype Matrix</h4>
+<div id="step-2-load-genotype-matrix" class="section level4" number="5.4.3.4">
+<h4><span class="header-section-number">5.4.3.4</span> Step 2: Load Genotype Matrix</h4>
 <p>Reads <code>SRK_individual_genotypes.tsv</code> and collects, for each ingroup individual, the set of proteins they carry (presence = 1):</p>
 <pre class="python"><code>proteins = {p for p in protein_columns if row.get(p, &quot;0&quot;).strip() == &quot;1&quot;}
 ingroup_individual_proteins[individual] = proteins
@@ -4791,15 +5094,15 @@ ingroup_proteins.update(proteins)</code></pre>
 - <code>ingroup_individual_proteins</code>: per-individual protein sets — used in Step 5 for class genotype assignment</p>
 <p><strong>Diagnostic:</strong> individuals present in the metadata but absent from the genotype file are reported as a <code>NOTE</code>. This is expected for individuals excluded by the abundance filter or <code>max_alleles</code> filter in <code>define_functional_proteins.py</code>. A <code>WARNING</code> is only raised if &gt;50% of ingroup individuals are missing, which would indicate an ID format mismatch.</p>
 </div>
-<div id="step-3-filter-alignment-to-ingroup-proteins" class="section level4" number="5.3.3.5">
-<h4><span class="header-section-number">5.3.3.5</span> Step 3: Filter Alignment to Ingroup Proteins</h4>
+<div id="step-3-filter-alignment-to-ingroup-proteins" class="section level4" number="5.4.3.5">
+<h4><span class="header-section-number">5.4.3.5</span> Step 3: Filter Alignment to Ingroup Proteins</h4>
 <p>Reads <code>SRK_functional_proteins_aligned.fasta</code> and retains only sequences whose ID is in <code>ingroup_proteins</code>:</p>
 <pre class="python"><code>filtered_records = [rec for rec in all_records if rec.id in ingroup_proteins]
 SeqIO.write(filtered_records, filtered_alignment, &quot;fasta&quot;)</code></pre>
 <p>Proteins from outgroup individuals or those not present in any ingroup individual are excluded from the tree. Any expected proteins missing from the alignment are reported as warnings.</p>
 </div>
-<div id="step-4-maximum-likelihood-phylogenetic-analysis-with-iq-tree3" class="section level4" number="5.3.3.6">
-<h4><span class="header-section-number">5.3.3.6</span> Step 4: Maximum-Likelihood Phylogenetic Analysis with IQ-TREE3</h4>
+<div id="step-4-maximum-likelihood-phylogenetic-analysis-with-iq-tree3" class="section level4" number="5.4.3.6">
+<h4><span class="header-section-number">5.4.3.6</span> Step 4: Maximum-Likelihood Phylogenetic Analysis with IQ-TREE3</h4>
 <p>Runs IQ-TREE3 on the filtered ingroup alignment with automatic model selection optimised for SRK protein evolution:</p>
 <pre class="python"><code>cmd = [
     iqtree_exe,
@@ -4872,8 +5175,8 @@ SeqIO.write(filtered_records, filtered_alignment, &quot;fasta&quot;)</code></pre
 </tbody>
 </table>
 </div>
-<div id="step-5-srk-class-assignment-by-longest-internal-branch" class="section level4" number="5.3.3.7">
-<h4><span class="header-section-number">5.3.3.7</span> Step 5: SRK Class Assignment by Longest Internal Branch</h4>
+<div id="step-5-srk-class-assignment-by-longest-internal-branch" class="section level4" number="5.4.3.7">
+<h4><span class="header-section-number">5.4.3.7</span> Step 5: SRK Class Assignment by Longest Internal Branch</h4>
 <p>Parses the unrooted IQ-TREE tree and identifies the longest internal branch:</p>
 <pre class="python"><code>for clade in tree.find_clades(order=&quot;level&quot;):
     if clade == tree.root or clade.is_terminal():
@@ -4895,8 +5198,8 @@ else:
 Phylo.write(tree_viz, rooted_treefile, &quot;newick&quot;)</code></pre>
 <p><strong>Important:</strong> this automated classification should be validated by opening <code>SRK_phylogeny_midpoint_rooted.treefile</code> in FigTree or iTOL. For higher confidence, published SRK sequences with known class assignments (e.g. from <em>Arabidopsis halleri</em> or <em>Brassica</em>) can be added to the alignment as anchors before running the pipeline.</p>
 </div>
-<div id="per-individual-class-genotype-and-dominance-prediction" class="section level4" number="5.3.3.8">
-<h4><span class="header-section-number">5.3.3.8</span> Per-Individual Class Genotype and Dominance Prediction</h4>
+<div id="per-individual-class-genotype-and-dominance-prediction" class="section level4" number="5.4.3.8">
+<h4><span class="header-section-number">5.4.3.8</span> Per-Individual Class Genotype and Dominance Prediction</h4>
 <p>For each ingroup individual, the proteins they carry are split by class assignment and a dominance prediction is derived:</p>
 <pre class="python"><code>c1 = sorted(proteins &amp; class_I)
 c2 = sorted(proteins &amp; class_II)
@@ -4948,18 +5251,18 @@ else:
 </table>
 </div>
 </div>
-<div id="output-files-8" class="section level3" number="5.3.4">
-<h3><span class="header-section-number">5.3.4</span> Output Files</h3>
-<div id="primary-outputs-2" class="section level4" number="5.3.4.1">
-<h4><span class="header-section-number">5.3.4.1</span> Primary Outputs</h4>
+<div id="output-files-8" class="section level3" number="5.4.4">
+<h3><span class="header-section-number">5.4.4</span> Output Files</h3>
+<div id="primary-outputs-1" class="section level4" number="5.4.4.1">
+<h4><span class="header-section-number">5.4.4.1</span> Primary Outputs</h4>
 <ul>
 <li><strong><code>SRK_ingroup_proteins_aligned.fasta</code></strong>: filtered alignment of ingroup proteins used as input to IQ-TREE</li>
 <li><strong><code>SRK_protein_classes.tsv</code></strong>: two-column table mapping each protein to <code>Class_I</code> or <code>Class_II</code></li>
 <li><strong><code>SRK_individual_class_genotype.tsv</code></strong>: per-individual class genotype and dominance prediction</li>
 </ul>
 </div>
-<div id="tree-files" class="section level4" number="5.3.4.2">
-<h4><span class="header-section-number">5.3.4.2</span> Tree Files</h4>
+<div id="tree-files" class="section level4" number="5.4.4.2">
+<h4><span class="header-section-number">5.4.4.2</span> Tree Files</h4>
 <ul>
 <li><strong><code>SRK_phylogeny.treefile</code></strong>: maximum-likelihood tree (unrooted, Newick format) — primary tree output</li>
 <li><strong><code>SRK_phylogeny_midpoint_rooted.treefile</code></strong>: midpoint-rooted version for visualisation in FigTree/iTOL</li>
@@ -4967,8 +5270,8 @@ else:
 <li><strong><code>SRK_phylogeny.contree</code></strong>: consensus tree from bootstrap replicates</li>
 </ul>
 </div>
-<div id="srk_individual_class_genotype.tsv-column-description" class="section level4" number="5.3.4.3">
-<h4><span class="header-section-number">5.3.4.3</span> <code>SRK_individual_class_genotype.tsv</code> Column Description</h4>
+<div id="srk_individual_class_genotype.tsv-column-description" class="section level4" number="5.4.4.3">
+<h4><span class="header-section-number">5.4.4.3</span> <code>SRK_individual_class_genotype.tsv</code> Column Description</h4>
 <table>
 <colgroup>
 <col width="50%" />
@@ -5008,16 +5311,16 @@ else:
 </tbody>
 </table>
 </div>
-<div id="example-output" class="section level4" number="5.3.4.4">
-<h4><span class="header-section-number">5.3.4.4</span> Example output</h4>
+<div id="example-output" class="section level4" number="5.4.4.4">
+<h4><span class="header-section-number">5.4.4.4</span> Example output</h4>
 <pre><code>Individual              n_Class_I  Class_I_proteins   n_Class_II  Class_II_proteins              Dominance_prediction
 Library001_barcode01    1          SRK_protein_003    2           SRK_protein_041;SRK_protein_078 Class_I_dominant
 Library001_barcode05    0                             3           SRK_protein_012;SRK_protein_033 Class_II_only_codominant
 Library002_barcode14    0                             0                                           no_functional_SRK</code></pre>
 </div>
 </div>
-<div id="bioinformatics-8" class="section level3" number="5.3.5">
-<h3><span class="header-section-number">5.3.5</span> Bioinformatics</h3>
+<div id="bioinformatics-9" class="section level3" number="5.4.5">
+<h3><span class="header-section-number">5.4.5</span> Bioinformatics</h3>
 <ul>
 <li><strong>Goal:</strong> Assign functional SRK proteins to Class I or Class II using phylogenetic topology, then predict dominance behaviour for ingroup individuals to guide crossing decisions in the breeding program</li>
 <li><strong>Script:</strong> <code>srk_phylogenetic_analysis.py</code></li>
@@ -5366,16 +5669,16 @@ print(f&quot;Protein classes:         {class_file}&quot;)
 print(f&quot;Individual class geno:   {ind_class_file}&quot;)</code></pre>
 </div>
 </div>
-<div id="zygosity" class="section level2" number="5.4">
-<h2><span class="header-section-number">5.4</span> SRK Zygosity Analysis Pipeline for Tetraploid Species</h2>
-<div id="overview-9" class="section level3" number="5.4.1">
-<h3><span class="header-section-number">5.4.1</span> Overview</h3>
+<div id="zygosity" class="section level2" number="5.5">
+<h2><span class="header-section-number">5.5</span> SRK Zygosity Analysis Pipeline for Tetraploid Species</h2>
+<div id="overview-10" class="section level3" number="5.5.1">
+<h3><span class="header-section-number">5.5.1</span> Overview</h3>
 <p>This R pipeline analyzes S-locus zygosity patterns in tetraploid species by quantifying the number of distinct SRK proteins per individual and classifying genotype configurations. The workflow addresses the complex genetics of polyploid self-incompatibility systems, where individuals can carry multiple S-alleles with varying degrees of heterozygosity, providing insights into mating system evolution and population genetic structure.</p>
 </div>
-<div id="pipeline-steps-9" class="section level3" number="5.4.2">
-<h3><span class="header-section-number">5.4.2</span> Pipeline Steps</h3>
-<div id="polyploid-self-incompatibility-analysis-framework" class="section level4" number="5.4.2.1">
-<h4><span class="header-section-number">5.4.2.1</span> Polyploid Self-Incompatibility Analysis Framework</h4>
+<div id="pipeline-steps-10" class="section level3" number="5.5.2">
+<h3><span class="header-section-number">5.5.2</span> Pipeline Steps</h3>
+<div id="polyploid-self-incompatibility-analysis-framework" class="section level4" number="5.5.2.1">
+<h4><span class="header-section-number">5.5.2.1</span> Polyploid Self-Incompatibility Analysis Framework</h4>
 <p>Zygosity analysis serves critical functions in polyploid self-incompatibility research:</p>
 <ul>
 <li><strong>Genotype complexity assessment</strong>: Quantifies S-allele diversity within individuals</li>
@@ -5384,8 +5687,8 @@ print(f&quot;Individual class geno:   {ind_class_file}&quot;)</code></pre>
 <li><strong>Evolutionary constraint evaluation</strong>: Assesses maintenance of incompatibility function in polyploids</li>
 </ul>
 </div>
-<div id="data-loading-and-validation" class="section level4" number="5.4.2.2">
-<h4><span class="header-section-number">5.4.2.2</span> Data Loading and Validation</h4>
+<div id="data-loading-and-validation" class="section level4" number="5.5.2.2">
+<h4><span class="header-section-number">5.5.2.2</span> Data Loading and Validation</h4>
 <p>Loads individual-protein assignments from the genotyping pipeline:</p>
 <pre class="r"><code>df &lt;- read.table(
     &quot;SRK_individual_protein_table.tsv&quot;,
@@ -5401,8 +5704,8 @@ print(f&quot;Individual class geno:   {ind_class_file}&quot;)</code></pre>
 <li><strong>String preservation</strong>: Prevents automatic factor conversion for downstream analysis</li>
 </ul>
 </div>
-<div id="protein-diversity-quantification" class="section level4" number="5.4.2.3">
-<h4><span class="header-section-number">5.4.2.3</span> Protein Diversity Quantification</h4>
+<div id="protein-diversity-quantification" class="section level4" number="5.5.2.3">
+<h4><span class="header-section-number">5.5.2.3</span> Protein Diversity Quantification</h4>
 <p>Calculates the number of distinct SRK proteins per individual:</p>
 <pre class="r"><code>library(dplyr)
 
@@ -5424,8 +5727,8 @@ zyg &lt;- df %&gt;%
 - <strong>Demographic history</strong>: Bottlenecks reduce within-individual diversity
 - <strong>Mating patterns</strong>: Outcrossing maintains higher diversity than selfing</p>
 </div>
-<div id="binary-zygosity-classification" class="section level4" number="5.4.2.4">
-<h4><span class="header-section-number">5.4.2.4</span> Binary Zygosity Classification</h4>
+<div id="binary-zygosity-classification" class="section level4" number="5.5.2.4">
+<h4><span class="header-section-number">5.5.2.4</span> Binary Zygosity Classification</h4>
 <p>Assigns simplified homozygous vs. heterozygous categories:</p>
 <pre class="r"><code>zyg$Zygosity &lt;- ifelse(
     zyg$N_proteins == 1,
@@ -5440,8 +5743,8 @@ zyg &lt;- df %&gt;%
 <li><strong>Functional relevance</strong>: Homozygous individuals may exhibit compromised incompatibility</li>
 </ul>
 </div>
-<div id="detailed-genotype-model-assignment" class="section level4" number="5.4.2.5">
-<h4><span class="header-section-number">5.4.2.5</span> Detailed Genotype Model Assignment</h4>
+<div id="detailed-genotype-model-assignment" class="section level4" number="5.5.2.5">
+<h4><span class="header-section-number">5.5.2.5</span> Detailed Genotype Model Assignment</h4>
 <p>Provides specific genotype configurations based on protein count:</p>
 <pre class="r"><code>zyg$Genotype &lt;- case_when(
     zyg$N_proteins == 1 ~ &quot;AAAA&quot;,
@@ -5480,8 +5783,8 @@ zyg &lt;- df %&gt;%
 <li>Optimal configuration for maintaining incompatibility function</li>
 </ul>
 </div>
-<div id="data-export-and-documentation" class="section level4" number="5.4.2.6">
-<h4><span class="header-section-number">5.4.2.6</span> Data Export and Documentation</h4>
+<div id="data-export-and-documentation" class="section level4" number="5.5.2.6">
+<h4><span class="header-section-number">5.5.2.6</span> Data Export and Documentation</h4>
 <p>Saves zygosity analysis results with proper formatting:</p>
 <pre class="r"><code>write.table(
     zyg,
@@ -5498,8 +5801,8 @@ zyg &lt;- df %&gt;%
 <li><strong>Header preservation</strong>: Maintains column names for clarity</li>
 </ul>
 </div>
-<div id="summary-statistics-generation" class="section level4" number="5.4.2.7">
-<h4><span class="header-section-number">5.4.2.7</span> Summary Statistics Generation</h4>
+<div id="summary-statistics-generation" class="section level4" number="5.5.2.7">
+<h4><span class="header-section-number">5.5.2.7</span> Summary Statistics Generation</h4>
 <p>Provides comprehensive descriptive statistics:</p>
 <pre class="r"><code>cat(&quot;\nSummary:\n&quot;)
 print(table(zyg$N_proteins))
@@ -5512,8 +5815,8 @@ print(table(zyg$Zygosity))</code></pre>
 <li><strong>Quality control</strong>: Identification of unusual genotype frequencies</li>
 </ul>
 </div>
-<div id="visualization-generation" class="section level4" number="5.4.2.8">
-<h4><span class="header-section-number">5.4.2.8</span> Visualization Generation</h4>
+<div id="visualization-generation" class="section level4" number="5.5.2.8">
+<h4><span class="header-section-number">5.5.2.8</span> Visualization Generation</h4>
 <p>Creates graphical summary of genotype diversity:</p>
 <pre class="r"><code>pdf(&quot;SRK_zygosity_distribution.pdf&quot;)
 
@@ -5534,10 +5837,10 @@ dev.off()</code></pre>
 </ul>
 </div>
 </div>
-<div id="output-files-9" class="section level3" number="5.4.3">
-<h3><span class="header-section-number">5.4.3</span> Output Files</h3>
-<div id="primary-outputs-3" class="section level4" number="5.4.3.1">
-<h4><span class="header-section-number">5.4.3.1</span> Primary Outputs</h4>
+<div id="output-files-9" class="section level3" number="5.5.3">
+<h3><span class="header-section-number">5.5.3</span> Output Files</h3>
+<div id="primary-outputs-2" class="section level4" number="5.5.3.1">
+<h4><span class="header-section-number">5.5.3.1</span> Primary Outputs</h4>
 <p><strong>Zygosity table (<code>SRK_individual_zygosity.tsv</code>):</strong></p>
 <ul>
 <li>Individual identifiers with protein counts</li>
@@ -5552,8 +5855,8 @@ dev.off()</code></pre>
 <li>Publication-ready figure for manuscript inclusion</li>
 </ul>
 </div>
-<div id="data-structure-example" class="section level4" number="5.4.3.2">
-<h4><span class="header-section-number">5.4.3.2</span> Data Structure Example</h4>
+<div id="data-structure-example" class="section level4" number="5.5.3.2">
+<h4><span class="header-section-number">5.5.3.2</span> Data Structure Example</h4>
 <pre><code>Individual      N_proteins  Zygosity      Genotype
 Library001_01   2          Heterozygous   AABB
 Library001_02   1          Homozygous     AAAA
@@ -5561,11 +5864,11 @@ Library001_03   4          Heterozygous   ABCD
 Library001_04   3          Heterozygous   AABC</code></pre>
 </div>
 </div>
-<div id="scientific-applications-6" class="section level3" number="5.4.4">
-<h3><span class="header-section-number">5.4.4</span> Scientific Applications</h3>
+<div id="scientific-applications-5" class="section level3" number="5.5.4">
+<h3><span class="header-section-number">5.5.4</span> Scientific Applications</h3>
 </div>
-<div id="population-genetic-inference" class="section level3" number="5.4.5">
-<h3><span class="header-section-number">5.4.5</span> Population Genetic Inference</h3>
+<div id="population-genetic-inference" class="section level3" number="5.5.5">
+<h3><span class="header-section-number">5.5.5</span> Population Genetic Inference</h3>
 <p><strong>Demographic history reconstruction:</strong></p>
 <ul>
 <li><strong>High ABCD frequency</strong>: Large, outcrossing populations with minimal drift</li>
@@ -5579,8 +5882,8 @@ Library001_04   3          Heterozygous   AABC</code></pre>
 <li>Homozygosity excess indicates small population effects</li>
 <li>Heterozygosity patterns reveal demographic constraints</li>
 </ul>
-<div id="self-incompatibility-system-analysis-1" class="section level4" number="5.4.5.1">
-<h4><span class="header-section-number">5.4.5.1</span> Self-Incompatibility System Analysis</h4>
+<div id="self-incompatibility-system-analysis" class="section level4" number="5.5.5.1">
+<h4><span class="header-section-number">5.5.5.1</span> Self-Incompatibility System Analysis</h4>
 <p><strong>Functional assessment:</strong></p>
 <ul>
 <li><strong>AAAA individuals</strong>: Likely self-compatible due to S-allele homozygosity</li>
@@ -5594,8 +5897,8 @@ Library001_04   3          Heterozygous   AABC</code></pre>
 <li>Population size thresholds for incompatibility maintenance</li>
 </ul>
 </div>
-<div id="conservation-genetics-applications" class="section level4" number="5.4.5.2">
-<h4><span class="header-section-number">5.4.5.2</span> Conservation Genetics Applications</h4>
+<div id="conservation-genetics-applications" class="section level4" number="5.5.5.2">
+<h4><span class="header-section-number">5.5.5.2</span> Conservation Genetics Applications</h4>
 <p><strong>Population viability assessment:</strong></p>
 <ul>
 <li>S-locus diversity as indicator of reproductive potential</li>
@@ -5610,10 +5913,10 @@ Library001_04   3          Heterozygous   AABC</code></pre>
 </ul>
 </div>
 </div>
-<div id="statistical-considerations-2" class="section level3" number="5.4.6">
-<h3><span class="header-section-number">5.4.6</span> Statistical Considerations</h3>
-<div id="sample-size-requirements" class="section level4" number="5.4.6.1">
-<h4><span class="header-section-number">5.4.6.1</span> Sample Size Requirements</h4>
+<div id="statistical-considerations-1" class="section level3" number="5.5.6">
+<h3><span class="header-section-number">5.5.6</span> Statistical Considerations</h3>
+<div id="sample-size-requirements" class="section level4" number="5.5.6.1">
+<h4><span class="header-section-number">5.5.6.1</span> Sample Size Requirements</h4>
 <p><strong>Minimum sample sizes:</strong></p>
 <ul>
 <li>At least 20-30 individuals for basic frequency estimation</li>
@@ -5621,8 +5924,8 @@ Library001_04   3          Heterozygous   AABC</code></pre>
 <li>Population-specific considerations based on expected diversity</li>
 </ul>
 </div>
-<div id="interpretation-guidelines" class="section level4" number="5.4.6.2">
-<h4><span class="header-section-number">5.4.6.2</span> Interpretation Guidelines</h4>
+<div id="interpretation-guidelines" class="section level4" number="5.5.6.2">
+<h4><span class="header-section-number">5.5.6.2</span> Interpretation Guidelines</h4>
 <p><strong>Genotype frequency expectations:</strong></p>
 <ul>
 <li><strong>Random mating</strong>: Hardy-Weinberg proportions modified for polyploidy</li>
@@ -5638,8 +5941,8 @@ Library001_04   3          Heterozygous   AABC</code></pre>
 <p>This zygosity analysis pipeline provides essential insights into the genetic architecture of self-incompatibility in polyploid species, enabling assessment of system functionality and population genetic health critical for both evolutionary understanding and conservation management.</p>
 </div>
 </div>
-<div id="bioinformatics-9" class="section level3" number="5.4.7">
-<h3><span class="header-section-number">5.4.7</span> Bioinformatics</h3>
+<div id="bioinformatics-10" class="section level3" number="5.5.7">
+<h3><span class="header-section-number">5.5.7</span> Bioinformatics</h3>
 <ul>
 <li>Goal: Score individual zygosity from genotypes to AAAA, AABB, AABC, ABCD based on number of recovered protein types</li>
 <li>Script: <code>SRK_zygosity_from_genotype.R</code></li>
@@ -5795,7 +6098,7 @@ cat(&quot;SRK_zygosity_distribution.pdf\n&quot;)</code></pre>
 <h1><span class="header-section-number">6</span> Phase 3: Data Analyses</h1>
 <div id="popgenetics" class="section level2" number="6.1">
 <h2><span class="header-section-number">6.1</span> Population Genetic Statistics</h2>
-<div id="overview-10" class="section level3" number="6.1.1">
+<div id="overview-11" class="section level3" number="6.1.1">
 <h3><span class="header-section-number">6.1.1</span> Overview</h3>
 <p>This pipeline calculates key population genetic statistics from SRK genotyping data in order to evaluate whether <strong>self-incompatibility allele diversity is maintained by negative frequency-dependent selection (NFDS)</strong> or instead influenced by <strong>genetic drift or demographic bottlenecks</strong>.</p>
 <p>The analysis integrates individual genotype data, inferred zygosity states, and population metadata to produce summary statistics at the population level. These statistics provide insight into the evolutionary dynamics governing the SRK self-incompatibility system.</p>
@@ -5807,7 +6110,7 @@ cat(&quot;SRK_zygosity_distribution.pdf\n&quot;)</code></pre>
 </ul>
 <p>Deviations from these expectations can indicate demographic or evolutionary processes affecting allele maintenance.</p>
 </div>
-<div id="pipeline-steps-10" class="section level3" number="6.1.2">
+<div id="pipeline-steps-11" class="section level3" number="6.1.2">
 <h3><span class="header-section-number">6.1.2</span> Pipeline Steps</h3>
 <div id="biological-expectations-for-srk-systems" class="section level4" number="6.1.2.1">
 <h4><span class="header-section-number">6.1.2.1</span> Biological Expectations for SRK Systems</h4>
@@ -6106,13 +6409,13 @@ H = \frac{\text{number of heterozygous individuals}}{\text{total individuals}}
 <p>Comparing these metrics across populations can identify <strong>populations experiencing allele erosion or reduced mating compatibility</strong>.</p>
 </div>
 </div>
-<div id="bioinformatics-10" class="section level3" number="6.1.4">
+<div id="bioinformatics-11" class="section level3" number="6.1.4">
 <h3><span class="header-section-number">6.1.4</span> Bioinformatics</h3>
 <div id="script" class="section level4" number="6.1.4.1">
 <h4><span class="header-section-number">6.1.4.1</span> Script</h4>
 <pre><code>SRK_population_genetic_summary.R</code></pre>
 </div>
-<div id="execution" class="section level4" number="6.1.4.2">
+<div id="execution-1" class="section level4" number="6.1.4.2">
 <h4><span class="header-section-number">6.1.4.2</span> Execution</h4>
 <pre class="bash"><code>Rscript SRK_population_genetic_summary.R</code></pre>
 </div>
@@ -6226,7 +6529,7 @@ cat(&quot;Analysis complete\n&quot;)</code></pre>
 </div>
 <div id="alleleaccum" class="section level2" number="6.2">
 <h2><span class="header-section-number">6.2</span> Allele Accumulation Curves</h2>
-<div id="overview-11" class="section level3" number="6.2.1">
+<div id="overview-12" class="section level3" number="6.2.1">
 <h3><span class="header-section-number">6.2.1</span> Overview</h3>
 <p>Allele accumulation curves quantify how rapidly new alleles are discovered as additional individuals are sampled. In systems under <strong>negative frequency-dependent selection (NFDS)</strong>, such as plant self-incompatibility loci, rare alleles are continuously maintained in populations. This leads to a characteristic accumulation pattern where new alleles continue to appear even after substantial sampling effort.</p>
 <p>In contrast, populations evolving primarily under <strong>genetic drift</strong> show rapid early allele discovery followed by saturation, indicating that most diversity is captured quickly.</p>
@@ -6235,9 +6538,9 @@ cat(&quot;Analysis complete\n&quot;)</code></pre>
 <li><strong>Species level</strong> – using all ingroup individuals</li>
 <li><strong>Population level</strong> – for populations with sufficient sampling (≥5 individuals)</li>
 </ul>
-<p>From these curves, several statistics are extracted that provide quantitative indicators of <strong>NFDS versus drift</strong>.</p>
+<p>From these curves, several statistics are extracted that provide quantitative indicators of <strong>NFDS versus drift</strong>. In addition, the pipeline estimates the <strong>total number of SRK alleles in the species</strong> using three complementary richness estimators applied to the species-level data. This estimated total serves as a baseline for evaluating how far each population is from a balanced NFDS equilibrium.</p>
 </div>
-<div id="pipeline-steps-11" class="section level3" number="6.2.2">
+<div id="pipeline-steps-12" class="section level3" number="6.2.2">
 <h3><span class="header-section-number">6.2.2</span> Pipeline Steps</h3>
 <div id="data-integration" class="section level4" number="6.2.2.1">
 <h4><span class="header-section-number">6.2.2.1</span> Data Integration</h4>
@@ -6344,8 +6647,27 @@ valid_pops &lt;- names(pop_counts[pop_counts &gt;= 5])</code></pre>
 <li><strong>local population diversity</strong></li>
 </ul>
 </div>
-<div id="curve-visualization" class="section level4" number="6.2.2.7">
-<h4><span class="header-section-number">6.2.2.7</span> Curve Visualization</h4>
+<div id="allele-richness-estimation" class="section level4" number="6.2.2.7">
+<h4><span class="header-section-number">6.2.2.7</span> Allele Richness Estimation</h4>
+<p>After computing each accumulation curve, three complementary estimators are applied to the <strong>species-level</strong> data (and independently to each population) to estimate the true total number of SRK alleles:</p>
+<p><strong>Michaelis-Menten (MM) asymptote</strong></p>
+<p>The mean accumulation curve is fitted to a rectangular hyperbola using non-linear least squares:</p>
+<p><span class="math display">\[
+S(n) = \frac{S_{max} \cdot n}{K + n}
+\]</span></p>
+<p>where <span class="math inline">\(S_{max}\)</span> is the estimated asymptote (total allele richness) and <span class="math inline">\(K\)</span> is the half-saturation constant. This estimator directly reflects the shape of the observed accumulation curve and is preferred when sampling is approaching saturation.</p>
+<p><strong>Chao1 non-parametric estimator</strong></p>
+<p>A lower-bound richness estimator based on singleton and doubleton allele counts:</p>
+<p><span class="math display">\[
+\hat{S}_{Chao1} = S_{obs} + \frac{f_1^2}{2 f_2}
+\]</span></p>
+<p>where <span class="math inline">\(f_1\)</span> and <span class="math inline">\(f_2\)</span> are the number of alleles observed in exactly one and two individuals, respectively. When <span class="math inline">\(f_2 = 0\)</span>, the bias-corrected formula <span class="math inline">\(S_{obs} + f_1(f_1-1)/2\)</span> is used. Chao1 provides a conservative lower bound; note that under strong NFDS, rare alleles are suppressed which can reduce <span class="math inline">\(f_1\)</span> and lead to underestimation.</p>
+<p><strong>iNEXT asymptotic estimator (optional)</strong></p>
+<p>If the <code>iNEXT</code> R package is installed, the Hill numbers framework is used to provide an asymptotic richness estimate with bootstrap confidence intervals. Install with <code>install.packages(&quot;iNEXT&quot;)</code>.</p>
+<p>The species-level results from all three estimators are written to <code>SRK_species_richness_estimates.tsv</code> and used downstream by the allele frequency analysis as the empirical optimum allele count.</p>
+</div>
+<div id="curve-visualization" class="section level4" number="6.2.2.8">
+<h4><span class="header-section-number">6.2.2.8</span> Curve Visualization</h4>
 <p>Accumulation curves are exported to a multi-page PDF file.</p>
 <pre class="r"><code>pdf(
   &quot;SRK_allele_accumulation_curves.pdf&quot;,
@@ -6358,13 +6680,14 @@ valid_pops &lt;- names(pop_counts[pop_counts &gt;= 5])</code></pre>
 <li>Confidence envelope (± SD)</li>
 <li>Number of individuals sampled</li>
 <li>Total alleles detected</li>
+<li>Estimated asymptotes as horizontal reference lines (MM = dark green dashed, Chao1 = purple dotted, iNEXT = orange if available)</li>
 </ul>
-<p>These plots allow visual evaluation of <strong>diversity saturation patterns</strong>.</p>
+<p>These plots allow visual evaluation of <strong>diversity saturation patterns</strong> and comparison of observed diversity against estimated total richness.</p>
 </div>
 </div>
 <div id="output-files-12" class="section level3" number="6.2.3">
 <h3><span class="header-section-number">6.2.3</span> Output Files</h3>
-<div id="primary-outputs-4" class="section level4" number="6.2.3.1">
+<div id="primary-outputs-3" class="section level4" number="6.2.3.1">
 <h4><span class="header-section-number">6.2.3.1</span> Primary Outputs</h4>
 <p><strong>SRK_allele_accumulation_curves.pdf</strong></p>
 <p>Contains:</p>
@@ -6373,17 +6696,74 @@ valid_pops &lt;- names(pop_counts[pop_counts &gt;= 5])</code></pre>
 <li>Individual curves for each sufficiently sampled population</li>
 </ul>
 <p><strong>SRK_allele_accumulation_stats.tsv</strong></p>
-<p>Tabulated statistics extracted from each curve.</p>
-<p>Example output structure:</p>
-<table style="width:100%;">
+<p>Tabulated statistics extracted from each curve, including richness estimates for each level.</p>
+<table>
 <colgroup>
-<col width="12%" />
-<col width="12%" />
-<col width="16%" />
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Level</code></td>
+<td>Species or Population</td>
+</tr>
+<tr class="even">
+<td><code>Population</code></td>
+<td>Population identifier (or “All” for species)</td>
+</tr>
+<tr class="odd">
+<td><code>N_individuals</code></td>
+<td>Number of individuals analyzed</td>
+</tr>
+<tr class="even">
+<td><code>N_alleles</code></td>
+<td>Observed alleles</td>
+</tr>
+<tr class="odd">
+<td><code>Initial_slope</code></td>
+<td>Mean allele gain per individual in early sampling</td>
+</tr>
+<tr class="even">
+<td><code>Tail_slope</code></td>
+<td>Mean allele gain per individual in late sampling</td>
+</tr>
+<tr class="odd">
+<td><code>Late_fraction</code></td>
+<td>Proportion of diversity contributed by rare alleles</td>
+</tr>
+<tr class="even">
+<td><code>MM_estimate</code></td>
+<td>Michaelis-Menten asymptote estimate</td>
+</tr>
+<tr class="odd">
+<td><code>Chao1_estimate</code></td>
+<td>Chao1 non-parametric richness estimate</td>
+</tr>
+<tr class="even">
+<td><code>iNEXT_estimate</code></td>
+<td>iNEXT asymptotic estimate (NA if package not installed)</td>
+</tr>
+</tbody>
+</table>
+<p>Example output:</p>
+<table>
+<colgroup>
+<col width="8%" />
+<col width="8%" />
 <col width="11%" />
-<col width="16%" />
-<col width="12%" />
-<col width="16%" />
+<col width="7%" />
+<col width="11%" />
+<col width="8%" />
+<col width="11%" />
+<col width="9%" />
+<col width="11%" />
+<col width="11%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -6394,35 +6774,79 @@ valid_pops &lt;- names(pop_counts[pop_counts &gt;= 5])</code></pre>
 <th>Initial_slope</th>
 <th>Tail_slope</th>
 <th>Late_fraction</th>
+<th>MM_estimate</th>
+<th>Chao1_estimate</th>
+<th>iNEXT_estimate</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>Species</td>
 <td>All</td>
-<td>124</td>
-<td>92</td>
-<td>1.54</td>
-<td>0.32</td>
-<td>0.32</td>
+<td>152</td>
+<td>43</td>
+<td>1.09</td>
+<td>0.12</td>
+<td>0.25</td>
+<td>59</td>
+<td>205</td>
+<td>NA</td>
 </tr>
 <tr class="even">
 <td>Population</td>
 <td>25</td>
-<td>31</td>
-<td>26</td>
-<td>1.36</td>
-<td>0.48</td>
-<td>0.37</td>
+<td>32</td>
+<td>12</td>
+<td>0.89</td>
+<td>0.07</td>
+<td>0.19</td>
+<td>17</td>
+<td>13</td>
+<td>NA</td>
 </tr>
 <tr class="odd">
 <td>Population</td>
 <td>27</td>
+<td>30</td>
 <td>15</td>
-<td>17</td>
-<td>1.30</td>
-<td>0.94</td>
-<td>0.47</td>
+<td>0.95</td>
+<td>0.28</td>
+<td>0.32</td>
+<td>25</td>
+<td>31</td>
+<td>NA</td>
+</tr>
+</tbody>
+</table>
+<p><strong>SRK_species_richness_estimates.tsv</strong></p>
+<p>A dedicated summary of species-level richness estimates used as the NFDS optimum in downstream frequency analyses.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>S_observed</code></td>
+<td>Observed allele count across all ingroup individuals</td>
+</tr>
+<tr class="even">
+<td><code>MM_estimate</code></td>
+<td>Michaelis-Menten asymptote</td>
+</tr>
+<tr class="odd">
+<td><code>Chao1_estimate</code></td>
+<td>Chao1 lower-bound estimate</td>
+</tr>
+<tr class="even">
+<td><code>iNEXT_estimate</code></td>
+<td>iNEXT asymptotic estimate</td>
+</tr>
+<tr class="odd">
+<td><code>Consensus_estimate</code></td>
+<td>Mean of all available estimators</td>
 </tr>
 </tbody>
 </table>
@@ -6487,7 +6911,7 @@ Late_fraction &lt; 0.10 → drift-dominated diversity</code></pre>
 </table>
 <p>This framework complements traditional neutrality tests by directly analyzing <strong>allele discovery dynamics</strong>.</p>
 </div>
-<div id="bioinformatics-11" class="section level3" number="6.2.6">
+<div id="bioinformatics-12" class="section level3" number="6.2.6">
 <h3><span class="header-section-number">6.2.6</span> Bioinformatics</h3>
 <ul>
 <li>Script: <code>SRK_allele_accumulation_analysis.R</code></li>
@@ -6512,9 +6936,13 @@ Late_fraction &lt; 0.10 → drift-dominated diversity</code></pre>
 <ul>
 <li><code>SRK_allele_accumulation_curves.pdf</code></li>
 <li><code>SRK_allele_accumulation_stats.tsv</code></li>
+<li><code>SRK_species_richness_estimates.tsv</code></li>
 </ul>
+<blockquote>
+<p><strong>Note:</strong> <code>SRK_species_richness_estimates.tsv</code> must be generated before running <code>SRK_chisq_species_population.R</code>, as it provides the empirical species optimum used in the frequency plots.</p>
+</blockquote>
 </div>
-<div id="scientific-applications-7" class="section level4" number="6.2.6.3">
+<div id="scientific-applications-6" class="section level4" number="6.2.6.3">
 <h4><span class="header-section-number">6.2.6.3</span> Scientific Applications</h4>
 <p>Allele accumulation curves provide an empirical framework for testing evolutionary hypotheses in self-incompatibility systems.</p>
 <p>Applications include:</p>
@@ -6545,33 +6973,45 @@ Late_fraction &lt; 0.10 → drift-dominated diversity</code></pre>
 </div>
 <div id="allelefrqanalysis" class="section level2" number="6.3">
 <h2><span class="header-section-number">6.3</span> Allele Frequency Analysis</h2>
-<div id="overview-12" class="section level3" number="6.3.1">
+<div id="overview-13" class="section level3" number="6.3.1">
 <h3><span class="header-section-number">6.3.1</span> Overview</h3>
 <p>While <strong>negative frequency-dependent selection (NFDS)</strong> maintains high allelic diversity at the <strong>SRK self-incompatibility locus</strong>, allele <strong>frequencies may still deviate from equal expectations</strong> due to demographic processes such as genetic drift, population structure, or recent allele turnover.</p>
 <p>This analysis evaluates whether observed <strong>SRK allele frequency distributions deviate from the theoretical NFDS expectation</strong>, where all alleles should occur at approximately equal frequencies.</p>
+<p>A key feature of this pipeline is the use of an <strong>empirically estimated species-level allele optimum</strong> (from <code>SRK_species_richness_estimates.tsv</code>) rather than an arbitrary fixed value. The Michaelis-Menten asymptote is used by default as it directly reflects the shape of the observed accumulation curve. This optimum sets the x-axis limit for all frequency plots and defines the “missing alleles to optimum” zone, quantifying how far each population is from carrying the full species-level SRK diversity.</p>
 <p>The pipeline:</p>
 <ul>
+<li>Loads the <strong>estimated species allele optimum</strong> from the accumulation analysis</li>
 <li>Filters <strong>ingroup individuals only</strong></li>
 <li>Links genotype data to <strong>sampling metadata</strong></li>
 <li>Performs <strong>χ² goodness-of-fit tests</strong> at the species and population levels</li>
-<li>Generates <strong>allele frequency plots</strong></li>
+<li>Generates <strong>allele frequency plots</strong> with missing allele zones relative to the estimated optimum</li>
 <li>Outputs a <strong>summary table of statistical tests</strong></li>
 </ul>
 </div>
-<div id="pipeline-steps-12" class="section level3" number="6.3.2">
+<div id="pipeline-steps-13" class="section level3" number="6.3.2">
 <h3><span class="header-section-number">6.3.2</span> Pipeline Steps</h3>
-<div id="input-data-integration" class="section level4" number="6.3.2.1">
-<h4><span class="header-section-number">6.3.2.1</span> Input Data Integration</h4>
-<p>Two input datasets are required:</p>
+<div id="species-richness-optimum" class="section level4" number="6.3.2.1">
+<h4><span class="header-section-number">6.3.2.1</span> Species Richness Optimum</h4>
+<p>At startup the script loads <code>SRK_species_richness_estimates.tsv</code> produced by <code>SRK_allele_accumulation_analysis.R</code>. The Michaelis-Menten estimate is used preferentially as the species optimum; if MM fitting failed, Chao1 is used, then the consensus mean. If the file is absent a fallback value of 50 is applied with a warning.</p>
+<pre class="r"><code>est_file &lt;- &quot;SRK_species_richness_estimates.tsv&quot;
+if (file.exists(est_file)) {
+  est_df &lt;- read.table(est_file, header = TRUE, sep = &quot;\t&quot;)
+  species_optimum &lt;- as.integer(est_df$MM_estimate[1])
+}</code></pre>
+</div>
+<div id="input-data-integration" class="section level4" number="6.3.2.2">
+<h4><span class="header-section-number">6.3.2.2</span> Input Data Integration</h4>
+<p>Three input datasets are required:</p>
 <ul>
+<li><strong>SRK species richness estimates</strong> (<code>SRK_species_richness_estimates.tsv</code>) — produced by the accumulation analysis</li>
 <li><strong>SRK protein assignment table</strong> containing allele identities per individual</li>
 <li><strong>Sampling metadata</strong> containing population information and ingroup status</li>
 </ul>
 <p>Individuals classified as outgroups (<code>Ingroup == 0</code>) are excluded to ensure that only relevant samples are analysed.</p>
 <p>Individual identifiers in the genotype dataset are matched with the <code>SampleID</code> column of the metadata table to assign population membership.</p>
 </div>
-<div id="allele-frequency-estimation-1" class="section level4" number="6.3.2.2">
-<h4><span class="header-section-number">6.3.2.2</span> Allele Frequency Estimation</h4>
+<div id="allele-frequency-estimation-1" class="section level4" number="6.3.2.3">
+<h4><span class="header-section-number">6.3.2.3</span> Allele Frequency Estimation</h4>
 <p>For each analysis level (species and populations), allele counts are calculated as:</p>
 <p><span class="math display">\[
 p_i = \frac{n_i}{\sum n_i}
@@ -6587,8 +7027,8 @@ p_{expected} = \frac{1}{k}
 \]</span></p>
 <p>where (k) is the number of alleles present.</p>
 </div>
-<div id="χ²-goodness-of-fit-test" class="section level4" number="6.3.2.3">
-<h4><span class="header-section-number">6.3.2.3</span> χ² Goodness-of-Fit Test</h4>
+<div id="χ²-goodness-of-fit-test" class="section level4" number="6.3.2.4">
+<h4><span class="header-section-number">6.3.2.4</span> χ² Goodness-of-Fit Test</h4>
 <p>To test for deviations from equal allele frequencies, a <strong>chi-square goodness-of-fit test</strong> is performed:</p>
 <p><span class="math display">\[
 \chi^2 = \sum \frac{(O_i - E_i)^2}{E_i}
@@ -6606,27 +7046,30 @@ p_{expected} = \frac{1}{k}
 <li>transient demographic processes</li>
 </ul>
 </div>
-<div id="population-level-filtering" class="section level4" number="6.3.2.4">
-<h4><span class="header-section-number">6.3.2.4</span> Population-Level Filtering</h4>
+<div id="population-level-filtering" class="section level4" number="6.3.2.5">
+<h4><span class="header-section-number">6.3.2.5</span> Population-Level Filtering</h4>
 <p>Population-level analyses are restricted to populations with:</p>
 <ul>
 <li><strong>at least 5 individuals</strong></li>
 </ul>
 <p>This filtering avoids unstable statistical estimates caused by very small sample sizes.</p>
 </div>
-<div id="allele-frequency-visualization" class="section level4" number="6.3.2.5">
-<h4><span class="header-section-number">6.3.2.5</span> Allele Frequency Visualization</h4>
+<div id="allele-frequency-visualization" class="section level4" number="6.3.2.6">
+<h4><span class="header-section-number">6.3.2.6</span> Allele Frequency Visualization</h4>
 <p>For each analysis level, the pipeline produces a <strong>frequency distribution plot</strong> including:</p>
 <ul>
-<li><strong>Observed allele frequencies</strong> (black line)</li>
+<li><strong>Observed allele frequencies</strong> (black line, rank-ordered)</li>
 <li><strong>NFDS expectation</strong> (1/k) (blue dashed line)</li>
 <li><strong>LOESS smoothed trend</strong> of the observed distribution (red line)</li>
+<li><strong>Missing alleles zone</strong> (tomato-shaded rectangle) — the gap between the last observed allele and the estimated species optimum, labelled with the count of missing alleles</li>
 </ul>
+<p>The x-axis spans from 1 to <code>species_optimum</code> (the MM-estimated total), so all plots share the same scale and deficits are directly comparable across populations.</p>
 <p>These visualizations allow rapid inspection of:</p>
 <ul>
 <li>dominant alleles</li>
 <li>rare allele tails</li>
-<li>deviations from theoretical NFDS equilibrium.</li>
+<li>deviations from theoretical NFDS equilibrium</li>
+<li>how many alleles each population is missing relative to the species pool.</li>
 </ul>
 </div>
 </div>
@@ -6758,7 +7201,7 @@ p_{expected} = \frac{1}{k}
 </ul>
 </div>
 </div>
-<div id="bioinformatics-12" class="section level3" number="6.3.5">
+<div id="bioinformatics-13" class="section level3" number="6.3.5">
 <h3><span class="header-section-number">6.3.5</span> Bioinformatics</h3>
 <ul>
 <li>Script: <code>SRK_chisq_species_population.R</code></li>
@@ -6768,7 +7211,8 @@ p_{expected} = \frac{1}{k}
 <div id="input-files-2" class="section level4" number="6.3.5.1">
 <h4><span class="header-section-number">6.3.5.1</span> Input Files</h4>
 <ul>
-<li><code>SRK_individual_protein_table.tsv</code></li>
+<li><code>SRK_species_richness_estimates.tsv</code> — produced by <code>SRK_allele_accumulation_analysis.R</code> (run first)</li>
+<li><code>SRK_individual_allele_table.tsv</code></li>
 <li><code>sampling_metadata.csv</code></li>
 </ul>
 </div>

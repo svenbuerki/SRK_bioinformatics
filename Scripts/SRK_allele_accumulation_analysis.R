@@ -10,7 +10,7 @@ cat("Starting SRK allele accumulation analysis\n")
 ############################################################
 
 geno <- read.table(
-  "SRK_individual_genotypes.tsv",
+  "SRK_individual_allele_genotypes.tsv",
   header = TRUE,
   sep = "\t",
   check.names = FALSE,
@@ -64,6 +64,77 @@ cat("Genotype matrix dimensions:", nrow(allele_matrix), "x", ncol(allele_matrix)
 # Safety check
 cat("Genotype value summary:\n")
 print(summary(as.vector(allele_matrix)))
+
+############################################################
+# 3b. Allele richness estimator functions
+############################################################
+
+# Michaelis-Menten asymptote fitted to the accumulation curve.
+# Input: mean_accum — vector of mean cumulative allele counts (length = n_individuals).
+# Returns the estimated asymptote Smax (ceiling) and a success flag.
+fit_mm_asymptote <- function(mean_accum) {
+  n_pts <- length(mean_accum)
+  S_obs <- max(mean_accum, na.rm = TRUE)
+  df_mm <- data.frame(n = seq_len(n_pts), S = mean_accum)
+  tryCatch({
+    fit <- nls(
+      S ~ Smax * n / (K + n),
+      data  = df_mm,
+      start = list(Smax = S_obs * 1.5, K = n_pts / 2),
+      control = nls.control(maxiter = 500)
+    )
+    list(Smax = ceiling(coef(fit)[["Smax"]]), success = TRUE)
+  }, error = function(e) {
+    cat("  MM fitting failed:", conditionMessage(e), "\n")
+    list(Smax = NA_real_, success = FALSE)
+  })
+}
+
+# Chao1 non-parametric lower-bound richness estimator.
+# Input: count_vec — colSums of the binary allele matrix
+#   (number of individuals carrying each allele).
+# Returns S_obs, singleton/doubleton counts, and Chao1 estimate (ceiling).
+chao1_estimate <- function(count_vec) {
+  present <- count_vec[count_vec > 0]
+  S_obs   <- length(present)
+  f1 <- sum(present == 1)   # singletons  (alleles in exactly 1 individual)
+  f2 <- sum(present == 2)   # doubletons  (alleles in exactly 2 individuals)
+  if (f2 > 0) {
+    est <- S_obs + (f1^2) / (2 * f2)
+    se  <- sqrt(f2 * ((f1/f2)^4/4 + (f1/f2)^3 + (f1/f2)^2/2))
+  } else if (f1 > 0) {
+    cat("  Chao1: no doubletons — using bias-corrected formula\n")
+    est <- S_obs + f1 * (f1 - 1) / 2
+    se  <- NA_real_
+  } else {
+    est <- S_obs
+    se  <- NA_real_
+  }
+  list(S_obs = S_obs, f1 = f1, f2 = f2, Chao1 = ceiling(est), SE = se)
+}
+
+# iNEXT asymptotic richness estimate (optional — requires the iNEXT package).
+# Input: count_vec — colSums of the binary allele matrix.
+# Returns the asymptotic estimator from iNEXT::iNEXT() and a success flag.
+inext_estimate <- function(count_vec) {
+  if (!requireNamespace("iNEXT", quietly = TRUE)) {
+    message("  'iNEXT' not installed — skipping. Install with: install.packages('iNEXT')")
+    return(list(S_asymptote = NA_real_, success = FALSE))
+  }
+  present <- as.integer(count_vec[count_vec > 0])
+  tryCatch({
+    suppressMessages(
+      out <- iNEXT::iNEXT(present, q = 0, datatype = "abundance")
+    )
+    ae    <- out$AsyEst
+    s_row <- ae[grepl("richness", ae$Diversity, ignore.case = TRUE), ]
+    s_est <- if (nrow(s_row) > 0) s_row$Estimator[1] else ae$Estimator[1]
+    list(S_asymptote = ceiling(s_est), success = TRUE)
+  }, error = function(e) {
+    cat("  iNEXT failed:", conditionMessage(e), "\n")
+    list(S_asymptote = NA_real_, success = FALSE)
+  })
+}
 
 ############################################################
 # 4. CORRECT allele accumulation function
@@ -181,6 +252,62 @@ polygon(
 lines(1:n_ind, species_res$mean_accum, lwd = 3)
 
 ############################################################
+# 6b. Richness estimators — species level
+############################################################
+
+cat("\nRichness estimators (species level)\n")
+
+species_counts <- colSums(allele_matrix)
+
+mm_sp    <- fit_mm_asymptote(species_res$mean_accum)
+chao1_sp <- chao1_estimate(species_counts)
+inext_sp <- inext_estimate(species_counts)
+
+cat("  Observed alleles :", species_res$true_alleles, "\n")
+cat("  MM estimate      :", mm_sp$Smax, "\n")
+cat("  Chao1 estimate   :", chao1_sp$Chao1,
+    if (!is.na(chao1_sp$SE)) paste0("(SE ± ", round(chao1_sp$SE, 1), ")") else "", "\n")
+cat("  iNEXT estimate   :", inext_sp$S_asymptote, "\n")
+
+# Add estimated asymptotes to the open species plot (still on this PDF page)
+est_labels <- character(0)
+est_cols   <- character(0)
+est_lty    <- integer(0)
+
+if (!is.na(mm_sp$Smax)) {
+  abline(h = mm_sp$Smax,         col = "darkgreen",  lwd = 1.5, lty = 2)
+  est_labels <- c(est_labels, paste0("MM: ",    mm_sp$Smax))
+  est_cols   <- c(est_cols,   "darkgreen")
+  est_lty    <- c(est_lty,    2L)
+}
+if (!is.na(chao1_sp$Chao1)) {
+  abline(h = chao1_sp$Chao1,     col = "purple",     lwd = 1.5, lty = 3)
+  est_labels <- c(est_labels, paste0("Chao1: ", chao1_sp$Chao1))
+  est_cols   <- c(est_cols,   "purple")
+  est_lty    <- c(est_lty,    3L)
+}
+if (!is.na(inext_sp$S_asymptote)) {
+  abline(h = inext_sp$S_asymptote, col = "darkorange", lwd = 1.5, lty = 4)
+  est_labels <- c(est_labels, paste0("iNEXT: ", inext_sp$S_asymptote))
+  est_cols   <- c(est_cols,   "darkorange")
+  est_lty    <- c(est_lty,    4L)
+}
+
+if (length(est_labels) > 0) {
+  legend("bottomright",
+    legend = est_labels,
+    col    = est_cols,
+    lwd    = 1.5,
+    lty    = est_lty,
+    bty    = "n",
+    cex    = 0.75,
+    title  = "Richness estimates"
+  )
+}
+
+species_est <- list(mm = mm_sp, chao1 = chao1_sp, inext = inext_sp)
+
+############################################################
 # 7. Population-level analysis - CORRECT method
 ############################################################
 
@@ -190,6 +317,7 @@ valid_pops <- names(pop_counts[pop_counts >= 5])
 cat("\nPopulations retained:", valid_pops, "\n")
 
 pop_results <- list()
+pop_est     <- list()
 
 for (pop in valid_pops) {
 
@@ -232,6 +360,54 @@ for (pop in valid_pops) {
 
   lines(1:n_ind, res$mean_accum, lwd = 3)
 
+  # Richness estimators for this population
+  pop_counts_i <- colSums(pop_allele_matrix)
+  mm_pop    <- fit_mm_asymptote(res$mean_accum)
+  chao1_pop <- chao1_estimate(pop_counts_i)
+  inext_pop <- inext_estimate(pop_counts_i)
+
+  cat("  Observed:", res$true_alleles,
+      "| MM:", mm_pop$Smax,
+      "| Chao1:", chao1_pop$Chao1,
+      "| iNEXT:", inext_pop$S_asymptote, "\n")
+
+  pop_est_labels <- character(0)
+  pop_est_cols   <- character(0)
+  pop_est_lty    <- integer(0)
+
+  if (!is.na(mm_pop$Smax)) {
+    abline(h = mm_pop$Smax,         col = "darkgreen",  lwd = 1.5, lty = 2)
+    pop_est_labels <- c(pop_est_labels, paste0("MM: ",    mm_pop$Smax))
+    pop_est_cols   <- c(pop_est_cols,   "darkgreen")
+    pop_est_lty    <- c(pop_est_lty,    2L)
+  }
+  if (!is.na(chao1_pop$Chao1)) {
+    abline(h = chao1_pop$Chao1,     col = "purple",     lwd = 1.5, lty = 3)
+    pop_est_labels <- c(pop_est_labels, paste0("Chao1: ", chao1_pop$Chao1))
+    pop_est_cols   <- c(pop_est_cols,   "purple")
+    pop_est_lty    <- c(pop_est_lty,    3L)
+  }
+  if (!is.na(inext_pop$S_asymptote)) {
+    abline(h = inext_pop$S_asymptote, col = "darkorange", lwd = 1.5, lty = 4)
+    pop_est_labels <- c(pop_est_labels, paste0("iNEXT: ", inext_pop$S_asymptote))
+    pop_est_cols   <- c(pop_est_cols,   "darkorange")
+    pop_est_lty    <- c(pop_est_lty,    4L)
+  }
+
+  if (length(pop_est_labels) > 0) {
+    legend("bottomright",
+      legend = pop_est_labels,
+      col    = pop_est_cols,
+      lwd    = 1.5,
+      lty    = pop_est_lty,
+      bty    = "n",
+      cex    = 0.75,
+      title  = "Richness estimates"
+    )
+  }
+
+  pop_est[[pop]] <- list(mm = mm_pop, chao1 = chao1_pop, inext = inext_pop)
+
 }
 
 ############################################################
@@ -253,13 +429,17 @@ stats <- data.frame(
   N_alleles=species_res$true_alleles,
   Initial_slope=species_res$initial_slope,
   Tail_slope=species_res$tail_slope,
-  Late_fraction=species_res$late_fraction
+  Late_fraction=species_res$late_fraction,
+  MM_estimate=species_est$mm$Smax,
+  Chao1_estimate=species_est$chao1$Chao1,
+  iNEXT_estimate=species_est$inext$S_asymptote
 )
 
 for (pop in names(pop_results)) {
 
-  res <- pop_results[[pop]]
+  res      <- pop_results[[pop]]
   pop_data <- geno[geno$Population == pop, ]
+  pest     <- pop_est[[pop]]
 
   stats <- rbind(stats,
     data.frame(
@@ -269,7 +449,10 @@ for (pop in names(pop_results)) {
       N_alleles=res$true_alleles,
       Initial_slope=res$initial_slope,
       Tail_slope=res$tail_slope,
-      Late_fraction=res$late_fraction
+      Late_fraction=res$late_fraction,
+      MM_estimate=pest$mm$Smax,
+      Chao1_estimate=pest$chao1$Chao1,
+      iNEXT_estimate=pest$inext$S_asymptote
     )
   )
 }
@@ -283,6 +466,37 @@ write.table(
 )
 
 cat("\nStats written: SRK_allele_accumulation_stats.tsv\n")
+
+############################################################
+# 9b. Write species richness estimates file
+#     (used by SRK_chisq_species_population.R as the "optimum")
+############################################################
+
+consensus_est <- ceiling(mean(
+  c(species_est$mm$Smax,
+    species_est$chao1$Chao1,
+    species_est$inext$S_asymptote),
+  na.rm = TRUE
+))
+
+species_richness_est <- data.frame(
+  S_observed         = species_res$true_alleles,
+  MM_estimate        = species_est$mm$Smax,
+  Chao1_estimate     = species_est$chao1$Chao1,
+  iNEXT_estimate     = species_est$inext$S_asymptote,
+  Consensus_estimate = consensus_est
+)
+
+write.table(
+  species_richness_est,
+  "SRK_species_richness_estimates.tsv",
+  sep = "\t",
+  quote = FALSE,
+  row.names = FALSE
+)
+
+cat("Richness estimates written: SRK_species_richness_estimates.tsv\n")
+cat("  Consensus (mean of available estimators):", consensus_est, "alleles\n")
 
 ############################################################
 # 10. Print summary with validation

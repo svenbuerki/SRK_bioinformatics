@@ -40,9 +40,9 @@ Key innovations include multi-replicate assembly strategies for maximizing allel
 
 # Pipeline Overview
 
-The pipeline consists of **14 main steps organized into three phases**, progressing from within-library sequence processing to cross-library integration and final population genetic analyses.
+The pipeline consists of **15 main steps organized into three phases**, progressing from within-library sequence assembly to cross-library integration and final population genetic analyses.
 
-## Phase 1: Within-Library Processing
+## Phase 1: SRK amplicon sequence assembly
 
 1. [Prepare Canonical Sequences](#prepcanseq) – Preparation of reference SRK sequences used for downstream assembly and validation.
 2. [Nanopore Amplicon Assembly and Phasing Pipeline](#nanampassphas) – Multi-CANU assembly of Nanopore amplicons followed by haplotype phasing to reconstruct allelic sequences.
@@ -54,21 +54,22 @@ The pipeline consists of **14 main steps organized into three phases**, progress
 8. [DNA to Amino Acid Translation Pipeline](#DNA2AA) – Frame-specific translation of nucleotide sequences into proteins.
    **Note:** This step is optional and may be skipped if protein sequences are not required.
 
-## Phase 2: Cross-Library Analysis
+## Phase 2: Functional proteins, S alleles and genotyping
 
 9. [SRK Protein Translation, Alignment, and Abundance Filtering Pipeline](#SRKprotandfilter) – Translation of SRK alleles into proteins, alignment, and filtering based on abundance thresholds to retain functional candidates.
-10. [SRK Functional Protein Genotyping Pipeline](#SRKfunctionalprotgenotype) – Construction of individual-level genotype matrices and detection of functional SRK proteins across samples.
-11. [SRK Zygosity Analysis Pipeline for Tetraploid Species](#zygosity) – Classification of individuals as homozygous or heterozygous and estimation of population-level zygosity statistics in tetraploid species.
+10. [Distance-Based SRK S-Allele Definition](#SRKalleledist) – Grouping of functional proteins into allele bins using pairwise amino acid p-distance on the S-domain ectodomain, with sensitivity analysis and amino acid variation heatmaps.
+11. [SRK S-Allele Genotyping Pipeline](#SRKfunctionalprotgenotype) – Assignment of distance-defined S-allele bins to individuals, producing long-format allele tables and binary genotype matrices for population genetic analysis.
+12. [SRK Zygosity Analysis Pipeline for Tetraploid Species](#zygosity) – Classification of individuals as homozygous or heterozygous and estimation of population-level zygosity statistics in tetraploid species.
 
 ## Phase 3: Data Analyses
 
 12. [Population Genetics Statistics](#popgenetics) – Estimation of population-level diversity metrics, including heterozygosity, mean protein counts per individual, total allele counts, and effective allele numbers.
-13. [Allele Accumulation Curves](#alleleaccum) – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift.
-14. [Allele Frequency Analysis](#allelefrqanalysis) – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under negative frequency-dependent selection.
+13. [Allele Accumulation Curves](#alleleaccum) – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators.
+14. [Allele Frequency Analysis](#allelefrqanalysis) – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under negative frequency-dependent selection. The estimated species allele richness (from step 13) is used as the NFDS optimum baseline.
 
 ---
 
-# Phase 1: Within-Library Processing
+# Phase 1: SRK amplicon sequence assembly
 
 ## Prepare Canonical Sequences {#prepcanseq}
 
@@ -2082,7 +2083,7 @@ print(f"AA FASTA written to: {out_fasta}")
 
 ---
 
-# Phase 2: Cross-Library Analysis
+# Phase 2: Functional proteins, S alleles and genotyping
 
 ## SRK Protein Translation, Alignment, and Abundance Filtering Pipeline {#SRKprotandfilter}
 
@@ -2873,470 +2874,466 @@ print(f"SC candidates: {sc_file}")
 print(f"Too-many-alleles exclusions: {too_many_file}")
 ```
 
-## SRK Functional Protein Genotyping Pipeline {#SRKfunctionalprotgenotype}
+## Distance-Based SRK S-Allele Definition {#SRKalleledist}
 
 ### Overview
 
-This Python pipeline converts individual SRK protein assignments into standardized genotype matrices suitable for population genetic analysis. The workflow transforms sequence-to-protein mappings into both long-format tables and wide-format binary matrices, enabling downstream analysis of S-allele frequencies, mating compatibility, and population genetic structure in self-incompatibility systems. The script is designed to be re-run as new sequencing libraries are added, with a built-in overwrite safeguard consistent with the upstream pipeline.
+This step addresses a fundamental limitation of the upstream protein pipeline: treating every unique protein sequence as a distinct S-allele overestimates allelic diversity because Nanopore sequencing noise and assembly artefacts generate near-identical sequence variants that do not represent biologically distinct recognition specificities. Two scripts implement a distance-based proxy for functional allele identity, mirroring the biological criterion used in crossing experiments (where two proteins specify the same allele if pollen bearing one is rejected by a pistil expressing the other).
+
+Two complementary outputs are produced: an allele assignment table grouping proteins into bins, and amino acid variation heatmaps that visualise where along the protein sequence the informative differences are located and how frequent each amino acid is at each variable position.
+
+**Input:** `SRK_functional_proteins_aligned.fasta` (228 aligned functional proteins, 848 alignment positions)
+
+---
+
+### Motivation
+
+The standard pipeline identifies functional SRK proteins by abundance filtering and translation quality, then treats every unique protein sequence as a separate allele. This approach is likely to **overestimate allele diversity** for several reasons:
+
+- **Nanopore sequencing error** introduces ~1–2% per-base noise, creating near-identical sequence variants that do not represent distinct biological entities.
+- **Assembly and phasing artefacts** can produce spurious haplotypes from the same template.
+- **SRK allele identity is functionally defined by crosses**: two proteins specify the same allele if pollen bearing one is rejected by a pistil expressing the other. This functional criterion does not map one-to-one onto sequence uniqueness.
+
+In *Brassica* and *Arabidopsis*, SRK alleles from different recognition classes typically differ by **20–50%** in the ectodomain (S-domain). Within the same recognition class, variants may differ by only a few percent. A distance-based grouping approach — well established in the allele-typing literature — provides a principled proxy for functional allele identity without requiring crossing experiments.
+
+---
+
+### Approach
+
+#### Sequence distance metric
+
+Pairwise amino acid **p-distance** is computed between all protein pairs:
+
+```
+p-distance = (number of differing positions) / (number of valid aligned positions)
+```
+
+Gap columns are excluded from both the numerator and denominator. This gives a value between 0 (identical) and 1 (completely divergent).
+
+#### Region of interest: S-domain (ectodomain)
+
+Distance is computed **on the S-domain only** (alignment columns 31–430 by default), not on the full protein. The S-domain ectodomain is the receptor-binding region that determines pollination specificity. The kinase domain is much more conserved and would dilute the signal from specificity-determining positions.
+
+Approximate domain structure of Brassicaceae SRK (~858 aa):
+
+| Domain | Alignment positions | Role |
+|---|---|---|
+| Signal peptide | 1–30 | Secretion targeting |
+| **S-domain (ectodomain)** | **31–430** | **Allele specificity — key region** |
+| Transmembrane domain | 431–455 | Membrane anchor |
+| Kinase domain | 456–848 | Intracellular signalling |
+
+> These boundaries are approximate and based on published Brassicaceae SRK structures. Adjust `DOMAIN_REGION` in the script if species-specific annotation is available.
+
+#### Hierarchical clustering
+
+All pairwise distances are clustered using **average-linkage hierarchical clustering (UPGMA)**. A flat partition is obtained by cutting the dendrogram at a user-defined **distance threshold**: all proteins within a cluster have average pairwise distance below this threshold and are treated as the same allele. A **sensitivity analysis** sweeps the threshold from 0% to 5% and records the resulting allele count. The plot of allele count versus threshold is used to identify the "elbow" where further lumping slows down, which should correspond to genuine allele boundaries.
+
+#### Representative sequence per allele
+
+For each allele cluster, the **most central sequence** (minimum mean p-distance to all other cluster members) is selected as the representative and written to the output FASTA.
+
+---
 
 ### Pipeline Steps
 
-#### Genotype Matrix Construction for Population Analysis
+#### Step 1 — Distance-based allele grouping (`define_SRK_alleles_from_distance.py`)
 
-Genotype matrix generation serves critical functions in self-incompatibility research:
+**Key parameters:**
 
-- **Population genetic analysis**: Enables calculation of allele frequencies and genetic diversity
-- **Mating compatibility prediction**: Facilitates incompatibility matrix construction
-- **Demographic analysis**: Supports effective population size estimation and bottleneck detection
-- **Selection analysis**: Provides input for tests of balancing selection on S-loci
+| Parameter | Default | Description |
+|---|---|---|
+| `INPUT_FASTA` | `SRK_functional_proteins_aligned.fasta` | Aligned protein FASTA |
+| `N_ALLELES` | `None` | **Option A** — fix the number of alleles directly (overrides `DIST_THRESHOLD` when not `None`). Use when you can identify the elbow on the sensitivity curve but cannot read the exact distance. |
+| `DIST_THRESHOLD` | `0.01` (1%) | **Option B** — fix the distance cutoff. Used only when `N_ALLELES` is `None`. Adjust based on the sensitivity plot elbow. |
+| `DOMAIN_REGION` | `(31, 430)` | Alignment columns used for distance (1-based) |
+| `THRESH_MIN/MAX/STEP` | `0.0 / 0.05 / 0.0005` | Sensitivity analysis range |
 
-#### Output File Management and Overwrite Safeguard
+**Outputs:**
 
-Before prompting for any input, the script defines its output files and checks whether they already exist:
+| File | Description |
+|---|---|
+| `SRK_protein_allele_assignments.tsv` | Protein → allele mapping table |
+| `SRK_protein_allele_representatives.fasta` | One representative sequence per allele |
+| `SRK_protein_distance_analysis.pdf` | Sensitivity curve + pairwise distance heatmap |
 
-```python
-long_out = "SRK_individual_protein_table.tsv"
-wide_out = "SRK_individual_genotypes.tsv"
+**Output table columns (`SRK_protein_allele_assignments.tsv`):**
 
-OUTPUT_FILES = [long_out, wide_out]
+| Column | Description |
+|---|---|
+| `Protein` | Protein ID from input FASTA |
+| `Allele` | Assigned allele bin (e.g. `Allele_021`) |
+| `Cluster_id` | Numeric cluster identifier |
+| `Is_representative` | `True` for the cluster centroid |
 
-existing = [f for f in OUTPUT_FILES if os.path.exists(f)]
-if existing:
-    print("\nWARNING: The following output files already exist and will be overwritten:")
-    for f in existing:
-        print(f"  {f}")
-    confirm = input("\nProceed and overwrite? (y/n): ").strip().lower()
-    if confirm != 'y':
-        print("Aborted. No files were modified.")
-        sys.exit(0)
-```
+#### Step 2 — Amino acid variation heatmaps (`SRK_AA_mutation_heatmap.py`)
 
-**Design rationale:**
+Produces two complementary figures sharing the same set of variable positions and domain annotation track.
 
-- The check runs **before** the input file prompt so the user can abort without entering anything
-- Entering anything other than `y` exits cleanly with no files modified
-- If no existing files are found, the check is silent and execution continues
+**Key parameters:**
 
-#### Input Parameter Specification
+| Parameter | Default | Description |
+|---|---|---|
+| `INPUT_FASTA` | `SRK_functional_proteins_aligned.fasta` | Aligned protein FASTA |
+| `ALLELE_TSV` | `SRK_protein_allele_assignments.tsv` | Orders rows by allele cluster (Figure 1) |
+| `MAX_GAP_FREQ` | `0.20` | Excludes positions where >20% of sequences have a gap |
+| `ENTROPY_MIN` | `0.0` | Minimum Shannon entropy (bits) to include a position |
+| `MAX_POSITIONS` | `300` | Maximum variable positions to display |
+| `DOMAIN_REGIONS` | See script | List of `(name, start, end, color)` tuples |
 
-After the overwrite check, the script prompts for the single input file:
+**Outputs:**
 
-```python
-protein_key_file = input(
-    "Enter SRK_functional_protein_key.tsv: "
-).strip()
-```
+| File | Description |
+|---|---|
+| `SRK_AA_mutation_heatmap.pdf` | Figure 1: protein × position heatmap (AA physicochemical class) |
+| `SRK_AA_frequency_heatmap.pdf` | Figure 2: AA × position frequency heatmap |
+| `SRK_AA_variable_positions.tsv` | Variable positions with entropy and AA composition |
 
-**File specifications:**
+**Figure 1 — Protein × position heatmap:**
 
-- **Protein key file**: Output from `define_functional_proteins.py` — individuals excluded by the abundance filter or the `max_alleles` filter are already absent from this file and will not appear in genotype outputs
-- **Long format output**: Individual-protein pairs for relational analysis
-- **Wide format output**: Binary genotype matrix for population genetic software
+- Rows = proteins sorted by allele cluster; columns = variable alignment positions
+- Cell colour = amino acid physicochemical class (aliphatic: grey; aromatic: gold; positive: blue; negative: red; polar: green; cysteine: orange; proline: orchid; gap: white)
+- Top strip = domain annotation band
 
-#### Protein Assignment Loading and Parsing
+**Figure 2 — AA frequency heatmap:**
 
-Loads protein assignments with robust individual identifier extraction:
+Three stacked panels: (i) domain annotation strip; (ii) 20 AAs (rows) × variable positions (columns), white = absent, dark red = high frequency, black dot = consensus AA, white dividers separate physicochemical groups, coloured left margin strip shows AA class; (iii) Shannon entropy bar chart per position.
 
-```python
-individual_proteins = defaultdict(list)
+---
 
-with open(protein_key_file, newline="") as f:
-    reader = csv.DictReader(f, delimiter="\t")
-    for row in reader:
-        seq_id = row["Original_sequence_ID"]
-        protein = row["Protein"]
+### Interpreting the sensitivity curve
 
-        parts = seq_id.split("_")
+The left panel of `SRK_protein_distance_analysis.pdf` shows allele count as a function of distance threshold. Three reference lines are drawn:
 
-        if len(parts) < 2:
-            print("WARNING: cannot parse:", seq_id)
-            continue
+| Line | Meaning |
+|---|---|
+| Dotted grey (horizontal) | Total proteins in input (n = 228) |
+| Dashed grey (horizontal) | Unique S-domain sequences at threshold = 0 (n = 109) — 119 proteins share their S-domain exactly with at least one other protein, differing only in the kinase domain or elsewhere |
+| **Option B** — Dashed red (vertical) | Current `DIST_THRESHOLD` value set in the script — **not computed algorithmically** |
+| **Option A** — Dashed red (horizontal) | Target allele count set by `N_ALLELES` |
+| **Option A** — Dotted red (vertical) | Implied distance threshold — the smallest distance at which allele count ≤ `N_ALLELES` (derived from the sensitivity sweep) |
 
-        individual = f"{parts[0]}_{parts[1]}"
-        individual_proteins[individual].append(protein)
-```
+**Why the curve starts at 109, not 228:** distance is computed on the S-domain only. Of the 228 functional proteins, 119 are S-domain identical to at least one other protein (they differ only in the kinase domain). These are merged at threshold = 0, so the curve begins at 109. This is biologically correct: two proteins with an identical ectodomain present the same recognition specificity.
 
-**Parsing features:**
+**How to choose the threshold:** look for the **elbow** — the point where the curve transitions from a steep descent (merging genuine alleles) to a shallow plateau (absorbing only sequencing noise). If you can identify the elbow on the y-axis (allele count) but cannot read the exact distance, use `N_ALLELES` (Option A) — the script will derive the corresponding distance and annotate the plot. Alternatively, set `DIST_THRESHOLD` directly (Option B).
 
-- **Flexible identifier handling**: Extracts individual IDs from sequence names
-- **Error tolerance**: Continues processing despite malformed identifiers
-- **Warning system**: Reports unparseable sequence identifiers
-- **Data aggregation**: Groups all proteins by individual identifier
+---
 
-**Individual ID extraction logic:**
+### Interpreting the AA frequency heatmap
 
-- Assumes sequence naming convention: `{library}_{barcode}_{additional_info}`
-- Combines first two underscore-separated components as individual identifier
-- Maintains consistency with upstream pipeline naming conventions
+At genuine allele-discriminating positions (high Shannon entropy bar), **exactly two rows light up** in the frequency heatmap with roughly equal intensity — one for each of the two competing amino acids. A near-50:50 split is the molecular signature of balancing selection (NFDS) maintaining two SRK recognition specificities at equal frequency. Positions where the black dot (consensus) sits in a very dark cell with all other rows near white reflect fixed differences rather than balanced polymorphism.
 
-#### Long-Format Table Generation
+---
 
-Creates relational table format for flexible downstream analysis:
+### Findings
 
-```python
-with open(long_out, "w") as out:
-    out.write("Individual\tProtein\n")
-    for individual in sorted(individual_proteins):
-        for protein in individual_proteins[individual]:
-            out.write(f"{individual}\t{protein}\n")
-```
+#### Pairwise distance distribution
 
-**Long format advantages:**
+| Metric | S-domain (cols 31–430) | Full protein |
+|---|---|---|
+| Minimum | 0.000 | 0.000 |
+| Maximum | 4.76% | 3.44% |
+| Mean | 1.26% | 0.95% |
 
-- **Database compatibility**: Suitable for SQL queries and relational analysis
-- **Flexible filtering**: Easy subsetting by individual or protein
-- **Statistical software**: Compatible with R, Python pandas, and other analysis tools
-- **Visualization**: Enables creation of allele frequency plots and distribution analyses
+This is strikingly low relative to the 20–50% divergence expected between different SRK recognition classes in *Brassica* and *Arabidopsis*, confirming that the pipeline substantially overestimates allele diversity when treating each unique protein as a distinct allele.
 
-#### Comprehensive Protein Inventory
+#### S-domain uniqueness
 
-Generates complete catalog of functional proteins across all individuals:
+Of the 228 functional proteins, **109 have a unique S-domain sequence**. The remaining 119 proteins are S-domain identical to at least one other protein (differing only in the kinase domain or elsewhere). The effective starting point for allele grouping is therefore 109, not 228.
 
-```python
-all_proteins = sorted({
-    protein
-    for proteins in individual_proteins.values()
-    for protein in proteins
-})
-```
+#### Sensitivity analysis
 
-**Inventory features:**
+| Threshold | Alleles | Interpretation |
+|---|---|---|
+| 0% | 109 | S-domain unique sequences (exact duplicates already merged) |
+| 0.5% | ~50–80 | Still capturing most sequencing noise as alleles |
+| **1.0%** | **24** | Working intermediate; 131 proteins in the largest cluster |
+| 2.0% | few | Most noise absorbed; 2–5 genuine alleles likely visible |
+| 4.0%+ | 1–3 | Near-complete lumping |
 
-- **Set comprehension**: Eliminates duplicate proteins across individuals
-- **Sorted ordering**: Provides consistent protein ordering across analyses
-- **Population-wide scope**: Captures complete allelic diversity in dataset
-- **Matrix preparation**: Establishes column structure for genotype matrix
+A threshold of **1–2%** is biologically motivated: above typical Nanopore per-base error rates (~1%) but well below inter-allele divergence values from the literature. Use the sensitivity plot to confirm the elbow position for this dataset.
 
-#### Binary Genotype Matrix Construction
+#### Allele composition at 1% threshold
 
-Creates presence/absence matrix for population genetic analysis:
+- **24 allele clusters** from 228 proteins
+- **Largest cluster** (`Allele_021`): 131 proteins (57%)
+- **Second largest** (`Allele_009`): 35 proteins (15%)
+- Together: 73% of all proteins in two clusters
+- 9 singleton clusters (likely rare alleles or residual artefacts)
 
-```python
-genotype_matrix = OrderedDict()
+The dominance of 2–3 large clusters is consistent with a population carrying a **small number of true SRK alleles**, expected for a small or historically bottlenecked threatened species.
 
-for individual in sorted(individual_proteins):
-    protein_set = set(individual_proteins[individual])
-    genotype_matrix[individual] = {
-        protein: 1 if protein in protein_set else 0
-        for protein in all_proteins
-    }
-```
+#### Variable positions and domain distribution
 
-**Matrix construction logic:**
+152 variable positions identified (out of 848; 18%), all with only 2–4 amino acid variants — diagnostic of a small number of alleles rather than high diversity.
 
-- **Binary encoding**: 1 for protein presence, 0 for absence
-- **Complete coverage**: Every individual scored for every protein
-- **Set-based lookup**: Efficient and deduplicated presence/absence determination — multiple sequences from the same individual mapping to the same protein are counted once
-- **Ordered structure**: Maintains consistent individual and protein ordering
+| Domain | Variable positions |
+|---|---|
+| Signal peptide (1–30) | 8 |
+| **S-domain (31–430)** | **82** |
+| TM domain (431–455) | 8 |
+| Kinase domain (456–848) | 54 |
 
-**Population genetic applications:**
+The most variable S-domain position is alignment position 118 (A:113 / G:115, entropy = 1.000 bits — near-equal split), the strongest signal of two balanced allele classes maintained by NFDS.
 
-- **Allele frequency calculation**: Column sums provide allele counts
-- **Genetic diversity metrics**: Enables Shannon diversity and evenness calculations
-- **Hardy-Weinberg testing**: Supports tests of population genetic equilibrium
-- **Structure analysis**: Input for STRUCTURE, ADMIXTURE, and PCA analyses
+---
 
-#### Wide-Format Matrix Output
+### Recommendations
 
-Writes standardized genotype matrix with proper formatting:
+1. **Calibrate `DIST_THRESHOLD`** using the sensitivity plot elbow. A value between 1–2% is recommended as a starting point.
+2. **Validate against crossing data**: if crossing experiments are available (`Crosses_w_seeds_LEPA.csv`), test whether incompatible pairs share the same distance-defined allele to empirically calibrate the threshold.
+3. **Use distance-defined alleles** in downstream population genetic analyses (allele accumulation, chi-square tests) to avoid inflated allele counts.
+4. **Adjust domain boundaries** (`DOMAIN_REGIONS` / `DOMAIN_REGION`) if species-specific SRK annotation is available.
+5. **Inspect singletons** at the chosen threshold: they may represent genuine rare alleles or residual assembly artefacts.
 
-```python
-with open(wide_out, "w", newline="") as out:
-    writer = csv.writer(out, delimiter="\t")
-    header = ["Individual"] + all_proteins
-    writer.writerow(header)
-
-    for individual, geno in genotype_matrix.items():
-        row = [individual] + [
-            geno[p]
-            for p in all_proteins
-        ]
-        writer.writerow(row)
-```
-
-**Output format features:**
-
-- **Header row**: Clear column identification for downstream analysis
-- **Tab-delimited**: Standard format for population genetic software
-- **Consistent ordering**: Maintains individual and protein order across rows/columns
-- **Complete matrix**: No missing data in final output
-
-#### Summary Statistics and Reporting
-
-Provides a concise processing summary:
-
-```python
-print("\nFINAL SUMMARY")
-print(f"\nIndividuals genotyped: {len(genotype_matrix)}")
-print(f"Functional proteins: {len(all_proteins)}")
-print(f"\nOutputs:")
-print(f"  {long_out}")
-print(f"  {wide_out}")
-```
-
-**Summary metrics:**
-
-- **Sample size**: Total number of individuals successfully genotyped
-- **Allelic diversity**: Number of distinct functional proteins identified
-- **Output confirmation**: File paths for generated datasets
-
-### Output Files
-
-#### Primary Outputs
-
-**Long-format table (`SRK_individual_protein_table.tsv`):**
-
-- Two-column format: Individual, Protein
-- One row per individual-protein combination
-- Suitable for relational database operations and flexible analysis
-
-**Wide-format matrix (`SRK_individual_genotypes.tsv`):**
-
-- Binary presence/absence matrix
-- Rows: individuals, Columns: proteins
-- Standard format for population genetic analysis software
-
-#### Data Structure Examples
-
-**Long format:**
-```
-Individual      Protein
-Library001_01   SRK_protein_001
-Library001_01   SRK_protein_015
-Library001_02   SRK_protein_003
-```
-
-**Wide format:**
-```
-Individual      SRK_protein_001  SRK_protein_002  SRK_protein_003
-Library001_01   1                0                0
-Library001_02   0                0                1
-```
-
-### Scientific Applications
-
-#### Population Genetic Analysis
-
-**Allele frequency estimation:**
-
-- Direct calculation from column sums in binary matrix
-- Temporal and spatial frequency comparisons
-- Rare vs. common allele identification
-
-**Genetic diversity quantification:**
-
-- Shannon diversity index calculation
-- Allelic richness and evenness metrics
-- Comparison across populations or time points
-
-#### Self-Incompatibility System Analysis
-
-**Mating compatibility prediction:**
-
-- Construction of incompatibility matrices from genotype data
-- Prediction of successful vs. unsuccessful crosses
-- Identification of universally compatible individuals
-
-**Effective population size estimation:**
-
-- S-allele-based demographic inference
-- Detection of population bottlenecks through allelic diversity loss
-- Historical population size reconstruction
-
-#### Evolutionary Analysis
-
-**Balancing selection detection:**
-
-- Tests for excess heterozygosity at S-loci
-- Comparison of S-locus vs. neutral marker diversity
-- Identification of selection signatures maintaining allelic diversity
-
-**Population structure analysis:**
-
-- Principal component analysis of S-allele composition
-- STRUCTURE analysis for population subdivision
-- Migration pattern inference from allele sharing
-
-### Quality Control and Validation
-
-#### Data Integrity Checks
-
-**Individual identifier validation:**
-
-- Warning system for unparseable sequence names
-- Consistent individual ID extraction across sequences
-- Error tolerance preventing pipeline failure
-
-**Upstream filtering compatibility:**
-
-- Individuals excluded by the abundance filter or `max_alleles` filter in `define_functional_proteins.py` are absent from the key file and will not appear in either output — no additional filtering is needed here
-
-**Matrix completeness:**
-
-- All individuals scored for all proteins
-- Binary encoding consistency (0/1 only)
-- No missing data in final matrices
-
-#### Statistical Considerations
-
-**Sample size adequacy:**
-
-- Sufficient individuals for population genetic inference
-- Adequate representation of allelic diversity
-- Power considerations for downstream statistical tests
-
-**Allelic representation:**
-
-- Balance between common and rare alleles
-- Technical artifact vs. authentic rare allele distinction
-- Population-specific vs. universal allele identification
-
-This genotyping pipeline provides the essential data transformation step between molecular haplotype reconstruction and population genetic analysis, enabling comprehensive investigation of self-incompatibility system evolution and maintenance in natural populations.
+---
 
 ### Bioinformatics
 
-- **Goal:** Genotype individuals based on functional protein data produced by `define_functional_proteins.py`
-- **Script:** `genotype_SRK_from_functional_proteins.py`
-- **Input:** `SRK_functional_protein_key.tsv`
-    - Individuals excluded by the abundance filter or `max_alleles` filter are already absent from this file
-- **Output:**
-    - Long table: `SRK_individual_protein_table.tsv`
-    - Genotype matrix: `SRK_individual_genotypes.tsv`
+#### Scripts
 
-```
-FINAL SUMMARY
+| Script | Role |
+|---|---|
+| `define_SRK_alleles_from_distance.py` | Pairwise p-distance, clustering, sensitivity analysis |
+| `SRK_AA_mutation_heatmap.py` | AA class heatmap (Figure 1) and frequency heatmap (Figure 2) |
 
-Individuals genotyped: 128
-Functional proteins: 94
+#### Execution
 
-Outputs:
-  SRK_individual_protein_table.tsv
-  SRK_individual_genotypes.tsv
+Run Step 1 first so allele assignments are available for Figure 1 row ordering in Step 2.
+
+```bash
+source srk_env/bin/activate
+python define_SRK_alleles_from_distance.py
+python SRK_AA_mutation_heatmap.py
 ```
 
-CODE
+#### `define_SRK_alleles_from_distance.py`
 
 ```python
 #!/usr/bin/env python3
+# See full script in repository.
+# Key user-settings block (top of file):
 
-import csv
-import os
-import sys
-from collections import defaultdict, OrderedDict
+INPUT_FASTA    = "SRK_functional_proteins_aligned.fasta"
 
+# ── Clustering mode: choose ONE ──────────────────────────────────────────────
+# Option A — fix the NUMBER OF ALLELES (set N_ALLELES; DIST_THRESHOLD ignored)
+N_ALLELES = None   # e.g. 50 — set to None to use Option B instead
+# Option B — fix the DISTANCE THRESHOLD (used only when N_ALLELES is None)
+DIST_THRESHOLD = 0.01   # ← adjust based on sensitivity plot elbow
+# ─────────────────────────────────────────────────────────────────────────────
 
-# ----------------------------
-# Output files & overwrite check
-# ----------------------------
-
-long_out = "SRK_individual_protein_table.tsv"
-wide_out = "SRK_individual_genotypes.tsv"
-
-OUTPUT_FILES = [long_out, wide_out]
-
-existing = [f for f in OUTPUT_FILES if os.path.exists(f)]
-if existing:
-    print("\nWARNING: The following output files already exist and will be overwritten:")
-    for f in existing:
-        print(f"  {f}")
-    confirm = input("\nProceed and overwrite? (y/n): ").strip().lower()
-    if confirm != 'y':
-        print("Aborted. No files were modified.")
-        sys.exit(0)
-
-# ----------------------------
-# User input
-# ----------------------------
-
-protein_key_file = input(
-    "Enter SRK_functional_protein_key.tsv: "
-).strip()
-
-
-# ----------------------------
-# Load protein assignments
-# ----------------------------
-
-individual_proteins = defaultdict(list)
-
-with open(protein_key_file, newline="") as f:
-    reader = csv.DictReader(f, delimiter="\t")
-    for row in reader:
-        seq_id = row["Original_sequence_ID"]
-        protein = row["Protein"]
-
-        parts = seq_id.split("_")
-
-        if len(parts) < 2:
-            print("WARNING: cannot parse:", seq_id)
-            continue
-
-        individual = f"{parts[0]}_{parts[1]}"
-        individual_proteins[individual].append(protein)
-
-print("Individuals found:", len(individual_proteins))
-
-
-# ----------------------------
-# Write long table
-# ----------------------------
-
-with open(long_out, "w") as out:
-    out.write("Individual\tProtein\n")
-    for individual in sorted(individual_proteins):
-        for protein in individual_proteins[individual]:
-            out.write(f"{individual}\t{protein}\n")
-
-
-# ----------------------------
-# Build genotype matrix
-# ----------------------------
-
-all_proteins = sorted({
-    protein
-    for proteins in individual_proteins.values()
-    for protein in proteins
-})
-
-genotype_matrix = OrderedDict()
-
-for individual in sorted(individual_proteins):
-    protein_set = set(individual_proteins[individual])
-    genotype_matrix[individual] = {
-        protein: 1 if protein in protein_set else 0
-        for protein in all_proteins
-    }
-
-
-# ----------------------------
-# Write matrix
-# ----------------------------
-
-with open(wide_out, "w", newline="") as out:
-    writer = csv.writer(out, delimiter="\t")
-    header = ["Individual"] + all_proteins
-    writer.writerow(header)
-
-    for individual, geno in genotype_matrix.items():
-        row = [individual] + [
-            geno[p]
-            for p in all_proteins
-        ]
-        writer.writerow(row)
-
-
-# ----------------------------
-# Summary
-# ----------------------------
-
-print("\nFINAL SUMMARY")
-print(f"\nIndividuals genotyped: {len(genotype_matrix)}")
-print(f"Functional proteins: {len(all_proteins)}")
-print(f"\nOutputs:")
-print(f"  {long_out}")
-print(f"  {wide_out}")
+DOMAIN_REGION  = (31, 430)  # S-domain columns (1-based, inclusive)
+OUT_TSV        = "SRK_protein_allele_assignments.tsv"
+OUT_FASTA      = "SRK_protein_allele_representatives.fasta"
+OUT_PDF        = "SRK_protein_distance_analysis.pdf"
+THRESH_MIN, THRESH_MAX, THRESH_STEP = 0.0, 0.05, 0.0005
 ```
 
+#### `SRK_AA_mutation_heatmap.py`
+
+```python
+#!/usr/bin/env python3
+# See full script in repository.
+# Key user-settings block (top of file):
+
+INPUT_FASTA   = "SRK_functional_proteins_aligned.fasta"
+ALLELE_TSV    = "SRK_protein_allele_assignments.tsv"  # set None to skip
+MAX_GAP_FREQ  = 0.20
+ENTROPY_MIN   = 0.0
+MAX_POSITIONS = 300
+OUT_PDF       = "SRK_AA_mutation_heatmap.pdf"
+OUT_FREQ_PDF  = "SRK_AA_frequency_heatmap.pdf"
+OUT_VAR_TSV   = "SRK_AA_variable_positions.tsv"
+# Domain regions: list of (name, start, end, color) — adjust for your species
+DOMAIN_REGIONS = [
+    ("Signal peptide",  1,   30,  "#b0c4de"),
+    ("S-domain",        31,  430, "#90ee90"),
+    ("TM domain",       431, 455, "#ffa07a"),
+    ("Kinase domain",   456, 848, "#d3a4d3"),
+]
+```
+
+---
+
+## SRK S-Allele Genotyping Pipeline {#SRKfunctionalprotgenotype}
+
+### Overview
+
+This Python pipeline genotypes individuals based on **distance-defined S-allele bins** rather than raw functional protein sequences. The workflow joins two upstream outputs — the functional protein key (sequence → protein) and the allele assignment table (protein → allele) — to produce per-individual allele lists and a binary genotype matrix suitable for population genetic analysis. Reference sequences are automatically excluded; only `Library*` individuals are retained.
+
+**Data flow:**
+
+```
+SRK_functional_protein_key.tsv      (Original_sequence_ID → Protein)
+        +
+SRK_protein_allele_assignments.tsv  (Protein → Allele)
+        ↓  join + deduplicate per individual
+SRK_individual_allele_table.tsv     (long format: Individual | Protein | Allele)
+SRK_individual_allele_genotypes.tsv (wide binary matrix: individuals × alleles)
+```
+
+### Inputs
+
+| File | Source | Description |
+|---|---|---|
+| `SRK_functional_protein_key.tsv` | Step 9 | Maps every sequence ID to its functional protein |
+| `SRK_protein_allele_assignments.tsv` | Step 10 | Maps every protein to its distance-defined allele bin |
+| `sampling_metadata.csv` | Field data | Sample metadata; used to restrict genotyping to ingroup individuals (optional) |
+
+### Pipeline Steps
+
+#### Ingroup filtering (optional)
+
+If `METADATA_FILE` is set, `sampling_metadata.csv` is read and individuals with `Ingroup == 1` are collected into an allow-list. Only these individuals are retained in the genotype outputs. Setting `INGROUP_ONLY = False` disables the filter and includes all `Library*` individuals regardless of ingroup status. Setting `METADATA_FILE = None` skips metadata loading entirely.
+
+#### Individual ID extraction
+
+Individual IDs are parsed from the sequence name by splitting on `_` and combining the first two components (e.g. `Library001_barcode01_hap1_rep1_tig00000001` → `Library001_barcode01`). Sequences whose parsed ID does not start with `Library` (e.g. reference sequences `SRK_BEA_*`) are excluded.
+
+#### Protein → Allele join
+
+For each sequence assigned to an individual, the protein name is looked up in the allele assignment table. Sequences whose protein has no allele mapping are skipped with a warning count.
+
+#### Deduplication
+
+Multiple sequences from the same individual may map to the same protein, and multiple proteins may belong to the same allele bin. Both levels of redundancy are collapsed: the final allele set per individual contains only unique alleles.
+
+#### Output generation
+
+A long-format table (one row per individual–protein–allele triple) and a wide binary presence/absence matrix (individuals × alleles) are written. The long table retains protein-level information so the protein → allele mapping can be traced if needed.
+
+### Output Files
+
+| File | Format | Description |
+|---|---|---|
+| `SRK_individual_allele_table.tsv` | Long (Individual, Protein, Allele) | One row per unique individual–protein–allele combination |
+| `SRK_individual_allele_genotypes.tsv` | Wide binary matrix | Rows = individuals, columns = allele bins |
+
+**Long format example:**
+```
+Individual            Protein          Allele
+Library001_barcode01  SRK_protein_001  Allele_021
+Library001_barcode01  SRK_protein_045  Allele_009
+Library001_barcode02  SRK_protein_001  Allele_021
+```
+
+**Wide format example:**
+```
+Individual            Allele_001  Allele_009  Allele_021
+Library001_barcode01  0           1           1
+Library001_barcode02  0           0           1
+```
+
+### Results
+
+Running with the current dataset (N_ALLELES = 50, implied distance ≈ 0.006, ingroup only):
+
+```
+Metadata loaded: 170 ingroup, 8 outgroup samples
+INGROUP_ONLY = True  →  restricting to 170 ingroup samples
+Loaded 228 protein → allele mappings
+Reference sequences excluded : 4
+Proteins with no allele match: 0
+Individuals found            : 152
+
+── FINAL SUMMARY ──
+Individuals genotyped : 152
+S-alleles in matrix   : 43
+Min alleles/individual: 1
+Max alleles/individual: 3
+Mean alleles/individual: 1.47
+```
+
+152 ingroup individuals genotyped; 8 outgroup samples excluded. 43 of the 50 defined allele bins are observed in the ingroup. Two alleles dominate: `Allele_044` (43 individuals) and `Allele_047` (40 individuals), together accounting for ~54% of the ingroup.
+
+### Bioinformatics
+
+- **Script:** `genotype_SRK_from_alleles.py`
+- **Inputs:** `SRK_functional_protein_key.tsv`, `SRK_protein_allele_assignments.tsv`, `sampling_metadata.csv` (optional, for ingroup filtering)
+- **Outputs:** `SRK_individual_allele_table.tsv`, `SRK_individual_allele_genotypes.tsv`
+
+```python
+#!/usr/bin/env python3
+"""
+genotype_SRK_from_alleles.py
+
+Builds individual-level genotype matrices based on distance-defined S-allele
+bins rather than raw functional protein sequences.
+
+Data flow
+---------
+  SRK_functional_protein_key.tsv     Original_sequence_ID -> Protein
+        + (parse individual from sequence ID)
+  SRK_protein_allele_assignments.tsv  Protein -> Allele
+        + (join + deduplicate)
+  Per-individual allele set
+        +
+  SRK_individual_allele_table.tsv     long format  (Individual, Protein, Allele)
+  SRK_individual_allele_genotypes.tsv wide matrix  (individuals x alleles, binary)
+
+Reference sequences (IDs not starting with "Library") are excluded.
+"""
+
+import csv, os, sys
+from collections import defaultdict, OrderedDict
+
+PROTEIN_KEY_FILE  = "SRK_functional_protein_key.tsv"
+ALLELE_TSV_FILE   = "SRK_protein_allele_assignments.tsv"
+LONG_OUT          = "SRK_individual_allele_table.tsv"
+WIDE_OUT          = "SRK_individual_allele_genotypes.tsv"
+INDIVIDUAL_PREFIX = "Library"
+
+existing = [f for f in [LONG_OUT, WIDE_OUT] if os.path.exists(f)]
+if existing:
+    for f in existing: print(f"WARNING: will overwrite {f}")
+    if input("Proceed? (y/n): ").strip().lower() != "y": sys.exit(0)
+
+protein_to_allele = {}
+with open(ALLELE_TSV_FILE, newline="", encoding="utf-8-sig") as f:
+    for row in csv.DictReader(f, delimiter="\t"):
+        protein_to_allele[row["Protein"]] = row["Allele"]
+
+individual_data = defaultdict(list)
+n_skipped_ref = n_skipped_nomap = 0
+with open(PROTEIN_KEY_FILE, newline="", encoding="utf-8-sig") as f:
+    for row in csv.DictReader(f, delimiter="\t"):
+        parts = row["Original_sequence_ID"].split("_")
+        if len(parts) < 2: continue
+        individual = f"{parts[0]}_{parts[1]}"
+        if not individual.startswith(INDIVIDUAL_PREFIX):
+            n_skipped_ref += 1; continue
+        allele = protein_to_allele.get(row["Protein"])
+        if allele is None:
+            n_skipped_nomap += 1; continue
+        individual_data[individual].append((row["Protein"], allele))
+
+individual_pairs   = {ind: sorted(set(pairs), key=lambda x: (x[1], x[0]))
+                      for ind, pairs in individual_data.items()}
+individual_alleles = {ind: sorted({a for _, a in pairs})
+                      for ind, pairs in individual_pairs.items()}
+
+with open(LONG_OUT, "w", newline="") as out:
+    w = csv.writer(out, delimiter="\t")
+    w.writerow(["Individual", "Protein", "Allele"])
+    for ind in sorted(individual_pairs):
+        for protein, allele in individual_pairs[ind]:
+            w.writerow([ind, protein, allele])
+
+all_alleles = sorted({a for v in individual_alleles.values() for a in v})
+with open(WIDE_OUT, "w", newline="") as out:
+    w = csv.writer(out, delimiter="\t")
+    w.writerow(["Individual"] + all_alleles)
+    for ind in sorted(individual_alleles):
+        aset = set(individual_alleles[ind])
+        w.writerow([ind] + [1 if a in aset else 0 for a in all_alleles])
+
+counts = [len(v) for v in individual_alleles.values()]
+print(f"Individuals genotyped  : {len(individual_alleles)}")
+print(f"S-alleles in matrix    : {len(all_alleles)}")
+print(f"Max alleles/individual : {max(counts)}")
+print(f"Mean alleles/individual: {sum(counts)/len(counts):.2f}")
+```
 
 ## SRK Class Assignment and Dominance Prediction Pipeline {#SRKclasses}
 
@@ -3924,6 +3921,7 @@ print(f"IQ-TREE log:             {iqtree_prefix}.iqtree")
 print(f"Protein classes:         {class_file}")
 print(f"Individual class geno:   {ind_class_file}")
 ```
+
 
 
 ## SRK Zygosity Analysis Pipeline for Tetraploid Species {#zygosity}
@@ -4742,7 +4740,7 @@ This pipeline calculates allele accumulation curves at two hierarchical levels:
 * **Species level** – using all ingroup individuals
 * **Population level** – for populations with sufficient sampling (≥5 individuals)
 
-From these curves, several statistics are extracted that provide quantitative indicators of **NFDS versus drift**.
+From these curves, several statistics are extracted that provide quantitative indicators of **NFDS versus drift**. In addition, the pipeline estimates the **total number of SRK alleles in the species** using three complementary richness estimators applied to the species-level data. This estimated total serves as a baseline for evaluating how far each population is from a balanced NFDS equilibrium.
 
 ### Pipeline Steps
 
@@ -4886,6 +4884,36 @@ This allows direct comparison between:
 * **species-wide diversity**
 * **local population diversity**
 
+#### Allele Richness Estimation
+
+After computing each accumulation curve, three complementary estimators are applied to the **species-level** data (and independently to each population) to estimate the true total number of SRK alleles:
+
+**Michaelis-Menten (MM) asymptote**
+
+The mean accumulation curve is fitted to a rectangular hyperbola using non-linear least squares:
+
+$$
+S(n) = \frac{S_{max} \cdot n}{K + n}
+$$
+
+where $S_{max}$ is the estimated asymptote (total allele richness) and $K$ is the half-saturation constant. This estimator directly reflects the shape of the observed accumulation curve and is preferred when sampling is approaching saturation.
+
+**Chao1 non-parametric estimator**
+
+A lower-bound richness estimator based on singleton and doubleton allele counts:
+
+$$
+\hat{S}_{Chao1} = S_{obs} + \frac{f_1^2}{2 f_2}
+$$
+
+where $f_1$ and $f_2$ are the number of alleles observed in exactly one and two individuals, respectively. When $f_2 = 0$, the bias-corrected formula $S_{obs} + f_1(f_1-1)/2$ is used. Chao1 provides a conservative lower bound; note that under strong NFDS, rare alleles are suppressed which can reduce $f_1$ and lead to underestimation.
+
+**iNEXT asymptotic estimator (optional)**
+
+If the `iNEXT` R package is installed, the Hill numbers framework is used to provide an asymptotic richness estimate with bootstrap confidence intervals. Install with `install.packages("iNEXT")`.
+
+The species-level results from all three estimators are written to `SRK_species_richness_estimates.tsv` and used downstream by the allele frequency analysis as the empirical optimum allele count.
+
 #### Curve Visualization
 
 Accumulation curves are exported to a multi-page PDF file.
@@ -4904,8 +4932,9 @@ Each plot includes:
 * Confidence envelope (± SD)
 * Number of individuals sampled
 * Total alleles detected
+* Estimated asymptotes as horizontal reference lines (MM = dark green dashed, Chao1 = purple dotted, iNEXT = orange if available)
 
-These plots allow visual evaluation of **diversity saturation patterns**.
+These plots allow visual evaluation of **diversity saturation patterns** and comparison of observed diversity against estimated total richness.
 
 ### Output Files
 
@@ -4920,15 +4949,40 @@ Contains:
 
 **SRK_allele_accumulation_stats.tsv**
 
-Tabulated statistics extracted from each curve.
+Tabulated statistics extracted from each curve, including richness estimates for each level.
 
-Example output structure:
+| Column | Description |
+| --- | --- |
+| `Level` | Species or Population |
+| `Population` | Population identifier (or "All" for species) |
+| `N_individuals` | Number of individuals analyzed |
+| `N_alleles` | Observed alleles |
+| `Initial_slope` | Mean allele gain per individual in early sampling |
+| `Tail_slope` | Mean allele gain per individual in late sampling |
+| `Late_fraction` | Proportion of diversity contributed by rare alleles |
+| `MM_estimate` | Michaelis-Menten asymptote estimate |
+| `Chao1_estimate` | Chao1 non-parametric richness estimate |
+| `iNEXT_estimate` | iNEXT asymptotic estimate (NA if package not installed) |
 
-| Level      | Population | N_individuals | N_alleles | Initial_slope | Tail_slope | Late_fraction |
-| ---------- | ---------- | ------------- | --------- | ------------- | ---------- | ------------- |
-| Species    | All        | 124           | 92        | 1.54          | 0.32       | 0.32          |
-| Population | 25         | 31            | 26        | 1.36          | 0.48       | 0.37          |
-| Population | 27         | 15            | 17        | 1.30          | 0.94       | 0.47          |
+Example output:
+
+| Level      | Population | N_individuals | N_alleles | Initial_slope | Tail_slope | Late_fraction | MM_estimate | Chao1_estimate | iNEXT_estimate |
+| ---------- | ---------- | ------------- | --------- | ------------- | ---------- | ------------- | ----------- | -------------- | -------------- |
+| Species    | All        | 152           | 43        | 1.09          | 0.12       | 0.25          | 59          | 205            | NA             |
+| Population | 25         | 32            | 12        | 0.89          | 0.07       | 0.19          | 17          | 13             | NA             |
+| Population | 27         | 30            | 15        | 0.95          | 0.28       | 0.32          | 25          | 31             | NA             |
+
+**SRK_species_richness_estimates.tsv**
+
+A dedicated summary of species-level richness estimates used as the NFDS optimum in downstream frequency analyses.
+
+| Column | Description |
+| --- | --- |
+| `S_observed` | Observed allele count across all ingroup individuals |
+| `MM_estimate` | Michaelis-Menten asymptote |
+| `Chao1_estimate` | Chao1 lower-bound estimate |
+| `iNEXT_estimate` | iNEXT asymptotic estimate |
+| `Consensus_estimate` | Mean of all available estimators |
 
 ### Biological Interpretation
 
@@ -5010,6 +5064,9 @@ Filtering criteria:
 
 * `SRK_allele_accumulation_curves.pdf`
 * `SRK_allele_accumulation_stats.tsv`
+* `SRK_species_richness_estimates.tsv`
+
+> **Note:** `SRK_species_richness_estimates.tsv` must be generated before running `SRK_chisq_species_population.R`, as it provides the empirical species optimum used in the frequency plots.
 
 #### Scientific Applications
 
@@ -5045,20 +5102,36 @@ While **negative frequency-dependent selection (NFDS)** maintains high allelic d
 
 This analysis evaluates whether observed **SRK allele frequency distributions deviate from the theoretical NFDS expectation**, where all alleles should occur at approximately equal frequencies.
 
+A key feature of this pipeline is the use of an **empirically estimated species-level allele optimum** (from `SRK_species_richness_estimates.tsv`) rather than an arbitrary fixed value. The Michaelis-Menten asymptote is used by default as it directly reflects the shape of the observed accumulation curve. This optimum sets the x-axis limit for all frequency plots and defines the "missing alleles to optimum" zone, quantifying how far each population is from carrying the full species-level SRK diversity.
+
 The pipeline:
 
+* Loads the **estimated species allele optimum** from the accumulation analysis
 * Filters **ingroup individuals only**
 * Links genotype data to **sampling metadata**
 * Performs **χ² goodness-of-fit tests** at the species and population levels
-* Generates **allele frequency plots**
+* Generates **allele frequency plots** with missing allele zones relative to the estimated optimum
 * Outputs a **summary table of statistical tests**
 
 ### Pipeline Steps
 
+#### Species Richness Optimum
+
+At startup the script loads `SRK_species_richness_estimates.tsv` produced by `SRK_allele_accumulation_analysis.R`. The Michaelis-Menten estimate is used preferentially as the species optimum; if MM fitting failed, Chao1 is used, then the consensus mean. If the file is absent a fallback value of 50 is applied with a warning.
+
+```r
+est_file <- "SRK_species_richness_estimates.tsv"
+if (file.exists(est_file)) {
+  est_df <- read.table(est_file, header = TRUE, sep = "\t")
+  species_optimum <- as.integer(est_df$MM_estimate[1])
+}
+```
+
 #### Input Data Integration
 
-Two input datasets are required:
+Three input datasets are required:
 
+* **SRK species richness estimates** (`SRK_species_richness_estimates.tsv`) — produced by the accumulation analysis
 * **SRK protein assignment table** containing allele identities per individual
 * **Sampling metadata** containing population information and ingroup status
 
@@ -5119,15 +5192,19 @@ This filtering avoids unstable statistical estimates caused by very small sample
 
 For each analysis level, the pipeline produces a **frequency distribution plot** including:
 
-* **Observed allele frequencies** (black line)
+* **Observed allele frequencies** (black line, rank-ordered)
 * **NFDS expectation** (1/k) (blue dashed line)
 * **LOESS smoothed trend** of the observed distribution (red line)
+* **Missing alleles zone** (tomato-shaded rectangle) — the gap between the last observed allele and the estimated species optimum, labelled with the count of missing alleles
+
+The x-axis spans from 1 to `species_optimum` (the MM-estimated total), so all plots share the same scale and deficits are directly comparable across populations.
 
 These visualizations allow rapid inspection of:
 
 * dominant alleles
 * rare allele tails
-* deviations from theoretical NFDS equilibrium.
+* deviations from theoretical NFDS equilibrium
+* how many alleles each population is missing relative to the species pool.
 
 ### Output Files
 
@@ -5195,7 +5272,8 @@ Rscript SRK_chisq_species_population.R
 
 #### Input Files
 
-* `SRK_individual_protein_table.tsv`
+* `SRK_species_richness_estimates.tsv` — produced by `SRK_allele_accumulation_analysis.R` (run first)
+* `SRK_individual_allele_table.tsv`
 * `sampling_metadata.csv`
 
 #### Output Files
