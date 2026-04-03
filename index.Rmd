@@ -64,7 +64,7 @@ The pipeline consists of **15 main steps organized into three phases**, progress
 ## Phase 3: Data Analyses
 
 12. [Population Genetics Statistics](#popgenetics) – Estimation of population-level diversity metrics, including heterozygosity, mean protein counts per individual, total allele counts, and effective allele numbers.
-13. [Allele Accumulation Curves](#alleleaccum) – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators.
+13. [Allele Accumulation Curves](#alleleaccum) – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators. Also estimates how many additional individuals would need to be sampled to discover one more allele or to reach 80%, 90%, 95%, and 99% of the MM-estimated asymptote.
 14. [Allele Frequency Analysis](#allelefrqanalysis) – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under negative frequency-dependent selection. The estimated species allele richness (from step 13) is used as the NFDS optimum baseline.
 
 ---
@@ -4914,6 +4914,30 @@ If the `iNEXT` R package is installed, the Hill numbers framework is used to pro
 
 The species-level results from all three estimators are written to `SRK_species_richness_estimates.tsv` and used downstream by the allele frequency analysis as the empirical optimum allele count.
 
+#### Sampling Adequacy Estimation
+
+Once the MM model is fitted, the pipeline inverts the Michaelis-Menten equation to estimate how many additional individuals would need to be sampled to reach a given level of allelic diversity:
+
+$$
+n^* = \frac{S^* \cdot K}{S_{max} - S^*}
+$$
+
+where $S^*$ is the allele target and $K$ is the MM half-saturation constant. Additional individuals needed = $n^* - n_{current}$ (floored at 0 if the target is already met).
+
+Five targets are calculated at each level:
+
+| Target | Description |
+| --- | --- |
+| **+1 allele** | Additional individuals to discover the next new allele beyond observed |
+| **80% of MM** | Individuals to reach 80% of the estimated asymptote |
+| **90% of MM** | Individuals to reach 90% of the estimated asymptote |
+| **95% of MM** | Individuals to reach 95% of the estimated asymptote |
+| **99% of MM** | Individuals to reach 99% of the estimated asymptote |
+
+The +1 allele estimate gives an intuitive sense of current sampling efficiency (how many more individuals are needed just to find one new allele). The percentage-based targets illustrate the hyperbolic cost of approaching saturation — the last few percent of an asymptote require disproportionately large sample sizes, especially under NFDS where rare alleles are maintained at low frequency.
+
+If MM fitting failed for a given level, all five targets are reported as `NA`.
+
 #### Curve Visualization
 
 Accumulation curves are exported to a multi-page PDF file.
@@ -4963,14 +4987,21 @@ Tabulated statistics extracted from each curve, including richness estimates for
 | `MM_estimate` | Michaelis-Menten asymptote estimate |
 | `Chao1_estimate` | Chao1 non-parametric richness estimate |
 | `iNEXT_estimate` | iNEXT asymptotic estimate (NA if package not installed) |
+| `N_more_next_allele` | Additional individuals needed to discover one more allele beyond observed |
+| `N_more_80pct_MM` | Additional individuals needed to reach 80% of the MM asymptote |
+| `N_more_90pct_MM` | Additional individuals needed to reach 90% of the MM asymptote |
+| `N_more_95pct_MM` | Additional individuals needed to reach 95% of the MM asymptote |
+| `N_more_99pct_MM` | Additional individuals needed to reach 99% of the MM asymptote |
 
 Example output:
 
-| Level      | Population | N_individuals | N_alleles | Initial_slope | Tail_slope | Late_fraction | MM_estimate | Chao1_estimate | iNEXT_estimate |
-| ---------- | ---------- | ------------- | --------- | ------------- | ---------- | ------------- | ----------- | -------------- | -------------- |
-| Species    | All        | 152           | 43        | 1.09          | 0.12       | 0.25          | 59          | 205            | NA             |
-| Population | 25         | 32            | 12        | 0.89          | 0.07       | 0.19          | 17          | 13             | NA             |
-| Population | 27         | 30            | 15        | 0.95          | 0.28       | 0.32          | 25          | 31             | NA             |
+| Level | Population | N_ind | N_alleles | MM_est | N_more_next | N_more_80% | N_more_90% | N_more_95% | N_more_99% |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Species | All | 152 | 43 | 59 | 28 | 94 | 400 | 1013 | 5915 |
+| Population | 25 | 32 | 12 | 17 | 5 | 14 | 70 | 183 | 1086 |
+| Population | 27 | 30 | 15 | 25 | 6 | 50 | 149 | 348 | 1935 |
+| Population | 67 | 32 | 12 | 16 | 14 | 10 | 63 | 168 | 1006 |
+| Population | 76 | 25 | 9 | 12 | 10 | 3 | 37 | 105 | 649 |
 
 **SRK_species_richness_estimates.tsv**
 
@@ -4983,6 +5014,11 @@ A dedicated summary of species-level richness estimates used as the NFDS optimum
 | `Chao1_estimate` | Chao1 lower-bound estimate |
 | `iNEXT_estimate` | iNEXT asymptotic estimate |
 | `Consensus_estimate` | Mean of all available estimators |
+| `N_more_next_allele` | Additional individuals needed to discover one more allele beyond observed |
+| `N_more_80pct_MM` | Additional individuals needed to reach 80% of the MM asymptote |
+| `N_more_90pct_MM` | Additional individuals needed to reach 90% of the MM asymptote |
+| `N_more_95pct_MM` | Additional individuals needed to reach 95% of the MM asymptote |
+| `N_more_99pct_MM` | Additional individuals needed to reach 99% of the MM asymptote |
 
 ### Biological Interpretation
 

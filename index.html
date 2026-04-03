@@ -1519,7 +1519,7 @@ border-radius: 0px;
 <h2><span class="header-section-number">3.3</span> Phase 3: Data Analyses</h2>
 <ol start="12" style="list-style-type: decimal">
 <li><a href="#popgenetics">Population Genetics Statistics</a> – Estimation of population-level diversity metrics, including heterozygosity, mean protein counts per individual, total allele counts, and effective allele numbers.</li>
-<li><a href="#alleleaccum">Allele Accumulation Curves</a> – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators.</li>
+<li><a href="#alleleaccum">Allele Accumulation Curves</a> – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators. Also estimates how many additional individuals would need to be sampled to discover one more allele or to reach 80%, 90%, 95%, and 99% of the MM-estimated asymptote.</li>
 <li><a href="#allelefrqanalysis">Allele Frequency Analysis</a> – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under negative frequency-dependent selection. The estimated species allele richness (from step 13) is used as the NFDS optimum baseline.</li>
 </ol>
 <hr />
@@ -6666,8 +6666,53 @@ S(n) = \frac{S_{max} \cdot n}{K + n}
 <p>If the <code>iNEXT</code> R package is installed, the Hill numbers framework is used to provide an asymptotic richness estimate with bootstrap confidence intervals. Install with <code>install.packages(&quot;iNEXT&quot;)</code>.</p>
 <p>The species-level results from all three estimators are written to <code>SRK_species_richness_estimates.tsv</code> and used downstream by the allele frequency analysis as the empirical optimum allele count.</p>
 </div>
-<div id="curve-visualization" class="section level4" number="6.2.2.8">
-<h4><span class="header-section-number">6.2.2.8</span> Curve Visualization</h4>
+<div id="sampling-adequacy-estimation" class="section level4" number="6.2.2.8">
+<h4><span class="header-section-number">6.2.2.8</span> Sampling Adequacy Estimation</h4>
+<p>Once the MM model is fitted, the pipeline inverts the Michaelis-Menten equation to estimate how many additional individuals would need to be sampled to reach a given level of allelic diversity:</p>
+<p><span class="math display">\[
+n^* = \frac{S^* \cdot K}{S_{max} - S^*}
+\]</span></p>
+<p>where <span class="math inline">\(S^*\)</span> is the allele target and <span class="math inline">\(K\)</span> is the MM half-saturation constant. Additional individuals needed = <span class="math inline">\(n^* - n_{current}\)</span> (floored at 0 if the target is already met).</p>
+<p>Five targets are calculated at each level:</p>
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Target</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>+1 allele</strong></td>
+<td>Additional individuals to discover the next new allele beyond observed</td>
+</tr>
+<tr class="even">
+<td><strong>80% of MM</strong></td>
+<td>Individuals to reach 80% of the estimated asymptote</td>
+</tr>
+<tr class="odd">
+<td><strong>90% of MM</strong></td>
+<td>Individuals to reach 90% of the estimated asymptote</td>
+</tr>
+<tr class="even">
+<td><strong>95% of MM</strong></td>
+<td>Individuals to reach 95% of the estimated asymptote</td>
+</tr>
+<tr class="odd">
+<td><strong>99% of MM</strong></td>
+<td>Individuals to reach 99% of the estimated asymptote</td>
+</tr>
+</tbody>
+</table>
+<p>The +1 allele estimate gives an intuitive sense of current sampling efficiency (how many more individuals are needed just to find one new allele). The percentage-based targets illustrate the hyperbolic cost of approaching saturation — the last few percent of an asymptote require disproportionately large sample sizes, especially under NFDS where rare alleles are maintained at low frequency.</p>
+<p>If MM fitting failed for a given level, all five targets are reported as <code>NA</code>.</p>
+</div>
+<div id="curve-visualization" class="section level4" number="6.2.2.9">
+<h4><span class="header-section-number">6.2.2.9</span> Curve Visualization</h4>
 <p>Accumulation curves are exported to a multi-page PDF file.</p>
 <pre class="r"><code>pdf(
   &quot;SRK_allele_accumulation_curves.pdf&quot;,
@@ -6749,34 +6794,54 @@ S(n) = \frac{S_{max} \cdot n}{K + n}
 <td><code>iNEXT_estimate</code></td>
 <td>iNEXT asymptotic estimate (NA if package not installed)</td>
 </tr>
+<tr class="odd">
+<td><code>N_more_next_allele</code></td>
+<td>Additional individuals needed to discover one more allele beyond observed</td>
+</tr>
+<tr class="even">
+<td><code>N_more_80pct_MM</code></td>
+<td>Additional individuals needed to reach 80% of the MM asymptote</td>
+</tr>
+<tr class="odd">
+<td><code>N_more_90pct_MM</code></td>
+<td>Additional individuals needed to reach 90% of the MM asymptote</td>
+</tr>
+<tr class="even">
+<td><code>N_more_95pct_MM</code></td>
+<td>Additional individuals needed to reach 95% of the MM asymptote</td>
+</tr>
+<tr class="odd">
+<td><code>N_more_99pct_MM</code></td>
+<td>Additional individuals needed to reach 99% of the MM asymptote</td>
+</tr>
 </tbody>
 </table>
 <p>Example output:</p>
-<table>
+<table style="width:100%;">
 <colgroup>
-<col width="8%" />
-<col width="8%" />
-<col width="11%" />
-<col width="7%" />
-<col width="11%" />
-<col width="8%" />
-<col width="11%" />
-<col width="9%" />
-<col width="11%" />
-<col width="11%" />
+<col width="10%" />
+<col width="10%" />
+<col width="10%" />
+<col width="10%" />
+<col width="10%" />
+<col width="10%" />
+<col width="10%" />
+<col width="10%" />
+<col width="10%" />
+<col width="10%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th>Level</th>
 <th>Population</th>
-<th>N_individuals</th>
+<th>N_ind</th>
 <th>N_alleles</th>
-<th>Initial_slope</th>
-<th>Tail_slope</th>
-<th>Late_fraction</th>
-<th>MM_estimate</th>
-<th>Chao1_estimate</th>
-<th>iNEXT_estimate</th>
+<th>MM_est</th>
+<th>N_more_next</th>
+<th>N_more_80%</th>
+<th>N_more_90%</th>
+<th>N_more_95%</th>
+<th>N_more_99%</th>
 </tr>
 </thead>
 <tbody>
@@ -6785,42 +6850,70 @@ S(n) = \frac{S_{max} \cdot n}{K + n}
 <td>All</td>
 <td>152</td>
 <td>43</td>
-<td>1.09</td>
-<td>0.12</td>
-<td>0.25</td>
 <td>59</td>
-<td>205</td>
-<td>NA</td>
+<td>28</td>
+<td>94</td>
+<td>400</td>
+<td>1013</td>
+<td>5915</td>
 </tr>
 <tr class="even">
 <td>Population</td>
 <td>25</td>
 <td>32</td>
 <td>12</td>
-<td>0.89</td>
-<td>0.07</td>
-<td>0.19</td>
 <td>17</td>
-<td>13</td>
-<td>NA</td>
+<td>5</td>
+<td>14</td>
+<td>70</td>
+<td>183</td>
+<td>1086</td>
 </tr>
 <tr class="odd">
 <td>Population</td>
 <td>27</td>
 <td>30</td>
 <td>15</td>
-<td>0.95</td>
-<td>0.28</td>
-<td>0.32</td>
 <td>25</td>
-<td>31</td>
-<td>NA</td>
+<td>6</td>
+<td>50</td>
+<td>149</td>
+<td>348</td>
+<td>1935</td>
+</tr>
+<tr class="even">
+<td>Population</td>
+<td>67</td>
+<td>32</td>
+<td>12</td>
+<td>16</td>
+<td>14</td>
+<td>10</td>
+<td>63</td>
+<td>168</td>
+<td>1006</td>
+</tr>
+<tr class="odd">
+<td>Population</td>
+<td>76</td>
+<td>25</td>
+<td>9</td>
+<td>12</td>
+<td>10</td>
+<td>3</td>
+<td>37</td>
+<td>105</td>
+<td>649</td>
 </tr>
 </tbody>
 </table>
 <p><strong>SRK_species_richness_estimates.tsv</strong></p>
 <p>A dedicated summary of species-level richness estimates used as the NFDS optimum in downstream frequency analyses.</p>
 <table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
 <thead>
 <tr class="header">
 <th>Column</th>
@@ -6847,6 +6940,26 @@ S(n) = \frac{S_{max} \cdot n}{K + n}
 <tr class="odd">
 <td><code>Consensus_estimate</code></td>
 <td>Mean of all available estimators</td>
+</tr>
+<tr class="even">
+<td><code>N_more_next_allele</code></td>
+<td>Additional individuals needed to discover one more allele beyond observed</td>
+</tr>
+<tr class="odd">
+<td><code>N_more_80pct_MM</code></td>
+<td>Additional individuals needed to reach 80% of the MM asymptote</td>
+</tr>
+<tr class="even">
+<td><code>N_more_90pct_MM</code></td>
+<td>Additional individuals needed to reach 90% of the MM asymptote</td>
+</tr>
+<tr class="odd">
+<td><code>N_more_95pct_MM</code></td>
+<td>Additional individuals needed to reach 95% of the MM asymptote</td>
+</tr>
+<tr class="even">
+<td><code>N_more_99pct_MM</code></td>
+<td>Additional individuals needed to reach 99% of the MM asymptote</td>
 </tr>
 </tbody>
 </table>

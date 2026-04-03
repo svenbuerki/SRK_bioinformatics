@@ -83,11 +83,31 @@ fit_mm_asymptote <- function(mean_accum) {
       start = list(Smax = S_obs * 1.5, K = n_pts / 2),
       control = nls.control(maxiter = 500)
     )
-    list(Smax = ceiling(coef(fit)[["Smax"]]), success = TRUE)
+    list(Smax = ceiling(coef(fit)[["Smax"]]), K = coef(fit)[["K"]], success = TRUE)
   }, error = function(e) {
     cat("  MM fitting failed:", conditionMessage(e), "\n")
-    list(Smax = NA_real_, success = FALSE)
+    list(Smax = NA_real_, K = NA_real_, success = FALSE)
   })
+}
+
+# Base function: additional individuals needed to reach an absolute allele target S_target.
+# Returns NA if MM fitting failed or if S_target >= Smax (unreachable asymptote).
+# Returns 0 if current sample already meets or exceeds the target.
+n_to_reach_s <- function(Smax, K, n_current, S_target) {
+  if (is.na(Smax) || is.na(K)) return(NA_real_)
+  if (S_target >= Smax) return(NA_real_)
+  n_needed <- (S_target * K) / (Smax - S_target)
+  max(0L, ceiling(n_needed) - n_current)
+}
+
+# Additional individuals needed to reach a given fraction of Smax (e.g. 0.95).
+n_to_reach_frac <- function(Smax, K, n_current, target_frac) {
+  n_to_reach_s(Smax, K, n_current, target_frac * Smax)
+}
+
+# Additional individuals needed to discover one more allele beyond S_obs.
+n_for_next_allele <- function(Smax, K, n_current, S_obs) {
+  n_to_reach_s(Smax, K, n_current, S_obs + 1)
 }
 
 # Chao1 non-parametric lower-bound richness estimator.
@@ -263,11 +283,24 @@ mm_sp    <- fit_mm_asymptote(species_res$mean_accum)
 chao1_sp <- chao1_estimate(species_counts)
 inext_sp <- inext_estimate(species_counts)
 
+n_sp <- list(
+  next1  = n_for_next_allele(mm_sp$Smax, mm_sp$K, nrow(allele_matrix), species_res$true_alleles),
+  p80    = n_to_reach_frac(mm_sp$Smax, mm_sp$K, nrow(allele_matrix), 0.80),
+  p90    = n_to_reach_frac(mm_sp$Smax, mm_sp$K, nrow(allele_matrix), 0.90),
+  p95    = n_to_reach_frac(mm_sp$Smax, mm_sp$K, nrow(allele_matrix), 0.95),
+  p99    = n_to_reach_frac(mm_sp$Smax, mm_sp$K, nrow(allele_matrix), 0.99)
+)
+
 cat("  Observed alleles :", species_res$true_alleles, "\n")
 cat("  MM estimate      :", mm_sp$Smax, "\n")
 cat("  Chao1 estimate   :", chao1_sp$Chao1,
     if (!is.na(chao1_sp$SE)) paste0("(SE ± ", round(chao1_sp$SE, 1), ")") else "", "\n")
 cat("  iNEXT estimate   :", inext_sp$S_asymptote, "\n")
+cat("  Add. ind. for +1 allele :", n_sp$next1, "\n")
+cat("  Add. ind. for 80% MM   :", n_sp$p80,   "\n")
+cat("  Add. ind. for 90% MM   :", n_sp$p90,   "\n")
+cat("  Add. ind. for 95% MM   :", n_sp$p95,   "\n")
+cat("  Add. ind. for 99% MM   :", n_sp$p99,   "\n")
 
 # Add estimated asymptotes to the open species plot (still on this PDF page)
 est_labels <- character(0)
@@ -305,7 +338,7 @@ if (length(est_labels) > 0) {
   )
 }
 
-species_est <- list(mm = mm_sp, chao1 = chao1_sp, inext = inext_sp)
+species_est <- list(mm = mm_sp, chao1 = chao1_sp, inext = inext_sp, n_more = n_sp)
 
 ############################################################
 # 7. Population-level analysis - CORRECT method
@@ -366,10 +399,23 @@ for (pop in valid_pops) {
   chao1_pop <- chao1_estimate(pop_counts_i)
   inext_pop <- inext_estimate(pop_counts_i)
 
+  n_pop <- list(
+    next1 = n_for_next_allele(mm_pop$Smax, mm_pop$K, nrow(pop_allele_matrix), res$true_alleles),
+    p80   = n_to_reach_frac(mm_pop$Smax, mm_pop$K, nrow(pop_allele_matrix), 0.80),
+    p90   = n_to_reach_frac(mm_pop$Smax, mm_pop$K, nrow(pop_allele_matrix), 0.90),
+    p95   = n_to_reach_frac(mm_pop$Smax, mm_pop$K, nrow(pop_allele_matrix), 0.95),
+    p99   = n_to_reach_frac(mm_pop$Smax, mm_pop$K, nrow(pop_allele_matrix), 0.99)
+  )
+
   cat("  Observed:", res$true_alleles,
       "| MM:", mm_pop$Smax,
       "| Chao1:", chao1_pop$Chao1,
       "| iNEXT:", inext_pop$S_asymptote, "\n")
+  cat("  Add. ind. — +1:", n_pop$next1,
+      "| 80%:", n_pop$p80,
+      "| 90%:", n_pop$p90,
+      "| 95%:", n_pop$p95,
+      "| 99%:", n_pop$p99, "\n")
 
   pop_est_labels <- character(0)
   pop_est_cols   <- character(0)
@@ -406,7 +452,7 @@ for (pop in valid_pops) {
     )
   }
 
-  pop_est[[pop]] <- list(mm = mm_pop, chao1 = chao1_pop, inext = inext_pop)
+  pop_est[[pop]] <- list(mm = mm_pop, chao1 = chao1_pop, inext = inext_pop, n_more = n_pop)
 
 }
 
@@ -432,7 +478,12 @@ stats <- data.frame(
   Late_fraction=species_res$late_fraction,
   MM_estimate=species_est$mm$Smax,
   Chao1_estimate=species_est$chao1$Chao1,
-  iNEXT_estimate=species_est$inext$S_asymptote
+  iNEXT_estimate=species_est$inext$S_asymptote,
+  N_more_next_allele=species_est$n_more$next1,
+  N_more_80pct_MM=species_est$n_more$p80,
+  N_more_90pct_MM=species_est$n_more$p90,
+  N_more_95pct_MM=species_est$n_more$p95,
+  N_more_99pct_MM=species_est$n_more$p99
 )
 
 for (pop in names(pop_results)) {
@@ -452,7 +503,12 @@ for (pop in names(pop_results)) {
       Late_fraction=res$late_fraction,
       MM_estimate=pest$mm$Smax,
       Chao1_estimate=pest$chao1$Chao1,
-      iNEXT_estimate=pest$inext$S_asymptote
+      iNEXT_estimate=pest$inext$S_asymptote,
+      N_more_next_allele=pest$n_more$next1,
+      N_more_80pct_MM=pest$n_more$p80,
+      N_more_90pct_MM=pest$n_more$p90,
+      N_more_95pct_MM=pest$n_more$p95,
+      N_more_99pct_MM=pest$n_more$p99
     )
   )
 }
@@ -480,11 +536,16 @@ consensus_est <- ceiling(mean(
 ))
 
 species_richness_est <- data.frame(
-  S_observed         = species_res$true_alleles,
-  MM_estimate        = species_est$mm$Smax,
-  Chao1_estimate     = species_est$chao1$Chao1,
-  iNEXT_estimate     = species_est$inext$S_asymptote,
-  Consensus_estimate = consensus_est
+  S_observed          = species_res$true_alleles,
+  MM_estimate         = species_est$mm$Smax,
+  Chao1_estimate      = species_est$chao1$Chao1,
+  iNEXT_estimate      = species_est$inext$S_asymptote,
+  Consensus_estimate  = consensus_est,
+  N_more_next_allele  = species_est$n_more$next1,
+  N_more_80pct_MM     = species_est$n_more$p80,
+  N_more_90pct_MM     = species_est$n_more$p90,
+  N_more_95pct_MM     = species_est$n_more$p95,
+  N_more_99pct_MM     = species_est$n_more$p99
 )
 
 write.table(
