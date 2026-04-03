@@ -13,8 +13,8 @@ Data flow
         ↓  (join + deduplicate)
   Per-individual allele set
         ↓
-  SRK_individual_allele_table.tsv     long format  (Individual, Protein, Allele)
-  SRK_individual_allele_genotypes.tsv wide matrix  (individuals × alleles, binary)
+  SRK_individual_allele_table.tsv     long format  (Individual, Protein, Allele, Count)
+  SRK_individual_allele_genotypes.tsv wide matrix  (individuals × alleles, copy counts)
 
 Reference sequences (IDs not starting with "Library") are excluded.
 
@@ -26,7 +26,7 @@ Usage
 import csv
 import os
 import sys
-from collections import defaultdict, OrderedDict
+from collections import defaultdict, OrderedDict, Counter
 
 # ─────────────────────────────────────────────────────────────────────────────
 # User settings
@@ -176,27 +176,36 @@ individual_pairs = {
     for ind, pairs in individual_data.items()
 }
 
-# individual → set of unique alleles
-individual_alleles = {
-    ind: sorted({allele for _, allele in pairs})
+# Count distinct proteins per allele bin per individual (= allele copy count)
+individual_allele_counts = {
+    ind: Counter(allele for _, allele in pairs)
     for ind, pairs in individual_pairs.items()
 }
 
+# individual → sorted list of unique alleles
+individual_alleles = {
+    ind: sorted(counts.keys())
+    for ind, counts in individual_allele_counts.items()
+}
+
 # ─────────────────────────────────────────────────────────────────────────────
-# Write long table  (Individual | Protein | Allele)
+# Write long table  (Individual | Protein | Allele | Count)
+# Count = distinct proteins from this individual assigned to this allele bin
 # ─────────────────────────────────────────────────────────────────────────────
 
 with open(LONG_OUT, "w", newline="") as out:
     writer = csv.writer(out, delimiter="\t")
-    writer.writerow(["Individual", "Protein", "Allele"])
+    writer.writerow(["Individual", "Protein", "Allele", "Count"])
     for individual in sorted(individual_pairs):
         for protein, allele in individual_pairs[individual]:
-            writer.writerow([individual, protein, allele])
+            writer.writerow([individual, protein, allele,
+                             individual_allele_counts[individual][allele]])
 
 print(f"\nLong table written to: {LONG_OUT}")
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Build and write wide binary genotype matrix  (individuals × alleles)
+# Build and write wide count genotype matrix  (individuals × alleles)
+# Values = distinct proteins per allele bin per individual (= allele copy count)
 # ─────────────────────────────────────────────────────────────────────────────
 
 all_alleles = sorted({
@@ -206,10 +215,9 @@ all_alleles = sorted({
 })
 
 genotype_matrix = OrderedDict()
-for individual in sorted(individual_alleles):
-    allele_set = set(individual_alleles[individual])
-    genotype_matrix[individual] = {a: 1 if a in allele_set else 0
-                                   for a in all_alleles}
+for individual in sorted(individual_allele_counts):
+    counts = individual_allele_counts[individual]
+    genotype_matrix[individual] = {a: counts.get(a, 0) for a in all_alleles}
 
 with open(WIDE_OUT, "w", newline="") as out:
     writer = csv.writer(out, delimiter="\t")
@@ -232,7 +240,8 @@ print(f"Min alleles/individual: {min(allele_counts)}")
 print(f"Max alleles/individual: {max(allele_counts)}")
 print(f"Mean alleles/individual: {sum(allele_counts)/len(allele_counts):.2f}")
 
-print("\nAllele carrier counts (individuals per allele):")
+print("\nAllele carrier counts (individuals carrying allele / total copy count):")
 for allele in all_alleles:
-    count = sum(1 for geno in genotype_matrix.values() if geno[allele] == 1)
-    print(f"  {allele}: {count} individuals")
+    n_carriers  = sum(1 for geno in genotype_matrix.values() if geno[allele] > 0)
+    total_copies = sum(geno[allele] for geno in genotype_matrix.values())
+    print(f"  {allele}: {n_carriers} individuals, {total_copies} total copies")

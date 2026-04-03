@@ -30,7 +30,7 @@ Boise, Idaho, USA
 -   **Reference-guided sequence orientation** and gap-filling procedures
 -   **SRK-specific protein validation** with optional domain analysis
 -   **Abundance-based filtering** to distinguish authentic alleles from technical artifacts
--   **Tetraploid zygosity analysis** for complex polyploid genetics
+-   **Tetraploid zygosity analysis** with allele copy-count dosage inference (AAAA, AAAB, AABB, AABC, ABCD) for complex polyploid genetics
 -   **Population genetic dataset generation** for demographic inference
 -   **Species allele richness estimation** using Michaelis-Menten, Chao1, and iNEXT estimators to quantify total SRK diversity and population deficits relative to the species optimum
 
@@ -53,12 +53,12 @@ The pipeline consists of **15 main steps organized into three phases**, progress
 
 9.  **SRK Protein Translation, Alignment, and Abundance Filtering Pipeline** – Translation of SRK alleles into proteins, alignment, and filtering based on abundance thresholds to retain functional candidates.
 10. **Distance-Based SRK S-Allele Definition** – Grouping of functional proteins into allele bins using pairwise amino acid p-distance on the S-domain ectodomain, with sensitivity analysis and amino acid variation heatmaps.
-11. **SRK S-Allele Genotyping Pipeline** – Assignment of distance-defined S-allele bins to individuals, producing long-format allele tables and binary genotype matrices for population genetic analysis.
-12. **SRK Zygosity Analysis Pipeline for Tetraploid Species** – Classification of individuals as homozygous or heterozygous and estimation of population-level zygosity statistics in tetraploid species.
+11. **SRK S-Allele Genotyping Pipeline** – Assignment of distance-defined S-allele bins to individuals, producing long-format allele tables (with allele copy counts) and count-based genotype matrices. Each cell in the wide matrix records the number of distinct proteins from that individual assigned to that allele bin, capturing dosage information for downstream zygosity inference and allele frequency analysis.
+12. **SRK Zygosity Analysis Pipeline for Tetraploid Species** – Classification of individuals as homozygous or heterozygous using the allele count matrix. Infers tetraploid genotype classes (AAAA, AAAB, AABB, AABC, ABCD) from both the number of distinct allele bins and their copy counts, and outputs an `Allele_composition` string (e.g. `Allele_044(2)+Allele_047(2)`) for direct use in cross planning.
 
 ## Phase 3: Data Analyses
 
-13. **Population Genetics Statistics** – Estimation of population-level diversity metrics, including heterozygosity, mean protein counts per individual, total allele counts, and effective allele numbers.
+13. **Population Genetics Statistics** – Estimation of population-level diversity metrics, including heterozygosity, mean alleles per individual, total allele counts, and effective allele numbers. Allele frequencies are based on copy counts summed across individuals (from the count matrix), giving a proper tetraploid frequency estimate.
 14. **Allele Accumulation Curves** – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators. Outputs an empirical species optimum used as a baseline in step 15.
 15. **Allele Frequency Analysis** – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under NFDS. The estimated species allele richness from step 14 is used as the optimum, quantifying how many alleles each population is missing relative to the species pool.
 
@@ -177,9 +177,9 @@ See the [Pipeline Documentation](https://svenbuerki.github.io/SRK_bioinformatics
 ### Key Outputs
 
 -   `SRK_functional_proteins.fasta` - Validated SRK protein sequences
--   `SRK_individual_allele_genotypes.tsv` - Binary allele presence/absence matrix
--   `SRK_individual_allele_table.tsv` - Long-format allele assignment table
--   `SRK_individual_zygosity.tsv` - Zygosity classifications
+-   `SRK_individual_allele_genotypes.tsv` - Allele copy-count matrix (individuals × allele bins; values = number of distinct proteins per individual per allele bin)
+-   `SRK_individual_allele_table.tsv` - Long-format allele assignment table (Individual, Protein, Allele, Count)
+-   `SRK_individual_zygosity.tsv` - Zygosity classifications with columns: `N_distinct_alleles`, `N_total_proteins`, `Zygosity`, `Genotype` (AAAA/AAAB/AABB/AABC/ABCD), `Allele_composition`
 -   `SRK_self_compatible_candidates.txt` - Potentially self-compatible individuals
 
 ### Population Genetic Outputs (Phase 3)

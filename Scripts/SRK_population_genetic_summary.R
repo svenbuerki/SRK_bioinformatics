@@ -10,7 +10,7 @@ cat("Starting SRK population genetic summary analysis\n")
 ############################
 
 geno <- read.table(
-  "SRK_individual_genotypes.tsv",
+  "SRK_individual_allele_genotypes.tsv",
   header = TRUE,
   sep = "\t",
   check.names = FALSE,
@@ -160,7 +160,7 @@ analyze_population <- function(pop) {
 
   if (nrow(z) > 0) {
     prop_het <- mean(z$Zygosity == "Heterozygous", na.rm = TRUE)
-    mean_prot <- mean(z$N_proteins, na.rm = TRUE)
+    mean_prot <- mean(z$N_distinct_alleles, na.rm = TRUE)
   } else {
     prop_het <- NA
     mean_prot <- NA
@@ -193,7 +193,7 @@ analyze_population <- function(pop) {
     Effective_alleles_Ne = round(Ne, 3),
     Prop_heterozygous = round(prop_het, 3),
     Prop_homozygous = round(1-prop_het, 3),
-    Mean_proteins = round(mean_prot, 3),
+    Mean_alleles = round(mean_prot, 3),
     Top_alleles = top_allele_info,
     stringsAsFactors = FALSE
   ))
@@ -225,7 +225,7 @@ for (pop in pops) {
       Effective_alleles_Ne = NA,
       Prop_heterozygous = NA,
       Prop_homozygous = NA,
-      Mean_proteins = NA,
+      Mean_alleles = NA,
       Top_alleles = "ERROR",
       stringsAsFactors = FALSE
     )

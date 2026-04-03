@@ -40,11 +40,12 @@ if (file.exists(est_file)) {
 # Load data
 ###############################
 
-allele_df <- read.table(
-  "SRK_individual_allele_table.tsv",
+geno <- read.table(
+  "SRK_individual_allele_genotypes.tsv",
   header = TRUE,
   sep = "\t",
-  stringsAsFactors = FALSE
+  stringsAsFactors = FALSE,
+  check.names = FALSE
 )
 
 meta_df <- read.csv(
@@ -53,61 +54,43 @@ meta_df <- read.csv(
 )
 
 ###############################
-# Detect allele/protein column automatically
-###############################
-
-if ("Allele" %in% colnames(allele_df)) {
-
-  allele_col <- "Allele"
-  cat("Detected distance-defined allele column\n")
-
-} else if ("Protein" %in% colnames(allele_df)) {
-
-  allele_col <- "Protein"
-  cat("Detected functional protein column\n")
-
-} else {
-
-  stop("ERROR: No Allele or Protein column found")
-
-}
-
-###############################
 # Keep ingroup only
 ###############################
 
 meta_df <- meta_df[meta_df$Ingroup == 1, ]
 
-allele_df <- allele_df[
-  allele_df$Individual %in% meta_df$SampleID,
-]
+geno <- geno[geno$Individual %in% meta_df$SampleID, ]
 
-allele_df$Population <- meta_df$Pop[
-  match(allele_df$Individual, meta_df$SampleID)
-]
+geno$Population <- meta_df$Pop[match(geno$Individual, meta_df$SampleID)]
 
-cat("Individuals analyzed:",
-    length(unique(allele_df$Individual)), "\n")
+allele_cols <- setdiff(colnames(geno), c("Individual", "Population"))
 
-cat("Unique proteins:",
-    length(unique(allele_df[[allele_col]])), "\n")
+geno[, allele_cols] <- lapply(geno[, allele_cols], as.numeric)
+
+cat("Individuals analyzed:", nrow(geno), "\n")
+cat("Allele bins:", length(allele_cols), "\n")
 
 ###############################
 # Safe chi-square function
 ###############################
 
-run_chisq <- function(df, allele_col) {
+run_chisq <- function(mat, allele_cols) {
 
-  allele_counts <- table(df[[allele_col]])
+  # Sum allele copy counts across individuals; remove absent alleles
+  allele_counts <- colSums(mat[, allele_cols, drop = FALSE])
+  allele_counts <- allele_counts[allele_counts > 0]
 
-  if (length(allele_counts) < 2) {
+  n_individuals <- nrow(mat)
+  n_alleles     <- length(allele_counts)
+
+  if (n_alleles < 2) {
 
     return(list(
 
       stats = data.frame(
 
-        N_individuals = length(unique(df$Individual)),
-        N_alleles = length(allele_counts),
+        N_individuals = n_individuals,
+        N_alleles     = n_alleles,
         X2 = NA,
         df = NA,
         p_value = NA
@@ -117,7 +100,7 @@ run_chisq <- function(df, allele_col) {
     ))
   }
 
-  obs <- as.numeric(allele_counts)
+  obs      <- as.numeric(allele_counts)
   exp_prob <- rep(1 / length(obs), length(obs))
 
   chisq <- suppressWarnings(
@@ -128,10 +111,10 @@ run_chisq <- function(df, allele_col) {
 
     stats = data.frame(
 
-      N_individuals = length(unique(df$Individual)),
-      N_alleles = length(obs),
-      X2 = as.numeric(chisq$statistic),
-      df = as.numeric(chisq$parameter),
+      N_individuals = n_individuals,
+      N_alleles     = n_alleles,
+      X2      = as.numeric(chisq$statistic),
+      df      = as.numeric(chisq$parameter),
       p_value = chisq$p.value
     ),
 
@@ -150,7 +133,7 @@ plot_list <- list()
 # Species-level
 ###############################
 
-res_species <- run_chisq(allele_df, allele_col)
+res_species <- run_chisq(geno, allele_cols)
 
 stats_species <- res_species$stats
 stats_species$Level <- "Species"
@@ -163,7 +146,8 @@ plot_list[["Species_All"]] <- res_species$counts
 # Population-level
 ###############################
 
-pop_sizes <- table(allele_df$Population)
+# One row per individual in geno — table() correctly counts unique individuals
+pop_sizes <- table(geno$Population)
 
 valid_pops <- names(pop_sizes[pop_sizes >= 5])
 
@@ -171,11 +155,9 @@ cat("Populations analyzed:", length(valid_pops), "\n")
 
 for (pop in valid_pops) {
 
-  df_pop <- allele_df[
-    allele_df$Population == pop,
-  ]
+  df_pop <- geno[geno$Population == pop, ]
 
-  res <- run_chisq(df_pop, allele_col)
+  res <- run_chisq(df_pop, allele_cols)
 
   stats <- res$stats
 

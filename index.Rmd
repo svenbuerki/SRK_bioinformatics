@@ -58,12 +58,12 @@ The pipeline consists of **15 main steps organized into three phases**, progress
 
 9. [SRK Protein Translation, Alignment, and Abundance Filtering Pipeline](#SRKprotandfilter) – Translation of SRK alleles into proteins, alignment, and filtering based on abundance thresholds to retain functional candidates.
 10. [Distance-Based SRK S-Allele Definition](#SRKalleledist) – Grouping of functional proteins into allele bins using pairwise amino acid p-distance on the S-domain ectodomain, with sensitivity analysis and amino acid variation heatmaps.
-11. [SRK S-Allele Genotyping Pipeline](#SRKfunctionalprotgenotype) – Assignment of distance-defined S-allele bins to individuals, producing long-format allele tables and binary genotype matrices for population genetic analysis.
+11. [SRK S-Allele Genotyping Pipeline](#SRKfunctionalprotgenotype) – Assignment of distance-defined S-allele bins to individuals, producing long-format allele tables (with allele copy counts) and count-based genotype matrices for population genetic analysis.
 12. [SRK Zygosity Analysis Pipeline for Tetraploid Species](#zygosity) – Classification of individuals as homozygous or heterozygous and estimation of population-level zygosity statistics in tetraploid species.
 
 ## Phase 3: Data Analyses
 
-12. [Population Genetics Statistics](#popgenetics) – Estimation of population-level diversity metrics, including heterozygosity, mean protein counts per individual, total allele counts, and effective allele numbers.
+12. [Population Genetics Statistics](#popgenetics) – Estimation of population-level diversity metrics, including heterozygosity, mean alleles per individual, total allele counts, and effective allele numbers.
 13. [Allele Accumulation Curves](#alleleaccum) – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators. Also estimates how many additional individuals would need to be sampled to discover one more allele or to reach 80%, 90%, 95%, and 99% of the MM-estimated asymptote.
 14. [Allele Frequency Analysis](#allelefrqanalysis) – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under negative frequency-dependent selection. The estimated species allele richness (from step 13) is used as the NFDS optimum baseline.
 
@@ -3160,7 +3160,9 @@ DOMAIN_REGIONS = [
 
 ### Overview
 
-This Python pipeline genotypes individuals based on **distance-defined S-allele bins** rather than raw functional protein sequences. The workflow joins two upstream outputs — the functional protein key (sequence → protein) and the allele assignment table (protein → allele) — to produce per-individual allele lists and a binary genotype matrix suitable for population genetic analysis. Reference sequences are automatically excluded; only `Library*` individuals are retained.
+This Python pipeline genotypes individuals based on **distance-defined S-allele bins** rather than raw functional protein sequences. The workflow joins two upstream outputs — the functional protein key (sequence → protein) and the allele assignment table (protein → allele) — to produce per-individual allele lists and a count-based genotype matrix for population genetic analysis. Reference sequences are automatically excluded; only `Library*` individuals are retained.
+
+The wide genotype matrix records **allele copy counts** (number of distinct proteins per individual assigned to each allele bin) rather than binary presence/absence. For a tetraploid, an individual with two proteins in Allele_044 and two in Allele_047 receives counts of 2 and 2 respectively, directly reflecting its AABB dosage state. This information drives zygosity inference and allele frequency estimation downstream.
 
 **Data flow:**
 
@@ -3170,7 +3172,7 @@ SRK_functional_protein_key.tsv      (Original_sequence_ID → Protein)
 SRK_protein_allele_assignments.tsv  (Protein → Allele)
         ↓  join + deduplicate per individual
 SRK_individual_allele_table.tsv     (long format: Individual | Protein | Allele)
-SRK_individual_allele_genotypes.tsv (wide binary matrix: individuals × alleles)
+SRK_individual_allele_genotypes.tsv (wide count matrix: individuals × alleles, values = allele copy counts)
 ```
 
 ### Inputs
@@ -3195,35 +3197,42 @@ Individual IDs are parsed from the sequence name by splitting on `_` and combini
 
 For each sequence assigned to an individual, the protein name is looked up in the allele assignment table. Sequences whose protein has no allele mapping are skipped with a warning count.
 
-#### Deduplication
+#### Deduplication and allele copy counting
 
-Multiple sequences from the same individual may map to the same protein, and multiple proteins may belong to the same allele bin. Both levels of redundancy are collapsed: the final allele set per individual contains only unique alleles.
+Multiple sequences from the same individual may map to the same protein, and multiple proteins may belong to the same allele bin. Identical (protein, allele) pairs are deduplicated. The number of distinct proteins per individual assigned to each allele bin is then counted using `Counter` — this count is the **allele copy count**, reflecting how many gene copies from that individual carry that allele class.
 
 #### Output generation
 
-A long-format table (one row per individual–protein–allele triple) and a wide binary presence/absence matrix (individuals × alleles) are written. The long table retains protein-level information so the protein → allele mapping can be traced if needed.
+A long-format table (one row per individual–protein–allele combination, with a `Count` column showing the allele copy count) and a wide count matrix (individuals × allele bins, values = allele copy counts) are written. The long table retains protein-level information so the protein → allele mapping can be traced. The count matrix replaces the old binary presence/absence format and directly encodes dosage information needed for zygosity inference and allele frequency analysis.
 
 ### Output Files
 
 | File | Format | Description |
 |---|---|---|
-| `SRK_individual_allele_table.tsv` | Long (Individual, Protein, Allele) | One row per unique individual–protein–allele combination |
-| `SRK_individual_allele_genotypes.tsv` | Wide binary matrix | Rows = individuals, columns = allele bins |
+| `SRK_individual_allele_table.tsv` | Long (Individual, Protein, Allele, Count) | One row per unique individual–protein–allele combination; Count = distinct proteins per individual per allele bin |
+| `SRK_individual_allele_genotypes.tsv` | Wide count matrix | Rows = individuals, columns = allele bins, values = allele copy counts |
 
 **Long format example:**
 ```
-Individual            Protein          Allele
-Library001_barcode01  SRK_protein_001  Allele_021
-Library001_barcode01  SRK_protein_045  Allele_009
-Library001_barcode02  SRK_protein_001  Allele_021
+Individual            Protein          Allele      Count
+Library001_barcode01  SRK_protein_001  Allele_044  2
+Library001_barcode01  SRK_protein_004  Allele_044  2
+Library001_barcode01  SRK_protein_002  Allele_047  2
+Library001_barcode01  SRK_protein_003  Allele_047  2
+Library001_barcode02  SRK_protein_006  Allele_019  1
+Library001_barcode02  SRK_protein_005  Allele_046  2
 ```
 
-**Wide format example:**
+The `Count` column records how many distinct proteins from that individual map to the same allele bin — repeated identically on every row sharing the same Individual + Allele combination.
+
+**Wide format example (allele copy counts):**
 ```
-Individual            Allele_001  Allele_009  Allele_021
-Library001_barcode01  0           1           1
-Library001_barcode02  0           0           1
+Individual            Allele_019  Allele_044  Allele_046  Allele_047
+Library001_barcode01  0           2           0           2
+Library001_barcode02  1           0           2           1
 ```
+
+Values > 1 indicate that more than one distinct protein from that individual was assigned to the same allele bin, consistent with multiple gene copies carrying that allele class.
 
 ### Results
 
@@ -3269,14 +3278,14 @@ Data flow
         + (join + deduplicate)
   Per-individual allele set
         +
-  SRK_individual_allele_table.tsv     long format  (Individual, Protein, Allele)
-  SRK_individual_allele_genotypes.tsv wide matrix  (individuals x alleles, binary)
+  SRK_individual_allele_table.tsv     long format  (Individual, Protein, Allele, Count)
+  SRK_individual_allele_genotypes.tsv wide matrix  (individuals x alleles, copy counts)
 
 Reference sequences (IDs not starting with "Library") are excluded.
 """
 
 import csv, os, sys
-from collections import defaultdict, OrderedDict
+from collections import defaultdict, OrderedDict, Counter
 
 PROTEIN_KEY_FILE  = "SRK_functional_protein_key.tsv"
 ALLELE_TSV_FILE   = "SRK_protein_allele_assignments.tsv"
@@ -3308,31 +3317,36 @@ with open(PROTEIN_KEY_FILE, newline="", encoding="utf-8-sig") as f:
             n_skipped_nomap += 1; continue
         individual_data[individual].append((row["Protein"], allele))
 
-individual_pairs   = {ind: sorted(set(pairs), key=lambda x: (x[1], x[0]))
-                      for ind, pairs in individual_data.items()}
-individual_alleles = {ind: sorted({a for _, a in pairs})
-                      for ind, pairs in individual_pairs.items()}
+individual_pairs = {ind: sorted(set(pairs), key=lambda x: (x[1], x[0]))
+                    for ind, pairs in individual_data.items()}
+
+# Count distinct proteins per allele bin per individual (= allele copy count)
+individual_allele_counts = {ind: Counter(a for _, a in pairs)
+                             for ind, pairs in individual_pairs.items()}
+
+individual_alleles = {ind: sorted(counts.keys())
+                      for ind, counts in individual_allele_counts.items()}
 
 with open(LONG_OUT, "w", newline="") as out:
     w = csv.writer(out, delimiter="\t")
-    w.writerow(["Individual", "Protein", "Allele"])
+    w.writerow(["Individual", "Protein", "Allele", "Count"])
     for ind in sorted(individual_pairs):
         for protein, allele in individual_pairs[ind]:
-            w.writerow([ind, protein, allele])
+            w.writerow([ind, protein, allele, individual_allele_counts[ind][allele]])
 
 all_alleles = sorted({a for v in individual_alleles.values() for a in v})
 with open(WIDE_OUT, "w", newline="") as out:
     w = csv.writer(out, delimiter="\t")
     w.writerow(["Individual"] + all_alleles)
-    for ind in sorted(individual_alleles):
-        aset = set(individual_alleles[ind])
-        w.writerow([ind] + [1 if a in aset else 0 for a in all_alleles])
+    for ind in sorted(individual_allele_counts):
+        counts = individual_allele_counts[ind]
+        w.writerow([ind] + [counts.get(a, 0) for a in all_alleles])
 
-counts = [len(v) for v in individual_alleles.values()]
+n_alleles_per_ind = [len(v) for v in individual_alleles.values()]
 print(f"Individuals genotyped  : {len(individual_alleles)}")
 print(f"S-alleles in matrix    : {len(all_alleles)}")
-print(f"Max alleles/individual : {max(counts)}")
-print(f"Mean alleles/individual: {sum(counts)/len(counts):.2f}")
+print(f"Max alleles/individual : {max(n_alleles_per_ind)}")
+print(f"Mean alleles/individual: {sum(n_alleles_per_ind)/len(n_alleles_per_ind):.2f}")
 ```
 
 ## SRK Class Assignment and Dominance Prediction Pipeline {#SRKclasses}
@@ -3943,83 +3957,76 @@ Zygosity analysis serves critical functions in polyploid self-incompatibility re
 
 #### Data Loading and Validation
 
-Loads individual-protein assignments from the genotyping pipeline:
+Loads the allele copy-count matrix produced by the genotyping pipeline:
 
 ```r
-df <- read.table(
-    "SRK_individual_protein_table.tsv",
-    header=TRUE,
-    sep="\t",
-    stringsAsFactors=FALSE
+geno <- read.table(
+  "SRK_individual_allele_genotypes.tsv",
+  header = TRUE,
+  sep = "\t",
+  stringsAsFactors = FALSE,
+  check.names = FALSE
 )
+allele_cols <- setdiff(colnames(geno), "Individual")
+geno[, allele_cols] <- lapply(geno[, allele_cols], as.numeric)
 ```
 
 **Data structure expectations:**
 
-- **Two-column format**: Individual identifier and Protein assignment
-- **Tab-delimited**: Standard format from upstream genotyping pipeline
-- **Header row**: Column names for Individual and Protein
-- **String preservation**: Prevents automatic factor conversion for downstream analysis
+- **Wide format**: rows = individuals, columns = allele bins
+- **Count values**: each cell records the number of distinct proteins from that individual assigned to that allele bin
+- **Tab-delimited**: standard format from upstream genotyping pipeline
 
-#### Protein Diversity Quantification
+#### Allele Diversity Quantification
 
-Calculates the number of distinct SRK proteins per individual:
+Computes two complementary measures of per-individual allele diversity:
 
 ```r
-library(dplyr)
-
-zyg <- df %>%
-    group_by(Individual) %>%
-    summarise(
-        N_proteins = n_distinct(Protein)
-    )
+N_distinct_alleles <- rowSums(geno[, allele_cols] > 0)
+N_total_proteins   <- rowSums(geno[, allele_cols])
 ```
 
-**Quantification features:**
-
-- **Individual grouping**: Aggregates all protein assignments per individual
-- **Distinct counting**: Uses `n_distinct()` to avoid counting duplicate proteins
-- **Complete enumeration**: Processes all individuals in dataset
-- **Efficient processing**: Leverages dplyr for optimized data manipulation
+- **`N_distinct_alleles`**: number of allele bins with at least one copy — the primary zygosity signal
+- **`N_total_proteins`**: sum of all copy counts across allele bins — reflects total protein recovery (approaches ploidy when sampling is complete)
 
 **Biological significance:**
 
-In tetraploid species, the number of distinct S-proteins reflects:
-- **Allelic diversity**: Higher numbers indicate greater S-locus heterozygosity
-- **Demographic history**: Bottlenecks reduce within-individual diversity
+In tetraploid species, these metrics reflect:
+- **Allelic diversity**: Higher `N_distinct_alleles` indicates greater S-locus heterozygosity
+- **Dosage information**: `N_total_proteins` captures how many gene copies were recovered per allele class
 - **Mating patterns**: Outcrossing maintains higher diversity than selfing
 
-#### Binary Zygosity Classification
+#### Zygosity Classification
 
-Assigns simplified homozygous vs. heterozygous categories:
+Assigns homozygous vs. heterozygous categories based on the number of distinct allele bins:
 
 ```r
-zyg$Zygosity <- ifelse(
-    zyg$N_proteins == 1,
-    "Homozygous",
-    "Heterozygous"
-)
+Zygosity <- ifelse(N_distinct_alleles == 1, "Homozygous", "Heterozygous")
 ```
 
 **Classification logic:**
 
-- **Homozygous**: Single distinct protein (AAAA genotype)
-- **Heterozygous**: Multiple distinct proteins (AABB, AABC, ABCD genotypes)
-- **Binary simplification**: Reduces complexity for basic population genetic analysis
-- **Functional relevance**: Homozygous individuals may exhibit compromised incompatibility
+- **Homozygous**: Single distinct allele bin present (AAAA genotype)
+- **Heterozygous**: Two or more distinct allele bins present (AAAB, AABB, AABC, ABCD genotypes)
+- **Functional relevance**: Homozygous individuals may exhibit compromised self-incompatibility
 
 #### Detailed Genotype Model Assignment
 
-Provides specific genotype configurations based on protein count:
+Assigns specific tetraploid genotype configurations using both the number of distinct allele bins and their copy counts:
 
 ```r
-zyg$Genotype <- case_when(
-    zyg$N_proteins == 1 ~ "AAAA",
-    zyg$N_proteins == 2 ~ "AABB",
-    zyg$N_proteins == 3 ~ "AABC",
-    zyg$N_proteins == 4 ~ "ABCD",
-    TRUE ~ "Unknown"
-)
+Genotype <- apply(geno[, allele_cols, drop = FALSE], 1, function(row) {
+  counts_present <- sort(row[row > 0], decreasing = TRUE)
+  n <- length(counts_present)
+  if (n == 1) return("AAAA")
+  if (n == 2) {
+    if (counts_present[1] >= 2 * counts_present[2]) return("AAAB")
+    return("AABB")
+  }
+  if (n == 3) return("AABC")
+  if (n >= 4) return("ABCD")
+  return("Unknown")
+})
 ```
 
 **Genotype model interpretations:**
@@ -4031,23 +4038,29 @@ zyg$Genotype <- case_when(
 - May result from inbreeding or population bottlenecks
 - Represents potential breakdown of self-incompatibility system
 
+**AAAB (Simplex heterozygous):**
+
+- Two distinct allele bins, but the dominant allele has ≥ 2× the copy count of the minor allele
+- Inferred when `counts_present[1] >= 2 * counts_present[2]`
+- One allele predominates (e.g. three copies of allele A, one copy of allele B)
+- Asymmetric dosage; the dominant allele may suppress the minor in sporophytic SI
+
 **AABB (Duplex heterozygous):**
 
-- Two copies each of two different S-alleles
-- Maintains incompatibility function through allelic diversity
+- Two distinct allele bins with roughly equal copy counts
+- Symmetric dosage — both alleles equally represented
 - Common pattern in balanced polyploid populations
-- Reflects structured mating or demographic processes
+- Maintains incompatibility through allelic diversity
 
 **AABC (Triplex heterozygous):**
 
-- One allele present in three copies, second allele in one copy
+- Three distinct allele bins; one allele present in two copies, the other two each in one copy
 - Intermediate heterozygosity level
-- May indicate recent hybridization or gene conversion events
-- Maintains incompatibility but with reduced diversity
+- Maintains incompatibility with good diversity
 
 **ABCD (Quadruplex heterozygous):**
 
-- Four different S-alleles across chromosome copies
+- Four distinct allele bins, each in one copy
 - Maximum within-individual S-locus diversity
 - Indicates strong outcrossing and large effective population size
 - Optimal configuration for maintaining incompatibility function
@@ -4078,16 +4091,19 @@ write.table(
 Provides comprehensive descriptive statistics:
 
 ```r
-cat("\nSummary:\n")
-print(table(zyg$N_proteins))
+cat("\nDistinct allele count distribution:\n")
+print(table(zyg$N_distinct_alleles))
+cat("\nZygosity distribution:\n")
 print(table(zyg$Zygosity))
+cat("\nGenotype distribution:\n")
+print(table(zyg$Genotype))
 ```
 
 **Statistical summaries:**
 
-- **Protein count distribution**: Frequency of each genotype class
+- **Distinct allele distribution**: Frequency of each N_distinct_alleles value
 - **Zygosity proportions**: Homozygous vs. heterozygous ratios
-- **Population assessment**: Overall genetic diversity patterns
+- **Genotype distribution**: Breakdown across AAAA, AAAB, AABB, AABC, ABCD classes
 - **Quality control**: Identification of unusual genotype frequencies
 
 #### Visualization Generation
@@ -4098,10 +4114,11 @@ Creates graphical summary of genotype diversity:
 pdf("SRK_zygosity_distribution.pdf")
 
 barplot(
-    table(zyg$N_proteins),
-    main="SRK genotype diversity",
-    xlab="Number of SRK proteins",
-    ylab="Number of individuals"
+  table(zyg$N_distinct_alleles),
+  main = "SRK genotype diversity (tetraploid)",
+  xlab = "Number of distinct SRK alleles",
+  ylab = "Number of individuals",
+  col  = "gray70"
 )
 
 dev.off()
@@ -4109,7 +4126,7 @@ dev.off()
 
 **Visualization features:**
 
-- **Bar plot format**: Clear representation of genotype frequency distribution
+- **Bar plot format**: Distribution of N_distinct_alleles across individuals
 - **PDF output**: High-quality vector graphics for publication
 - **Descriptive labels**: Clear axis labels and title
 - **Distribution assessment**: Visual identification of dominant genotype classes
@@ -4120,10 +4137,13 @@ dev.off()
 
 **Zygosity table (`SRK_individual_zygosity.tsv`):**
 
-- Individual identifiers with protein counts
+- Individual identifiers
+- `N_distinct_alleles`: number of allele bins with ≥1 copy
+- `N_total_proteins`: total allele copy count across all bins
 - Binary zygosity classification (Homozygous/Heterozygous)
-- Detailed genotype models (AAAA, AABB, AABC, ABCD)
-- Ready for downstream population genetic analysis
+- Detailed genotype models (AAAA, AAAB, AABB, AABC, ABCD)
+- `Allele_composition`: allele copy string, e.g. `Allele_044(2)+Allele_047(2)`
+- Ready for downstream population genetic analysis and cross planning
 
 **Distribution plot (`SRK_zygosity_distribution.pdf`):**
 
@@ -4134,12 +4154,14 @@ dev.off()
 #### Data Structure Example
 
 ```
-Individual      N_proteins  Zygosity      Genotype
-Library001_01   2          Heterozygous   AABB
-Library001_02   1          Homozygous     AAAA
-Library001_03   4          Heterozygous   ABCD
-Library001_04   3          Heterozygous   AABC
+Individual            N_distinct_alleles  N_total_proteins  Zygosity      Genotype  Allele_composition
+Library001_barcode01  2                   4                 Heterozygous  AABB      Allele_044(2)+Allele_047(2)
+Library001_barcode02  3                   4                 Heterozygous  AABC      Allele_019(1)+Allele_046(2)+Allele_047(1)
+Library001_barcode03  1                   1                 Homozygous    AAAA      Allele_017(1)
+Library001_barcode05  1                   2                 Homozygous    AAAA      Allele_017(2)
 ```
+
+Note: `N_total_proteins` = 4 indicates complete tetraploid allele recovery; values < 4 indicate partial recovery from sequencing. Homozygous individuals may have count > 1 (e.g., two copies of the same allele sequenced).
 
 ### Scientific Applications
 
@@ -4214,10 +4236,10 @@ This zygosity analysis pipeline provides essential insights into the genetic arc
 
 ### Bioinformatics
 
-- Goal: Score individual zygosity from genotypes to AAAA, AABB, AABC, ABCD based on number of recovered protein types
+- Goal: Score individual zygosity from the allele count matrix to AAAA, AAAB, AABB, AABC, ABCD based on number of distinct allele bins and their copy counts
 - Script: `SRK_zygosity_from_genotype.R`
 - Execute code: `Rscript SRK_zygosity_from_genotype.R`
-- Input: `SRK_individual_protein_table.tsv`
+- Input: `SRK_individual_allele_genotypes.tsv`
 - Output:
 	- `SRK_individual_zygosity.tsv`
 	- `SRK_zygosity_distribution.pdf`
@@ -4251,113 +4273,106 @@ SRK_zygosity_distribution.pdf
 
 ```R
 ############################################################
-# SRK zygosity analysis for tetraploid species
+# SRK zygosity analysis from allele count matrix
 ############################################################
 
-cat("\nStarting SRK zygosity analysis\n")
+cat("\nStarting SRK zygosity analysis from allele count matrix\n")
 
 ############################################################
-# Load data
+# Load allele count matrix
 ############################################################
 
-df <- read.table(
-
-"SRK_individual_protein_table.tsv",
-
-header=TRUE,
-sep="\t",
-stringsAsFactors=FALSE
-
+geno <- read.table(
+  "SRK_individual_allele_genotypes.tsv",
+  header = TRUE,
+  sep = "\t",
+  stringsAsFactors = FALSE,
+  check.names = FALSE
 )
 
-############################################################
-# Count proteins per individual
-############################################################
-
-library(dplyr)
-
-zyg <- df %>%
-
-group_by(Individual) %>%
-
-summarise(
-
-N_proteins = n_distinct(Protein)
-
-)
+allele_cols <- setdiff(colnames(geno), "Individual")
+geno[, allele_cols] <- lapply(geno[, allele_cols], as.numeric)
 
 ############################################################
-# Assign zygosity class
+# Compute per-individual statistics
 ############################################################
 
-zyg$Zygosity <- ifelse(
+N_distinct_alleles <- rowSums(geno[, allele_cols] > 0)
+N_total_proteins   <- rowSums(geno[, allele_cols])
 
-zyg$N_proteins == 1,
+############################################################
+# Assign zygosity
+############################################################
 
-"Homozygous",
-
-"Heterozygous"
-
-)
+Zygosity <- ifelse(N_distinct_alleles == 1, "Homozygous", "Heterozygous")
 
 ############################################################
 # Assign genotype model
+# AAAB: 2 distinct alleles, dominant allele has >= 2x copies of the minor allele
+# AABB: 2 distinct alleles, roughly equal copy numbers
 ############################################################
 
-zyg$Genotype <- case_when(
+Genotype <- apply(geno[, allele_cols, drop = FALSE], 1, function(row) {
+  counts_present <- sort(row[row > 0], decreasing = TRUE)
+  n <- length(counts_present)
+  if (n == 0) return("Unknown")
+  if (n == 1) return("AAAA")
+  if (n == 2) {
+    if (counts_present[1] >= 2 * counts_present[2]) return("AAAB")
+    return("AABB")
+  }
+  if (n == 3) return("AABC")
+  if (n >= 4) return("ABCD")
+  return("Unknown")
+})
 
-zyg$N_proteins == 1 ~ "AAAA",
-zyg$N_proteins == 2 ~ "AABB",
-zyg$N_proteins == 3 ~ "AABC",
-zyg$N_proteins == 4 ~ "ABCD",
-TRUE ~ "Unknown"
+############################################################
+# Build allele composition string
+############################################################
 
+Allele_composition <- apply(geno[, allele_cols, drop = FALSE], 1, function(row) {
+  present <- sort(row[row > 0])
+  if (length(present) == 0) return("None")
+  paste(paste0(names(present), "(", present, ")"), collapse = "+")
+})
+
+############################################################
+# Assemble and save
+############################################################
+
+zyg <- data.frame(
+  Individual         = geno$Individual,
+  N_distinct_alleles = N_distinct_alleles,
+  N_total_proteins   = N_total_proteins,
+  Zygosity           = Zygosity,
+  Genotype           = Genotype,
+  Allele_composition = Allele_composition,
+  stringsAsFactors = FALSE
 )
 
-############################################################
-# Save
-############################################################
-
-write.table(
-
-zyg,
-
-"SRK_individual_zygosity.tsv",
-
-sep="\t",
-quote=FALSE,
-row.names=FALSE
-
-)
+write.table(zyg, "SRK_individual_zygosity.tsv",
+            sep = "\t", quote = FALSE, row.names = FALSE)
 
 ############################################################
-# Summary stats
+# Summary and plot
 ############################################################
 
-cat("\nSummary:\n")
-
-print(table(zyg$N_proteins))
-
+cat("\nNumber of individuals:", nrow(zyg), "\n")
+cat("\nDistinct allele count distribution:\n")
+print(table(zyg$N_distinct_alleles))
+cat("\nZygosity distribution:\n")
 print(table(zyg$Zygosity))
-
-############################################################
-# Plot
-############################################################
+cat("\nGenotype distribution:\n")
+print(table(zyg$Genotype))
 
 pdf("SRK_zygosity_distribution.pdf")
-
 barplot(
-
-table(zyg$N_proteins),
-
-main="SRK genotype diversity",
-
-xlab="Number of SRK proteins",
-
-ylab="Number of individuals"
-
+  table(zyg$N_distinct_alleles),
+  main = "SRK genotype diversity (tetraploid)",
+  xlab = "Number of distinct SRK alleles",
+  ylab = "Number of individuals",
+  col  = "gray70"
 )
-
 dev.off()
 
 cat("\nOutput files:\n")
@@ -4414,15 +4429,17 @@ The pipeline integrates three datasets produced earlier in the SRK genotyping wo
 ##### Individual genotype matrix
 
 ```
-SRK_individual_genotypes.tsv
+SRK_individual_allele_genotypes.tsv
 ```
 
-Binary presence/absence matrix indicating whether each individual carries a given SRK protein allele.
+Allele copy-count matrix: each cell records the number of distinct proteins from that individual assigned to that allele bin. Values > 0 indicate presence; values > 1 indicate multiple gene copies carrying that allele class. Used for `colSums`-based allele frequency estimation.
 
 Example structure:
 
-| Individual | Protein_1 | Protein_2 | Protein_3 | ... |
-| ---------- | --------- | --------- | --------- | --- |
+| Individual | Allele_044 | Allele_046 | Allele_047 | ... |
+| ---------- | ---------- | ---------- | ---------- | --- |
+| Library001_barcode01 | 2 | 0 | 2 | ... |
+| Library001_barcode02 | 0 | 2 | 1 | ... |
 
 ##### Individual zygosity table
 
@@ -4430,14 +4447,14 @@ Example structure:
 SRK_individual_zygosity.tsv
 ```
 
-Table summarizing the number of SRK proteins detected in each individual and their inferred zygosity status.
+Table summarizing the number of distinct SRK allele bins and total protein copies per individual, with inferred zygosity and genotype.
 
 Example:
 
-| Individual           | N_proteins | Zygosity     | Genotype |
-| -------------------- | ---------- | ------------ | -------- |
-| Library001_barcode01 | 2          | Heterozygous | AABB     |
-| Library001_barcode02 | 1          | Homozygous   | AAAA     |
+| Individual           | N_distinct_alleles | N_total_proteins | Zygosity     | Genotype | Allele_composition         |
+| -------------------- | ------------------ | ---------------- | ------------ | -------- | -------------------------- |
+| Library001_barcode01 | 2                  | 4                | Heterozygous | AABB     | Allele_044(2)+Allele_047(2) |
+| Library001_barcode03 | 1                  | 1                | Homozygous   | AAAA     | Allele_017(1)               |
 
 ##### Sampling metadata
 
@@ -4463,16 +4480,16 @@ SRK_population_genetic_summary.tsv
 
 This table summarizes key statistics for each population:
 
-| Population | N_individuals | N_alleles | Effective_alleles_Ne | Prop_heterozygous | Prop_homozygous | Mean_proteins |
-| ---------- | ------------- | --------- | -------------------- | ----------------- | --------------- | ------------- |
+| Population | N_individuals | N_alleles | Effective_alleles_Ne | Prop_heterozygous | Prop_homozygous | Mean_alleles |
+| ---------- | ------------- | --------- | -------------------- | ----------------- | --------------- | ------------ |
 
 Example results:
 
-| Population | N_individuals | N_alleles | Effective_alleles_Ne | Prop_heterozygous | Prop_homozygous | Mean_proteins |
-| ---------- | ------------- | --------- | -------------------- | ----------------- | --------------- | ------------- |
-| 25         | 30            | 24        | 15.158               | 0.5               | 0.5             | 1.6           |
-| 67         | 10            | 10        | 8.909                | 0.4               | 0.6             | 1.4           |
-| 76         | 26            | 21        | 14.857               | 0.615             | 0.385           | 2             |
+| Population | N_individuals | N_alleles | Effective_alleles_Ne | Prop_heterozygous | Prop_homozygous | Mean_alleles |
+| ---------- | ------------- | --------- | -------------------- | ----------------- | --------------- | ------------ |
+| 25         | 32            | 12        | 5.853                | 0.438             | 0.562           | 1.438        |
+| 67         | 32            | 12        | 5.404                | 0.438             | 0.562           | 1.531        |
+| 76         | 25            | 9         | 4.930                | 0.480             | 0.520           | 1.480        |
 
 ##### Summary plots
 
@@ -4493,11 +4510,11 @@ These plots facilitate visual comparison among populations and help identify pot
 
 ###### Loading and filtering input data
 
-The script first loads genotype, zygosity, and metadata files. Only **ingroup samples** are retained for downstream analysis.
+The script first loads the allele count matrix, zygosity, and metadata files. Only **ingroup samples** are retained for downstream analysis.
 
 ```r
 geno <- read.table(
-  "SRK_individual_genotypes.tsv",
+  "SRK_individual_allele_genotypes.tsv",
   header = TRUE,
   sep = "\t",
   check.names = FALSE,
@@ -4523,16 +4540,16 @@ This filtering step ensures that only biologically relevant individuals are incl
 
 ##### Standardized genotype matrix processing
 
-The genotype matrix may contain mixed data types or missing values. The script therefore converts all genotype columns into a **clean numeric matrix**.
+The genotype matrix may contain mixed data types or missing values. The script converts all allele columns into a **clean numeric matrix** of allele copy counts.
 
 This step:
 
-* identifies protein allele columns
+* identifies allele bin columns
 * converts character or factor values to numeric
 * replaces missing values with zeros
-* produces a binary presence/absence matrix
+* produces the count matrix used for `colSums`-based allele frequency calculation
 
-The standardized matrix ensures compatibility with downstream population genetic calculations.
+`colSums` across the count matrix gives total allele copy counts per allele bin (not just the number of individuals carrying each allele), which is the correct denominator for allele frequency estimation in a tetraploid.
 
 ##### Population-level allele counting
 
@@ -4625,7 +4642,7 @@ Rscript SRK_population_genetic_summary.R
 
 #### Input files
 
-* `SRK_individual_genotypes.tsv`
+* `SRK_individual_allele_genotypes.tsv`
 * `SRK_individual_zygosity.tsv`
 * `sampling_metadata.csv`
 
@@ -4644,7 +4661,7 @@ Rscript SRK_population_genetic_summary.R
 cat("Starting SRK population genetic summary analysis\n")
 
 geno <- read.table(
-  "SRK_individual_genotypes.tsv",
+  "SRK_individual_allele_genotypes.tsv",
   header = TRUE,
   sep = "\t",
   check.names = FALSE,
@@ -4699,7 +4716,7 @@ analyze_population <- function(pop){
 
   prop_het <- mean(z$Zygosity=="Heterozygous",na.rm=TRUE)
 
-  mean_prot <- mean(z$N_proteins,na.rm=TRUE)
+  mean_alleles <- mean(z$N_distinct_alleles,na.rm=TRUE)
 
   data.frame(
     Population=pop,
@@ -4708,7 +4725,7 @@ analyze_population <- function(pop){
     Effective_alleles_Ne=round(Ne,3),
     Prop_heterozygous=round(prop_het,3),
     Prop_homozygous=round(1-prop_het,3),
-    Mean_proteins=round(mean_prot,3)
+    Mean_alleles=round(mean_alleles,3)
   )
 }
 
@@ -4751,11 +4768,11 @@ Two input datasets are combined:
 1. **SRK genotype matrix**
 2. **Sampling metadata**
 
-The genotype table contains binary allele presence/absence data for each individual, while the metadata provides population assignments and ingroup/outgroup classification.
+The genotype table contains allele copy counts for each individual (the same count matrix produced in Step 11), while the metadata provides population assignments and ingroup/outgroup classification. Allele presence for accumulation purposes is determined by `count > 0`, so the count values do not affect which alleles are considered discovered.
 
 ```r
 geno <- read.table(
-  "SRK_individual_genotypes.tsv",
+  "SRK_individual_allele_genotypes.tsv",
   header = TRUE,
   sep = "\t",
   check.names = FALSE,
@@ -4789,7 +4806,7 @@ This step ensures:
 
 #### Genotype Matrix Construction
 
-Allele presence/absence columns begin at column 2 of the genotype table. These columns are extracted to construct the allele matrix used for accumulation analyses.
+Allele count columns begin at column 2 of the genotype table. These columns are extracted to construct the allele matrix used for accumulation analyses.
 
 ```r
 allele_start_col <- 2
@@ -4809,13 +4826,15 @@ Key processing steps include:
 * Replacement of missing values with zero
 * Assignment of individual identifiers as row names
 
-This produces a **binary allele matrix** with:
+This produces an **allele count matrix** with:
 
 ```
 rows = individuals
-columns = SRK alleles
-values = presence (1) or absence (0)
+columns = SRK allele bins
+values = allele copy counts (0 = absent, >0 = present with that many gene copies)
 ```
+
+For accumulation curve purposes, presence is assessed as `count > 0`; the magnitude of the count does not affect allele discovery.
 
 #### Allele Accumulation Algorithm
 
@@ -5087,7 +5106,7 @@ Rscript SRK_allele_accumulation_analysis.R
 
 #### Input files
 
-* `SRK_individual_genotypes.tsv`
+* `SRK_individual_allele_genotypes.tsv`
 * `sampling_metadata.csv`
 
 Filtering criteria:
@@ -5309,7 +5328,7 @@ Rscript SRK_chisq_species_population.R
 #### Input Files
 
 * `SRK_species_richness_estimates.tsv` — produced by `SRK_allele_accumulation_analysis.R` (run first)
-* `SRK_individual_allele_table.tsv`
+* `SRK_individual_allele_genotypes.tsv` — allele count matrix (individuals × allele bins, values = copy counts)
 * `sampling_metadata.csv`
 
 #### Output Files
@@ -5322,7 +5341,7 @@ Rscript SRK_chisq_species_population.R
 ```r
 ############################################################
 # SRK allele frequency χ² tests
-# Updated for protein pipeline (2026)
+# Uses allele count matrix for proper copy-number frequencies
 ############################################################
 
 cat("\nStarting SRK chi-square analysis\n")
@@ -5331,59 +5350,33 @@ cat("\nStarting SRK chi-square analysis\n")
 # 1. Load files
 ############################################################
 
-protein_file <- "SRK_individual_protein_table.tsv"
-meta_file    <- "sampling_metadata.csv"
-
-if (!file.exists(protein_file)) {
-  stop(paste("ERROR: Cannot find", protein_file))
-}
-
-if (!file.exists(meta_file)) {
-  stop(paste("ERROR: Cannot find", meta_file))
-}
-
-allele_df <- read.table(
-  protein_file,
+geno <- read.table(
+  "SRK_individual_allele_genotypes.tsv",
   header = TRUE,
   sep = "\t",
   stringsAsFactors = FALSE,
-  quote = ""
+  check.names = FALSE
 )
 
 meta_df <- read.csv(
-  meta_file,
+  "sampling_metadata.csv",
   stringsAsFactors = FALSE
 )
 
 ############################################################
-# 2. Check required columns
-############################################################
-
-required_cols <- c("Individual", "Protein")
-
-missing_cols <- setdiff(required_cols, colnames(allele_df))
-
-if (length(missing_cols) > 0) {
-  stop(paste("Missing columns:", paste(missing_cols, collapse=", ")))
-}
-
-############################################################
-# 3. Keep ingroup only
+# 2. Keep ingroup only
 ############################################################
 
 meta_df <- meta_df[meta_df$Ingroup == 1, ]
 
-allele_df <- allele_df[
-  allele_df$Individual %in% meta_df$SampleID,
-]
+geno <- geno[geno$Individual %in% meta_df$SampleID, ]
 
-allele_df$Population <- meta_df$Pop[
-  match(allele_df$Individual, meta_df$SampleID)
-]
+geno$Population <- meta_df$Pop[match(geno$Individual, meta_df$SampleID)]
 
-cat("Individuals analysed:",
-    length(unique(allele_df$Individual)), "\n")
+allele_cols <- setdiff(colnames(geno), c("Individual", "Population"))
 
-cat("Proteins detected:",
-    length(unique(allele_df$Protein)), "\n")
+geno[, allele_cols] <- lapply(geno[, allele_cols], as.numeric)
+
+cat("Individuals analysed:", nrow(geno), "\n")
+cat("Allele bins:", length(allele_cols), "\n")
 ```
