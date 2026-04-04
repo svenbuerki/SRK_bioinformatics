@@ -22,6 +22,8 @@ The companion repository for this webpage is available at:
 
 https://github.com/svenbuerki/SRK_bioinformatics/
 
+For a concise step-by-step protocol (scripts, inputs, outputs, key parameters), see [Bioinformatics_pipeline.md](Bioinformatics_pipeline.md).
+
 ---
 
 # Introduction

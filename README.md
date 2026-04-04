@@ -165,6 +165,8 @@ Rscript SRK_chisq_species_population.R
 
 See the [Pipeline Documentation](https://svenbuerki.github.io/SRK_bioinformatics/) for comprehensive step-by-step instructions.
 
+For a concise step-by-step protocol (scripts, inputs, outputs, key parameters), see [Bioinformatics_pipeline.md](Bioinformatics_pipeline.md).
+
 ## Input Data Requirements
 
 -   **Nanopore amplicon sequencing data** (FASTQ format)
