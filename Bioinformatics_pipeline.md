@@ -382,9 +382,11 @@ Rscript SRK_zygosity_from_genotype.R
 
 ---
 
-### (Optional) SRK Class Assignment and Dominance Prediction
+### Step 12b — SRK Class Assignment and Dominance Prediction ⚠️ IN PROGRESS
 
-> This step assigns functional proteins to Class I or Class II using phylogenetic topology and predicts dominance behaviour for crossing decisions. Requires IQ-TREE3.
+> ⚠️ **Work in Progress — this step may not function correctly.** The script has not been fully validated on this dataset and the automated class assignment requires confirmation against published SRK references with known class assignments. Do not use outputs for conservation management decisions without independent validation. See also `tmp_SRK_classes_prediction.Rmd` (working draft, possibly outdated).
+
+**Biological rationale:** SRK alleles in Brassicaceae are phylogenetically structured into two classes with a strict dominance hierarchy — Class I alleles are dominant over Class II in heterozygous individuals. This directly determines cross-compatibility: individuals sharing a Class I allele are incompatible regardless of Class II alleles. Knowing which class each individual carries is therefore essential for planning crosses in a conservation breeding program.
 
 **Script:** `srk_phylogenetic_analysis.py`
 
@@ -396,7 +398,7 @@ python srk_phylogenetic_analysis.py
 
 **Inputs:**
 - `SRK_functional_proteins_aligned.fasta` — from Step 9
-- `SRK_individual_genotypes.tsv` — binary presence/absence matrix
+- `SRK_individual_genotypes.tsv` — ⚠️ **Note:** the script expects a binary presence/absence matrix; verify compatibility with the current count-matrix format (`SRK_individual_allele_genotypes.tsv`) before running
 - `sampling_metadata.csv` — must contain `Library`, `barcode`, `Ingroup` columns
 
 **Key parameters:**

@@ -1515,6 +1515,7 @@ border-radius: 0px;
 <li><a href="#SRKfunctionalprotgenotype">SRK S-Allele Genotyping Pipeline</a> – Assignment of distance-defined S-allele bins to individuals, producing long-format allele tables (with allele copy counts) and count-based genotype matrices for population genetic analysis.</li>
 <li><a href="#zygosity">SRK Zygosity Analysis Pipeline for Tetraploid Species</a> – Classification of individuals as homozygous or heterozygous and estimation of population-level zygosity statistics in tetraploid species.</li>
 </ol>
+<p><strong>⚠️ In Progress — Step 12b:</strong> <a href="#SRKclasses">SRK Class Assignment and Dominance Prediction Pipeline</a> – Phylogenetic classification of SRK proteins into Class I (dominant) or Class II (recessive) using IQ-TREE3, with per-individual dominance prediction for conservation breeding decisions. <strong>This analysis is under active development and may not function correctly on all datasets.</strong></p>
 </div>
 <div id="phase-3-data-analyses" class="section level2" number="3.3">
 <h2><span class="header-section-number">3.3</span> Phase 3: Data Analyses</h2>
@@ -5003,6 +5004,14 @@ print(f&quot;Mean alleles/individual: {sum(n_alleles_per_ind)/len(n_alleles_per_
 </div>
 <div id="SRKclasses" class="section level2" number="5.4">
 <h2><span class="header-section-number">5.4</span> SRK Class Assignment and Dominance Prediction Pipeline</h2>
+<blockquote>
+<p>⚠️ <strong>Work in Progress — This analysis is under active development and may not function correctly.</strong></p>
+<p>The automated class assignment (<code>srk_phylogenetic_analysis.py</code>) relies on IQ-TREE3 and phylogenetic topology inference that has not yet been fully validated for this dataset. In particular:
+- The “longest internal branch” heuristic for separating Class I from Class II has not been confirmed against published SRK references with known class assignments.
+- The script reads a <strong>binary presence/absence genotype matrix</strong> (<code>SRK_individual_genotypes.tsv</code>) that predates the current <strong>allele copy-count matrix</strong> (<code>SRK_individual_allele_genotypes.tsv</code>) produced by Step 11. Input file compatibility must be verified before running.
+- Results should be treated with caution and validated in FigTree/iTOL before use in conservation management decisions.</p>
+<p>A working draft of this analysis is also available in <code>tmp_SRK_classes_prediction.Rmd</code> (may be outdated relative to this section).</p>
+</blockquote>
 <div id="overview-9" class="section level3" number="5.4.1">
 <h3><span class="header-section-number">5.4.1</span> Overview</h3>
 <p>This Python pipeline takes the functional SRK protein alignment and individual genotype data, filters to ingroup individuals, infers a maximum-likelihood phylogenetic tree, and automatically assigns proteins to Class I or Class II based on tree topology. Per-individual class genotypes are then derived to predict dominance behaviour for crossing decisions in a conservation breeding program.</p>

@@ -63,6 +63,8 @@ The pipeline consists of **15 main steps organized into three phases**, progress
 11. [SRK S-Allele Genotyping Pipeline](#SRKfunctionalprotgenotype) – Assignment of distance-defined S-allele bins to individuals, producing long-format allele tables (with allele copy counts) and count-based genotype matrices for population genetic analysis.
 12. [SRK Zygosity Analysis Pipeline for Tetraploid Species](#zygosity) – Classification of individuals as homozygous or heterozygous and estimation of population-level zygosity statistics in tetraploid species.
 
+**⚠️ In Progress — Step 12b:** [SRK Class Assignment and Dominance Prediction Pipeline](#SRKclasses) – Phylogenetic classification of SRK proteins into Class I (dominant) or Class II (recessive) using IQ-TREE3, with per-individual dominance prediction for conservation breeding decisions. **This analysis is under active development and may not function correctly on all datasets.**
+
 ## Phase 3: Data Analyses
 
 12. [Population Genetics Statistics](#popgenetics) – Estimation of population-level diversity metrics, including heterozygosity, mean alleles per individual, total allele counts, and effective allele numbers.
@@ -3352,6 +3354,15 @@ print(f"Mean alleles/individual: {sum(n_alleles_per_ind)/len(n_alleles_per_ind):
 ```
 
 ## SRK Class Assignment and Dominance Prediction Pipeline {#SRKclasses}
+
+> ⚠️ **Work in Progress — This analysis is under active development and may not function correctly.**
+>
+> The automated class assignment (`srk_phylogenetic_analysis.py`) relies on IQ-TREE3 and phylogenetic topology inference that has not yet been fully validated for this dataset. In particular:
+> - The "longest internal branch" heuristic for separating Class I from Class II has not been confirmed against published SRK references with known class assignments.
+> - The script reads a **binary presence/absence genotype matrix** (`SRK_individual_genotypes.tsv`) that predates the current **allele copy-count matrix** (`SRK_individual_allele_genotypes.tsv`) produced by Step 11. Input file compatibility must be verified before running.
+> - Results should be treated with caution and validated in FigTree/iTOL before use in conservation management decisions.
+>
+> A working draft of this analysis is also available in `tmp_SRK_classes_prediction.Rmd` (may be outdated relative to this section).
 
 ### Overview
 
