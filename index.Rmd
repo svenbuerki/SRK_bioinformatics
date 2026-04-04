@@ -70,6 +70,7 @@ The pipeline consists of **15 main steps organized into three phases**, progress
 12. [Population Genetics Statistics](#popgenetics) – Estimation of population-level diversity metrics, including heterozygosity, mean alleles per individual, total allele counts, and effective allele numbers.
 13. [Allele Accumulation Curves](#alleleaccum) – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators. Also estimates how many additional individuals would need to be sampled to discover one more allele or to reach 80%, 90%, 95%, and 99% of the MM-estimated asymptote.
 14. [Allele Frequency Analysis](#allelefrqanalysis) – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under negative frequency-dependent selection. The estimated species allele richness (from step 13) is used as the NFDS optimum baseline.
+15. [Allele Composition Comparison Across Element Occurrences](#allelesharing) – UpSet plot and pairwise sharing heatmap quantifying how S-allele sets overlap and partition across Element Occurrences, identifying private alleles and alleles shared by all populations.
 
 ---
 
@@ -5393,3 +5394,69 @@ geno[, allele_cols] <- lapply(geno[, allele_cols], as.numeric)
 cat("Individuals analysed:", nrow(geno), "\n")
 cat("Allele bins:", length(allele_cols), "\n")
 ```
+
+---
+
+## Allele Composition Comparison Across Element Occurrences {#allelesharing}
+
+### Overview
+
+This step quantifies how S-allele sets are partitioned and shared across Element Occurrences (EOs). While allele accumulation curves (Step 14) and frequency analyses (Step 15) characterise diversity within and relative to the species optimum, this analysis asks a complementary question: **which alleles are exclusive to a single EO, which are shared between subsets, and which are ubiquitous?** The answer directly informs cross-population breeding decisions — EOs that share few alleles are the most important exchange partners for increasing allele richness in the focal population.
+
+Two complementary visualisations are produced:
+
+1. **UpSet plot** — displays all 2ⁿ−1 non-empty intersection sizes for *n* EOs, sorted by allele count. Single-EO bars (private alleles) are colour-coded per EO; multi-EO intersections are shown in grey with dot-matrix membership indicators below.
+2. **Pairwise sharing heatmap** — a symmetric *n* × *n* matrix showing the raw count of alleles present in both EOs of each pair. Diagonal values equal each EO's total allele richness.
+
+### Scientific Rationale
+
+Under negative frequency-dependent selection (NFDS), S-alleles are maintained at approximate frequency equality and are expected to be widely distributed across populations over evolutionary time. Conversely, genetic drift and habitat fragmentation lead to allele loss and population-private allele compositions — each remnant population retains only a subset of the ancestral species repertoire, with little overlap between populations. The UpSet and heatmap visualisations make this partitioning explicit:
+
+- **Many private alleles per EO**: indicates strong historical isolation and drift; each EO carries unique diversity that cannot be recovered from any other.
+- **Very few alleles shared across all EOs**: confirms that the species-wide allele pool is distributed rather than redundant — any single EO is an inadequate proxy for species diversity.
+- **Low pairwise sharing**: identifies which EO pairs are most compositionally distinct, making them the highest-priority partners for managed cross-population transfers.
+
+### Bioinformatics
+
+* Script: `SRK_allele_sharing_EOs.py`
+* Environment: `polyploid-model` (requires only pandas, numpy, matplotlib)
+* Execution:
+
+```bash
+# Default: reads SRK_individual_allele_genotypes.tsv and sampling_metadata.csv from current directory
+python SRK_allele_sharing_EOs.py
+
+# Custom paths / population selection
+python SRK_allele_sharing_EOs.py \
+    --genotypes SRK_individual_allele_genotypes.tsv \
+    --metadata sampling_metadata.csv \
+    --pops 25 27 67 70 76 \
+    --min-samples 5 \
+    --outdir figures/
+```
+
+#### Key Parameters
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `--genotypes` | `SRK_individual_allele_genotypes.tsv` | Allele count matrix from Step 11 |
+| `--metadata` | `sampling_metadata.csv` | Sampling metadata with `Pop` and `Ingroup` columns |
+| `--pops` | `25 27 67 70 76` | EO population IDs to include (space-separated) |
+| `--min-samples` | `5` | Minimum individuals per EO |
+| `--outdir` | `.` | Output directory for figures |
+
+#### Input Files
+
+* `SRK_individual_allele_genotypes.tsv` — allele count matrix (individuals × allele bins), from Step 11
+* `sampling_metadata.csv` — must contain `Pop` and `Ingroup` columns; `Pop` is matched as string
+
+#### Output Files
+
+* `SRK_allele_upset_EOs.pdf` — UpSet plot of all pairwise and higher-order allele set intersections
+* `SRK_allele_sharing_heatmap_EOs.pdf` — symmetric pairwise sharing heatmap
+
+#### Scientific Applications
+
+* Identify private alleles unique to one EO — these are irreplaceable and must be prioritised in rescue crosses
+* Identify alleles shared by all EOs — likely the most abundant, frequency-skewed alleles (consistent with NFDS erosion of rare alleles)
+* Guide cross-population transfer priorities: EO pairs with the lowest pairwise sharing offer the greatest complementarity for restoring allele richness

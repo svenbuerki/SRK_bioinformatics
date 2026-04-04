@@ -63,6 +63,7 @@ The pipeline consists of **15 main steps organized into three phases**, progress
 13. **Population Genetics Statistics** – Estimation of population-level diversity metrics, including heterozygosity, mean alleles per individual, total allele counts, and effective allele numbers. Allele frequencies are based on copy counts summed across individuals (from the count matrix), giving a proper tetraploid frequency estimate.
 14. **Allele Accumulation Curves** – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators. Outputs an empirical species optimum used as a baseline in step 15.
 15. **Allele Frequency Analysis** – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under NFDS. The estimated species allele richness from step 14 is used as the optimum, quantifying how many alleles each population is missing relative to the species pool.
+16. **Allele Composition Comparison Across Element Occurrences** – UpSet plot and pairwise sharing heatmap quantifying how S-allele sets partition across Element Occurrences, identifying private alleles and alleles shared across all populations. Requires only standard Python dependencies (pandas, numpy, matplotlib).
 
 ## Requirements
 
@@ -161,6 +162,9 @@ Rscript SRK_allele_accumulation_analysis.R
 
 # Step 15: Allele frequency analysis (reads SRK_species_richness_estimates.tsv)
 Rscript SRK_chisq_species_population.R
+
+# Step 16: Allele composition comparison across Element Occurrences
+python SRK_allele_sharing_EOs.py
 ```
 
 ### Detailed Usage
@@ -193,6 +197,8 @@ For a concise step-by-step protocol (scripts, inputs, outputs, key parameters), 
 -   `SRK_species_richness_estimates.tsv` - Consensus species allele richness estimate (input to step 15)
 -   `SRK_chisq_species_population.tsv` - χ² test statistics at species and population levels
 -   `SRK_chisq_species_population_frequency_plots.pdf` - Allele frequency plots showing observed distribution, NFDS expectation, and missing alleles relative to estimated optimum
+-   `SRK_allele_upset_EOs.pdf` - UpSet plot of all pairwise and higher-order allele set intersections across Element Occurrences
+-   `SRK_allele_sharing_heatmap_EOs.pdf` - Pairwise allele sharing heatmap between Element Occurrences
 
 ### Quality Control Reports
 
@@ -213,11 +219,13 @@ This pipeline is designed for:
 
 For a full worked example of results produced by this pipeline, see [LEPA_SRK_report.md](LEPA_SRK_report.md).
 
-Key findings from 152 individuals across four Element Occurrences:
-- **43 observed SRK alleles** species-wide, with a predicted total of **59** (Michaelis-Menten model)
-- All Element Occurrences retain only 20–42% of the species-level SI repertoire
+Key findings from **189 individuals across five Element Occurrences** (EO25, EO27, EO67, EO70, EO76):
+- **47 observed S-allele bins** species-wide, with a predicted total of **75** (consensus of Michaelis-Menten = 65 and Chao1 = 84)
+- All Element Occurrences retain only 11–40% of the species-level SI repertoire (EO70: 11%; EO27: 40%)
 - Allele frequencies are significantly skewed from NFDS expectations at every level (χ² *p* < 10⁻⁷)
-- 57% of individuals carry an AAAA genotype, flagging a high risk of reduced SI function
+- 56% of individuals carry an AAAA genotype (single allele, four copies), flagging a high risk of reduced SI function
+- S-allele sets are largely private to each EO: only **2 alleles** (Allele_044 and Allele_048) are shared across all five EOs; EO27 holds the most private alleles (10), EO70 the fewest (3)
+- Managed crossing simulations show 77–95% variance reduction within one generation vs. random mating, with zero allele loss under optimised preservation strategies
 
 ## Citation
 

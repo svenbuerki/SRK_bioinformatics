@@ -52,7 +52,21 @@ All five Element Occurrences (EOs) with sufficient sample sizes (≥25 individua
 | EO70 | 40 |  6 |  7 |  8 | 11% |
 | EO76 | 25 |  9 | 12 | 12 | 18% |
 
-EO27 retains the most allele diversity, yet even its asymptotic estimate of 26 alleles represents only 40% of the species optimum. EO70, despite being the most heavily sampled EO (40 individuals), harbours only 6 allele bins — the lowest richness of all five EOs and just 11% of the species optimum, suggesting severe historical bottlenecking or founder effects at this occurrence. Alleles are largely non-overlapping across Element Occurrences, with at most 5 alleles shared between any pair of EOs (EO25 ∩ EO27), meaning that no single Element Occurrence captures the full SI diversity of the species.
+EO27 retains the most allele diversity, yet even its asymptotic estimate of 26 alleles represents only 40% of the species optimum. EO70, despite being the most heavily sampled EO (40 individuals), harbours only 6 allele bins — the lowest richness of all five EOs and just 11% of the species optimum, suggesting severe historical bottlenecking or founder effects at this occurrence.
+
+**Allele set composition and sharing (Figure: [SRK_allele_upset_EOs.pdf](figures/SRK_allele_upset_EOs.pdf), [SRK_allele_sharing_heatmap_EOs.pdf](figures/SRK_allele_sharing_heatmap_EOs.pdf)):**
+
+S-allele sets are largely private to each Element Occurrence. Only **2 alleles — Allele_044 and Allele_048 — are shared across all five EOs**, and these are precisely the alleles with the highest copy counts species-wide, consistent with the severe frequency skew documented above. The remaining alleles are partitioned among EO subsets or are exclusive to a single EO:
+
+| Element Occurrence | Private alleles (exclusive to this EO) |
+|--------------------|:---:|
+| EO27 | 10 |
+| EO67 |  7 |
+| EO76 |  6 |
+| EO25 |  5 |
+| EO70 |  3 |
+
+EO27 holds the largest private allele set (10 alleles), reinforcing its status as the most allele-rich and irreplaceable contributor to the species SI repertoire. EO70, despite being the most depauperate EO, still retains 3 alleles found nowhere else. In pairwise comparisons, EO25 and EO27 share the most alleles (5), while EO70 shares only 2–3 alleles with any other EO — underscoring its compositional isolation and the importance of inter-EO crosses for redistributing allele diversity to this occurrence. No single Element Occurrence captures the full SI diversity of the species.
 
 **Allele frequency imbalance (Figure 4: [SRK_chisq_species_population_frequency_plots.pdf](figures/SRK_chisq_species_population_frequency_plots.pdf)):**
 

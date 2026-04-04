@@ -499,6 +499,48 @@ Rscript SRK_chisq_species_population.R
 
 ---
 
+### Step 16 — Allele Composition Comparison Across Element Occurrences
+
+**Script:** `SRK_allele_sharing_EOs.py`
+
+**Command:**
+```bash
+# Default: reads from current directory, compares EOs 25 27 67 70 76
+python SRK_allele_sharing_EOs.py
+
+# Custom paths / EO selection
+python SRK_allele_sharing_EOs.py \
+    --genotypes SRK_individual_allele_genotypes.tsv \
+    --metadata sampling_metadata.csv \
+    --pops 25 27 67 70 76 \
+    --min-samples 5 \
+    --outdir figures/
+```
+
+**Inputs:**
+- `SRK_individual_allele_genotypes.tsv` — from Step 11
+- `sampling_metadata.csv` — must contain `Pop` and `Ingroup` columns
+
+**Key parameters:**
+
+| Parameter | Default | Notes |
+|-----------|---------|-------|
+| `--pops` | `25 27 67 70 76` | EO IDs to compare (space-separated; matched as strings) |
+| `--min-samples` | `5` | Minimum individuals per EO |
+| `--outdir` | `.` | Output directory |
+
+**Key analysis:**
+- For each non-empty intersection of EO sets, counts alleles exclusive to exactly that combination
+- UpSet plot sorted by intersection size; private alleles colour-coded per EO
+- Pairwise heatmap shows raw shared-allele counts for every EO pair (diagonal = EO allele richness)
+- No additional dependencies beyond the `polyploid-model` environment (pandas, numpy, matplotlib)
+
+**Outputs:**
+- `SRK_allele_upset_EOs.pdf` — UpSet plot of all allele set intersections
+- `SRK_allele_sharing_heatmap_EOs.pdf` — pairwise sharing heatmap
+
+---
+
 ## Key Files at Each Phase Boundary
 
 | After step | Critical file(s) for downstream |
