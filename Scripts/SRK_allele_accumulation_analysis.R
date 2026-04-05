@@ -3,6 +3,7 @@
 # Uses same approach as your working R code
 ############################################################
 
+pdf(NULL)   # suppress automatic Rplots.pdf creation by Rscript
 cat("Starting SRK allele accumulation analysis\n")
 
 ############################################################
@@ -463,6 +464,86 @@ for (pop in valid_pops) {
 dev.off()
 
 cat("\nPDF written: SRK_allele_accumulation_curves.pdf\n")
+
+############################################################
+# 8b. Combined plot: all EOs on one axes (no species curve)
+############################################################
+
+cat("\nGenerating combined EO accumulation plot...\n")
+
+# Colour palette: one distinct colour per EO
+eo_colours <- c(
+  "#e41a1c", "#377eb8", "#4daf4a", "#ff7f00", "#984ea3",
+  "#a65628", "#f781bf"   # extras if more than 5 EOs
+)[seq_along(valid_pops)]
+names(eo_colours) <- valid_pops
+
+# Axis limits: y based on max observed alleles across EOs (not species)
+max_eo_alleles <- max(sapply(valid_pops, function(p) pop_results[[p]]$true_alleles))
+y_max <- max_eo_alleles * 1.25
+x_max <- max(sapply(valid_pops, function(p) length(pop_results[[p]]$mean_accum)))
+
+pdf("SRK_allele_accumulation_combined.pdf", width = 9, height = 6)
+par(mar = c(5, 4, 4, 10))   # wide right margin for end-of-line labels
+
+plot(
+  NA,
+  xlim = c(1, x_max),
+  ylim = c(0, y_max),
+  xlab = "Number of individuals sampled",
+  ylab = "Cumulative number of S-alleles",
+  main = "SRK allele accumulation: EO comparison",
+  las  = 1
+)
+grid(col = "grey90", lty = 1)
+
+# Species MM asymptote reference line (kept as context)
+if (!is.na(mm_sp$Smax)) {
+  abline(h = mm_sp$Smax, col = "grey40", lwd = 1.2, lty = 2)
+  mtext(
+    paste0("Species MM: ", mm_sp$Smax),
+    side = 4, at = mm_sp$Smax,
+    col = "grey40", cex = 0.72, las = 1, line = 0.3
+  )
+}
+
+# EO curves + CI bands + end labels
+for (pop in valid_pops) {
+  res   <- pop_results[[pop]]
+  n_pop <- length(res$mean_accum)
+  col_i <- eo_colours[pop]
+
+  polygon(
+    c(1:n_pop, rev(1:n_pop)),
+    c(res$mean_accum - res$sd_accum,
+      rev(res$mean_accum + res$sd_accum)),
+    col = adjustcolor(col_i, alpha.f = 0.15),
+    border = NA
+  )
+  lines(1:n_pop, res$mean_accum, col = col_i, lwd = 2)
+  text(
+    x = n_pop, y = res$mean_accum[n_pop],
+    labels = paste0("EO", pop, " (", res$true_alleles, ")"),
+    col = col_i, pos = 4, cex = 0.72, xpd = TRUE
+  )
+}
+
+# Legend
+legend(
+  "bottomright",
+  legend = sapply(valid_pops, function(p) {
+    n_p <- nrow(geno[geno$Population == p, ])
+    paste0("EO", p, "  N=", n_p, ", ", pop_results[[p]]$true_alleles, " alleles")
+  }),
+  col  = eo_colours[valid_pops],
+  lwd  = 2,
+  bty  = "n",
+  cex  = 0.78
+)
+
+dev.off()
+par(mar = c(5, 4, 4, 2))   # restore default margins
+cat("PDF written: SRK_allele_accumulation_combined.pdf\n")
 
 ############################################################
 # 9. Export statistics with CORRECT counts

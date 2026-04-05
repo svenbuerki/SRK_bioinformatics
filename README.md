@@ -31,12 +31,13 @@ Boise, Idaho, USA
 -   **SRK-specific protein validation** with optional domain analysis
 -   **Abundance-based filtering** to distinguish authentic alleles from technical artifacts
 -   **Tetraploid zygosity analysis** with allele copy-count dosage inference (AAAA, AAAB, AABB, AABC, ABCD) for complex polyploid genetics
+-   **Individual Genotypic Fitness Score (GFS)** quantifying heterozygous gamete proportion per individual — differentiates AABB (GFS = 0.667) from AAAB (GFS = 0.500) to guide seed parent selection and EO prioritisation
 -   **Population genetic dataset generation** for demographic inference
 -   **Species allele richness estimation** using Michaelis-Menten, Chao1, and iNEXT estimators to quantify total SRK diversity and population deficits relative to the species optimum
 
 ## Pipeline Workflow
 
-The pipeline consists of **15 main steps organized into three phases**, progressing from within-library sequence assembly to cross-library integration and final population genetic analyses.
+The pipeline consists of **18 main steps organized into three phases**, progressing from within-library sequence assembly to cross-library integration and final population genetic analyses.
 
 ## Phase 1: SRK Amplicon Sequence Assembly
 
@@ -61,9 +62,11 @@ The pipeline consists of **15 main steps organized into three phases**, progress
 ## Phase 3: Data Analyses
 
 13. **Population Genetics Statistics** – Estimation of population-level diversity metrics, including heterozygosity, mean alleles per individual, total allele counts, and effective allele numbers. Allele frequencies are based on copy counts summed across individuals (from the count matrix), giving a proper tetraploid frequency estimate.
-14. **Allele Accumulation Curves** – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators. Outputs an empirical species optimum used as a baseline in step 15.
+14. **Allele Accumulation Curves** – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators. Outputs an empirical species optimum used as a baseline in steps 15 and 16.
 15. **Allele Frequency Analysis** – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under NFDS. The estimated species allele richness from step 14 is used as the optimum, quantifying how many alleles each population is missing relative to the species pool.
-16. **Allele Composition Comparison Across Element Occurrences** – UpSet plot and pairwise sharing heatmap quantifying how S-allele sets partition across Element Occurrences, identifying private alleles and alleles shared across all populations. Requires only standard Python dependencies (pandas, numpy, matplotlib).
+16. **TP1 Tipping Point Analysis** – Diagnostic scatter plot synthesising Steps 13–15, positioning each EO by the proportion of the species optimum retained (x axis) and by allele frequency evenness (Ne/N, y axis). EOs breaching both thresholds (< 50% of optimum; Ne/N < 0.80) are flagged CRITICAL.
+17. **Allele Composition Comparison Across Element Occurrences** – UpSet plot and pairwise sharing heatmap quantifying how S-allele sets partition across Element Occurrences, identifying private alleles and alleles shared across all populations. Requires only standard Python dependencies (pandas, numpy, matplotlib).
+18. **Individual Genotypic Fitness Score (GFS)** – Per-individual metric quantifying the proportion of heterozygous diploid gametes a tetraploid can produce. Differentiates dosage-imbalanced genotypes (AABB vs AAAB) invisible to zygosity analysis alone. EOs are evaluated against two Tipping Point 2 (TP2) thresholds (mean GFS < 0.667; proportion AAAA > 30%) and flagged CRITICAL, AT RISK, or OK. Outputs ranked seed parent lists per EO.
 
 ## Requirements
 
@@ -88,10 +91,13 @@ pip install biopython pandas numpy
 ### R Dependencies
 
 ``` r
-install.packages(c("dplyr", "ggplot2", "bookdown"))
+install.packages(c("dplyr", "ggplot2", "readr", "tidyr", "forcats", "scales", "bookdown"))
 
 # Optional — required for iNEXT richness estimation in step 14:
 install.packages("iNEXT")
+
+# Optional — required for labelled scatter plot in step 17:
+install.packages("ggrepel")
 ```
 
 ## Installation
@@ -128,7 +134,7 @@ project/
 └── reference_sequences.fasta
 ```
 
-2.  **Run the within-library processing:**
+2.  **Phase 1 — SRK Amplicon Sequence Assembly (Steps 1–8):**
 
 ``` bash
 # Step 2: Assembly and phasing
@@ -140,7 +146,7 @@ project/
 # Continue with remaining steps...
 ```
 
-3.  **Run cross-library analysis (Phase 2):**
+3.  **Phase 2 — Functional Proteins, S Alleles and Genotyping (Steps 9–12):**
 
 ``` bash
 # Steps 9-12: Protein filtering, allele definition, genotyping, zygosity
@@ -150,21 +156,27 @@ Rscript scripts/11_srk_allele_genotyping.R
 Rscript scripts/12_zygosity_analysis.R
 ```
 
-4.  **Run population genetic analyses (Phase 3):**
+4.  **Phase 3 — Data Analyses (Steps 13–18):**
 
 ``` bash
 # Step 13: Population genetics statistics
-Rscript SRK_popgen_statistics.R
+Rscript SRK_population_genetic_summary.R
 
 # Step 14: Allele accumulation curves and richness estimation
-# (must run before step 15)
+# (must run before steps 15 and 16)
 Rscript SRK_allele_accumulation_analysis.R
 
 # Step 15: Allele frequency analysis (reads SRK_species_richness_estimates.tsv)
 Rscript SRK_chisq_species_population.R
 
-# Step 16: Allele composition comparison across Element Occurrences
+# Step 16: TP1 tipping point analysis (reads Steps 13 and 14 outputs)
+Rscript SRK_TP1_tipping_point.R
+
+# Step 17: Allele composition comparison across Element Occurrences
 python SRK_allele_sharing_EOs.py
+
+# Step 18: Individual Genotypic Fitness Score and TP2 tipping point analysis
+Rscript SRK_individual_GFS.R
 ```
 
 ### Detailed Usage
@@ -190,6 +202,9 @@ For a concise step-by-step protocol (scripts, inputs, outputs, key parameters), 
 -   `SRK_individual_zygosity.tsv` - Zygosity classifications with columns: `N_distinct_alleles`, `N_total_proteins`, `Zygosity`, `Genotype` (AAAA/AAAB/AABB/AABC/ABCD), `Allele_composition`
 -   `SRK_self_compatible_candidates.txt` - Potentially self-compatible individuals
 
+-   `SRK_TP1_summary.tsv` - Per-EO allele richness, frequency evenness, and TP1 status
+-   `SRK_TP1_tipping_point.pdf` - TP1 diagnostic scatter plot (richness retained × frequency evenness)
+
 ### Population Genetic Outputs (Phase 3)
 
 -   `SRK_allele_accumulation_curves.pdf` - Species- and population-level accumulation curves with estimated asymptotes
@@ -199,6 +214,9 @@ For a concise step-by-step protocol (scripts, inputs, outputs, key parameters), 
 -   `SRK_chisq_species_population_frequency_plots.pdf` - Allele frequency plots showing observed distribution, NFDS expectation, and missing alleles relative to estimated optimum
 -   `SRK_allele_upset_EOs.pdf` - UpSet plot of all pairwise and higher-order allele set intersections across Element Occurrences
 -   `SRK_allele_sharing_heatmap_EOs.pdf` - Pairwise allele sharing heatmap between Element Occurrences
+-   `SRK_individual_GFS.tsv` - Per-individual Genotypic Fitness Score, genotype class (AAAA/AAAB/AABB/AABC/ABCD), and EO assignment
+-   `SRK_EO_GFS_summary.tsv` - EO-level mean GFS, genotype class proportions, and Tipping Point 2 status (CRITICAL / AT RISK / OK)
+-   `SRK_GFS_plots.pdf` - Four diagnostic plots: stacked composition bars, individual GFS jitter with mean, TP2 tipping point map, and absolute count bars
 
 ### Quality Control Reports
 
@@ -223,7 +241,9 @@ Key findings from **189 individuals across five Element Occurrences** (EO25, EO2
 - **47 observed S-allele bins** species-wide, with a predicted total of **75** (consensus of Michaelis-Menten = 65 and Chao1 = 84)
 - All Element Occurrences retain only 11–40% of the species-level SI repertoire (EO70: 11%; EO27: 40%)
 - Allele frequencies are significantly skewed from NFDS expectations at every level (χ² *p* < 10⁻⁷)
-- 56% of individuals carry an AAAA genotype (single allele, four copies), flagging a high risk of reduced SI function
+- 55.6% of individuals carry an AAAA genotype (single allele, four copies), flagging a high risk of reduced SI function
+- A further 20.6% carry an AAAB genotype (GFS = 0.500) — dosage-imbalanced individuals that appear heterozygous but produce fewer diverse gametes than AABB individuals (GFS = 0.667)
+- All five EOs are flagged **CRITICAL** for Tipping Point 2 (mean GFS 0.22–0.30; proportion AAAA 52–62%); EO67 is least degraded and holds the only AABC individuals
 - S-allele sets are largely private to each EO: only **2 alleles** (Allele_044 and Allele_048) are shared across all five EOs; EO27 holds the most private alleles (10), EO70 the fewest (3)
 - Managed crossing simulations show 77–95% variance reduction within one generation vs. random mating, with zero allele loss under optimised preservation strategies
 

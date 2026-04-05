@@ -11,7 +11,7 @@
 
 <meta name="author" content="Sven Buerki - Boise State University" />
 
-<meta name="date" content="2026-04-04" />
+<meta name="date" content="2026-04-05" />
 
 <title>SRK Bioinformatics</title>
 
@@ -1469,7 +1469,7 @@ border-radius: 0px;
 <h1 class="title toc-ignore">SRK Bioinformatics</h1>
 <h3 class="subtitle">Nanopore-Based SRK Haplotype Reconstruction and Population Analysis Pipeline</h3>
 <h4 class="author">Sven Buerki - Boise State University</h4>
-<h4 class="date">2026-04-04</h4>
+<h4 class="date">2026-04-05</h4>
 
 </div>
 
@@ -1519,11 +1519,13 @@ border-radius: 0px;
 </div>
 <div id="phase-3-data-analyses" class="section level2" number="3.3">
 <h2><span class="header-section-number">3.3</span> Phase 3: Data Analyses</h2>
-<ol start="12" style="list-style-type: decimal">
+<ol start="13" style="list-style-type: decimal">
 <li><a href="#popgenetics">Population Genetics Statistics</a> – Estimation of population-level diversity metrics, including heterozygosity, mean alleles per individual, total allele counts, and effective allele numbers.</li>
-<li><a href="#alleleaccum">Allele Accumulation Curves</a> – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators. Also estimates how many additional individuals would need to be sampled to discover one more allele or to reach 80%, 90%, 95%, and 99% of the MM-estimated asymptote.</li>
-<li><a href="#allelefrqanalysis">Allele Frequency Analysis</a> – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under negative frequency-dependent selection. The estimated species allele richness (from step 13) is used as the NFDS optimum baseline.</li>
+<li><a href="#alleleaccum">Allele Accumulation Curves</a> – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators.</li>
+<li><a href="#allelefrqanalysis">Allele Frequency Analysis</a> – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under negative frequency-dependent selection. The estimated species allele richness (from step 14) is used as the NFDS optimum baseline.</li>
+<li><a href="#TP1">TP1 Tipping Point Analysis</a> – Diagnostic scatter plot positioning each EO by the proportion of the species optimum retained and by allele frequency evenness (Ne/N), with CRITICAL zone shading and TP1 status flags.</li>
 <li><a href="#allelesharing">Allele Composition Comparison Across Element Occurrences</a> – UpSet plot and pairwise sharing heatmap quantifying how S-allele sets overlap and partition across Element Occurrences, identifying private alleles and alleles shared by all populations.</li>
+<li><a href="#GFS">Individual Genotypic Fitness Score</a> – Per-individual GFS quantifying heterozygous gamete proportion; EO-level Tipping Point 2 (TP2) status flags (CRITICAL / AT RISK / OK).</li>
 </ol>
 <hr />
 </div>
@@ -6119,6 +6121,26 @@ cat(&quot;SRK_zygosity_distribution.pdf\n&quot;)</code></pre>
 </div>
 <div id="phase-3-data-analyses-1" class="section level1" number="6">
 <h1><span class="header-section-number">6</span> Phase 3: Data Analyses</h1>
+<p>Phase 3 evaluates the evolutionary status and conservation implications of the SI system by integrating population genetic theory with the genotype data generated in Phases 1 and 2. Three interconnected scientific questions structure the analyses.</p>
+<p><strong>Q1 — What are the population genetic parameters of the SRK system?</strong>
+Before interpreting SI diversity in an evolutionary framework, it is necessary to characterise each population’s fundamental genetic state: allele richness, effective allele number, heterozygosity, and mean alleles per individual (Step 13). These descriptors provide the empirical foundation for all downstream comparisons.</p>
+<p><strong>Q2 — What is the total allele richness of the SI system at the species level?</strong>
+Under negative frequency-dependent selection (NFDS), rare S-alleles confer a reproductive advantage because pollen bearing a rare allele can fertilise a larger proportion of compatible stigmas. This self-reinforcing dynamic drives the accumulation of allelic diversity and, at evolutionary equilibrium, pushes allele frequencies towards equality. The <em>species allele richness</em> — estimated from accumulation curves and asymptotic richness estimators (Michaelis-Menten, Chao1, iNEXT) applied to the full dataset (Step 14) — approximates this NFDS equilibrium. It represents the total pool of functionally distinct S-alleles maintained across the species and serves as the reference optimum against which population-level deficits are measured. This question is foundational: without a species-level baseline, it is impossible to determine how much allelic diversity individual populations have lost relative to the evolutionary expectation.</p>
+<p><strong>Q3 — How has genetic drift eroded the SI system at the population level?</strong>
+In small or isolated populations, genetic drift counteracts NFDS by stochastically eliminating rare alleles, skewing allele frequencies away from the equal-frequency expectation, and increasing the prevalence of homozygous genotypes. Drift erodes the SI system at two hierarchical levels, each corresponding to a conservation tipping point. <strong>Tipping Point 1 (TP1)</strong> is breached when a population has lost so many S-alleles relative to the species optimum that inter-population allele transfers are required to restore richness. <strong>Tipping Point 2 (TP2)</strong> is breached when the distribution of the remaining alleles across individuals has degraded to the point that managed crossing within the population cannot recover reproductive fitness without external introductions. Phase 3 quantifies both levels through four complementary analyses:</p>
+<p><em>TP1 — Allele richness and frequency analyses (Steps 14–17):</em></p>
+<ul>
+<li><strong>Allele accumulation curves</strong> (Step 14) reveal how many S-alleles each population retains relative to the species optimum, measuring the depth of drift-driven allele loss.</li>
+<li><strong>Allele frequency analysis</strong> (Step 15) tests whether population-level frequencies deviate from the equal-frequency NFDS expectation via χ² goodness-of-fit, using the species richness estimate from Step 14 as the optimum.</li>
+<li><strong>TP1 tipping point analysis</strong> (Step 16) synthesises Steps 13–15 into a single diagnostic plot, positioning each EO by the proportion of the species optimum it retains (x axis) and by allele frequency evenness — the ratio of effective allele number to observed allele count (Ne/N) — as a measure of departure from NFDS equal-frequency expectations (y axis). EOs breaching both thresholds (&lt; 50% of optimum and Ne/N &lt; 0.80) are flagged CRITICAL.</li>
+<li><strong>Allele composition comparison</strong> (Step 17) identifies which alleles are private to single populations versus shared across Element Occurrences, distinguishing populations that retain unique allelic diversity from those impoverished by isolation or founder effects.</li>
+</ul>
+<p><em>TP2 — Genotypic fitness analysis (Step 18):</em></p>
+<ul>
+<li><strong>Genotypic Fitness Score</strong> (Step 18) translates allele-level diversity into individual reproductive fitness. In a tetraploid, each diploid gamete is formed by randomly sampling 2 of the 4 allele copies at the SRK locus, yielding C(4,2) = 6 equally probable gamete combinations. GFS is the proportion of those combinations that carry two distinct alleles. This reveals dosage asymmetries invisible to zygosity classification alone: an AABB individual (2+2 copies) produces 4 of 6 heterozygous gametes (GFS = 0.667), while an AAAB individual (3+1 copies) produces only 3 of 6 (GFS = 0.500), even though both carry exactly two distinct alleles. EO-level summaries are evaluated against TP2 using two criteria: mean EO GFS below 0.667 and more than 30% of individuals carrying an AAAA genotype. EOs breaching both criteria are flagged <strong>CRITICAL</strong>; those breaching either one are flagged <strong>AT RISK</strong>; the remainder are <strong>OK</strong>.</li>
+</ul>
+<p>Together, these analyses trace the consequences of demographic decline from species-level diversity baselines, through population-level allele erosion and frequency skew, to individual-level reproductive fitness — providing a quantitative framework for prioritising conservation interventions.</p>
+<hr />
 <div id="popgenetics" class="section level2" number="6.1">
 <h2><span class="header-section-number">6.1</span> Population Genetic Statistics</h2>
 <div id="overview-11" class="section level3" number="6.1.1">
@@ -7100,6 +7122,7 @@ Late_fraction &lt; 0.10 → drift-dominated diversity</code></pre>
 <h4><span class="header-section-number">6.2.6.2</span> Output files</h4>
 <ul>
 <li><code>SRK_allele_accumulation_curves.pdf</code></li>
+<li><code>SRK_allele_accumulation_combined.pdf</code> — single-panel combined plot showing species and all EO accumulation curves on the same axes, with MM asymptote reference line; directly comparable across levels</li>
 <li><code>SRK_allele_accumulation_stats.tsv</code></li>
 <li><code>SRK_species_richness_estimates.tsv</code></li>
 </ul>
@@ -7434,10 +7457,52 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 </div>
 </div>
 </div>
-<div id="allelesharing" class="section level2" number="6.4">
-<h2><span class="header-section-number">6.4</span> Allele Composition Comparison Across Element Occurrences</h2>
-<div id="overview-14" class="section level3" number="6.4.1">
-<h3><span class="header-section-number">6.4.1</span> Overview</h3>
+<div id="TP1" class="section level2" number="6.4">
+<h2><span class="header-section-number">6.4</span> TP1 Tipping Point Analysis</h2>
+<blockquote>
+<p>Requires outputs from Steps 13 and 14. Run after both have completed.</p>
+</blockquote>
+<p><strong>Script:</strong> <code>SRK_TP1_tipping_point.R</code></p>
+<p><strong>Command:</strong></p>
+<pre class="bash"><code>Rscript SRK_TP1_tipping_point.R</code></pre>
+<p><strong>Inputs:</strong>
+- <code>SRK_population_genetic_summary.tsv</code> — from Step 13
+- <code>SRK_species_richness_estimates.tsv</code> — from Step 14</p>
+<p><strong>Key metrics per EO:</strong>
+- <code>prop_optimum</code> = N_alleles / MM_estimate — proportion of the species-level S-allele pool retained, using the Michaelis-Menten asymptote as the species optimum.
+- <code>evenness</code> = Ne / N_alleles — frequency evenness index. Ne (effective allele number) = 1/Σpᵢ², where pᵢ is the frequency of allele i; it answers <em>how many equally frequent alleles would produce the same level of diversity as observed</em>. When all alleles are at equal frequency (NFDS ideal), Ne = N and the ratio = 1.0. Genetic drift pushes the ratio downward by creating dominant alleles and marginalising rare ones. An EO with evenness = 0.50, for example, has allele frequencies so uneven that only half the observed alleles are effectively contributing to SI function — the remainder are present in such low copy numbers that they are rarely expressed in crosses and are at elevated risk of loss through drift.</p>
+<p><strong>TP1 thresholds (adjustable at top of script):</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Default</th>
+<th>Criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>TP1_PROP_OPTIMUM</code></td>
+<td>0.50</td>
+<td>EO retains &lt; 50% of species optimum</td>
+</tr>
+<tr class="even">
+<td><code>TP1_EVENNESS</code></td>
+<td>0.80</td>
+<td>Ne/N_alleles below 0.80</td>
+</tr>
+</tbody>
+</table>
+<p>EOs breaching both criteria are flagged <strong>CRITICAL</strong>; those breaching either one are flagged <strong>AT RISK</strong>; the remainder are <strong>OK</strong>.</p>
+<p><strong>Outputs:</strong>
+- <code>SRK_TP1_summary.tsv</code> — per-EO N_alleles, prop_optimum, evenness, and TP1 status
+- <code>SRK_TP1_tipping_point.pdf</code> — scatter plot positioning each EO by richness retained (x) and frequency evenness (y), with CRITICAL zone shading and threshold lines</p>
+<hr />
+</div>
+<div id="allelesharing" class="section level2" number="6.5">
+<h2><span class="header-section-number">6.5</span> Allele Composition Comparison Across Element Occurrences</h2>
+<div id="overview-14" class="section level3" number="6.5.1">
+<h3><span class="header-section-number">6.5.1</span> Overview</h3>
 <p>This step quantifies how S-allele sets are partitioned and shared across Element Occurrences (EOs). While allele accumulation curves (Step 14) and frequency analyses (Step 15) characterise diversity within and relative to the species optimum, this analysis asks a complementary question: <strong>which alleles are exclusive to a single EO, which are shared between subsets, and which are ubiquitous?</strong> The answer directly informs cross-population breeding decisions — EOs that share few alleles are the most important exchange partners for increasing allele richness in the focal population.</p>
 <p>Two complementary visualisations are produced:</p>
 <ol style="list-style-type: decimal">
@@ -7445,8 +7510,8 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 <li><strong>Pairwise sharing heatmap</strong> — a symmetric <em>n</em> × <em>n</em> matrix showing the raw count of alleles present in both EOs of each pair. Diagonal values equal each EO’s total allele richness.</li>
 </ol>
 </div>
-<div id="scientific-rationale-2" class="section level3" number="6.4.2">
-<h3><span class="header-section-number">6.4.2</span> Scientific Rationale</h3>
+<div id="scientific-rationale-2" class="section level3" number="6.5.2">
+<h3><span class="header-section-number">6.5.2</span> Scientific Rationale</h3>
 <p>Under negative frequency-dependent selection (NFDS), S-alleles are maintained at approximate frequency equality and are expected to be widely distributed across populations over evolutionary time. Conversely, genetic drift and habitat fragmentation lead to allele loss and population-private allele compositions — each remnant population retains only a subset of the ancestral species repertoire, with little overlap between populations. The UpSet and heatmap visualisations make this partitioning explicit:</p>
 <ul>
 <li><strong>Many private alleles per EO</strong>: indicates strong historical isolation and drift; each EO carries unique diversity that cannot be recovered from any other.</li>
@@ -7454,8 +7519,8 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 <li><strong>Low pairwise sharing</strong>: identifies which EO pairs are most compositionally distinct, making them the highest-priority partners for managed cross-population transfers.</li>
 </ul>
 </div>
-<div id="bioinformatics-14" class="section level3" number="6.4.3">
-<h3><span class="header-section-number">6.4.3</span> Bioinformatics</h3>
+<div id="bioinformatics-14" class="section level3" number="6.5.3">
+<h3><span class="header-section-number">6.5.3</span> Bioinformatics</h3>
 <ul>
 <li>Script: <code>SRK_allele_sharing_EOs.py</code></li>
 <li>Environment: <code>polyploid-model</code> (requires only pandas, numpy, matplotlib)</li>
@@ -7471,8 +7536,8 @@ python SRK_allele_sharing_EOs.py \
     --pops 25 27 67 70 76 \
     --min-samples 5 \
     --outdir figures/</code></pre>
-<div id="key-parameters" class="section level4" number="6.4.3.1">
-<h4><span class="header-section-number">6.4.3.1</span> Key Parameters</h4>
+<div id="key-parameters" class="section level4" number="6.5.3.1">
+<h4><span class="header-section-number">6.5.3.1</span> Key Parameters</h4>
 <table style="width:100%;">
 <colgroup>
 <col width="33%" />
@@ -7515,28 +7580,248 @@ python SRK_allele_sharing_EOs.py \
 </tbody>
 </table>
 </div>
-<div id="input-files-3" class="section level4" number="6.4.3.2">
-<h4><span class="header-section-number">6.4.3.2</span> Input Files</h4>
+<div id="input-files-3" class="section level4" number="6.5.3.2">
+<h4><span class="header-section-number">6.5.3.2</span> Input Files</h4>
 <ul>
 <li><code>SRK_individual_allele_genotypes.tsv</code> — allele count matrix (individuals × allele bins), from Step 11</li>
 <li><code>sampling_metadata.csv</code> — must contain <code>Pop</code> and <code>Ingroup</code> columns; <code>Pop</code> is matched as string</li>
 </ul>
 </div>
-<div id="output-files-16" class="section level4" number="6.4.3.3">
-<h4><span class="header-section-number">6.4.3.3</span> Output Files</h4>
+<div id="output-files-16" class="section level4" number="6.5.3.3">
+<h4><span class="header-section-number">6.5.3.3</span> Output Files</h4>
 <ul>
 <li><code>SRK_allele_upset_EOs.pdf</code> — UpSet plot of all pairwise and higher-order allele set intersections</li>
 <li><code>SRK_allele_sharing_heatmap_EOs.pdf</code> — symmetric pairwise sharing heatmap</li>
 </ul>
 </div>
-<div id="scientific-applications-7" class="section level4" number="6.4.3.4">
-<h4><span class="header-section-number">6.4.3.4</span> Scientific Applications</h4>
+<div id="scientific-applications-7" class="section level4" number="6.5.3.4">
+<h4><span class="header-section-number">6.5.3.4</span> Scientific Applications</h4>
 <ul>
 <li>Identify private alleles unique to one EO — these are irreplaceable and must be prioritised in rescue crosses</li>
 <li>Identify alleles shared by all EOs — likely the most abundant, frequency-skewed alleles (consistent with NFDS erosion of rare alleles)</li>
 <li>Guide cross-population transfer priorities: EO pairs with the lowest pairwise sharing offer the greatest complementarity for restoring allele richness</li>
 </ul>
+<hr />
 </div>
+</div>
+</div>
+<div id="GFS" class="section level2" number="6.6">
+<h2><span class="header-section-number">6.6</span> Individual Genotypic Fitness Score</h2>
+<div id="overview-15" class="section level3" number="6.6.1">
+<h3><span class="header-section-number">6.6.1</span> Overview</h3>
+<p>This analysis introduces the <strong>Genotypic Fitness Score (GFS)</strong> — a per-individual metric that quantifies reproductive potential under the tetraploid SI system. GFS is defined as the <strong>proportion of diploid gametes that carry two distinct alleles</strong> (heterozygous gametes), computed directly from allele copy numbers at the SRK locus.</p>
+<p>The key motivation is that two individuals carrying the same <em>number</em> of unique alleles can have very different seed production potential depending on the <em>dosage balance</em> of those alleles. For example:</p>
+<ul>
+<li><strong>AABB</strong> (two alleles, 2 copies each): produces 4 of 6 possible gamete types as heterozygous → <strong>GFS = 0.667</strong></li>
+<li><strong>AAAB</strong> (two alleles, 3+1 copies): produces only 3 of 6 gamete types as heterozygous → <strong>GFS = 0.500</strong></li>
+</ul>
+<p>This distinction is invisible to simple zygosity classification (both are “2-allele heterozygotes”) but has direct implications for managed crossing and seed orchard design.</p>
+</div>
+<div id="biological-rationale" class="section level3" number="6.6.2">
+<h3><span class="header-section-number">6.6.2</span> Biological Rationale</h3>
+<p>In a tetraploid, gametes are formed by sampling 2 alleles from the 4 copies at the SRK locus (C(4,2) = 6 equally likely combinations). The GFS captures the fraction of these gametes that are <em>heterozygous</em> — i.e., carry two different alleles. Heterozygous gametes maximise:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Compatibility range</strong>: offspring receiving two distinct alleles are less likely to be incompatible with any given mate</li>
+<li><strong>Allele diversity contribution</strong>: heterozygous gametes pass both alleles to the next generation, preventing allele loss through dosage asymmetry</li>
+<li><strong>NFDS benefit</strong>: diverse offspring have higher reproductive success under negative frequency-dependent selection</li>
+</ol>
+</div>
+<div id="formula" class="section level3" number="6.6.3">
+<h3><span class="header-section-number">6.6.3</span> Formula</h3>
+<p><span class="math display">\[\text{GFS}_i = 1 - \frac{\displaystyle\sum_k n_k\,(n_k - 1)}{12}\]</span></p>
+<p>where <span class="math inline">\(n_k\)</span> is the copy number of allele <span class="math inline">\(k\)</span> in individual <span class="math inline">\(i\)</span>, summed over all alleles present, and <span class="math inline">\(12 = 2 \times \binom{4}{2}\)</span> normalises to the full gamete space.</p>
+</div>
+<div id="genotype-class-mapping" class="section level3" number="6.6.4">
+<h3><span class="header-section-number">6.6.4</span> Genotype Class Mapping</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Genotype</th>
+<th>Copy-number profile</th>
+<th>GFS</th>
+<th>Heterozygous gametes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ABCD</td>
+<td>1, 1, 1, 1</td>
+<td><strong>1.000</strong></td>
+<td>6 / 6</td>
+</tr>
+<tr class="even">
+<td>AABC</td>
+<td>2, 1, 1</td>
+<td>0.833</td>
+<td>5 / 6</td>
+</tr>
+<tr class="odd">
+<td>AABB</td>
+<td>2, 2</td>
+<td><strong>0.667</strong></td>
+<td>4 / 6</td>
+</tr>
+<tr class="even">
+<td>AAAB</td>
+<td>3, 1</td>
+<td><strong>0.500</strong></td>
+<td>3 / 6</td>
+</tr>
+<tr class="odd">
+<td>AAAA</td>
+<td>4</td>
+<td>0.000</td>
+<td>0 / 6</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="tipping-point-2-thresholds" class="section level3" number="6.6.5">
+<h3><span class="header-section-number">6.6.5</span> Tipping Point 2 — Thresholds</h3>
+<p>GFS is the operational metric for <strong>Tipping Point 2 (TP2)</strong>: the point at which the <em>distribution of alleles across individuals</em> within an EO has degraded to the extent that managed crossing cannot recover fitness without external allele introductions.</p>
+<p>Two threshold conditions are evaluated for each EO:</p>
+<table>
+<colgroup>
+<col width="26%" />
+<col width="26%" />
+<col width="46%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Threshold</th>
+<th>Criterion</th>
+<th>Biological meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>TP2-mean</td>
+<td>mean GFS &lt; 0.667</td>
+<td>EO average is below the AABB level</td>
+</tr>
+<tr class="even">
+<td>TP2-AAAA</td>
+<td>prop(AAAA) &gt; 0.30</td>
+<td>More than 30% of individuals are SI dead-ends</td>
+</tr>
+</tbody>
+</table>
+<p>An EO is flagged <strong>CRITICAL</strong> when both thresholds are breached simultaneously.</p>
+</div>
+<div id="bioinformatics-15" class="section level3" number="6.6.6">
+<h3><span class="header-section-number">6.6.6</span> Bioinformatics</h3>
+<ul>
+<li>Script: <code>SRK_individual_GFS.R</code></li>
+<li>Environment: base R + tidyverse + ggplot2; <code>ggrepel</code> optional (for labelled scatter plot)</li>
+<li>Execution (run from project root):</li>
+</ul>
+<pre class="bash"><code>Rscript SRK_individual_GFS.R</code></pre>
+<div id="input-files-4" class="section level4" number="6.6.6.1">
+<h4><span class="header-section-number">6.6.6.1</span> Input Files</h4>
+<table>
+<colgroup>
+<col width="31%" />
+<col width="68%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>modeling/data/assigned_genotypes.tsv</code></td>
+<td>Per-individual tetraploid genotype assignments (4 allele columns + method)</td>
+</tr>
+<tr class="even">
+<td><code>modeling/data/salleles/sampling_metadata.csv</code></td>
+<td>Population metadata; must contain <code>SampleID</code>, <code>Pop</code>, and <code>Ingroup</code> columns</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="key-parameters-top-of-script" class="section level4" number="6.6.6.2">
+<h4><span class="header-section-number">6.6.6.2</span> Key Parameters (top of script)</h4>
+<table style="width:100%;">
+<colgroup>
+<col width="33%" />
+<col width="27%" />
+<col width="39%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>EO_MAP</code></td>
+<td>5-EO lookup vector</td>
+<td>Maps sub-population labels to EO identifiers</td>
+</tr>
+<tr class="even">
+<td><code>TP2_MEAN_GFS</code></td>
+<td>0.667</td>
+<td>Mean GFS threshold for TP2 breach</td>
+</tr>
+<tr class="odd">
+<td><code>TP2_PROP_AAAA</code></td>
+<td>0.30</td>
+<td>Proportion AAAA threshold for TP2 breach</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="output-files-17" class="section level4" number="6.6.6.3">
+<h4><span class="header-section-number">6.6.6.3</span> Output Files</h4>
+<table>
+<colgroup>
+<col width="40%" />
+<col width="60%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SRK_individual_GFS.tsv</code></td>
+<td>Per-individual GFS, genotype class, EO, and method</td>
+</tr>
+<tr class="even">
+<td><code>SRK_EO_GFS_summary.tsv</code></td>
+<td>EO-level mean GFS, class proportions, and TP2 status flags</td>
+</tr>
+<tr class="odd">
+<td><code>SRK_GFS_plots.pdf</code></td>
+<td>Four diagnostic plots (see below)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="diagnostic-plots" class="section level4" number="6.6.6.4">
+<h4><span class="header-section-number">6.6.6.4</span> Diagnostic Plots</h4>
+<ol style="list-style-type: decimal">
+<li><strong>Proportional stacked bar</strong> — genotype class composition per EO, with 30% AAAA threshold marked</li>
+<li><strong>Individual GFS jitter + mean crossbar</strong> — per-individual scores with AABB (0.667) and AAAB (0.500) threshold lines</li>
+<li><strong>TP2 tipping point map</strong> — scatter plot of prop(AAAA) × mean GFS with quadrant shading; EOs labelled by TP2 status</li>
+<li><strong>Absolute count stacked bar</strong> — raw individual counts per genotype class per EO</li>
+</ol>
+</div>
+</div>
+<div id="scientific-applications-8" class="section level3" number="6.6.7">
+<h3><span class="header-section-number">6.6.7</span> Scientific Applications</h3>
+<ul>
+<li><strong>EO prioritisation</strong>: EOs in the CRITICAL quadrant (high prop_AAAA AND low mean_GFS) need both allele importation (TP1 intervention) and targeted within-EO crossing to rebuild AABB/AABC/ABCD individuals</li>
+<li><strong>Seed parent selection</strong>: rank individuals within each EO by GFS; AABC and AABB individuals are priority seed parents over AAAB and AAAA</li>
+<li><strong>Crossing design</strong>: pairing two AAAB individuals carrying <em>different</em> allele pairs can produce AABB or AABC offspring — GFS identifies which pairs are worth prioritising</li>
+<li><strong>Monitoring</strong>: GFS can be tracked across generations to evaluate whether managed crossing is effectively redistributing allele dosage toward AABB/AABC/ABCD classes</li>
+</ul>
 </div>
 </div>
 </div>
