@@ -2,7 +2,13 @@
 
 ### Background
 
-Self-incompatibility (SI) in *LEPA* is controlled by the S-locus, where the extracellular S-domain of the S-receptor kinase (SRK) protein acts as the female determinant of pollen rejection. Each individual carries up to four allele copies (tetraploid), and compatible mating requires that pollen and pistil carry different SRK alleles. Loss of allele diversity through genetic drift therefore directly constrains reproductive success: individuals sharing the same allele are SI-incompatible and cannot produce seed together.
+Self-incompatibility (SI) in *LEPA* is controlled by the S-locus, where the extracellular S-domain of the S-receptor kinase (SRK) protein acts as the female determinant of pollen rejection. Each individual carries up to four allele copies (tetraploid), and compatible mating requires that pollen and pistil carry different SRK alleles. Under negative frequency-dependent selection (NFDS), all S-alleles are maintained at approximately equal frequencies, maximising the proportion of compatible mating pairs. In small or isolated populations, however, genetic drift counteracts NFDS — reducing allele richness, skewing allele frequencies, and degrading individual genotype quality — with direct consequences for reproductive success.
+
+The analyses presented here address a single overarching conservation question: **what is the impact of genetic drift on reproductive success?** Three sequential questions structure the assessment:
+
+1. **What is the S-allele richness of the species?** The species-level allele pool approximates the NFDS richness equilibrium and serves as the reference baseline against which population-level deficits are measured.
+2. **How did genetic drift impact populations' S-allele diversity?** Tipping Point 1 (TP1) identifies Element Occurrences (EOs) where allele loss and frequency skew are so severe that inter-population allele transfers are required to restore the SI system.
+3. **How did genetic drift impact the reproductive fitness of individuals within populations?** Tipping Point 2 (TP2) identifies EOs where allele copy-count imbalances at the individual level have degraded reproductive output to the point that within-population crosses alone cannot restore fitness.
 
 ---
 
