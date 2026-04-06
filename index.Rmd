@@ -42,9 +42,9 @@ Key innovations include multi-replicate assembly strategies for maximizing allel
 
 # Pipeline Overview
 
-The pipeline consists of **15 main steps organized into three phases**, progressing from within-library sequence assembly to cross-library integration and final population genetic analyses.
+The pipeline consists of **19 main steps organized into three phases**, progressing from within-library sequence assembly to cross-library integration and final population genetic analyses.
 
-## Phase 1: SRK amplicon sequence assembly
+## [Phase 1: SRK amplicon sequence assembly](#phase1)
 
 1. [Prepare Canonical Sequences](#prepcanseq) – Preparation of reference SRK sequences used for downstream assembly and validation.
 2. [Nanopore Amplicon Assembly and Phasing Pipeline](#nanampassphas) – Multi-CANU assembly of Nanopore amplicons followed by haplotype phasing to reconstruct allelic sequences.
@@ -56,7 +56,7 @@ The pipeline consists of **15 main steps organized into three phases**, progress
 8. [DNA to Amino Acid Translation Pipeline](#DNA2AA) – Frame-specific translation of nucleotide sequences into proteins.
    **Note:** This step is optional and may be skipped if protein sequences are not required.
 
-## Phase 2: Functional proteins, S alleles and genotyping
+## [Phase 2: Functional proteins, S alleles and genotyping](#phase2)
 
 9. [SRK Protein Translation, Alignment, and Abundance Filtering Pipeline](#SRKprotandfilter) – Translation of SRK alleles into proteins, alignment, and filtering based on abundance thresholds to retain functional candidates.
 10. [Distance-Based SRK S-Allele Definition](#SRKalleledist) – Grouping of functional proteins into allele bins using pairwise amino acid p-distance on the S-domain ectodomain, with sensitivity analysis and amino acid variation heatmaps.
@@ -65,18 +65,19 @@ The pipeline consists of **15 main steps organized into three phases**, progress
 
 **⚠️ In Progress — Step 12b:** [SRK Class Assignment and Dominance Prediction Pipeline](#SRKclasses) – Phylogenetic classification of SRK proteins into Class I (dominant) or Class II (recessive) using IQ-TREE3, with per-individual dominance prediction for conservation breeding decisions. **This analysis is under active development and may not function correctly on all datasets.**
 
-## Phase 3: Data Analyses
+## [Phase 3: Data Analyses](#phase3)
 
 13. [Population Genetics Statistics](#popgenetics) – Estimation of population-level diversity metrics, including heterozygosity, mean alleles per individual, total allele counts, and effective allele numbers.
 14. [Allele Accumulation Curves](#alleleaccum) – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators.
 15. [Allele Frequency Analysis](#allelefrqanalysis) – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under negative frequency-dependent selection. The estimated species allele richness (from step 14) is used as the NFDS optimum baseline.
 16. [TP1 Tipping Point Analysis](#TP1) – Diagnostic scatter plot positioning each EO by the proportion of the species optimum retained and by allele frequency evenness (Ne/N), with CRITICAL zone shading and TP1 status flags.
 17. [Allele Composition Comparison Across Element Occurrences](#allelesharing) – UpSet plot and pairwise sharing heatmap quantifying how S-allele sets overlap and partition across Element Occurrences, identifying private alleles and alleles shared by all populations.
-18. [Individual Genotypic Fitness Score](#GFS) – Per-individual GFS quantifying heterozygous gamete proportion; EO-level Tipping Point 2 (TP2) status flags (CRITICAL / AT RISK / OK).
+18. [Individual Genotypic Fitness Score](#GFS) – Per-individual GFS quantifying the proportion of heterozygous diploid gametes a tetraploid individual can produce, differentiating dosage-imbalanced genotypes (e.g. AABB vs AAAB) invisible to simple zygosity classification.
+19. [TP2 Tipping Point Analysis](#TP2) – EO-level tipping point assessment placing mean GFS and proportion of AAAA individuals in interaction; EOs breaching both thresholds simultaneously are flagged CRITICAL.
 
 ---
 
-# Phase 1: SRK amplicon sequence assembly
+# Phase 1: SRK amplicon sequence assembly {#phase1}
 
 ## Prepare Canonical Sequences {#prepcanseq}
 
@@ -2090,7 +2091,7 @@ print(f"AA FASTA written to: {out_fasta}")
 
 ---
 
-# Phase 2: Functional proteins, S alleles and genotyping
+# Phase 2: Functional proteins, S alleles and genotyping {#phase2}
 
 ## SRK Protein Translation, Alignment, and Abundance Filtering Pipeline {#SRKprotandfilter}
 
@@ -4398,29 +4399,32 @@ cat("SRK_zygosity_distribution.pdf\n")
 
 ---
 
-# Phase 3: Data Analyses
+# Phase 3: Data Analyses {#phase3}
+
+## Scientific Approach {#phase3-approach}
 
 Phase 3 evaluates the evolutionary status and conservation implications of the SI system by integrating population genetic theory with the genotype data generated in Phases 1 and 2. Three interconnected scientific questions structure the analyses.
 
 **Q1 — What are the population genetic parameters of the SRK system?**
-Before interpreting SI diversity in an evolutionary framework, it is necessary to characterise each population's fundamental genetic state: allele richness, effective allele number, heterozygosity, and mean alleles per individual (Step 13). These descriptors provide the empirical foundation for all downstream comparisons.
+Before interpreting SI diversity in an evolutionary framework, it is necessary to characterise each population's fundamental genetic state: allele richness, effective allele number, heterozygosity, and mean alleles per individual ([Step 13](#popgenetics)). These descriptors provide the empirical foundation for all downstream comparisons.
 
 **Q2 — What is the total allele richness of the SI system at the species level?**
-Under negative frequency-dependent selection (NFDS), rare S-alleles confer a reproductive advantage because pollen bearing a rare allele can fertilise a larger proportion of compatible stigmas. This self-reinforcing dynamic drives the accumulation of allelic diversity and, at evolutionary equilibrium, pushes allele frequencies towards equality. The *species allele richness* — estimated from accumulation curves and asymptotic richness estimators (Michaelis-Menten, Chao1, iNEXT) applied to the full dataset (Step 14) — approximates this NFDS equilibrium. It represents the total pool of functionally distinct S-alleles maintained across the species and serves as the reference optimum against which population-level deficits are measured. This question is foundational: without a species-level baseline, it is impossible to determine how much allelic diversity individual populations have lost relative to the evolutionary expectation.
+Under negative frequency-dependent selection (NFDS), rare S-alleles confer a reproductive advantage because pollen bearing a rare allele can fertilise a larger proportion of compatible stigmas. This self-reinforcing dynamic drives the accumulation of allelic diversity and, at evolutionary equilibrium, pushes allele frequencies towards equality. The *species allele richness* — estimated from accumulation curves and asymptotic richness estimators (Michaelis-Menten, Chao1, iNEXT) applied to the full dataset ([Step 14](#alleleaccum)) — approximates this NFDS equilibrium. It represents the total pool of functionally distinct S-alleles maintained across the species and serves as the reference optimum against which population-level deficits are measured. This question is foundational: without a species-level baseline, it is impossible to determine how much allelic diversity individual populations have lost relative to the evolutionary expectation.
 
 **Q3 — How has genetic drift eroded the SI system at the population level?**
-In small or isolated populations, genetic drift counteracts NFDS by stochastically eliminating rare alleles, skewing allele frequencies away from the equal-frequency expectation, and increasing the prevalence of homozygous genotypes. Drift erodes the SI system at two hierarchical levels, each corresponding to a conservation tipping point. **Tipping Point 1 (TP1)** is breached when a population has lost so many S-alleles relative to the species optimum that inter-population allele transfers are required to restore richness. **Tipping Point 2 (TP2)** is breached when the distribution of the remaining alleles across individuals has degraded to the point that managed crossing within the population cannot recover reproductive fitness without external introductions. Phase 3 quantifies both levels through four complementary analyses:
+In small or isolated populations, genetic drift counteracts NFDS by stochastically eliminating rare alleles, skewing allele frequencies away from the equal-frequency expectation, and increasing the prevalence of homozygous genotypes. Drift erodes the SI system at two hierarchical levels, each corresponding to a conservation tipping point. **Tipping Point 1 (TP1)** is breached when a population has lost so many S-alleles relative to the species optimum that inter-population allele transfers are required to restore richness. **Tipping Point 2 (TP2)** is breached when the distribution of the remaining alleles across individuals has degraded to the point that managed crossing within the population cannot recover reproductive fitness without external introductions. Phase 3 quantifies both levels through five complementary analyses:
 
-*TP1 — Allele richness and frequency analyses (Steps 14–17):*
+*TP1 — Allele richness and frequency analyses ([Steps 14](#alleleaccum)–[17](#allelesharing)):*
 
-- **Allele accumulation curves** (Step 14) reveal how many S-alleles each population retains relative to the species optimum, measuring the depth of drift-driven allele loss.
-- **Allele frequency analysis** (Step 15) tests whether population-level frequencies deviate from the equal-frequency NFDS expectation via χ² goodness-of-fit, using the species richness estimate from Step 14 as the optimum.
-- **TP1 tipping point analysis** (Step 16) synthesises Steps 13–15 into a single diagnostic plot, positioning each EO by the proportion of the species optimum it retains (x axis) and by allele frequency evenness — the ratio of effective allele number to observed allele count (Ne/N) — as a measure of departure from NFDS equal-frequency expectations (y axis). EOs breaching both thresholds (< 50% of optimum and Ne/N < 0.80) are flagged CRITICAL.
-- **Allele composition comparison** (Step 17) identifies which alleles are private to single populations versus shared across Element Occurrences, distinguishing populations that retain unique allelic diversity from those impoverished by isolation or founder effects.
+- **Allele accumulation curves** ([Step 14](#alleleaccum)) reveal how many S-alleles each population retains relative to the species optimum, measuring the depth of drift-driven allele loss.
+- **Allele frequency analysis** ([Step 15](#allelefrqanalysis)) tests whether population-level frequencies deviate from the equal-frequency NFDS expectation via χ² goodness-of-fit, using the species richness estimate from [Step 14](#alleleaccum) as the optimum.
+- **TP1 tipping point analysis** ([Step 16](#TP1)) synthesises [Steps 13](#popgenetics)–[15](#allelefrqanalysis) into a single diagnostic plot, positioning each EO by the proportion of the species optimum it retains (x axis) and by allele frequency evenness — the ratio of effective allele number to observed allele count (Ne/N) — as a measure of departure from NFDS equal-frequency expectations (y axis). EOs breaching both thresholds (< 50% of optimum and Ne/N < 0.80) are flagged CRITICAL.
+- **Allele composition comparison** ([Step 17](#allelesharing)) identifies which alleles are private to single populations versus shared across Element Occurrences, distinguishing populations that retain unique allelic diversity from those impoverished by isolation or founder effects.
 
-*TP2 — Genotypic fitness analysis (Step 18):*
+*TP2 — Genotypic fitness analysis ([Steps 18](#GFS)–[19](#TP2)):*
 
-- **Genotypic Fitness Score** (Step 18) translates allele-level diversity into individual reproductive fitness. In a tetraploid, each diploid gamete is formed by randomly sampling 2 of the 4 allele copies at the SRK locus, yielding C(4,2) = 6 equally probable gamete combinations. GFS is the proportion of those combinations that carry two distinct alleles. This reveals dosage asymmetries invisible to zygosity classification alone: an AABB individual (2+2 copies) produces 4 of 6 heterozygous gametes (GFS = 0.667), while an AAAB individual (3+1 copies) produces only 3 of 6 (GFS = 0.500), even though both carry exactly two distinct alleles. EO-level summaries are evaluated against TP2 using two criteria: mean EO GFS below 0.667 and more than 30% of individuals carrying an AAAA genotype. EOs breaching both criteria are flagged **CRITICAL**; those breaching either one are flagged **AT RISK**; the remainder are **OK**.
+- **Genotypic Fitness Score** ([Step 18](#GFS)) translates allele-level diversity into individual reproductive fitness. In a tetraploid, each diploid gamete is formed by randomly sampling 2 of the 4 allele copies at the SRK locus, yielding C(4,2) = 6 equally probable gamete combinations. GFS is the proportion of those combinations that carry two distinct alleles. This reveals dosage asymmetries invisible to zygosity classification alone: an AABB individual (2+2 copies) produces 4 of 6 heterozygous gametes (GFS = 0.667), while an AAAB individual (3+1 copies) produces only 3 of 6 (GFS = 0.500), even though both carry exactly two distinct alleles.
+- **TP2 tipping point analysis** ([Step 19](#TP2)) places individual-level GFS in interaction with the population-level proportion of AAAA genotypes to evaluate whether an EO's allele distribution has degraded beyond the reach of managed crossing. EOs breaching both criteria (mean GFS < 0.667 and > 30% AAAA) are flagged **CRITICAL**; those breaching either one are flagged **AT RISK**; the remainder are **OK**.
 
 Together, these analyses trace the consequences of demographic decline from species-level diversity baselines, through population-level allele erosion and frequency skew, to individual-level reproductive fitness — providing a quantitative framework for prioritising conservation interventions.
 
@@ -5563,19 +5567,6 @@ where $n_k$ is the copy number of allele $k$ in individual $i$, summed over all 
 | AAAB | 3, 1 | **0.500** | 3 / 6 |
 | AAAA | 4 | 0.000 | 0 / 6 |
 
-### Tipping Point 2 — Thresholds
-
-GFS is the operational metric for **Tipping Point 2 (TP2)**: the point at which the *distribution of alleles across individuals* within an EO has degraded to the extent that managed crossing cannot recover fitness without external allele introductions.
-
-Two threshold conditions are evaluated for each EO:
-
-| Threshold | Criterion | Biological meaning |
-|-----------|-----------|-------------------|
-| TP2-mean | mean GFS < 0.667 | EO average is below the AABB level |
-| TP2-AAAA | prop(AAAA) > 0.30 | More than 30% of individuals are SI dead-ends |
-
-An EO is flagged **CRITICAL** when both thresholds are breached simultaneously.
-
 ### Bioinformatics
 
 * Script: `SRK_individual_GFS.R`
@@ -5606,13 +5597,46 @@ Rscript SRK_individual_GFS.R
 | File | Content |
 |------|---------|
 | `SRK_individual_GFS.tsv` | Per-individual GFS, genotype class, EO, and method |
-| `SRK_EO_GFS_summary.tsv` | EO-level mean GFS, class proportions, and TP2 status flags |
-| `SRK_GFS_plots.pdf` | Four diagnostic plots (see below) |
 
 #### Diagnostic Plots
 
 1. **Proportional stacked bar** — genotype class composition per EO, with 30% AAAA threshold marked
 2. **Individual GFS jitter + mean crossbar** — per-individual scores with AABB (0.667) and AAAB (0.500) threshold lines
+
+---
+
+## TP2 Tipping Point Analysis {#TP2}
+
+> Requires `SRK_individual_GFS.tsv` from [Step 18](#GFS). Run after Step 18 has completed.
+
+### Overview
+
+The TP2 Tipping Point Analysis places the individual-level GFS metric in interaction with the population-level proportion of AAAA genotypes to assess whether an EO's allele distribution has degraded to the point that managed crossing within the population cannot recover reproductive fitness without external allele introductions. While [Step 18](#GFS) characterises each individual's gametic diversity potential, this step synthesises those scores at the EO level and combines them with AAAA prevalence — the fraction of individuals that are complete SI dead-ends — into a single diagnostic framework.
+
+### Tipping Point 2 — Thresholds
+
+Two threshold conditions are evaluated simultaneously for each EO:
+
+| Threshold | Criterion | Biological meaning |
+|-----------|-----------|-------------------|
+| TP2-mean | mean GFS < 0.667 | EO average is below the AABB level |
+| TP2-AAAA | prop(AAAA) > 0.30 | More than 30% of individuals are SI dead-ends |
+
+An EO is flagged **CRITICAL** when both thresholds are breached simultaneously; **AT RISK** when either one is breached; **OK** otherwise.
+
+### Bioinformatics
+
+The TP2 analysis is performed by the same script as [Step 18](#GFS) (`SRK_individual_GFS.R`). The EO-level summary and TP2 status flags are computed after per-individual GFS values are aggregated.
+
+#### Output Files
+
+| File | Content |
+|------|---------|
+| `SRK_EO_GFS_summary.tsv` | EO-level mean GFS, class proportions, and TP2 status flags |
+| `SRK_GFS_plots.pdf` | Four diagnostic plots (see below) |
+
+#### Diagnostic Plots
+
 3. **TP2 tipping point map** — scatter plot of prop(AAAA) × mean GFS with quadrant shading; EOs labelled by TP2 status
 4. **Absolute count stacked bar** — raw individual counts per genotype class per EO
 

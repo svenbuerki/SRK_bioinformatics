@@ -37,7 +37,7 @@ Boise, Idaho, USA
 
 ## Pipeline Workflow
 
-The pipeline consists of **18 main steps organized into three phases**, progressing from within-library sequence assembly to cross-library integration and final population genetic analyses.
+The pipeline consists of **19 main steps organized into three phases**, progressing from within-library sequence assembly to cross-library integration and final population genetic analyses.
 
 ## Phase 1: SRK Amplicon Sequence Assembly
 
@@ -66,7 +66,8 @@ The pipeline consists of **18 main steps organized into three phases**, progress
 15. **Allele Frequency Analysis** – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under NFDS. The estimated species allele richness from step 14 is used as the optimum, quantifying how many alleles each population is missing relative to the species pool.
 16. **TP1 Tipping Point Analysis** – Diagnostic scatter plot synthesising Steps 13–15, positioning each EO by the proportion of the species optimum retained (x axis) and by allele frequency evenness (Ne/N, y axis). EOs breaching both thresholds (< 50% of optimum; Ne/N < 0.80) are flagged CRITICAL.
 17. **Allele Composition Comparison Across Element Occurrences** – UpSet plot and pairwise sharing heatmap quantifying how S-allele sets partition across Element Occurrences, identifying private alleles and alleles shared across all populations. Requires only standard Python dependencies (pandas, numpy, matplotlib).
-18. **Individual Genotypic Fitness Score (GFS)** – Per-individual metric quantifying the proportion of heterozygous diploid gametes a tetraploid can produce. Differentiates dosage-imbalanced genotypes (AABB vs AAAB) invisible to zygosity analysis alone. EOs are evaluated against two Tipping Point 2 (TP2) thresholds (mean GFS < 0.667; proportion AAAA > 30%) and flagged CRITICAL, AT RISK, or OK. Outputs ranked seed parent lists per EO.
+18. **Individual Genotypic Fitness Score (GFS)** – Per-individual metric quantifying the proportion of heterozygous diploid gametes a tetraploid can produce. Differentiates dosage-imbalanced genotypes (AABB vs AAAB) invisible to zygosity analysis alone. Outputs per-individual GFS values and ranked seed parent lists per EO.
+19. **TP2 Tipping Point Analysis** – EO-level assessment placing mean GFS and proportion of AAAA individuals in interaction. EOs breaching both thresholds simultaneously (mean GFS < 0.667; proportion AAAA > 30%) are flagged CRITICAL, AT RISK, or OK.
 
 ## Requirements
 
@@ -156,7 +157,7 @@ Rscript scripts/11_srk_allele_genotyping.R
 Rscript scripts/12_zygosity_analysis.R
 ```
 
-4.  **Phase 3 — Data Analyses (Steps 13–18):**
+4.  **Phase 3 — Data Analyses (Steps 13–19):**
 
 ``` bash
 # Step 13: Population genetics statistics
@@ -175,7 +176,7 @@ Rscript SRK_TP1_tipping_point.R
 # Step 17: Allele composition comparison across Element Occurrences
 python SRK_allele_sharing_EOs.py
 
-# Step 18: Individual Genotypic Fitness Score and TP2 tipping point analysis
+# Steps 18–19: Individual Genotypic Fitness Score (Step 18) and TP2 tipping point analysis (Step 19)
 Rscript SRK_individual_GFS.R
 ```
 
@@ -214,9 +215,9 @@ For a concise step-by-step protocol (scripts, inputs, outputs, key parameters), 
 -   `SRK_chisq_species_population_frequency_plots.pdf` - Allele frequency plots showing observed distribution, NFDS expectation, and missing alleles relative to estimated optimum
 -   `SRK_allele_upset_EOs.pdf` - UpSet plot of all pairwise and higher-order allele set intersections across Element Occurrences
 -   `SRK_allele_sharing_heatmap_EOs.pdf` - Pairwise allele sharing heatmap between Element Occurrences
--   `SRK_individual_GFS.tsv` - Per-individual Genotypic Fitness Score, genotype class (AAAA/AAAB/AABB/AABC/ABCD), and EO assignment
--   `SRK_EO_GFS_summary.tsv` - EO-level mean GFS, genotype class proportions, and Tipping Point 2 status (CRITICAL / AT RISK / OK)
--   `SRK_GFS_plots.pdf` - Four diagnostic plots: stacked composition bars, individual GFS jitter with mean, TP2 tipping point map, and absolute count bars
+-   `SRK_individual_GFS.tsv` - Per-individual Genotypic Fitness Score, genotype class (AAAA/AAAB/AABB/AABC/ABCD), and EO assignment (Step 18)
+-   `SRK_EO_GFS_summary.tsv` - EO-level mean GFS, genotype class proportions, and Tipping Point 2 status (CRITICAL / AT RISK / OK) (Step 19)
+-   `SRK_GFS_plots.pdf` - Four diagnostic plots: stacked composition bars, individual GFS jitter with mean, TP2 tipping point map, and absolute count bars (Steps 18–19)
 
 ### Quality Control Reports
 

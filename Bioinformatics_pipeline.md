@@ -437,9 +437,10 @@ In small or isolated populations, genetic drift counteracts NFDS by stochastical
 - **TP1 tipping point analysis** (Step 16) synthesises Steps 13–15 into a single diagnostic plot, positioning each EO by the proportion of the species optimum it retains (x axis) and by allele frequency evenness — the ratio of effective allele number to observed allele count (Ne/N) — as a measure of departure from NFDS equal-frequency expectations (y axis). EOs breaching both thresholds (< 50% of optimum and Ne/N < 0.80) are flagged CRITICAL.
 - **Allele composition comparison** (Step 17) identifies which alleles are private to single populations versus shared across Element Occurrences, distinguishing populations that retain unique allelic diversity from those impoverished by isolation or founder effects.
 
-*TP2 — Genotypic fitness analysis (Step 18):*
+*TP2 — Genotypic fitness analysis (Steps 18–19):*
 
-- **Genotypic Fitness Score** (Step 18) translates allele-level diversity into individual reproductive fitness. In a tetraploid, each diploid gamete is formed by randomly sampling 2 of the 4 allele copies at the SRK locus, yielding C(4,2) = 6 equally probable gamete combinations. GFS is the proportion of those combinations that carry two distinct alleles. This reveals dosage asymmetries invisible to zygosity classification alone: an AABB individual (2+2 copies) produces 4 of 6 heterozygous gametes (GFS = 0.667), while an AAAB individual (3+1 copies) produces only 3 of 6 (GFS = 0.500), even though both carry exactly two distinct alleles. EO-level summaries are evaluated against TP2 using two criteria: mean EO GFS below 0.667 and more than 30% of individuals carrying an AAAA genotype. EOs breaching both criteria are flagged **CRITICAL**; those breaching either one are flagged **AT RISK**; the remainder are **OK**.
+- **Genotypic Fitness Score** (Step 18) translates allele-level diversity into individual reproductive fitness. In a tetraploid, each diploid gamete is formed by randomly sampling 2 of the 4 allele copies at the SRK locus, yielding C(4,2) = 6 equally probable gamete combinations. GFS is the proportion of those combinations that carry two distinct alleles. This reveals dosage asymmetries invisible to zygosity classification alone: an AABB individual (2+2 copies) produces 4 of 6 heterozygous gametes (GFS = 0.667), while an AAAB individual (3+1 copies) produces only 3 of 6 (GFS = 0.500), even though both carry exactly two distinct alleles.
+- **TP2 Tipping Point Analysis** (Step 19) places individual-level GFS in interaction with the population-level proportion of AAAA genotypes. EOs breaching both criteria (mean GFS < 0.667 and > 30% AAAA) are flagged **CRITICAL**; those breaching either one are flagged **AT RISK**; the remainder are **OK**.
 
 Together, these analyses trace the consequences of demographic decline from species-level diversity baselines, through population-level allele erosion and frequency skew, to individual-level reproductive fitness — providing a quantitative framework for prioritising conservation interventions.
 
@@ -626,28 +627,45 @@ Computes the **Genotypic Fitness Score** — the proportion of heterozygous dipl
 
 $$\text{GFS}_i = 1 - \frac{\sum_k n_k(n_k-1)}{12}$$
 
-where $n_k$ is the copy number of allele $k$. This metric differentiates genotype classes that zygosity analysis treats as equivalent (e.g., AABB = 0.667 vs AAAB = 0.500). EO-level summaries are evaluated against two Tipping Point 2 (TP2) thresholds:
-
-| Threshold | Default | Criterion |
-|-----------|---------|-----------|
-| `TP2_MEAN_GFS` | 0.667 | Mean GFS below AABB level |
-| `TP2_PROP_AAAA` | 0.30 | >30% AAAA individuals |
-
-EOs breaching both thresholds simultaneously are flagged **CRITICAL**.
+where $n_k$ is the copy number of allele $k$. This metric differentiates genotype classes that zygosity analysis treats as equivalent (e.g., AABB = 0.667 vs AAAB = 0.500).
 
 **Key parameters (top of script):**
 
 | Parameter | Default | Notes |
 |-----------|---------|-------|
 | `EO_MAP` | 5-EO lookup | Maps sub-population codes to EO identifiers; extend for new sub-populations |
-| `TP2_MEAN_GFS` | `0.667` | Adjustable threshold for mean GFS |
-| `TP2_PROP_AAAA` | `0.30` | Adjustable threshold for proportion AAAA |
+| `TP2_MEAN_GFS` | `0.667` | Adjustable threshold for mean GFS (used in Step 19) |
+| `TP2_PROP_AAAA` | `0.30` | Adjustable threshold for proportion AAAA (used in Step 19) |
 
 **Outputs:**
 
 | File | Content |
 |------|---------|
 | `SRK_individual_GFS.tsv` | Per-individual GFS, genotype class, EO, and method |
+
+---
+
+### Step 19 — TP2 Tipping Point Analysis
+
+> Requires `SRK_individual_GFS.tsv` from Step 18. Performed by the same script (`SRK_individual_GFS.R`); TP2 flags are computed after per-individual GFS values are aggregated to the EO level.
+
+**Script:** `SRK_individual_GFS.R` (same run as Step 18)
+
+**Key analysis:**
+
+Places individual-level GFS in interaction with population-level proportion of AAAA genotypes to evaluate whether an EO's allele distribution has degraded beyond the reach of managed crossing. EO-level summaries are evaluated against two thresholds:
+
+| Threshold | Default | Criterion |
+|-----------|---------|-----------|
+| `TP2_MEAN_GFS` | 0.667 | Mean GFS below AABB level |
+| `TP2_PROP_AAAA` | 0.30 | >30% AAAA individuals |
+
+EOs breaching both thresholds simultaneously are flagged **CRITICAL**; those breaching either one are flagged **AT RISK**; the remainder are **OK**.
+
+**Outputs:**
+
+| File | Content |
+|------|---------|
 | `SRK_EO_GFS_summary.tsv` | EO-level GFS statistics, class proportions, TP2 status |
 | `SRK_GFS_plots.pdf` | Four diagnostic plots: stacked bars (proportional + count), individual jitter, TP2 tipping point map |
 
@@ -666,7 +684,8 @@ EOs breaching both thresholds simultaneously are flagged **CRITICAL**.
 | Step 12 | `SRK_individual_zygosity.tsv` |
 | Step 14 | `SRK_species_richness_estimates.tsv` |
 | Step 16 | `SRK_TP1_summary.tsv` |
-| Step 18 | `SRK_individual_GFS.tsv`, `SRK_EO_GFS_summary.tsv` |
+| Step 18 | `SRK_individual_GFS.tsv` |
+| Step 19 | `SRK_EO_GFS_summary.tsv` |
 
 ---
 
