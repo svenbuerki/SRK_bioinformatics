@@ -259,7 +259,7 @@ plot(
   col = "blue",
   xlab = "Number of individuals sampled",
   ylab = "Cumulative number of functional alleles",
-  main = paste("Species-level SRK accumulation\n(", species_res$true_alleles, "total alleles)")
+  main = paste("Species-level S-allele accumulation\n(", species_res$true_alleles, "total alleles)")
 )
 
 polygon(
@@ -493,7 +493,7 @@ plot(
   ylim = c(0, y_max),
   xlab = "Number of individuals sampled",
   ylab = "Cumulative number of S-alleles",
-  main = "SRK allele accumulation: EO comparison",
+  main = "S-allele accumulation: EO comparison",
   las  = 1
 )
 grid(col = "grey90", lty = 1)
