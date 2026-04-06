@@ -478,12 +478,13 @@ eo_colours <- c(
 )[seq_along(valid_pops)]
 names(eo_colours) <- valid_pops
 
-# Axis limits: y based on max observed alleles across EOs (not species)
+# Axis limits: y based on max observed alleles across EOs
 max_eo_alleles <- max(sapply(valid_pops, function(p) pop_results[[p]]$true_alleles))
 y_max <- max_eo_alleles * 1.25
 x_max <- max(sapply(valid_pops, function(p) length(pop_results[[p]]$mean_accum)))
 
-pdf("SRK_allele_accumulation_combined.pdf", width = 9, height = 6)
+png("SRK_allele_accumulation_combined.png", width = 9, height = 6,
+    units = "in", res = 200)
 par(mar = c(5, 4, 4, 10))   # wide right margin for end-of-line labels
 
 plot(
@@ -507,11 +508,12 @@ if (!is.na(mm_sp$Smax)) {
   )
 }
 
-# EO curves + CI bands + end labels
+# EO curves + CI bands + end labels + MM predicted total
 for (pop in valid_pops) {
-  res   <- pop_results[[pop]]
-  n_pop <- length(res$mean_accum)
-  col_i <- eo_colours[pop]
+  res    <- pop_results[[pop]]
+  n_pop  <- length(res$mean_accum)
+  col_i  <- eo_colours[pop]
+  mm_est <- pop_est[[pop]]$mm$Smax
 
   polygon(
     c(1:n_pop, rev(1:n_pop)),
@@ -521,19 +523,24 @@ for (pop in valid_pops) {
     border = NA
   )
   lines(1:n_pop, res$mean_accum, col = col_i, lwd = 2)
+
+  # End-of-curve label: observed (/ MM predicted)
+  mm_label <- if (!is.na(mm_est)) paste0("/", mm_est) else ""
   text(
     x = n_pop, y = res$mean_accum[n_pop],
-    labels = paste0("EO", pop, " (", res$true_alleles, ")"),
+    labels = paste0("EO", pop, " (", res$true_alleles, mm_label, ")"),
     col = col_i, pos = 4, cex = 0.72, xpd = TRUE
   )
 }
 
-# Legend
+# Legend: solid line = observed curve, dotted = MM predicted total
 legend(
   "bottomright",
   legend = sapply(valid_pops, function(p) {
-    n_p <- nrow(geno[geno$Population == p, ])
-    paste0("EO", p, "  N=", n_p, ", ", pop_results[[p]]$true_alleles, " alleles")
+    n_p    <- nrow(geno[geno$Population == p, ])
+    mm_est <- pop_est[[p]]$mm$Smax
+    mm_str <- if (!is.na(mm_est)) paste0(", MM=", mm_est) else ""
+    paste0("EO", p, "  N=", n_p, ", obs=", pop_results[[p]]$true_alleles, mm_str)
   }),
   col  = eo_colours[valid_pops],
   lwd  = 2,
@@ -543,7 +550,7 @@ legend(
 
 dev.off()
 par(mar = c(5, 4, 4, 2))   # restore default margins
-cat("PDF written: SRK_allele_accumulation_combined.pdf\n")
+cat("PNG written: SRK_allele_accumulation_combined.png\n")
 
 ############################################################
 # 9. Export statistics with CORRECT counts

@@ -5164,7 +5164,7 @@ Filtering criteria:
 #### Output files
 
 * `SRK_allele_accumulation_curves.pdf`
-* `SRK_allele_accumulation_combined.pdf` — single-panel combined plot showing species and all EO accumulation curves on the same axes, with MM asymptote reference line; directly comparable across levels
+* `SRK_allele_accumulation_combined.png` — single-panel combined plot showing all EO accumulation curves on the same axes; end-of-curve labels show observed allele count and MM-predicted total (e.g. `EO27 (15/26)`); legend entries include `obs=` and `MM=` values
 * `SRK_allele_accumulation_stats.tsv`
 * `SRK_species_richness_estimates.tsv`
 
@@ -5460,7 +5460,8 @@ EOs breaching both criteria are flagged **CRITICAL**; those breaching either one
 
 **Outputs:**
 - `SRK_TP1_summary.tsv` — per-EO N_alleles, prop_optimum, evenness, and TP1 status
-- `SRK_TP1_tipping_point.pdf` — scatter plot positioning each EO by richness retained (x) and frequency evenness (y), with CRITICAL zone shading and threshold lines
+- `SRK_TP1_tipping_point.png` — scatter plot positioning each EO by richness retained (x) and frequency evenness (y), with colour-coded zone polygons for all three categories (OK, AT RISK, CRITICAL) and threshold lines
+- `SRK_TP1_tipping_point_blank.png` — same plot without data points, for presentation use
 
 ---
 
@@ -5634,10 +5635,12 @@ The TP2 analysis is performed by the same script as [Step 18](#GFS) (`SRK_indivi
 |------|---------|
 | `SRK_EO_GFS_summary.tsv` | EO-level mean GFS, class proportions, and TP2 status flags |
 | `SRK_GFS_plots.pdf` | Four diagnostic plots (see below) |
+| `SRK_GFS_plots_p3_TP2_tipping_point.png` | Standalone TP2 tipping point map with colour-coded zone polygons for all three categories (OK, AT RISK, CRITICAL) |
+| `SRK_GFS_plots_p3_TP2_tipping_point_blank.png` | Same plot without data points, for presentation use |
 
 #### Diagnostic Plots
 
-3. **TP2 tipping point map** — scatter plot of prop(AAAA) × mean GFS with quadrant shading; EOs labelled by TP2 status
+3. **TP2 tipping point map** — scatter plot of prop(AAAA) × mean GFS with colour-coded zone polygons for OK, AT RISK, and CRITICAL categories; EOs labelled by TP2 status; also saved as standalone PNG
 4. **Absolute count stacked bar** — raw individual counts per genotype class per EO
 
 ### Scientific Applications

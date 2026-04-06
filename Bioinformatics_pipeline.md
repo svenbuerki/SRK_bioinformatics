@@ -494,7 +494,7 @@ Rscript SRK_allele_accumulation_analysis.R
 
 **Outputs:**
 - `SRK_allele_accumulation_curves.pdf` — species- and population-level curves with asymptote reference lines
-- `SRK_allele_accumulation_combined.pdf` — single-panel combined plot showing species and all EO accumulation curves on the same axes, with MM asymptote reference line; directly comparable across levels
+- `SRK_allele_accumulation_combined.png` — single-panel combined plot showing all EO accumulation curves on the same axes; end-of-curve labels show observed allele count and MM-predicted total (e.g. `EO27 (15/26)`); legend entries include `obs=` and `MM=` values
 - `SRK_allele_accumulation_stats.tsv` — curve statistics per level including MM, Chao1, iNEXT estimates and sampling adequacy targets
 - `SRK_species_richness_estimates.tsv` — **consensus species allele richness; required as input for Step 15**
 
@@ -557,7 +557,8 @@ EOs breaching both criteria are flagged **CRITICAL**; those breaching either one
 
 **Outputs:**
 - `SRK_TP1_summary.tsv` — per-EO N_alleles, prop_optimum, evenness, and TP1 status
-- `SRK_TP1_tipping_point.pdf` — scatter plot positioning each EO by richness retained (x) and frequency evenness (y), with CRITICAL zone shading and threshold lines
+- `SRK_TP1_tipping_point.png` — scatter plot positioning each EO by richness retained (x) and frequency evenness (y), with colour-coded zone polygons for all three categories (OK, AT RISK, CRITICAL) and threshold lines
+- `SRK_TP1_tipping_point_blank.png` — same plot without data points, for presentation use
 
 ---
 
@@ -668,6 +669,8 @@ EOs breaching both thresholds simultaneously are flagged **CRITICAL**; those bre
 |------|---------|
 | `SRK_EO_GFS_summary.tsv` | EO-level GFS statistics, class proportions, TP2 status |
 | `SRK_GFS_plots.pdf` | Four diagnostic plots: stacked bars (proportional + count), individual jitter, TP2 tipping point map |
+| `SRK_GFS_plots_p3_TP2_tipping_point.png` | Standalone TP2 tipping point map with colour-coded zone polygons for all three categories (OK, AT RISK, CRITICAL) |
+| `SRK_GFS_plots_p3_TP2_tipping_point_blank.png` | Same plot without data points, for presentation use |
 
 ---
 

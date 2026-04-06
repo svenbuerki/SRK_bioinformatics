@@ -114,12 +114,52 @@ cat("\nGenerating TP1 tipping point plot...\n")
 tp1_plot <- tp1 %>%
   mutate(EO = factor(EO, levels = EO_FOCUS))
 
-pdf("SRK_TP1_tipping_point.pdf", width = 10, height = 8)
-
-p <- ggplot(tp1_plot,
-            aes(x = prop_optimum, y = evenness,
-                colour = TP1_status, label = EO)) +
-  geom_point(size = 5.5, alpha = 0.9) +
+# Base plot: zone polygons + threshold lines only (no data points)
+p_base <- ggplot(tp1_plot,
+                 aes(x = prop_optimum, y = evenness,
+                     colour = TP1_status, label = EO)) +
+  # --- background zone polygons ---
+  # OK zone: top-right (neither threshold breached)
+  annotate("rect",
+           xmin = TP1_PROP_OPTIMUM, xmax = 1,
+           ymin = TP1_EVENNESS,     ymax = 1,
+           fill = "#4575b4", alpha = 0.08) +
+  annotate("text",
+           x = (TP1_PROP_OPTIMUM + 1) / 2,
+           y = (TP1_EVENNESS + 1) / 2,
+           label = "OK",
+           colour = "#4575b4", fontface = "bold", size = 4.5) +
+  # AT RISK zone A: top-left (richness breach only)
+  annotate("rect",
+           xmin = 0,                xmax = TP1_PROP_OPTIMUM,
+           ymin = TP1_EVENNESS,     ymax = 1,
+           fill = "#fc8d59", alpha = 0.08) +
+  annotate("text",
+           x = TP1_PROP_OPTIMUM / 2,
+           y = (TP1_EVENNESS + 1) / 2,
+           label = "AT RISK",
+           colour = "#fc8d59", fontface = "bold", size = 4) +
+  # AT RISK zone B: bottom-right (evenness breach only)
+  annotate("rect",
+           xmin = TP1_PROP_OPTIMUM, xmax = 1,
+           ymin = 0,                ymax = TP1_EVENNESS,
+           fill = "#fc8d59", alpha = 0.08) +
+  annotate("text",
+           x = (TP1_PROP_OPTIMUM + 1) / 2,
+           y = TP1_EVENNESS / 2,
+           label = "AT RISK",
+           colour = "#fc8d59", fontface = "bold", size = 4) +
+  # CRITICAL zone: bottom-left (both thresholds breached)
+  annotate("rect",
+           xmin = 0,                xmax = TP1_PROP_OPTIMUM,
+           ymin = 0,                ymax = TP1_EVENNESS,
+           fill = "#d73027", alpha = 0.08) +
+  annotate("text",
+           x = TP1_PROP_OPTIMUM / 2,
+           y = TP1_EVENNESS / 2,
+           label = "CRITICAL",
+           colour = "#d73027", fontface = "bold", size = 4) +
+  # --- threshold lines and formatting ---
   geom_vline(xintercept = TP1_PROP_OPTIMUM, linetype = "dashed",
              colour = "grey50", linewidth = 0.6) +
   geom_hline(yintercept = TP1_EVENNESS, linetype = "dashed",
@@ -138,12 +178,6 @@ p <- ggplot(tp1_plot,
     limits = c(0, 1),
     expand = expansion(mult = 0.05)
   ) +
-  annotate("rect",
-           xmin = 0,                  xmax = TP1_PROP_OPTIMUM,
-           ymin = 0,                  ymax = TP1_EVENNESS,
-           fill = "#d73027", alpha = 0.08) +
-  annotate("text", x = 0.02, y = 0.03, label = "CRITICAL",
-           colour = "#d73027", fontface = "bold", hjust = 0, size = 4) +
   labs(
     title    = "Tipping Point 1 -- EO allele richness and frequency evenness status",
     subtitle = paste0(
@@ -155,7 +189,15 @@ p <- ggplot(tp1_plot,
                species_optimum, " alleles)"),
     y = "Frequency evenness  (Ne / N alleles)"
   ) +
-  theme_bw(base_size = 13)
+  theme_bw(base_size = 13) +
+  theme(legend.position = "none")
+
+ggsave("SRK_TP1_tipping_point_blank.png", plot = p_base,
+       width = 10, height = 8, dpi = 200)
+cat("  Written: SRK_TP1_tipping_point_blank.png\n")
+
+# Full plot: add data points and labels
+p <- p_base + geom_point(size = 5.5, alpha = 0.9)
 
 if (use_repel) {
   p <- p + ggrepel::geom_text_repel(
@@ -167,9 +209,9 @@ if (use_repel) {
                      show.legend = FALSE)
 }
 
-print(p)
-dev.off()
-cat("  Written: SRK_TP1_tipping_point.pdf\n")
+ggsave("SRK_TP1_tipping_point.png", plot = p,
+       width = 10, height = 8, dpi = 200)
+cat("  Written: SRK_TP1_tipping_point.png\n")
 
 # =============================================================================
 # 4. CONSOLE SUMMARY

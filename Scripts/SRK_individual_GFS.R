@@ -274,10 +274,52 @@ p2 <- ggplot(geno_plot, aes(x = EO, y = GFS, colour = GFS_class)) +
 print(p2)
 
 # ── Plot 3: TP2 tipping point map (prop_AAAA × mean_GFS) ─────────────────────
-p3 <- ggplot(eo_plot,
-             aes(x = prop_AAAA, y = mean_GFS,
-                 colour = TP2_status, label = EO)) +
-  geom_point(size = 5.5, alpha = 0.9) +
+# Base plot: zone polygons + threshold lines only (no data points)
+p3_base <- ggplot(eo_plot,
+                  aes(x = prop_AAAA, y = mean_GFS,
+                      colour = TP2_status, label = EO)) +
+  # --- background zone polygons ---
+  # OK zone: top-left (neither threshold breached)
+  annotate("rect",
+           xmin = 0,            xmax = TP2_PROP_AAAA,
+           ymin = TP2_MEAN_GFS, ymax = 1,
+           fill = "#4575b4", alpha = 0.08) +
+  annotate("text",
+           x = TP2_PROP_AAAA / 2,
+           y = (TP2_MEAN_GFS + 1) / 2,
+           label = "OK",
+           colour = "#4575b4", fontface = "bold", size = 4.5) +
+  # AT RISK zone A: top-right (AAAA breach only)
+  annotate("rect",
+           xmin = TP2_PROP_AAAA, xmax = 1,
+           ymin = TP2_MEAN_GFS,  ymax = 1,
+           fill = "#fc8d59", alpha = 0.08) +
+  annotate("text",
+           x = (TP2_PROP_AAAA + 1) / 2,
+           y = (TP2_MEAN_GFS + 1) / 2,
+           label = "AT RISK",
+           colour = "#fc8d59", fontface = "bold", size = 4) +
+  # AT RISK zone B: bottom-left (mean GFS breach only)
+  annotate("rect",
+           xmin = 0,            xmax = TP2_PROP_AAAA,
+           ymin = 0,            ymax = TP2_MEAN_GFS,
+           fill = "#fc8d59", alpha = 0.08) +
+  annotate("text",
+           x = TP2_PROP_AAAA / 2,
+           y = TP2_MEAN_GFS / 2,
+           label = "AT RISK",
+           colour = "#fc8d59", fontface = "bold", size = 4) +
+  # CRITICAL zone: bottom-right (both thresholds breached)
+  annotate("rect",
+           xmin = TP2_PROP_AAAA, xmax = 1,
+           ymin = 0,             ymax = TP2_MEAN_GFS,
+           fill = "#d73027", alpha = 0.08) +
+  annotate("text",
+           x = (TP2_PROP_AAAA + 1) / 2,
+           y = TP2_MEAN_GFS / 2,
+           label = "CRITICAL",
+           colour = "#d73027", fontface = "bold", size = 4) +
+  # --- threshold lines and formatting ---
   geom_vline(xintercept = TP2_PROP_AAAA, linetype = "dashed",
              colour = "grey50", linewidth = 0.6) +
   geom_hline(yintercept = TP2_MEAN_GFS, linetype = "dashed",
@@ -289,11 +331,6 @@ p3 <- ggplot(eo_plot,
   scale_x_continuous(labels = percent_format(accuracy = 1),
                      limits = c(0, 1), expand = expansion(mult = 0.05)) +
   scale_y_continuous(limits = c(0, 1), expand = expansion(mult = 0.05)) +
-  annotate("rect", xmin = TP2_PROP_AAAA, xmax = 1,
-           ymin = 0, ymax = TP2_MEAN_GFS,
-           fill = "#d73027", alpha = 0.08) +
-  annotate("text", x = 0.95, y = 0.05, label = "CRITICAL",
-           colour = "#d73027", fontface = "bold", hjust = 1, size = 4) +
   labs(
     title    = "Tipping Point 2 — EO genotypic fitness status",
     subtitle = paste0("X axis: proportion AAAA individuals (TP2 threshold = ",
@@ -302,7 +339,15 @@ p3 <- ggplot(eo_plot,
     x = "Proportion AAAA individuals",
     y = "Mean GFS"
   ) +
-  theme_bw(base_size = 13)
+  theme_bw(base_size = 13) +
+  theme(legend.position = "none")
+
+ggsave("SRK_GFS_plots_p3_TP2_tipping_point_blank.png", plot = p3_base,
+       width = 10, height = 8, dpi = 200)
+cat("  Written: SRK_GFS_plots_p3_TP2_tipping_point_blank.png\n")
+
+# Full plot: add data points and labels
+p3 <- p3_base + geom_point(size = 5.5, alpha = 0.9)
 
 if (use_repel) {
   p3 <- p3 + ggrepel::geom_text_repel(
@@ -315,6 +360,10 @@ if (use_repel) {
 }
 
 print(p3)
+
+ggsave("SRK_GFS_plots_p3_TP2_tipping_point.png", plot = p3,
+       width = 10, height = 8, dpi = 200)
+cat("  Written: SRK_GFS_plots_p3_TP2_tipping_point.png\n")
 
 # ── Plot 4: Absolute count stacked bar ───────────────────────────────────────
 p4 <- ggplot(geno_plot, aes(x = EO, fill = GFS_class)) +
