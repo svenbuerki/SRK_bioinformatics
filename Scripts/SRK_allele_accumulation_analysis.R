@@ -553,6 +553,114 @@ par(mar = c(5, 4, 4, 2))   # restore default margins
 cat("PNG written: SRK_allele_accumulation_combined.png\n")
 
 ############################################################
+# 8c. Stacked bar: observed / predicted undetected / lost to drift
+############################################################
+
+cat("\nGenerating drift erosion stacked bar chart...\n")
+
+# Species MM from the richness estimates file
+sp_richness <- read.table(
+  "SRK_species_richness_estimates.tsv",
+  header = TRUE, sep = "\t"
+)
+species_MM <- sp_richness$MM_estimate[1]
+
+# Per-EO data: observed alleles and EO-level MM predicted total
+eo_df <- data.frame(
+  EO       = valid_pops,
+  observed = sapply(valid_pops, function(p) pop_results[[p]]$true_alleles),
+  mm_eo    = sapply(valid_pops, function(p) {
+    mm <- pop_est[[p]]$mm$Smax
+    if (is.na(mm)) pop_results[[p]]$true_alleles else mm
+  }),
+  stringsAsFactors = FALSE
+)
+
+# Three stacked components
+eo_df$predicted_extra <- pmax(0, eo_df$mm_eo    - eo_df$observed)
+eo_df$lost_to_drift   <- pmax(0, species_MM      - eo_df$mm_eo)
+
+# Sort ascending by observed alleles
+eo_df <- eo_df[order(eo_df$observed), ]
+
+col_observed  <- "#2166ac"   # dark blue  — detected
+col_predicted <- "#92c5de"   # light blue — predicted undetected
+col_lost      <- "#d73027"   # red        — lost to genetic drift
+
+png("figures/SRK_allele_accumulation_drift_erosion.png",
+    width = 7, height = 6, units = "in", res = 200)
+
+par(mar = c(5, 5, 7, 5))   # extra top margin for legend
+
+bar_mat <- rbind(
+  eo_df$observed,
+  eo_df$predicted_extra,
+  eo_df$lost_to_drift
+)
+
+bp <- barplot(
+  bar_mat,
+  beside    = FALSE,
+  col       = c(col_observed, col_predicted, col_lost),
+  names.arg = paste0("EO", eo_df$EO),
+  ylim      = c(0, species_MM),
+  ylab      = "Number of S-alleles",
+  xlab      = "Element Occurrence (EO)",
+  main      = "S-allele erosion by genetic drift per EO",
+  las       = 1,
+  border    = "white"
+)
+
+# Species MM reference line
+abline(h = species_MM, col = "grey30", lwd = 1.5, lty = 2)
+mtext(paste0("Species MM: ", species_MM),
+      side = 4, at = species_MM,
+      col = "grey30", cex = 0.72, las = 1, line = 0.3)
+
+# Labels inside bars
+for (i in seq_along(bp)) {
+  # Observed count centred in the observed segment
+  text(bp[i], eo_df$observed[i] / 2,
+       labels = eo_df$observed[i],
+       col = "white", font = 2, cex = 0.9)
+  # +N in the predicted segment (if visible)
+  if (eo_df$predicted_extra[i] >= 2) {
+    text(bp[i],
+         eo_df$observed[i] + eo_df$predicted_extra[i] / 2,
+         labels = paste0("+", eo_df$predicted_extra[i]),
+         col = "white", cex = 0.78)
+  }
+  # % lost to drift centred in the red segment
+  pct_lost <- round(eo_df$lost_to_drift[i] / species_MM * 100)
+  y_red_mid <- eo_df$mm_eo[i] + eo_df$lost_to_drift[i] / 2
+  text(bp[i], y_red_mid,
+       labels = paste0(pct_lost, "%"),
+       col = "white", font = 2, cex = 0.85)
+}
+
+# Legend placed in the top margin above the plot area
+legend(
+  x      = mean(par("usr")[1:2]),
+  y      = par("usr")[4] + diff(par("usr")[3:4]) * 0.18,
+  legend = c(
+    "Observed alleles",
+    "Predicted undetected (EO MM \u2212 observed)",
+    "Lost to genetic drift (species MM \u2212 EO MM)"
+  ),
+  fill   = c(col_observed, col_predicted, col_lost),
+  border = "white",
+  bty    = "n",
+  cex    = 0.78,
+  xjust  = 0.5,
+  yjust  = 1,
+  xpd    = TRUE
+)
+
+dev.off()
+par(mar = c(5, 4, 4, 2))
+cat("PNG written: figures/SRK_allele_accumulation_drift_erosion.png\n")
+
+############################################################
 # 9. Export statistics with CORRECT counts
 ############################################################
 

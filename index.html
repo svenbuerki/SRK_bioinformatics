@@ -11,7 +11,7 @@
 
 <meta name="author" content="Sven Buerki - Boise State University" />
 
-<meta name="date" content="2026-04-06" />
+<meta name="date" content="2026-04-07" />
 
 <title>SRK Bioinformatics</title>
 
@@ -1469,7 +1469,7 @@ border-radius: 0px;
 <h1 class="title toc-ignore">SRK Bioinformatics</h1>
 <h3 class="subtitle">Nanopore-Based SRK Haplotype Reconstruction and Population Analysis Pipeline</h3>
 <h4 class="author">Sven Buerki - Boise State University</h4>
-<h4 class="date">2026-04-06</h4>
+<h4 class="date">2026-04-07</h4>
 
 </div>
 
@@ -1527,6 +1527,7 @@ border-radius: 0px;
 <li><a href="#allelesharing">Allele Composition Comparison Across Element Occurrences</a> – UpSet plot and pairwise sharing heatmap quantifying how S-allele sets overlap and partition across Element Occurrences, identifying private alleles and alleles shared by all populations.</li>
 <li><a href="#GFS">Individual Genotypic Fitness Score</a> – Per-individual GFS quantifying the proportion of heterozygous diploid gametes a tetraploid individual can produce, differentiating dosage-imbalanced genotypes (e.g. AABB vs AAAB) invisible to simple zygosity classification.</li>
 <li><a href="#TP2">TP2 Tipping Point Analysis</a> – EO-level tipping point assessment placing mean GFS and proportion of AAAA individuals in interaction; EOs breaching both thresholds simultaneously are flagged CRITICAL.</li>
+<li><a href="#reproeffort">Reproductive Effort Support per Element Occurrence</a> – Horizontal proportional bar chart showing the fraction of individuals at each GFS tier per EO, quantifying the proportion of the population capable of contributing allelic diversity to compatible crosses.</li>
 </ol>
 <hr />
 </div>
@@ -6130,7 +6131,7 @@ The species-level allele pool approximates the NFDS richness equilibrium: the to
 <p><strong>Q2 — How did genetic drift impact populations’ S-allele diversity?</strong>
 Genetic drift reduces allele richness and skews remaining frequencies away from the equal-frequency NFDS expectation. <strong>Tipping Point 1 (TP1)</strong> marks the threshold at which allele loss is so severe that inter-population allele transfers are required to restore the SI system. Two criteria are evaluated per EO: the proportion of the species optimum retained (allele richness deficit), and the frequency evenness of those alleles — the ratio of effective allele number to observed allele count (Ne/N) — as a measure of departure from NFDS equal-frequency expectations. These are assessed through allele accumulation (<a href="#alleleaccum">Step 14</a>), frequency analysis (<a href="#allelefrqanalysis">Step 15</a>), TP1 synthesis (<a href="#TP1">Step 16</a>), and allele composition comparison across EOs (<a href="#allelesharing">Step 17</a>). EOs breaching both thresholds (&lt; 50% of optimum and Ne/N &lt; 0.80) are flagged <strong>CRITICAL</strong>.</p>
 <p><strong>Q3 — How did genetic drift impact the reproductive fitness of individuals within populations?</strong>
-Even where some allele diversity persists, drift causes allele copy-count imbalances at the individual level that directly reduce reproductive output. In a tetraploid, the proportion of compatible diploid gametes an individual produces — the Genotypic Fitness Score (GFS) — depends not only on which alleles are present but on their dosage balance across the four allele copies. An AABB individual (balanced 2+2) produces heterozygous gametes in 4 of 6 combinations (GFS = 0.667), whereas an AAAB individual (unbalanced 3+1) produces only 3 of 6 (GFS = 0.500), despite both carrying two distinct alleles. <strong>Tipping Point 2 (TP2)</strong> marks the threshold at which this individual-level degradation is so advanced that within-population crosses alone cannot restore reproductive fitness. Two criteria are evaluated per EO: mean GFS below the AABB benchmark (&lt; 0.667) and the proportion of AAAA individuals — which produce no heterozygous gametes — exceeding 30%. These are assessed through individual GFS computation (<a href="#GFS">Step 18</a>) and TP2 synthesis (<a href="#TP2">Step 19</a>). EOs breaching both criteria are flagged <strong>CRITICAL</strong>.</p>
+Even where some allele diversity persists, drift causes allele copy-count imbalances at the individual level that directly reduce reproductive output. In a tetraploid, the proportion of compatible diploid gametes an individual produces — the Genotypic Fitness Score (GFS) — depends not only on which alleles are present but on their dosage balance across the four allele copies. An AABB individual (balanced 2+2) produces heterozygous gametes in 4 of 6 combinations (GFS = 0.667), whereas an AAAB individual (unbalanced 3+1) produces only 3 of 6 (GFS = 0.500), despite both carrying two distinct alleles. In self-incompatible plants, an individual’s value as a breeding partner depends not only on which key/lock types it carries, but also on the number of distinct alleles present across its genome copies. Individuals with more key/lock types can participate in more compatible crosses, making them especially valuable in a managed breeding program. <strong>Tipping Point 2 (TP2)</strong> marks the threshold at which this individual-level degradation is so advanced that within-population crosses alone cannot restore reproductive fitness. Two criteria are evaluated per EO: mean GFS below the AABB benchmark (&lt; 0.667) and the proportion of AAAA individuals — which produce no heterozygous gametes — exceeding 30%. These are assessed through individual GFS computation (<a href="#GFS">Step 18</a>), TP2 synthesis (<a href="#TP2">Step 19</a>), and the reproductive effort visualisation (<a href="#reproeffort">Step 20</a>). EOs breaching both criteria are flagged <strong>CRITICAL</strong>.</p>
 <p>Together, these three questions trace the consequences of demographic decline from the species-level allele pool, through population-level richness erosion and frequency skew, to individual-level reproductive fitness — providing a quantitative framework for prioritising conservation interventions.</p>
 <hr />
 </div>
@@ -7859,6 +7860,119 @@ python SRK_allele_sharing_EOs.py \
 <li><strong>Seed parent selection</strong>: rank individuals within each EO by GFS; AABC and AABB individuals are priority seed parents over AAAB and AAAA</li>
 <li><strong>Crossing design</strong>: pairing two AAAB individuals carrying <em>different</em> allele pairs can produce AABB or AABC offspring — GFS identifies which pairs are worth prioritising</li>
 <li><strong>Monitoring</strong>: GFS can be tracked across generations to evaluate whether managed crossing is effectively redistributing allele dosage toward AABB/AABC/ABCD classes</li>
+</ul>
+<hr />
+</div>
+</div>
+<div id="reproeffort" class="section level2" number="6.9">
+<h2><span class="header-section-number">6.9</span> Reproductive Effort Support per Element Occurrence</h2>
+<blockquote>
+<p>Requires <code>SRK_individual_GFS.tsv</code> from <a href="#GFS">Step 18</a>. Run after Step 18 has completed.</p>
+</blockquote>
+<div id="overview-17" class="section level3" number="6.9.1">
+<h3><span class="header-section-number">6.9.1</span> Overview</h3>
+<p>This analysis visualises the proportion of individuals at each GFS tier per Element Occurrence, making explicit the fraction of each population that actively contributes allelic diversity to compatible crosses. In self-incompatible plants, an individual’s value as a breeding partner depends not only on which key/lock types it carries, but also on the number of distinct alleles present across its genome copies. Individuals with more key/lock types can participate in more compatible crosses, making them especially valuable in a managed breeding program. The figure translates this principle into a population-level diagnostic: for each EO, it shows what fraction of individuals can “support reproductive effort” (GFS &gt; 0 — carrying at least two distinct alleles and producing at least one heterozygous gamete combination) and how those individuals are distributed across GFS tiers.</p>
+</div>
+<div id="biological-rationale-1" class="section level3" number="6.9.2">
+<h3><span class="header-section-number">6.9.2</span> Biological Rationale</h3>
+<p>AAAA individuals (GFS = 0) carry a single SRK allele across all four genome copies. All six of their diploid gamete combinations are homozygous for that allele, meaning they contribute no allelic diversity to crosses and cannot drive compatible pairings with any partner carrying the same allele. All other genotype classes (AAAB through ABCD) carry at least two distinct alleles and produce at least 3 of 6 heterozygous gametes — they “support reproductive effort” in the sense that their gametes diversify the allele combinations available to offspring.</p>
+<p>The proportion of supporting individuals per EO, combined with the GFS tier distribution within that fraction, provides a direct measure of how much reproductive capacity the population retains.</p>
+</div>
+<div id="bioinformatics-17" class="section level3" number="6.9.3">
+<h3><span class="header-section-number">6.9.3</span> Bioinformatics</h3>
+<ul>
+<li>Script: <code>SRK_GFS_reproductive_effort.R</code></li>
+<li>Environment: base R + tidyverse + ggplot2</li>
+<li>Execution (run from project root):</li>
+</ul>
+<pre class="bash"><code>Rscript SRK_GFS_reproductive_effort.R</code></pre>
+<div id="input-files-5" class="section level4" number="6.9.3.1">
+<h4><span class="header-section-number">6.9.3.1</span> Input Files</h4>
+<table>
+<colgroup>
+<col width="31%" />
+<col width="68%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SRK_individual_GFS.tsv</code></td>
+<td>Per-individual GFS scores and genotype classes (output of Step 18)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="key-parameters-top-of-script-1" class="section level4" number="6.9.3.2">
+<h4><span class="header-section-number">6.9.3.2</span> Key Parameters (top of script)</h4>
+<table style="width:100%;">
+<colgroup>
+<col width="33%" />
+<col width="27%" />
+<col width="39%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>EO_FOCUS</code></td>
+<td>5-EO vector</td>
+<td>Element Occurrences to include</td>
+</tr>
+<tr class="even">
+<td><code>TP2_PROP_AAAA</code></td>
+<td>0.30</td>
+<td>Threshold line position; matches TP2 threshold from Step 19</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="output-files-19" class="section level4" number="6.9.3.3">
+<h4><span class="header-section-number">6.9.3.3</span> Output Files</h4>
+<table>
+<colgroup>
+<col width="40%" />
+<col width="60%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SRK_GFS_reproductive_effort.pdf</code></td>
+<td>Horizontal proportional bar chart — GFS tier composition per EO, ordered by mean GFS, with reproductive effort annotations</td>
+</tr>
+<tr class="even">
+<td><code>SRK_GFS_reproductive_effort.png</code></td>
+<td>Same figure as PNG at 200 dpi</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="figure-description" class="section level4" number="6.9.3.4">
+<h4><span class="header-section-number">6.9.3.4</span> Figure Description</h4>
+<p>Each horizontal bar represents one EO. Segments are coloured by GFS class (red = AAAA through blue = ABCD), stacked left to right from lowest to highest GFS. The dashed vertical line marks the TP2 AAAA threshold (30%): bars where the red (AAAA) segment extends past this line indicate a TP2 breach. Annotations to the right of each bar show the proportion of supporting individuals (GFS &gt; 0), the count (n / N), and the mean GFS for that EO. EOs are ordered from top (lowest mean GFS, most degraded) to bottom (highest mean GFS).</p>
+</div>
+</div>
+<div id="scientific-applications-9" class="section level3" number="6.9.4">
+<h3><span class="header-section-number">6.9.4</span> Scientific Applications</h3>
+<ul>
+<li><strong>Conservation triage</strong>: the proportion of supporting individuals per EO directly quantifies how much of the population is functional for managed crossing</li>
+<li><strong>Seed parent pool size</strong>: the annotated n / N count identifies how many individuals are candidates for inclusion in a crossing programme</li>
+<li><strong>Cross-EO comparison</strong>: ordering by mean GFS highlights which EOs are most degraded and therefore highest priority for allele importation combined with GFS-targeted crossing</li>
+<li><strong>Communication</strong>: the figure is designed for presentation to conservation managers, translating the GFS metric into an intuitive “proportion supporting reproductive effort” framing</li>
 </ul>
 </div>
 </div>

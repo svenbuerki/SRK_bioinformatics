@@ -74,6 +74,7 @@ The pipeline consists of **19 main steps organized into three phases**, progress
 17. [Allele Composition Comparison Across Element Occurrences](#allelesharing) – UpSet plot and pairwise sharing heatmap quantifying how S-allele sets overlap and partition across Element Occurrences, identifying private alleles and alleles shared by all populations.
 18. [Individual Genotypic Fitness Score](#GFS) – Per-individual GFS quantifying the proportion of heterozygous diploid gametes a tetraploid individual can produce, differentiating dosage-imbalanced genotypes (e.g. AABB vs AAAB) invisible to simple zygosity classification.
 19. [TP2 Tipping Point Analysis](#TP2) – EO-level tipping point assessment placing mean GFS and proportion of AAAA individuals in interaction; EOs breaching both thresholds simultaneously are flagged CRITICAL.
+20. [Reproductive Effort Support per Element Occurrence](#reproeffort) – Horizontal proportional bar chart showing the fraction of individuals at each GFS tier per EO, quantifying the proportion of the population capable of contributing allelic diversity to compatible crosses.
 
 ---
 
@@ -4412,7 +4413,7 @@ The species-level allele pool approximates the NFDS richness equilibrium: the to
 Genetic drift reduces allele richness and skews remaining frequencies away from the equal-frequency NFDS expectation. **Tipping Point 1 (TP1)** marks the threshold at which allele loss is so severe that inter-population allele transfers are required to restore the SI system. Two criteria are evaluated per EO: the proportion of the species optimum retained (allele richness deficit), and the frequency evenness of those alleles — the ratio of effective allele number to observed allele count (Ne/N) — as a measure of departure from NFDS equal-frequency expectations. These are assessed through allele accumulation ([Step 14](#alleleaccum)), frequency analysis ([Step 15](#allelefrqanalysis)), TP1 synthesis ([Step 16](#TP1)), and allele composition comparison across EOs ([Step 17](#allelesharing)). EOs breaching both thresholds (< 50% of optimum and Ne/N < 0.80) are flagged **CRITICAL**.
 
 **Q3 — How did genetic drift impact the reproductive fitness of individuals within populations?**
-Even where some allele diversity persists, drift causes allele copy-count imbalances at the individual level that directly reduce reproductive output. In a tetraploid, the proportion of compatible diploid gametes an individual produces — the Genotypic Fitness Score (GFS) — depends not only on which alleles are present but on their dosage balance across the four allele copies. An AABB individual (balanced 2+2) produces heterozygous gametes in 4 of 6 combinations (GFS = 0.667), whereas an AAAB individual (unbalanced 3+1) produces only 3 of 6 (GFS = 0.500), despite both carrying two distinct alleles. **Tipping Point 2 (TP2)** marks the threshold at which this individual-level degradation is so advanced that within-population crosses alone cannot restore reproductive fitness. Two criteria are evaluated per EO: mean GFS below the AABB benchmark (< 0.667) and the proportion of AAAA individuals — which produce no heterozygous gametes — exceeding 30%. These are assessed through individual GFS computation ([Step 18](#GFS)) and TP2 synthesis ([Step 19](#TP2)). EOs breaching both criteria are flagged **CRITICAL**.
+Even where some allele diversity persists, drift causes allele copy-count imbalances at the individual level that directly reduce reproductive output. In a tetraploid, the proportion of compatible diploid gametes an individual produces — the Genotypic Fitness Score (GFS) — depends not only on which alleles are present but on their dosage balance across the four allele copies. An AABB individual (balanced 2+2) produces heterozygous gametes in 4 of 6 combinations (GFS = 0.667), whereas an AAAB individual (unbalanced 3+1) produces only 3 of 6 (GFS = 0.500), despite both carrying two distinct alleles. In self-incompatible plants, an individual's value as a breeding partner depends not only on which key/lock types it carries, but also on the number of distinct alleles present across its genome copies. Individuals with more key/lock types can participate in more compatible crosses, making them especially valuable in a managed breeding program. **Tipping Point 2 (TP2)** marks the threshold at which this individual-level degradation is so advanced that within-population crosses alone cannot restore reproductive fitness. Two criteria are evaluated per EO: mean GFS below the AABB benchmark (< 0.667) and the proportion of AAAA individuals — which produce no heterozygous gametes — exceeding 30%. These are assessed through individual GFS computation ([Step 18](#GFS)), TP2 synthesis ([Step 19](#TP2)), and the reproductive effort visualisation ([Step 20](#reproeffort)). EOs breaching both criteria are flagged **CRITICAL**.
 
 Together, these three questions trace the consequences of demographic decline from the species-level allele pool, through population-level richness erosion and frequency skew, to individual-level reproductive fitness — providing a quantitative framework for prioritising conservation interventions.
 
@@ -5637,3 +5638,60 @@ The TP2 analysis is performed by the same script as [Step 18](#GFS) (`SRK_indivi
 * **Seed parent selection**: rank individuals within each EO by GFS; AABC and AABB individuals are priority seed parents over AAAB and AAAA
 * **Crossing design**: pairing two AAAB individuals carrying *different* allele pairs can produce AABB or AABC offspring — GFS identifies which pairs are worth prioritising
 * **Monitoring**: GFS can be tracked across generations to evaluate whether managed crossing is effectively redistributing allele dosage toward AABB/AABC/ABCD classes
+
+---
+
+## Reproductive Effort Support per Element Occurrence {#reproeffort}
+
+> Requires `SRK_individual_GFS.tsv` from [Step 18](#GFS). Run after Step 18 has completed.
+
+### Overview
+
+This analysis visualises the proportion of individuals at each GFS tier per Element Occurrence, making explicit the fraction of each population that actively contributes allelic diversity to compatible crosses. In self-incompatible plants, an individual's value as a breeding partner depends not only on which key/lock types it carries, but also on the number of distinct alleles present across its genome copies. Individuals with more key/lock types can participate in more compatible crosses, making them especially valuable in a managed breeding program. The figure translates this principle into a population-level diagnostic: for each EO, it shows what fraction of individuals can "support reproductive effort" (GFS > 0 — carrying at least two distinct alleles and producing at least one heterozygous gamete combination) and how those individuals are distributed across GFS tiers.
+
+### Biological Rationale
+
+AAAA individuals (GFS = 0) carry a single SRK allele across all four genome copies. All six of their diploid gamete combinations are homozygous for that allele, meaning they contribute no allelic diversity to crosses and cannot drive compatible pairings with any partner carrying the same allele. All other genotype classes (AAAB through ABCD) carry at least two distinct alleles and produce at least 3 of 6 heterozygous gametes — they "support reproductive effort" in the sense that their gametes diversify the allele combinations available to offspring.
+
+The proportion of supporting individuals per EO, combined with the GFS tier distribution within that fraction, provides a direct measure of how much reproductive capacity the population retains.
+
+### Bioinformatics
+
+* Script: `SRK_GFS_reproductive_effort.R`
+* Environment: base R + tidyverse + ggplot2
+* Execution (run from project root):
+
+```bash
+Rscript SRK_GFS_reproductive_effort.R
+```
+
+#### Input Files
+
+| File | Description |
+|------|-------------|
+| `SRK_individual_GFS.tsv` | Per-individual GFS scores and genotype classes (output of Step 18) |
+
+#### Key Parameters (top of script)
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `EO_FOCUS` | 5-EO vector | Element Occurrences to include |
+| `TP2_PROP_AAAA` | 0.30 | Threshold line position; matches TP2 threshold from Step 19 |
+
+#### Output Files
+
+| File | Content |
+|------|---------|
+| `SRK_GFS_reproductive_effort.pdf` | Horizontal proportional bar chart — GFS tier composition per EO, ordered by mean GFS, with reproductive effort annotations |
+| `SRK_GFS_reproductive_effort.png` | Same figure as PNG at 200 dpi |
+
+#### Figure Description
+
+Each horizontal bar represents one EO. Segments are coloured by GFS class (red = AAAA through blue = ABCD), stacked left to right from lowest to highest GFS. The dashed vertical line marks the TP2 AAAA threshold (30%): bars where the red (AAAA) segment extends past this line indicate a TP2 breach. Annotations to the right of each bar show the proportion of supporting individuals (GFS > 0), the count (n / N), and the mean GFS for that EO. EOs are ordered from top (lowest mean GFS, most degraded) to bottom (highest mean GFS).
+
+### Scientific Applications
+
+* **Conservation triage**: the proportion of supporting individuals per EO directly quantifies how much of the population is functional for managed crossing
+* **Seed parent pool size**: the annotated n / N count identifies how many individuals are candidates for inclusion in a crossing programme
+* **Cross-EO comparison**: ordering by mean GFS highlights which EOs are most degraded and therefore highest priority for allele importation combined with GFS-targeted crossing
+* **Communication**: the figure is designed for presentation to conservation managers, translating the GFS metric into an intuitive "proportion supporting reproductive effort" framing

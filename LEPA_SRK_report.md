@@ -24,7 +24,7 @@ We targeted the S-domain of the SRK protein — the functional "lock" in the loc
 
 ### 2. Allelic Richness in *LEPA*
 
-**Observed richness:** Across **189 individuals** sampled from Element Occurrences (EOs) spanning the species range, we identified **47 distinct S-allele bins** (Figure 3).
+**Observed richness:** Across **189 individuals** sampled from **26 population localities** spanning the species range, we identified **47 distinct S-allele bins** (Figure 3). The sample comprises five main EOs with sufficient individuals for population-level analysis (EO25, EO27, EO67, EO70, EO76; n = 32, 29, 32, 40, 25 respectively; total n = 158), plus 21 additional small localities (n = 1–3 each; total n = 31) contributing to species-level allele discovery.
 
 ![Figure 3: Species-level SRK allele accumulation curve](figures/SRK_allele_accumulation_species.png)
 
@@ -145,7 +145,7 @@ All five EOs are CRITICAL on both axes. No EO retains more than 23% of the speci
 
 ### 4b. Individual Genotypic Fitness Score (GFS) and Tipping Point 2 (TP2)
 
-The zygosity classification above groups individuals by the *number* of unique alleles, but for seed production the *dosage balance* of those alleles also matters. A tetraploid produces diploid gametes by randomly sampling 2 of its 4 allele copies — yielding C(4,2) = 6 equally probable gamete combinations. An individual with genotype AABB (two alleles, balanced 2+2) produces heterozygous gametes in 4 of 6 combinations (GFS = 0.667), whereas an AAAB individual (two alleles, unbalanced 3+1) produces heterozygous gametes in only 3 of 6 (GFS = 0.500). This distinction — invisible to zygosity analysis alone — is captured by the **Genotypic Fitness Score (GFS)**:
+The zygosity classification above groups individuals by the *number* of unique alleles, but for seed production the *dosage balance* of those alleles also matters. In self-incompatible plants, an individual's value as a breeding partner depends not only on which key/lock types it carries, but also on the number of distinct alleles present across its genome copies. Individuals with more key/lock types can participate in more compatible crosses, making them especially valuable in a managed breeding program. A tetraploid produces diploid gametes by randomly sampling 2 of its 4 allele copies — yielding C(4,2) = 6 equally probable gamete combinations. An individual with genotype AABB (two alleles, balanced 2+2) produces heterozygous gametes in 4 of 6 combinations (GFS = 0.667), whereas an AAAB individual (two alleles, unbalanced 3+1) produces heterozygous gametes in only 3 of 6 (GFS = 0.500). This distinction — invisible to zygosity analysis alone — is captured by the **Genotypic Fitness Score (GFS)**:
 
 $$\text{GFS}_i = 1 - \frac{\sum_k n_k\,(n_k - 1)}{12}$$
 
@@ -183,6 +183,12 @@ An EO breaching both simultaneously is flagged **CRITICAL**; one criterion is **
 | EO67 | 32 | 0.297 | 53% | 16% | 25% | 6% | **CRITICAL** |
 
 All five EOs are CRITICAL. No EO approaches a mean GFS consistent with a functioning SI system. **EO67 is the least degraded**, with the highest mean GFS and the only AABC individuals (n = 2), alongside EO70 (n = 1). These five AABC individuals — producing 5/6 heterozygous gametes — are the highest-priority seed parents in the entire species.
+
+**Proportion of individuals supporting reproductive effort (Figure 13):**
+
+![Figure 13: Proportion of individuals supporting reproductive effort per EO](figures/SRK_GFS_reproductive_effort.png)
+
+Fewer than half of individuals in any EO carry more than one distinct SRK allele and can therefore contribute allelic diversity to compatible crosses. The proportion of "supporting" individuals (GFS > 0) ranges from 38% in EO27 to 48% in EO76, with mean GFS values uniformly well below the AABB benchmark (0.667). All five EOs breach the TP2 AAAA threshold: the red (AAAA) segment extends well past the 30% dashed line in every case, reaching 52–62% of each population. EO27 is the most degraded (only 38% supporting; mean GFS = 0.224); EO67 is least degraded (47% supporting; mean GFS = 0.297) and is the only EO with visible AABC and ABCD tier segments.
 
 **Seed production priority within each EO** (top-ranked individuals by GFS):
 
@@ -241,9 +247,9 @@ Random mating causes a mean loss of 7.4 allele bins by year 3 at the species lev
 
 Genetic drift, promoted by habitat fragmentation, is severely eroding allele diversity and frequency balance in *LEPA* Element Occurrences at two distinct levels.
 
-**Tipping Point 1 — Allele richness deficit (Figure 9).** With 189 individuals sampled across five major EOs, only 47 of an estimated 65 species-level S-allele bins (MM estimate) have been observed. Each EO retains a small, largely private subset of the species SI repertoire (9–23% of the species optimum), allele frequencies are highly skewed from the equal distribution expected under NFDS (χ² *p* < 10⁻⁷ at every level), and frequency evenness (Ne/N) ranges from only 0.41 to 0.55 — meaning fewer than half of even the observed alleles are effectively contributing to SI function. Allele sets are almost entirely non-overlapping across EOs — only 2 alleles are shared across all five. All five EOs are flagged **CRITICAL** for TP1. EO70 is the most allele-depauperate (6 bins, 9% of optimum; evenness = 0.51); EO27 retains the most (15 bins, 23% of optimum) and the largest set of private alleles (n = 10).
+**Tipping Point 1 — Allele richness deficit (Figure 9).** With 189 individuals sampled across 26 population localities (five major EOs plus 21 additional small sites), only 47 of an estimated 65 species-level S-allele bins (MM estimate) have been observed. Each EO retains a small, largely private subset of the species SI repertoire (9–23% of the species optimum), allele frequencies are highly skewed from the equal distribution expected under NFDS (χ² *p* < 10⁻⁷ at every level), and frequency evenness (Ne/N) ranges from only 0.41 to 0.55 — meaning fewer than half of even the observed alleles are effectively contributing to SI function. Allele sets are almost entirely non-overlapping across EOs — only 2 alleles are shared across all five. All five EOs are flagged **CRITICAL** for TP1. EO70 is the most allele-depauperate (6 bins, 9% of optimum; evenness = 0.51); EO27 retains the most (15 bins, 23% of optimum) and the largest set of private alleles (n = 10).
 
-**Tipping Point 2 — Genotypic fitness collapse (Figure 12).** Beyond allele counts, the *distribution of alleles across individuals* has degraded severely. The Genotypic Fitness Score (GFS) — the proportion of heterozygous gametes a tetraploid individual produces — reveals that all five EOs are CRITICAL: mean GFS ranges from 0.22 to 0.30 (well below the AABB benchmark of 0.667), and 52–62% of individuals per EO are AAAA (producing zero heterozygous gametes). No ABCD individual exists in the dataset. Only five individuals across the entire species carry an AABC genotype (GFS = 0.833) — all in EO67 and EO70 — making them the highest-priority seed parents for near-term managed crossing.
+**Tipping Point 2 — Genotypic fitness collapse (Figures 12–13).** Beyond allele counts, the *distribution of alleles across individuals* has degraded severely. The Genotypic Fitness Score (GFS) — the proportion of heterozygous gametes a tetraploid individual produces — reveals that all five EOs are CRITICAL: mean GFS ranges from 0.22 to 0.30 (well below the AABB benchmark of 0.667), and 52–62% of individuals per EO are AAAA (producing zero heterozygous gametes). Fewer than half of individuals in any EO carry more than one distinct SRK allele and can therefore support reproductive effort through compatible crosses (Figure 13): the proportion of supporting individuals (GFS > 0) ranges from only 38% in EO27 to 48% in EO76. No ABCD individual exists in the dataset. Only five individuals across the entire species carry an AABC genotype (GFS = 0.833) — all in EO67 and EO70 — making them the highest-priority seed parents for near-term managed crossing.
 
 Critically, these two tipping points interact: even if allele richness were restored through inter-EO transfers (TP1 intervention), the benefit would be limited if the incoming alleles are absorbed into AAAA or AAAB individuals. Effective restoration therefore requires simultaneously targeting allele richness (inter-EO transfers of rare alleles) and genotype quality (crosses designed to produce AABB, AABC, and ultimately ABCD offspring).
 
