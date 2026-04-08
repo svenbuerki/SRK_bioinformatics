@@ -68,6 +68,22 @@ All five Element Occurrences (EOs) with sufficient sample sizes (≥25 individua
 
 EO27 retains the most allele diversity, yet even its observed count of 15 alleles represents only 23% of the species optimum. EO70, despite being the most heavily sampled EO (40 individuals), harbours only 6 allele bins — the lowest richness of all five EOs and just 9% of the species optimum, suggesting severe historical bottlenecking or founder effects at this occurrence.
 
+**S-allele erosion by genetic drift (Figure 4b):**
+
+![Figure 4b: S-allele erosion by genetic drift per EO](figures/SRK_allele_accumulation_drift_erosion.png)
+
+The allele richness deficits documented above are not sampling artefacts — they reflect irreversible genetic erosion. Figure 4b decomposes each EO's deficit relative to the 65-allele species optimum into two components: alleles predicted to exist in the EO but not yet detected (light blue; EO MM estimate minus observed count), and alleles lost to genetic drift (red; species MM minus EO MM estimate). The red segment — alleles that are almost certainly absent from each EO — dominates catastrophically across all five EOs:
+
+| Element Occurrence | Observed | Predicted undetected | Lost to genetic drift | % lost |
+|--------------------|:---:|:---:|:---:|:---:|
+| EO70 |  6 | ~1 | ~58 | **89%** |
+| EO76 |  9 | ~3 | ~53 | **82%** |
+| EO25 | 11 | ~4 | ~50 | **77%** |
+| EO67 | 12 | ~4 | ~49 | **75%** |
+| EO27 | 15 | ~11 | ~39 | **60%** |
+
+Even in EO27 — the least affected occurrence — an estimated 39 of the 65 species-level S-allele bins (60%) have been permanently lost from the local gene pool. In EO70, the most severely eroded occurrence, approximately 58 of 65 alleles (89%) are gone. The predicted-undetected component is uniformly small (1–11 alleles), confirming that further sampling within these EOs will not close the deficit: the missing alleles are not hidden by insufficient effort — they no longer exist in these populations. Genetic drift has dismantled the SI system at its source, and inter-EO allele transfers are the only viable pathway to restoration.
+
 **Allele set composition and sharing (Figures 5–6):**
 
 ![Figure 5: SRK allele upset plot — EO overlap](figures/SRK_allele_upset_EOs.png)
@@ -247,7 +263,7 @@ Random mating causes a mean loss of 7.4 allele bins by year 3 at the species lev
 
 Genetic drift, promoted by habitat fragmentation, is severely eroding allele diversity and frequency balance in *LEPA* Element Occurrences at two distinct levels.
 
-**Tipping Point 1 — Allele richness deficit (Figure 9).** With 189 individuals sampled across 26 population localities (five major EOs plus 21 additional small sites), only 47 of an estimated 65 species-level S-allele bins (MM estimate) have been observed. Each EO retains a small, largely private subset of the species SI repertoire (9–23% of the species optimum), allele frequencies are highly skewed from the equal distribution expected under NFDS (χ² *p* < 10⁻⁷ at every level), and frequency evenness (Ne/N) ranges from only 0.41 to 0.55 — meaning fewer than half of even the observed alleles are effectively contributing to SI function. Allele sets are almost entirely non-overlapping across EOs — only 2 alleles are shared across all five. All five EOs are flagged **CRITICAL** for TP1. EO70 is the most allele-depauperate (6 bins, 9% of optimum; evenness = 0.51); EO27 retains the most (15 bins, 23% of optimum) and the largest set of private alleles (n = 10).
+**Tipping Point 1 — Allele richness deficit (Figures 4b, 9).** With 189 individuals sampled across 26 population localities (five major EOs plus 21 additional small sites), only 47 of an estimated 65 species-level S-allele bins (MM estimate) have been observed. Each EO retains a small, largely private subset of the species SI repertoire (9–23% of the species optimum), allele frequencies are highly skewed from the equal distribution expected under NFDS (χ² *p* < 10⁻⁷ at every level), and frequency evenness (Ne/N) ranges from only 0.41 to 0.55 — meaning fewer than half of even the observed alleles are effectively contributing to SI function. Allele sets are almost entirely non-overlapping across EOs — only 2 alleles are shared across all five. All five EOs are flagged **CRITICAL** for TP1. EO70 is the most allele-depauperate (6 bins, 9% of optimum; evenness = 0.51); EO27 retains the most (15 bins, 23% of optimum) and the largest set of private alleles (n = 10). Critically, the allele erosion analysis (Figure 4b) confirms that these deficits are not sampling artefacts: between 60% (EO27) and 89% (EO70) of the species-level S-allele pool has been irreversibly lost from each EO through genetic drift. The predicted-undetected component is small (1–11 alleles per EO), meaning further sampling cannot close the gap — the missing alleles are genuinely absent from these populations.
 
 **Tipping Point 2 — Genotypic fitness collapse (Figures 12–13).** Beyond allele counts, the *distribution of alleles across individuals* has degraded severely. The Genotypic Fitness Score (GFS) — the proportion of heterozygous gametes a tetraploid individual produces — reveals that all five EOs are CRITICAL: mean GFS ranges from 0.22 to 0.30 (well below the AABB benchmark of 0.667), and 52–62% of individuals per EO are AAAA (producing zero heterozygous gametes). Fewer than half of individuals in any EO carry more than one distinct SRK allele and can therefore support reproductive effort through compatible crosses (Figure 13): the proportion of supporting individuals (GFS > 0) ranges from only 38% in EO27 to 48% in EO76. No ABCD individual exists in the dataset. Only five individuals across the entire species carry an AABC genotype (GFS = 0.833) — all in EO67 and EO70 — making them the highest-priority seed parents for near-term managed crossing.
 

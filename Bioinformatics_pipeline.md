@@ -496,6 +496,7 @@ Rscript SRK_allele_accumulation_analysis.R
 **Outputs:**
 - `SRK_allele_accumulation_curves.pdf` — species- and population-level curves with asymptote reference lines
 - `SRK_allele_accumulation_combined.png` — single-panel combined plot showing all EO accumulation curves on the same axes; end-of-curve labels show observed allele count and MM-predicted total (e.g. `EO27 (15/26)`); legend entries include `obs=` and `MM=` values
+- `SRK_allele_accumulation_drift_erosion.png` — stacked bar chart decomposing the allele deficit per EO into observed alleles, alleles predicted-undetected (EO MM − observed), and alleles lost to genetic drift (species MM − EO MM); quantifies the irreversible erosion of SI diversity driven by drift (60–89% of the 65-allele species optimum lost per EO)
 - `SRK_allele_accumulation_stats.tsv` — curve statistics per level including MM, Chao1, iNEXT estimates and sampling adequacy targets
 - `SRK_species_richness_estimates.tsv` — **consensus species allele richness; required as input for Step 15**
 
