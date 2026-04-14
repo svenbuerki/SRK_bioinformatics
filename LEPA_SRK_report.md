@@ -136,16 +136,16 @@ A majority of individuals (56%, 105/189) carry only a single allele bin (AAAA ge
 
 ---
 
-### 4a. Tipping Point 1 (TP1) — Allele Richness and Frequency Evenness
+### 4a. Tipping Point 1 (TP1) — Health of the SI System
 
-TP1 is breached when a population has lost so many S-alleles relative to the species optimum that inter-population allele transfers are required to restore richness. It is evaluated using two complementary metrics (Figure 9):
+TP1 assesses the **health of the SI system** — the degree to which the SRK allele pool within a population is capable of sustaining compatible mating. It is breached when allele loss is so severe that inter-population allele transfers are required to restore SI function. Two complementary questions structure the assessment (Figure 9):
 
-![Figure 9: TP1 tipping point — allele richness and frequency evenness](figures/SRK_TP1_tipping_point.png)
+- **How many different alleles has a population retained?** (x-axis: `prop_optimum` = N_alleles / 65 — the proportion of the species-level SI repertoire still present in the EO. A population holding all alleles can offer every individual a large pool of compatible partners; as alleles are lost, compatible pairings become progressively rarer.)
+- **How evenly are the remaining alleles distributed across individuals?** (y-axis: `Ne / N_alleles` — the ratio of effective to observed allele number. The effective allele number Ne = 1/Σpᵢ² answers *how many equally frequent alleles would produce the same level of diversity as observed*. A ratio of 1.0 means perfect evenness — the NFDS ideal in which every allele contributes equally to compatible crosses; drift and dominance push it downward as a few alleles monopolise copy numbers and rare alleles are marginalised.)
 
-- **Proportion of species optimum retained** (`prop_optimum` = N_alleles / 65): how much of the species-level SI repertoire each EO holds.
-- **Frequency evenness** (`Ne / N_alleles`): how close allele frequencies are to the equal-frequency NFDS ideal. The effective allele number Ne = 1/Σpᵢ² answers *how many equally frequent alleles would produce the same diversity as observed*. A ratio of 1.0 means perfect evenness; drift pushes it downward as dominant alleles accumulate and rare alleles are marginalised.
+A population with all alleles present and evenly distributed maximises compatible mating pairs and SI system health. TP1 identifies where both dimensions have degraded beyond the point at which within-population crossing alone can restore SI function. An EO is flagged **CRITICAL** when both criteria are breached (< 50% of species optimum and Ne/N < 0.80), **AT RISK** when only one is breached, and **OK** when neither is.
 
-An EO is flagged **CRITICAL** when both criteria are breached (< 50% of species optimum and Ne/N < 0.80), **AT RISK** when only one is breached, and **OK** when neither is.
+![Figure 9: TP1 tipping point — health of the SI system](figures/SRK_TP1_tipping_point.png)
 
 | EO | N alleles | % of species optimum | Evenness (Ne/N) | TP1 status |
 |----|:---:|:---:|:---:|:---:|
@@ -156,6 +156,12 @@ An EO is flagged **CRITICAL** when both criteria are breached (< 50% of species 
 | EO27 | 15 | 23% | 0.46 | **CRITICAL** |
 
 All five EOs are CRITICAL on both axes. No EO retains more than 23% of the species allele pool, and all have evenness values between 0.41 and 0.55 — meaning that even the alleles present are distributed so unevenly that fewer than half are effectively contributing to SI function. EO67 has the lowest evenness (0.41), indicating the most extreme dominance by a few alleles; EO76 has the highest (0.55), though this is still far from the NFDS ideal of 1.0. EO27 is least depauperate on richness (23%), while EO70 is the most allele-impoverished (9%).
+
+**Interpreting the two axes: bottleneck versus ongoing drift**
+
+The richness and evenness axes of the TP1 plot capture different aspects of demographic history and together allow a partial — though not definitive — reading of the processes that generated the observed deficits. Low allele richness (prop_optimum) is the primary signature of a founder event or population bottleneck: the rapid, simultaneous loss of alleles when population size was severely reduced. Low frequency evenness (Ne/N) is more characteristic of ongoing genetic drift in small populations — the progressive accumulation of one or a few dominant alleles at the expense of rare survivors. An EO that experienced only a historical bottleneck with no subsequent drift would be expected to show low richness but moderate evenness (founders sampled stochastically, but the alleles they carried may be at similar frequencies). An EO experiencing only ongoing drift without a prior bottleneck would retain more alleles but show declining evenness as dominant frequencies grow.
+
+LEPA EOs are severely deficient on **both** axes simultaneously, which is most consistent with a historical bottleneck that reduced richness sharply, followed by prolonged ongoing drift that further eroded evenness among the surviving alleles. This two-phase interpretation is reinforced by the allele composition analysis (Figures 5–6): if all EOs had been founded from the same bottlenecked ancestral pool, they would be missing the *same* alleles. The observation that each EO holds a largely private allele set — with only two alleles shared across all five EOs — points instead to **independent drift in isolated populations**, each losing different alleles stochastically, superimposed on a possible earlier species-level richness reduction. Formally resolving the relative contribution of each process requires genome-wide neutral marker data and demographic modelling (see Section 5).
 
 ---
 
@@ -175,10 +181,10 @@ where $n_k$ is the copy number of allele $k$ and the denominator normalises to t
 | AAAB | 0.500 | 3 / 6 |
 | AAAA | 0.000 | 0 / 6 |
 
-**Tipping Point 2 (TP2)** is breached when the distribution of alleles across individuals has degraded to the point that managed crossing within an EO cannot restore fitness without external allele introductions. Two criteria are evaluated per EO:
+**Tipping Point 2 (TP2)** assesses **reproductive success** — the degree to which the individuals within a population can actually participate in compatible crosses and contribute allelic diversity to the next generation. It is breached when individual-level fitness has degraded to the point that managed crossing within an EO cannot restore reproductive output without external allele introductions. Two complementary questions structure the assessment:
 
-- **TP2-mean**: mean GFS < 0.667 (EO average below AABB level)
-- **TP2-AAAA**: proportion AAAA > 30%
+- **What fraction of individuals are reproductive dead-ends?** (x-axis: `prop_AAAA` > 30% — the proportion of individuals producing only homotypic gametes. An AAAA individual cannot contribute to any compatible cross regardless of its mate, making it a complete loss to the breeding pool.)
+- **How much reproductive capacity does the average individual still have?** (y-axis: `mean GFS` < 0.667 — the EO average falls below the AABB benchmark of producing heterozygous gametes in 4 of 6 combinations. When the mean GFS is low, even the individuals that are not dead-ends contribute relatively little diversity per cross.)
 
 An EO breaching both simultaneously is flagged **CRITICAL**; one criterion is **AT RISK**; neither is **OK**.
 
@@ -221,7 +227,95 @@ Full ranked lists per EO are available in `SRK_individual_GFS.tsv`; EO-level sum
 
 ---
 
-### 5. Crossing Strategy Simulations
+### 5. Hypothesized Processes Leading to AAAA Predominance
+
+The finding that 56% of individuals across all five EOs carry an AAAA genotype — and that only five individuals in the entire species retain three or more distinct SRK alleles — requires mechanistic explanation. The pattern is unlikely to reflect a single event; instead, it is most consistent with a cascade of interacting demographic and genetic processes, each compounding the others over successive generations. The five stages of this cascade are summarised in [Figure 14](#figure-14) below.
+
+**Stage 1 — Ancestral bottleneck: loss of SRK allele richness**
+
+The most parsimonious starting point is a severe demographic bottleneck associated with historical habitat loss and fragmentation. Bottlenecks reduce allelic richness at the SRK locus faster than expected under neutral models, because S-alleles are individually rare even in healthy populations under NFDS and are easily lost when founder group size is small. The observed richness of 9–23% of the species optimum per EO, combined with the irreversible loss of 60–89% of the species allele pool per occurrence, is consistent with pronounced and prolonged founder effects (Wright 1939; Schierup et al. 1997).
+
+**Bottleneck versus ongoing drift: what the pipeline can and cannot resolve**
+
+The term "genetic drift" is used throughout this report in its broadest sense — encompassing both a discrete historical bottleneck (a sudden, severe reduction in population size) and the continuous stochastic erosion of allele frequencies that occurs in any finite population. These are conceptually distinct processes with different primary effects: a bottleneck principally reduces allele **richness** by eliminating rare alleles simultaneously at a single historical moment; ongoing drift in small populations subsequently erodes allele **frequency evenness**, causing surviving alleles to diverge progressively from the equal-frequency NFDS ideal.
+
+The current pipeline measures the net outcome of both processes combined — the allele richness deficit relative to the MM species optimum — but cannot partition how much was lost in a historical bottleneck versus how much is being actively eroded today. This limitation is inherent to the SRK locus itself: it is under balancing selection (NFDS), which invalidates standard bottleneck-detection tools (e.g., BOTTLENECK software; Cornuet & Luikart 1996; Garza & Williamson 2001) that assume neutral allele dynamics. Resolving the relative contribution of each process would require genome-wide neutral marker data (e.g., SNPs from RADseq or whole-genome sequencing) analysed with demographic modelling approaches such as SMC++ or PSMC.
+
+Nonetheless, the two TP1 axes — allele richness and frequency evenness — carry a weak but informative signal (see Section 4a). A bottleneck founder effect tends to reduce richness while leaving surviving alleles at roughly similar frequencies among founders; subsequent ongoing drift in small populations then additionally distorts those frequencies, further eroding evenness. LEPA shows both severely low richness (9–23% of species optimum) and very low evenness (Ne/N = 0.41–0.55), most consistent with a historical bottleneck followed by prolonged ongoing drift. The allele composition analysis (Figures 5–6) adds a second line of evidence: if losses were caused by a single shared ancestral bottleneck, EOs would be missing the *same* alleles. Instead, each EO holds a largely private allele set with minimal inter-EO sharing, consistent with independent drift in isolated EOs rather than one common founding event — though a prior reduction of the species-level pool cannot be excluded.
+
+For conservation purposes, the distinction matters less than the intervention it implies: the alleles are absent regardless of when they were lost, and the urgency of inter-EO allele transfers is identical under either interpretation.
+
+**Stage 2 — Paradox of NFDS under impoverished diversity**
+
+Under normal conditions, NFDS protects rare S-alleles by giving individuals carrying them a reproductive advantage — they are compatible with more partners. However, this protective mechanism inverts once diversity collapses below a functional threshold. When the A haplotype becomes numerically dominant, the rare-allele advantage diminishes because too few rare alleles remain to recover. A-carrying individuals produce more offspring simply by numerical dominance, and their offspring are disproportionately likely to inherit one or more A copies. The result is a self-reinforcing collapse: drift reduces diversity, NFDS weakens, dominance of A increases, diversity collapses further (Castric & Vekemans 2004; Vekemans & Slatkin 1994).
+
+**Stage 3 — Mate limitation and reproductive skew**
+
+In sporophytic SI systems, a cross is compatible only when the pistil does not recognise any haplotype expressed in the pollen donor. As AAAA frequency rises, individuals carrying rare haplotypes find progressively fewer compatible mates — not because the SI system has failed, but because it is working precisely as designed in a diversity-impoverished landscape. Byers & Meagher (1992) demonstrated analytically that in small SSI populations, mate availability collapses sharply as S-allele diversity decreases. In practice, individuals with rare haplotypes increasingly fail to set seed, removing those allele lineages from the next generation irrespective of selective pressure. Empirical confirmation of this Allee effect in SI species has been documented in *Ranunculus reptans* and invasive *Raphanus sativus* populations (Willi et al. 2005; Elam et al. 2007).
+
+**Stage 4 — Genetic drift overwhelms NFDS at observed population sizes**
+
+At census sizes of N = 25–40 individuals per EO, genetic drift is strong enough to overcome the frequency-dependent selection that would otherwise maintain S-allele diversity. The effective allele number (Ne) at the S-locus is theoretically elevated above neutral Ne under NFDS; however, this advantage collapses when diversity is already low. At the evenness values observed in LEPA (Ne/N = 0.41–0.55), a substantial fraction of individuals already carry duplicate allele copies, meaning effective recombination among distinct S-haplotypes is further constrained. Once a rare haplotype is lost by drift, it cannot be recovered without gene flow (Willi et al. 2005; Aguilar et al. 2006).
+
+**Stage 5 — Polyploid-specific SI breakdown: the pathway to AAAA**
+
+To understand this stage it helps to know the two molecular components involved. **SRK** (S-Receptor Kinase) is a protein on the surface of pistil cells that acts as the *receptor*: it detects pollen identity. **SCR** (S-locus Cysteine-Rich protein; also called SP11) is a small protein coating the surface of pollen grains that acts as the *ligand*: it identifies the pollen. When an SCR protein binds its matching SRK receptor on the pistil, the pistil recognises the pollen as self and rejects it; no binding means the pollen is accepted.
+
+In diploid SSI plants, becoming homozygous at the S-locus is very difficult because SI prevents the same-haplotype crosses required to produce homozygous offspring. Tetraploidy fundamentally alters this constraint through the *competitive interaction model*. An AABB individual produces diploid pollen by randomly sampling two of its four allele copies. This generates three pollen types in predictable ratios: AA pollen (1 in 6), **AB pollen (4 in 6 — the most common type)**, and BB pollen (1 in 6). AB pollen, carrying both A-SCR and B-SCR proteins simultaneously, is the key to SI breakdown. When AB pollen lands on an AABB pistil — which expresses both SRK-A and SRK-B receptors — both SCR proteins attempt to bind their respective receptors at the same time. The competing signals interfere with each other, producing a recognition response too weak to trigger rejection. The pistil cannot tell the pollen is self, so it lets it through: self-fertilisation succeeds.
+
+Self-fertilisation of an AABB plant via AB pollen produces predominantly **AAAB offspring** (e.g., AA egg × AB pollen, or AB egg × AA pollen). An AAAB individual now produces AA pollen in 3 of 6 combinations (versus 1 in 6 from AABB), which further increases the probability of SI-bypassing selfing events in the next generation. Over successive generations this runaway process drifts the genotype distribution toward AAAA. Mable (2004) and Mable et al. (2004) documented this competitive interaction mechanism in polyploid *Arabidopsis lyrata*, showing that neopolyploids frequently become partially self-compatible through dosage-mediated SCR competition. Busch & Schoen (2008) and Comai (2005) review the broader consequences of polyploidy for SI function.
+
+**The five AABC individuals: three competing explanations**
+
+The presence of five AABC individuals — all confined to EO67 and EO70 — is particularly informative. Three non-mutually exclusive explanations are consistent with the data:
+
+- *Relict diversity.* These individuals are vestiges of a pre-bottleneck state, arising from crosses between individuals that still carried B, C, or D haplotypes before those haplotypes were lost from the broader population. Their AABC configuration requires two rare haplotypes from different parents — a cross that becomes increasingly improbable as the rare haplotype pool diminishes.
+
+- *Inter-EO gene flow.* The co-occurrence of AABC genotypes exclusively in EO67 and EO70 may reflect historical gene flow between these two EOs, with the rarer haplotypes (B, C) derived from the alternate source population. Such inter-occurrence crosses would be fully compatible under SSI and would produce higher-fitness offspring, consistent with the AABC observation.
+
+- *Mutational SI breakdown.* Rare loss-of-function mutations in SCR/SRK components can restore self-compatibility in otherwise SI species (Busch & Schoen 2008; Brennan et al. 2002). If a small number of LEPA individuals carry such mutations, they could participate in crosses normally rejected by the SI system, generating unusual allele combinations. However, AABC is more consistent with a compatible outcross than with selfing, making this the least parsimonious explanation.
+
+**Conservation implication**
+
+This mechanistic framework has a direct practical corollary: increasing census population size within an EO alone is insufficient to reverse the AAAA trajectory. If the prevailing AAAA frequency exceeds the reproductive dead-end threshold, within-population growth simply produces more AAAA offspring. Allele introduction via inter-EO crosses is the primary lever. Introducing B, C, and D haplotypes from the five AABC individuals into crosses with AAAA individuals simultaneously restores SI compatibility and re-engages NFDS — the self-reinforcing mechanism that, once functional, will favour the spread of introduced alleles through subsequent generations. The five AABC seed parents identified in Section 4b are therefore not merely high-priority for seed production in the current season; they represent the only endogenous genetic resource capable of reversing the collapse cascade described above.
+
+<a name="figure-14"></a>
+
+![Figure 14: Five-stage cascade hypothesis for AAAA predominance in LEPA](figures/SRK_AAAA_cascade_hypothesis.png)
+
+---
+
+### References
+
+Aguilar, R., Ashworth, L., Galetto, L., & Aizen, M. A. (2006). Plant reproductive susceptibility to habitat fragmentation: Review and synthesis through a meta-analysis. *Ecology Letters*, 9(8), 968–980. https://doi.org/10.1111/j.1461-0248.2006.00927.x
+
+Brennan, A. C., Harris, S. A., Tabah, D. A., & Hiscock, S. J. (2002). The population genetics of sporophytic self-incompatibility in *Senecio squalidus* L. (Asteraceae) I: S allele diversity in a natural population. *Heredity*, 89(6), 430–438. https://doi.org/10.1038/sj.hdy.6800154
+
+Busch, J. W., & Schoen, D. J. (2008). The evolution of self-incompatibility when it is costly. *Trends in Plant Science*, 13(3), 128–135. https://doi.org/10.1016/j.tplants.2008.01.001
+
+Byers, D. L., & Meagher, T. R. (1992). Mate availability in small populations of plant species with homomorphic sporophytic self-incompatibility. *Heredity*, 68(4), 353–359. https://doi.org/10.1038/hdy.1992.49
+
+Castric, V., & Vekemans, X. (2004). Plant self-incompatibility in natural populations: A critical assessment of recent theoretical and empirical advances. *Molecular Ecology*, 13(10), 2873–2889. https://doi.org/10.1111/j.1365-294X.2004.02296.x
+
+Comai, L. (2005). The advantages and disadvantages of being polyploid. *Nature Reviews Genetics*, 6(11), 836–846. https://doi.org/10.1038/nrg1711
+
+Elam, D. R., Ridley, C. E., Goodell, K., & Ellstrand, N. C. (2007). Population size and relatedness affect fitness of a self-incompatible invasive plant. *Proceedings of the National Academy of Sciences*, 104(2), 549–552. https://doi.org/10.1073/pnas.0607259104
+
+Mable, B. K. (2004). Polyploidy and self-compatibility: Is there an association? *New Phytologist*, 162(3), 803–811. https://doi.org/10.1111/j.1469-8137.2004.01055.x
+
+Mable, B. K., Beland, J., & Di Berardo, C. (2004). Inheritance and dominance of self-incompatibility alleles in polyploid *Arabidopsis lyrata*. *Heredity*, 93(5), 476–486. https://doi.org/10.1038/sj.hdy.6800526
+
+Schierup, M. H., Vekemans, X., & Christiansen, F. B. (1997). Evolutionary dynamics of sporophytic self-incompatibility alleles in plants. *Genetics*, 147(2), 835–846. https://doi.org/10.1093/genetics/147.2.835
+
+Vekemans, X., & Slatkin, M. (1994). Gene and allelic genealogies at a gametophytic self-incompatibility locus. *Genetics*, 137(4), 1157–1165. https://doi.org/10.1093/genetics/137.4.1157
+
+Willi, Y., Van Buskirk, J., & Fischer, M. (2005). A threefold genetic Allee effect: Population size affects cross-compatibility, inbreeding depression and drift load in the self-incompatible *Ranunculus reptans*. *Genetics*, 169(4), 2255–2265. https://doi.org/10.1534/genetics.104.034553
+
+Wright, S. (1939). The distribution of self-sterility alleles in populations. *Genetics*, 24(4), 538–552.
+
+---
+
+### 6. Crossing Strategy Simulations
 
 To evaluate how different managed crossing strategies could restore allele frequency balance and prevent further allele loss, we simulated five years of crossing under four strategies across all five major EOs and for the combined species-wide metapopulation. All simulations used S-allele tetraploid genotypes with self-incompatibility constraints enforced, and were replicated across 10 stochastic trials.
 
@@ -259,7 +353,7 @@ Random mating causes a mean loss of 7.4 allele bins by year 3 at the species lev
 
 ---
 
-### 6. Conclusion
+### 7. Conclusion
 
 Genetic drift, promoted by habitat fragmentation, is severely eroding allele diversity and frequency balance in *LEPA* Element Occurrences at two distinct levels.
 
