@@ -84,11 +84,11 @@ BODY = [
      "stochastically lost and cannot be recovered without external gene flow\n"
      "(Willi et al. 2005; Aguilar et al. 2006)."),
 
-    ("In diploids, SI blocks the same-haplotype crosses needed to produce\n"
-     "homozygotes. In tetraploids, pollen carrying two copies of the same\n"
-     "S-haplotype (AA pollen from AABB donors) may escape pistil recognition via\n"
-     "competitive interaction between haplotypes, enabling partial self-fertilisation\n"
-     "and progressive fixation toward AAAA (Mable 2004; Mable et al. 2004; Comai 2005)."),
+    ("In diploids, SI blocks same-haplotype crosses. In tetraploids, AABB produces\n"
+     "AB pollen (4 of 6) carrying both A-SCR and B-SCR proteins. Both proteins\n"
+     "compete to bind their matching pistil receptors (SRK-A, SRK-B), producing\n"
+     "a signal too weak to trigger rejection — SI fails, self-fertilisation\n"
+     "occurs, and AAAB offspring accumulate toward AAAA (Mable et al. 2004)."),
 ]
 
 # ─── figure geometry (data units = cm for clarity) ────────────────────────────
