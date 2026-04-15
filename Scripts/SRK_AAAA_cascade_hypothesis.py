@@ -91,10 +91,10 @@ BODY = [
      "occurs, and AAAB offspring accumulate toward AAAA (Mable et al. 2004)."),
 ]
 
-# ─── figure geometry (data units = cm for clarity) ────────────────────────────
-FW, FH  = 15.0, 23.5   # figure dimensions in inches (used as data units too)
-BOX_H   = 3.6           # stage box height
-GAP     = 0.42          # gap between boxes (arrow space)
+# ─── figure geometry (data units = inches) ────────────────────────────────────
+FW, FH  = 15.0, 16.6   # figure dimensions in inches (used as data units too)
+BOX_H   = 2.31          # stage box height (was 3.6)
+GAP     = 0.35          # gap between boxes / arrow space (was 0.42)
 MX      = 0.30          # left/right margin
 BOX_W   = FW - 2 * MX  # stage box width
 
@@ -105,9 +105,13 @@ SCH_W    = BOX_W * 0.40        # schematic width
 TEXT_X0  = SCH_X0 + SCH_W + 0.25  # text left edge
 
 # y positions of top edge of each stage box (top-down layout)
-TITLE_Y  = FH - 0.45
-STAGE_Y  = [TITLE_Y - 1.05 - i * (BOX_H + GAP) for i in range(5)]
-OUTCOME_Y = STAGE_Y[4] - BOX_H - GAP - 0.1
+TITLE_Y  = FH - 0.40
+STAGE_Y  = [TITLE_Y - 0.95 - i * (BOX_H + GAP) for i in range(5)]
+OUTCOME_Y = STAGE_Y[4] - BOX_H - GAP - 0.05
+
+# bottom panel: outcome + conservation side by side
+HALF_W   = (BOX_W - 0.20) / 2   # each panel ~7.1 inches wide
+CI_X     = MX + HALF_W + 0.20   # left edge of conservation panel
 
 # ─── create figure ─────────────────────────────────────────────────────────────
 fig = plt.figure(figsize=(FW, FH), facecolor='white')
@@ -181,15 +185,15 @@ def draw_stage(i):
     # Badge
     badge(BADGE_X, y_bot + BOX_H / 2, i + 1, bfc)
 
-    # Stage title
-    ax.text(SCH_X0 + SCH_W / 2, y_top - 0.28, TITLES[i],
-            ha='center', va='top', fontsize=13, fontweight='bold',
+    # Stage title — left-aligned, flush with schematic left edge (beside badge)
+    ax.text(SCH_X0, y_top - 0.24, TITLES[i],
+            ha='left', va='top', fontsize=12, fontweight='bold',
             color='#1A1A1A', zorder=4)
 
     # Body text
-    ax.text(TEXT_X0, y_top - 0.22, BODY[i],
+    ax.text(TEXT_X0, y_top - 0.20, BODY[i],
             ha='left', va='top', fontsize=11, color='#333333',
-            linespacing=1.55, zorder=4)
+            linespacing=1.50, zorder=4)
 
     # Return inset bounds for the schematic (leave 0.3 padding top/bottom)
     pad = 0.30
@@ -357,18 +361,21 @@ ax4.text(3.85, 0.82, 'stochastic\nsampling', ha='center',
          fontsize=7, color='#555', style='italic')
 
 # Small N emphasis
-ax4.text(8.5, 2.2, 'N = 25–40\nper EO', ha='center', fontsize=10,
+ax4.text(7.0, 2.2, 'N = 25–40\nper EO', ha='center', fontsize=10,
          fontweight='bold', color='#B71C1C',
          bbox=dict(boxstyle='round,pad=0.4', fc='#FFCDD2', ec='#C62828', lw=1.5))
-ax4.text(8.5, 1.1, 'drift\noverwhelms\nNFDS', ha='center', fontsize=8,
+ax4.text(7.0, 0.3, 'drift\noverwhelms\nNFDS', ha='center', fontsize=8,
          color='#555', style='italic')
 
 ax4.set_ylim(-1.0, 4.5)
 
 # ─── SCHEMATIC 5: Polyploid SI Breakdown — clean 3-zone layout ────────────────
-ax5 = draw_stage(4)
+# Use a custom inset with minimal padding so the schematic is taller
+draw_stage(4)
+_y5_bot = STAGE_Y[4] - BOX_H
+ax5 = inset(SCH_X0, _y5_bot + 0.12, SCH_W, BOX_H - 0.57)
 ax5.set_xlim(0, 10)
-ax5.set_ylim(0.0, 5.5)
+ax5.set_ylim(0.0, 3.5)
 
 CM5 = {'A': A_COL, 'B': B_COL, 'C': C_COL, 'D': D_COL}
 
@@ -398,69 +405,57 @@ def pollen_grain(ax, cx, cy, a1, a2, r=0.21, alpha=1.0):
                 ha='center', va='center', fontsize=8,
                 fontweight='bold', color='white', alpha=alpha)
 
-# ── Zone 1: AABB parent (x 0–2.8) ────────────────────────────────────────────
-chrom_stack(ax5, 1.4, 3.8, ['A','A','B','B'], 'AABB\nparent', sw=0.52, sh=0.33)
+# ── Zone 1: AABB parent ───────────────────────────────────────────────────────
+chrom_stack(ax5, 1.4, 2.41, ['A','A','B','B'], 'AABB\nparent', sw=0.52, sh=0.30)
 
-# arrow: AABB → pollen box
-ax5.annotate('', xy=(2.85, 3.8), xytext=(2.05, 3.8),
+ax5.annotate('', xy=(2.85, 2.41), xytext=(2.05, 2.41),
              arrowprops=dict(arrowstyle='->', color='#555',
                              lw=1.8, mutation_scale=15))
-ax5.text(2.45, 4.10, 'makes\npollen', ha='center', fontsize=8,
+ax5.text(2.45, 2.63, 'makes\npollen', ha='center', fontsize=8,
          color='#555', style='italic')
 
-# ── Zone 2: AB pollen in dashed box (x 2.9–5.5) ──────────────────────────────
-# Dashed highlight box
+# ── Zone 2: AB pollen in dashed box ──────────────────────────────────────────
 ax5.add_patch(mpatches.FancyBboxPatch(
-    (2.90, 3.20), 2.50, 1.35,
+    (2.90, 1.94), 2.50, 0.90,
     boxstyle='round,pad=0.08',
     fc='#FFEBEE', ec='#B71C1C', lw=2.2, linestyle='dashed', zorder=1))
 
-# Pollen grain inside box
-pollen_grain(ax5, 4.15, 3.88, 'A', 'B', r=0.26)
+pollen_grain(ax5, 4.15, 2.38, 'A', 'B', r=0.27)
 
-# Label inside box
-ax5.text(4.15, 4.38, 'AB pollen  (4 of 6)', ha='center', va='center',
+ax5.text(4.15, 2.73, 'AB pollen  (4 of 6)', ha='center', va='center',
          fontsize=9, fontweight='bold', color='#B71C1C')
 
-# Two explanation lines below the box — compact, smaller font
-ax5.text(4.15, 2.80, 'A & B compete → signal too weak',
+ax5.text(4.15, 1.55, 'A & B compete → signal too weak',
          ha='center', va='center', fontsize=7.5, color='#B71C1C',
          fontweight='bold')
-ax5.text(4.15, 2.30, 'SI fails → self-fertilises',
+ax5.text(4.15, 1.18, 'SI fails → self-fertilises',
          ha='center', va='center', fontsize=7.5, color='#555', style='italic')
 
-# arrow: pollen box → Zone 3
-ax5.annotate('', xy=(5.85, 3.80), xytext=(5.42, 3.80),
+ax5.annotate('', xy=(5.85, 2.38), xytext=(5.42, 2.38),
              arrowprops=dict(arrowstyle='->', color='#B71C1C',
                              lw=2.0, mutation_scale=16))
 
-# ── Zone 3: offspring and fixation (x 5.9–10) ────────────────────────────────
-# AAAB stack (first-generation self product)
-chrom_stack(ax5, 7.6, 4.35, ['A','A','A','B'], 'AAAB', sw=0.52, sh=0.32)
+# ── Zone 3: offspring and fixation ───────────────────────────────────────────
+chrom_stack(ax5, 7.6, 2.84, ['A','A','A','B'], 'AAAB', sw=0.52, sh=0.30)
 
-# side label to clarify
-ax5.text(8.55, 4.35, 'generation 1', ha='left', va='center',
+ax5.text(8.55, 2.84, 'generation 1', ha='left', va='center',
          fontsize=7.5, color='#555', style='italic')
 
-# down arrow: AAAB → AAAA
-ax5.annotate('', xy=(7.6, 2.35), xytext=(7.6, 3.25),
+ax5.annotate('', xy=(7.6, 1.62), xytext=(7.6, 1.95),
              arrowprops=dict(arrowstyle='->', color='#B71C1C',
                              lw=2.0, mutation_scale=15))
-# label beside down arrow
-ax5.text(8.20, 2.80, 'AA pollen\nnow 3 of 6\n→ drift to AAAA',
-         ha='left', va='center', fontsize=8.0, color='#B71C1C',
-         linespacing=1.4)
 
-# AAAA stack (end state)
-bot5 = chrom_stack(ax5, 7.6, 1.50, ['A','A','A','A'], None, sw=0.52, sh=0.32)
+ax5.text(8.20, 1.78, 'AA pollen\nnow 3 of 6\n→ drift to AAAA',
+         ha='left', va='center', fontsize=7.5, color='#B71C1C',
+         linespacing=1.35)
 
-# Red outline box around AAAA
+bot5 = chrom_stack(ax5, 7.6, 0.88, ['A','A','A','A'], None, sw=0.52, sh=0.28)
+
 ax5.add_patch(mpatches.FancyBboxPatch(
-    (7.14, bot5 - 0.12), 0.98, 4*0.32 + 0.24,
+    (7.14, bot5 - 0.10), 0.98, 4*0.28 + 0.20,
     boxstyle='round,pad=0.06', fc='none', ec='#B71C1C', lw=2.5))
 
-# Label below AAAA
-ax5.text(7.6, bot5 - 0.40, 'AAAA  ·  GFS = 0',
+ax5.text(7.6, bot5 - 0.22, 'AAAA  ·  GFS = 0',
          ha='center', va='top', fontsize=9,
          fontweight='bold', color='#B71C1C')
 
@@ -470,49 +465,47 @@ for i in range(4):
     y_to   = STAGE_Y[i + 1]
     down_arrow(FW / 2, y_from, y_to)
 
-# ─── OUTCOME BOX ──────────────────────────────────────────────────────────────
-OC_H = 1.95
-OC_Y = OUTCOME_Y - OC_H
-rounded_box(MX, OC_Y, BOX_W, OC_H, OUTCOME_BG, OUTCOME_EDGE, lw=2.8, zorder=2)
+# ─── OUTCOME + CONSERVATION BOXES — side by side ──────────────────────────────
+PANEL_H = 1.15
+PANEL_Y = OUTCOME_Y - PANEL_H   # bottom edge of both panels
 
-# Skull / warning indicator
-ax.text(MX + 0.6, OC_Y + OC_H / 2, '⚠', ha='center', va='center',
-        fontsize=26, color='#C62828', zorder=5)
+# ── Left: Outcome ──────────────────────────────────────────────────────────────
+rounded_box(MX, PANEL_Y, HALF_W, PANEL_H, OUTCOME_BG, OUTCOME_EDGE, lw=2.5, zorder=2)
 
-ax.text(MX + 1.5, OC_Y + OC_H - 0.35,
-        'OUTCOME — Genotypic Fitness Collapse (Tipping Point 2)',
-        ha='left', va='top', fontsize=11.5, fontweight='bold',
+ax.text(MX + 0.50, PANEL_Y + PANEL_H / 2, '⚠', ha='center', va='center',
+        fontsize=20, color='#C62828', zorder=5)
+
+ax.text(MX + 1.08, PANEL_Y + PANEL_H - 0.20,
+        'OUTCOME — Genotypic Fitness Collapse (TP2)',
+        ha='left', va='top', fontsize=10.0, fontweight='bold',
         color='#B71C1C', zorder=4)
 
-ax.text(MX + 1.5, OC_Y + OC_H - 0.82,
-        '56% of individuals are AAAA (GFS = 0) — reproductive dead-ends producing only homotypic gametes.\n'
-        'Mean GFS per EO: 0.22–0.30 (well below the AABB benchmark of 0.667).\n'
-        'Only 5 AABC individuals (GFS = 0.833) survive as endogenous allele reservoirs across the entire species.',
-        ha='left', va='top', fontsize=9.0, color='#333333',
-        linespacing=1.55, zorder=4)
+ax.text(MX + 1.08, PANEL_Y + PANEL_H - 0.52,
+        '56% of individuals are AAAA (GFS = 0) — reproductive dead-ends.\n'
+        'Mean GFS per EO: 0.22–0.30. Only 5 AABC individuals (GFS = 0.833)\n'
+        'survive as the sole endogenous allele reservoirs across the species.',
+        ha='left', va='top', fontsize=8.5, color='#333333',
+        linespacing=1.45, zorder=4)
 
-# ─── CONSERVATION IMPLICATION BOX ────────────────────────────────────────────
-CI_H = 1.55
-CI_Y = OC_Y - GAP - CI_H
-rounded_box(MX, CI_Y, BOX_W, CI_H, '#E8F5E9', '#2E7D32', lw=2.5, zorder=2)
+# ── Right: Conservation Implication ───────────────────────────────────────────
+rounded_box(CI_X, PANEL_Y, HALF_W, PANEL_H, '#E8F5E9', '#2E7D32', lw=2.5, zorder=2)
 
-ax.add_patch(Circle((MX + 0.6, CI_Y + CI_H / 2), 0.34,
+ax.add_patch(Circle((CI_X + 0.50, PANEL_Y + PANEL_H / 2), 0.30,
                      fc='#2E7D32', ec='white', lw=2.0, zorder=5))
-ax.text(MX + 0.6, CI_Y + CI_H / 2, '!', ha='center', va='center',
-        fontsize=18, fontweight='bold', color='white', zorder=6)
+ax.text(CI_X + 0.50, PANEL_Y + PANEL_H / 2, '!', ha='center', va='center',
+        fontsize=16, fontweight='bold', color='white', zorder=6)
 
-ax.text(MX + 1.5, CI_Y + CI_H - 0.30,
+ax.text(CI_X + 1.08, PANEL_Y + PANEL_H - 0.20,
         'Conservation Implication',
-        ha='left', va='top', fontsize=11.5, fontweight='bold',
+        ha='left', va='top', fontsize=10.0, fontweight='bold',
         color='#1B5E20', zorder=4)
 
-ax.text(MX + 1.5, CI_Y + CI_H - 0.68,
-        'Increasing census size within an EO alone is insufficient — within-population growth produces more AAAA offspring.\n'
-        'Allele introduction via inter-EO crosses is the primary lever: introducing B, C, and D haplotypes from the 5 AABC\n'
-        'individuals restores SI compatibility and re-engages NFDS, the self-reinforcing mechanism that will spread introduced\n'
-        'alleles through subsequent generations.',
-        ha='left', va='top', fontsize=8.8, color='#1A3B20',
-        linespacing=1.55, zorder=4)
+ax.text(CI_X + 1.08, PANEL_Y + PANEL_H - 0.52,
+        'Census size increase within an EO generates more AAAA offspring.\n'
+        'Inter-EO crosses with B, C, D haplotypes from the 5 AABC seed\n'
+        'parents restore SI compatibility and re-engage NFDS.',
+        ha='left', va='top', fontsize=8.5, color='#1A3B20',
+        linespacing=1.45, zorder=4)
 
 # ─── SAVE ─────────────────────────────────────────────────────────────────────
 os.makedirs('figures', exist_ok=True)

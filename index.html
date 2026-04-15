@@ -1526,7 +1526,7 @@ border-radius: 0px;
 <li><a href="#TP1">TP1 Tipping Point Analysis</a> – <strong>Health of the SI system</strong>: diagnostic scatter plot asking (x) how many different alleles a population has retained and (y) how evenly those alleles are distributed across individuals; with CRITICAL zone shading and TP1 status flags.</li>
 <li><a href="#allelesharing">Allele Composition Comparison Across Element Occurrences</a> – UpSet plot and pairwise sharing heatmap quantifying how S-allele sets overlap and partition across Element Occurrences, identifying private alleles and alleles shared by all populations.</li>
 <li><a href="#GFS">Individual Genotypic Fitness Score</a> – Per-individual GFS quantifying the proportion of heterozygous diploid gametes a tetraploid individual can produce, differentiating dosage-imbalanced genotypes (e.g. AABB vs AAAB) invisible to simple zygosity classification.</li>
-<li><a href="#TP2">TP2 Tipping Point Analysis</a> – <strong>Reproductive success</strong>: EO-level tipping point assessment asking (x) what fraction of individuals are reproductive dead-ends (prop_AAAA) and (y) how much reproductive capacity the average individual still has (mean GFS); EOs breaching both thresholds simultaneously are flagged CRITICAL.</li>
+<li><a href="#TP2">TP2 Tipping Point Analysis</a> – <strong>Reproductive Fitness</strong>: EO-level tipping point assessment asking (x) what fraction of individuals are reproductive dead-ends (prop_AAAA) and (y) how much reproductive capacity the average individual still has (mean GFS); EOs breaching both thresholds simultaneously are flagged CRITICAL.</li>
 <li><a href="#reproeffort">Reproductive Effort Support per Element Occurrence</a> – Horizontal proportional bar chart showing the fraction of individuals at each GFS tier per EO, quantifying the proportion of the population capable of contributing allelic diversity to compatible crosses.</li>
 </ol>
 <hr />
@@ -7790,12 +7790,12 @@ python SRK_allele_sharing_EOs.py \
 </blockquote>
 <div id="overview-16" class="section level3" number="6.8.1">
 <h3><span class="header-section-number">6.8.1</span> Overview</h3>
-<p>The TP2 Tipping Point Analysis assesses <strong>reproductive success</strong> at the population level — the degree to which individuals within an EO can actually participate in compatible crosses and contribute allelic diversity to the next generation. While <a href="#GFS">Step 18</a> characterises each individual’s gametic diversity potential, this step synthesises those scores at the EO level and combines them with AAAA prevalence into a single diagnostic framework. Two complementary questions define the two axes:</p>
+<p>The TP2 Tipping Point Analysis assesses <strong>reproductive fitness</strong> at the population level — the degree to which individuals within an EO can actually participate in compatible crosses and contribute allelic diversity to the next generation. While <a href="#GFS">Step 18</a> characterises each individual’s gametic diversity potential, this step synthesises those scores at the EO level and combines them with AAAA prevalence into a single diagnostic framework. Two complementary questions define the two axes:</p>
 <ul>
 <li><strong>What fraction of individuals are reproductive dead-ends?</strong> (x-axis: <code>prop_AAAA</code>) — An AAAA individual cannot contribute to any compatible cross regardless of its mate, making it a complete loss to the breeding pool. As this fraction grows, the effective breeding population shrinks accordingly.</li>
 <li><strong>How much reproductive capacity does the average individual still have?</strong> (y-axis: <code>mean GFS</code>) — Even individuals that are not dead-ends vary in how much allelic diversity they can contribute per cross. When the population mean falls below the AABB benchmark (GFS = 0.667), even the functional breeders are producing predominantly homotypic gametes.</li>
 </ul>
-<p>Together, the two axes establish whether reproductive success has degraded beyond the point where within-EO crossing alone can recover it.</p>
+<p>Together, the two axes establish whether reproductive fitness has degraded beyond the point where within-EO crossing alone can recover it.</p>
 </div>
 <div id="tipping-point-2-thresholds" class="section level3" number="6.8.2">
 <h3><span class="header-section-number">6.8.2</span> Tipping Point 2 — Thresholds</h3>

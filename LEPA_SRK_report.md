@@ -14,9 +14,13 @@ The analyses presented here address a single overarching conservation question: 
 
 ### 1. Allele Definition
 
-We targeted the S-domain of the SRK protein — the functional "lock" in the lock-and-key recognition mechanism — to define alleles. We first identified all unique functional protein sequences within this domain across the dataset and visualised amino acid variation across positions (Figure 1). We then applied a distance-based sensitivity analysis to cluster protein sequences into allele bins, selecting the clustering threshold that maximised biological resolution while minimising artefactual splitting (Figure 2). Each resulting cluster represents an S-allele bin — an allele hypothesis that groups functionally equivalent proteins under a single identity.
+We targeted the S-domain of the SRK protein — the functional "lock" in the lock-and-key recognition mechanism — to define alleles. We first identified all unique functional protein sequences within this domain across the dataset and visualised amino acid variation across positions ([Figure 1](#figure-1)). We then applied a distance-based sensitivity analysis to cluster protein sequences into allele bins, selecting the clustering threshold that maximised biological resolution while minimising artefactual splitting ([Figure 2](#figure-2)). Each resulting cluster represents an S-allele bin — an allele hypothesis that groups functionally equivalent proteins under a single identity.
+
+<a name="figure-1"></a>
 
 ![Figure 1: SRK amino acid frequency heatmap](figures/SRK_AA_frequency_heatmap.png)
+
+<a name="figure-2"></a>
 
 ![Figure 2: SRK protein distance analysis](figures/SRK_protein_distance_analysis.png)
 
@@ -24,7 +28,9 @@ We targeted the S-domain of the SRK protein — the functional "lock" in the loc
 
 ### 2. Allelic Richness in *LEPA*
 
-**Observed richness:** Across **189 individuals** sampled from **26 population localities** spanning the species range, we identified **47 distinct S-allele bins** (Figure 3). The sample comprises five main EOs with sufficient individuals for population-level analysis (EO25, EO27, EO67, EO70, EO76; n = 32, 29, 32, 40, 25 respectively; total n = 158), plus 21 additional small localities (n = 1–3 each; total n = 31) contributing to species-level allele discovery.
+**Observed richness:** Across **189 individuals** sampled from **26 population localities** spanning the species range, we identified **47 distinct S-allele bins** ([Figure 3](#figure-3)). The sample comprises five main EOs with sufficient individuals for population-level analysis (EO25, EO27, EO67, EO70, EO76; n = 32, 29, 32, 40, 25 respectively; total n = 158), plus 21 additional small localities (n = 1–3 each; total n = 31) contributing to species-level allele discovery.
+
+<a name="figure-3"></a>
 
 ![Figure 3: Species-level SRK allele accumulation curve](figures/SRK_allele_accumulation_species.png)
 
@@ -52,7 +58,9 @@ The species optimum of 65 alleles is the critical baseline for seed production p
 
 ### 4. Reproductive Status of Element Occurrences
 
-**Allele richness deficit (Figure 4):**
+**Allele richness deficit ([Figure 4](#figure-4)):**
+
+<a name="figure-4"></a>
 
 ![Figure 4: SRK allele accumulation curves — EO comparison](figures/SRK_allele_accumulation_combined.png)
 
@@ -68,11 +76,13 @@ All five Element Occurrences (EOs) with sufficient sample sizes (≥25 individua
 
 EO27 retains the most allele diversity, yet even its observed count of 15 alleles represents only 23% of the species optimum. EO70, despite being the most heavily sampled EO (40 individuals), harbours only 6 allele bins — the lowest richness of all five EOs and just 9% of the species optimum, suggesting severe historical bottlenecking or founder effects at this occurrence.
 
-**S-allele erosion by genetic drift (Figure 4b):**
+**S-allele erosion by genetic drift ([Figure 4b](#figure-4b)):**
+
+<a name="figure-4b"></a>
 
 ![Figure 4b: S-allele erosion by genetic drift per EO](figures/SRK_allele_accumulation_drift_erosion.png)
 
-The allele richness deficits documented above are not sampling artefacts — they reflect irreversible genetic erosion. Figure 4b decomposes each EO's deficit relative to the 65-allele species optimum into two components: alleles predicted to exist in the EO but not yet detected (light blue; EO MM estimate minus observed count), and alleles lost to genetic drift (red; species MM minus EO MM estimate). The red segment — alleles that are almost certainly absent from each EO — dominates catastrophically across all five EOs:
+The allele richness deficits documented above are not sampling artefacts — they reflect irreversible genetic erosion. [Figure 4b](#figure-4b) decomposes each EO's deficit relative to the 65-allele species optimum into two components: alleles predicted to exist in the EO but not yet detected (light blue; EO MM estimate minus observed count), and alleles lost to genetic drift (red; species MM minus EO MM estimate). The red segment — alleles that are almost certainly absent from each EO — dominates catastrophically across all five EOs:
 
 | Element Occurrence | Observed | Predicted undetected | Lost to genetic drift | % lost |
 |--------------------|:---:|:---:|:---:|:---:|
@@ -84,9 +94,13 @@ The allele richness deficits documented above are not sampling artefacts — the
 
 Even in EO27 — the least affected occurrence — an estimated 39 of the 65 species-level S-allele bins (60%) have been permanently lost from the local gene pool. In EO70, the most severely eroded occurrence, approximately 58 of 65 alleles (89%) are gone. The predicted-undetected component is uniformly small (1–11 alleles), confirming that further sampling within these EOs will not close the deficit: the missing alleles are not hidden by insufficient effort — they no longer exist in these populations. Genetic drift has dismantled the SI system at its source, and inter-EO allele transfers are the only viable pathway to restoration.
 
-**Allele set composition and sharing (Figures 5–6):**
+**Allele set composition and sharing ([Figures 5](#figure-5)–[6](#figure-6)):**
+
+<a name="figure-5"></a>
 
 ![Figure 5: SRK allele upset plot — EO overlap](figures/SRK_allele_upset_EOs.png)
+
+<a name="figure-6"></a>
 
 ![Figure 6: SRK allele sharing heatmap — EOs](figures/SRK_allele_sharing_heatmap_EOs.png)
 
@@ -102,7 +116,9 @@ S-allele sets are largely private to each Element Occurrence. Only **2 alleles �
 
 EO27 holds the largest private allele set (10 alleles), reinforcing its status as the most allele-rich and irreplaceable contributor to the species SI repertoire. EO70, despite being the most depauperate EO, still retains 3 alleles found nowhere else. In pairwise comparisons, EO25 and EO27 share the most alleles (5), while EO70 shares only 2–3 alleles with any other EO — underscoring its compositional isolation and the importance of inter-EO crosses for redistributing allele diversity to this occurrence.
 
-**Allele frequency imbalance (Figure 7):**
+**Allele frequency imbalance ([Figure 7](#figure-7)):**
+
+<a name="figure-7"></a>
 
 ![Figure 7: SRK allele frequency chi-square plots](figures/SRK_chisq_species_population_frequency_plots.png)
 
@@ -119,7 +135,9 @@ Under NFDS, alleles are expected to be maintained at approximately equal frequen
 
 A small number of alleles dominate in each Element Occurrence. Allele_044 and Allele_048 are the most prevalent across the species: Allele_044 contributes 25 copies in EO25 and 14 copies in EO27; Allele_048 dominates EO67 (26 copies), EO70 (36 copies), and EO76 (15 copies). EO70 is particularly extreme — Allele_048 alone accounts for a disproportionate share of all allele copies in that occurrence, while many alleles are absent entirely.
 
-**Zygosity (Figure 8):**
+**Zygosity ([Figure 8](#figure-8)):**
+
+<a name="figure-8"></a>
 
 ![Figure 8: SRK zygosity distribution](figures/SRK_zygosity_distribution.png)
 
@@ -138,12 +156,14 @@ A majority of individuals (56%, 105/189) carry only a single allele bin (AAAA ge
 
 ### 4a. Tipping Point 1 (TP1) — Health of the SI System
 
-TP1 assesses the **health of the SI system** — the degree to which the SRK allele pool within a population is capable of sustaining compatible mating. It is breached when allele loss is so severe that inter-population allele transfers are required to restore SI function. Two complementary questions structure the assessment (Figure 9):
+TP1 assesses the **health of the SI system** — the degree to which the SRK allele pool within a population is capable of sustaining compatible mating. It is breached when allele loss is so severe that inter-population allele transfers are required to restore SI function. Two complementary questions structure the assessment ([Figure 9](#figure-9)):
 
 - **How many different alleles has a population retained?** (x-axis: `prop_optimum` = N_alleles / 65 — the proportion of the species-level SI repertoire still present in the EO. A population holding all alleles can offer every individual a large pool of compatible partners; as alleles are lost, compatible pairings become progressively rarer.)
 - **How evenly are the remaining alleles distributed across individuals?** (y-axis: `Ne / N_alleles` — the ratio of effective to observed allele number. The effective allele number Ne = 1/Σpᵢ² answers *how many equally frequent alleles would produce the same level of diversity as observed*. A ratio of 1.0 means perfect evenness — the NFDS ideal in which every allele contributes equally to compatible crosses; drift and dominance push it downward as a few alleles monopolise copy numbers and rare alleles are marginalised.)
 
 A population with all alleles present and evenly distributed maximises compatible mating pairs and SI system health. TP1 identifies where both dimensions have degraded beyond the point at which within-population crossing alone can restore SI function. An EO is flagged **CRITICAL** when both criteria are breached (< 50% of species optimum and Ne/N < 0.80), **AT RISK** when only one is breached, and **OK** when neither is.
+
+<a name="figure-9"></a>
 
 ![Figure 9: TP1 tipping point — health of the SI system](figures/SRK_TP1_tipping_point.png)
 
@@ -161,11 +181,11 @@ All five EOs are CRITICAL on both axes. No EO retains more than 23% of the speci
 
 The richness and evenness axes of the TP1 plot capture different aspects of demographic history and together allow a partial — though not definitive — reading of the processes that generated the observed deficits. Low allele richness (prop_optimum) is the primary signature of a founder event or population bottleneck: the rapid, simultaneous loss of alleles when population size was severely reduced. Low frequency evenness (Ne/N) is more characteristic of ongoing genetic drift in small populations — the progressive accumulation of one or a few dominant alleles at the expense of rare survivors. An EO that experienced only a historical bottleneck with no subsequent drift would be expected to show low richness but moderate evenness (founders sampled stochastically, but the alleles they carried may be at similar frequencies). An EO experiencing only ongoing drift without a prior bottleneck would retain more alleles but show declining evenness as dominant frequencies grow.
 
-LEPA EOs are severely deficient on **both** axes simultaneously, which is most consistent with a historical bottleneck that reduced richness sharply, followed by prolonged ongoing drift that further eroded evenness among the surviving alleles. This two-phase interpretation is reinforced by the allele composition analysis (Figures 5–6): if all EOs had been founded from the same bottlenecked ancestral pool, they would be missing the *same* alleles. The observation that each EO holds a largely private allele set — with only two alleles shared across all five EOs — points instead to **independent drift in isolated populations**, each losing different alleles stochastically, superimposed on a possible earlier species-level richness reduction. Formally resolving the relative contribution of each process requires genome-wide neutral marker data and demographic modelling (see Section 5).
+LEPA EOs are severely deficient on **both** axes simultaneously, which is most consistent with a historical bottleneck that reduced richness sharply, followed by prolonged ongoing drift that further eroded evenness among the surviving alleles. This two-phase interpretation is reinforced by the allele composition analysis ([Figures 5](#figure-5)–[6](#figure-6)): if all EOs had been founded from the same bottlenecked ancestral pool, they would be missing the *same* alleles. The observation that each EO holds a largely private allele set — with only two alleles shared across all five EOs — points instead to **independent drift in isolated populations**, each losing different alleles stochastically, superimposed on a possible earlier species-level richness reduction. Formally resolving the relative contribution of each process requires genome-wide neutral marker data and demographic modelling (see Section 5).
 
 ---
 
-### 4b. Individual Genotypic Fitness Score (GFS) and Tipping Point 2 (TP2)
+### 4b. Individual Genotypic Fitness Score (GFS) and Tipping Point 2 (TP2) — Reproductive Fitness
 
 The zygosity classification above groups individuals by the *number* of unique alleles, but for seed production the *dosage balance* of those alleles also matters. In self-incompatible plants, an individual's value as a breeding partner depends not only on which key/lock types it carries, but also on the number of distinct alleles present across its genome copies. Individuals with more key/lock types can participate in more compatible crosses, making them especially valuable in a managed breeding program. A tetraploid produces diploid gametes by randomly sampling 2 of its 4 allele copies — yielding C(4,2) = 6 equally probable gamete combinations. An individual with genotype AABB (two alleles, balanced 2+2) produces heterozygous gametes in 4 of 6 combinations (GFS = 0.667), whereas an AAAB individual (two alleles, unbalanced 3+1) produces heterozygous gametes in only 3 of 6 (GFS = 0.500). This distinction — invisible to zygosity analysis alone — is captured by the **Genotypic Fitness Score (GFS)**:
 
@@ -181,18 +201,24 @@ where $n_k$ is the copy number of allele $k$ and the denominator normalises to t
 | AAAB | 0.500 | 3 / 6 |
 | AAAA | 0.000 | 0 / 6 |
 
-**Tipping Point 2 (TP2)** assesses **reproductive success** — the degree to which the individuals within a population can actually participate in compatible crosses and contribute allelic diversity to the next generation. It is breached when individual-level fitness has degraded to the point that managed crossing within an EO cannot restore reproductive output without external allele introductions. Two complementary questions structure the assessment:
+**Tipping Point 2 (TP2) — Reproductive Fitness** assesses the degree to which the individuals within a population can actually participate in compatible crosses and contribute allelic diversity to the next generation. It is breached when individual-level fitness has degraded to the point that managed crossing within an EO cannot restore reproductive output without external allele introductions. Two complementary questions structure the assessment:
 
 - **What fraction of individuals are reproductive dead-ends?** (x-axis: `prop_AAAA` > 30% — the proportion of individuals producing only homotypic gametes. An AAAA individual cannot contribute to any compatible cross regardless of its mate, making it a complete loss to the breeding pool.)
 - **How much reproductive capacity does the average individual still have?** (y-axis: `mean GFS` < 0.667 — the EO average falls below the AABB benchmark of producing heterozygous gametes in 4 of 6 combinations. When the mean GFS is low, even the individuals that are not dead-ends contribute relatively little diversity per cross.)
 
 An EO breaching both simultaneously is flagged **CRITICAL**; one criterion is **AT RISK**; neither is **OK**.
 
-**EO-level GFS results (Figures 10–12):**
+**EO-level GFS results ([Figures 10](#figure-10)–[12](#figure-12)):**
+
+<a name="figure-10"></a>
 
 ![Figure 10: GFS genotype composition — proportional](figures/SRK_GFS_plots_p1_composition_proportional.png)
 
+<a name="figure-11"></a>
+
 ![Figure 11: GFS individual scores — jitter plot](figures/SRK_GFS_plots_p2_individual_jitter.png)
+
+<a name="figure-12"></a>
 
 ![Figure 12: TP2 tipping point — mean GFS vs proportion AAAA](figures/SRK_GFS_plots_p3_TP2_tipping_point.png)
 
@@ -206,7 +232,9 @@ An EO breaching both simultaneously is flagged **CRITICAL**; one criterion is **
 
 All five EOs are CRITICAL. No EO approaches a mean GFS consistent with a functioning SI system. **EO67 is the least degraded**, with the highest mean GFS and the only AABC individuals (n = 2), alongside EO70 (n = 1). These five AABC individuals — producing 5/6 heterozygous gametes — are the highest-priority seed parents in the entire species.
 
-**Proportion of individuals supporting reproductive effort (Figure 13):**
+**Proportion of individuals supporting reproductive effort ([Figure 13](#figure-13)):**
+
+<a name="figure-13"></a>
 
 ![Figure 13: Proportion of individuals supporting reproductive effort per EO](figures/SRK_GFS_reproductive_effort.png)
 
@@ -229,7 +257,9 @@ Full ranked lists per EO are available in `SRK_individual_GFS.tsv`; EO-level sum
 
 ### 5. Hypothesized Processes Leading to AAAA Predominance
 
-The finding that 56% of individuals across all five EOs carry an AAAA genotype — and that only five individuals in the entire species retain three or more distinct SRK alleles — requires mechanistic explanation. The pattern is unlikely to reflect a single event; instead, it is most consistent with a cascade of interacting demographic and genetic processes, each compounding the others over successive generations. The five stages of this cascade are summarised in [Figure 14](#figure-14) below.
+A critical baseline observation frames the entire section. Across all five EOs, functional SRK sequences were successfully recovered from all but five individuals in the dataset; in those five, sequence-level evidence suggests non-functional SRK alleles — the molecular signature of a self-compatibility mutation. The near-absence of molecular SI failure (<4% of individuals) is scientifically important for two reasons. First, it confirms that the sporophytic self-incompatibility system remains structurally intact across the species — the gene itself has not degenerated. Second, and more consequentially, it rules out widespread loss-of-function mutation as the primary driver of the 56% AAAA prevalence. If molecular breakdown of the SRK receptor were responsible for the genotypic pattern, we would expect a far higher proportion of individuals to carry non-functional alleles broadly distributed across EOs — not the near-uniform AAAA accumulation observed in populations that still express a working SI system. The five individuals with non-functional SRK sequences are instead consistent with rare, independent mutational events and may correspond to the five AABC individuals discussed in Stage 5 below, whose unusual allele combinations could reflect SI-bypassing self-fertilisation enabled by SRK dysfunction.
+
+This baseline leads directly to a more challenging question: if the SI machinery is functional, how does a species accumulate 56% reproductive dead-ends? The answer cannot be a simple one. The pattern is most consistent with a cascade of interacting demographic and genetic processes — each initiated by the stage above it and each amplifying the next — that collectively drive AAAA accumulation even within a nominally functioning SI system. The five stages of this cascade are described below and summarised in [Figure 14](#figure-14).
 
 **Stage 1 — Ancestral bottleneck: loss of SRK allele richness**
 
@@ -241,7 +271,7 @@ The term "genetic drift" is used throughout this report in its broadest sense �
 
 The current pipeline measures the net outcome of both processes combined — the allele richness deficit relative to the MM species optimum — but cannot partition how much was lost in a historical bottleneck versus how much is being actively eroded today. This limitation is inherent to the SRK locus itself: it is under balancing selection (NFDS), which invalidates standard bottleneck-detection tools (e.g., BOTTLENECK software; Cornuet & Luikart 1996; Garza & Williamson 2001) that assume neutral allele dynamics. Resolving the relative contribution of each process would require genome-wide neutral marker data (e.g., SNPs from RADseq or whole-genome sequencing) analysed with demographic modelling approaches such as SMC++ or PSMC.
 
-Nonetheless, the two TP1 axes — allele richness and frequency evenness — carry a weak but informative signal (see Section 4a). A bottleneck founder effect tends to reduce richness while leaving surviving alleles at roughly similar frequencies among founders; subsequent ongoing drift in small populations then additionally distorts those frequencies, further eroding evenness. LEPA shows both severely low richness (9–23% of species optimum) and very low evenness (Ne/N = 0.41–0.55), most consistent with a historical bottleneck followed by prolonged ongoing drift. The allele composition analysis (Figures 5–6) adds a second line of evidence: if losses were caused by a single shared ancestral bottleneck, EOs would be missing the *same* alleles. Instead, each EO holds a largely private allele set with minimal inter-EO sharing, consistent with independent drift in isolated EOs rather than one common founding event — though a prior reduction of the species-level pool cannot be excluded.
+Nonetheless, the two TP1 axes — allele richness and frequency evenness — carry a weak but informative signal (see Section 4a). A bottleneck founder effect tends to reduce richness while leaving surviving alleles at roughly similar frequencies among founders; subsequent ongoing drift in small populations then additionally distorts those frequencies, further eroding evenness. LEPA shows both severely low richness (9–23% of species optimum) and very low evenness (Ne/N = 0.41–0.55), most consistent with a historical bottleneck followed by prolonged ongoing drift. The allele composition analysis ([Figures 5](#figure-5)–[6](#figure-6)) adds a second line of evidence: if losses were caused by a single shared ancestral bottleneck, EOs would be missing the *same* alleles. Instead, each EO holds a largely private allele set with minimal inter-EO sharing, consistent with independent drift in isolated EOs rather than one common founding event — though a prior reduction of the species-level pool cannot be excluded.
 
 For conservation purposes, the distinction matters less than the intervention it implies: the alleles are absent regardless of when they were lost, and the urgency of inter-EO allele transfers is identical under either interpretation.
 
@@ -359,9 +389,9 @@ Random mating causes a mean loss of 7.4 allele bins by year 3 at the species lev
 
 Genetic drift, promoted by habitat fragmentation, is severely eroding allele diversity and frequency balance in *LEPA* Element Occurrences at two distinct levels.
 
-**Tipping Point 1 — Allele richness deficit (Figures 4b, 9).** With 189 individuals sampled across 26 population localities (five major EOs plus 21 additional small sites), only 47 of an estimated 65 species-level S-allele bins (MM estimate) have been observed. Each EO retains a small, largely private subset of the species SI repertoire (9–23% of the species optimum), allele frequencies are highly skewed from the equal distribution expected under NFDS (χ² *p* < 10⁻⁷ at every level), and frequency evenness (Ne/N) ranges from only 0.41 to 0.55 — meaning fewer than half of even the observed alleles are effectively contributing to SI function. Allele sets are almost entirely non-overlapping across EOs — only 2 alleles are shared across all five. All five EOs are flagged **CRITICAL** for TP1. EO70 is the most allele-depauperate (6 bins, 9% of optimum; evenness = 0.51); EO27 retains the most (15 bins, 23% of optimum) and the largest set of private alleles (n = 10). Critically, the allele erosion analysis (Figure 4b) confirms that these deficits are not sampling artefacts: between 60% (EO27) and 89% (EO70) of the species-level S-allele pool has been irreversibly lost from each EO through genetic drift. The predicted-undetected component is small (1–11 alleles per EO), meaning further sampling cannot close the gap — the missing alleles are genuinely absent from these populations.
+**Tipping Point 1 — Health of the SI System ([Figures 4b](#figure-4b), [9](#figure-9)).** With 189 individuals sampled across 26 population localities (five major EOs plus 21 additional small sites), only 47 of an estimated 65 species-level S-allele bins (MM estimate) have been observed. Each EO retains a small, largely private subset of the species SI repertoire (9–23% of the species optimum), allele frequencies are highly skewed from the equal distribution expected under NFDS (χ² *p* < 10⁻⁷ at every level), and frequency evenness (Ne/N) ranges from only 0.41 to 0.55 — meaning fewer than half of even the observed alleles are effectively contributing to SI function. Allele sets are almost entirely non-overlapping across EOs — only 2 alleles are shared across all five. All five EOs are flagged **CRITICAL** for TP1. EO70 is the most allele-depauperate (6 bins, 9% of optimum; evenness = 0.51); EO27 retains the most (15 bins, 23% of optimum) and the largest set of private alleles (n = 10). Critically, the allele erosion analysis ([Figure 4b](#figure-4b)) confirms that these deficits are not sampling artefacts: between 60% (EO27) and 89% (EO70) of the species-level S-allele pool has been irreversibly lost from each EO through genetic drift. The predicted-undetected component is small (1–11 alleles per EO), meaning further sampling cannot close the gap — the missing alleles are genuinely absent from these populations.
 
-**Tipping Point 2 — Genotypic fitness collapse (Figures 12–13).** Beyond allele counts, the *distribution of alleles across individuals* has degraded severely. The Genotypic Fitness Score (GFS) — the proportion of heterozygous gametes a tetraploid individual produces — reveals that all five EOs are CRITICAL: mean GFS ranges from 0.22 to 0.30 (well below the AABB benchmark of 0.667), and 52–62% of individuals per EO are AAAA (producing zero heterozygous gametes). Fewer than half of individuals in any EO carry more than one distinct SRK allele and can therefore support reproductive effort through compatible crosses (Figure 13): the proportion of supporting individuals (GFS > 0) ranges from only 38% in EO27 to 48% in EO76. No ABCD individual exists in the dataset. Only five individuals across the entire species carry an AABC genotype (GFS = 0.833) — all in EO67 and EO70 — making them the highest-priority seed parents for near-term managed crossing.
+**Tipping Point 2 — Reproductive Fitness ([Figures 12](#figure-12)–[13](#figure-13)).** Beyond allele counts, the *distribution of alleles across individuals* has degraded severely. The Genotypic Fitness Score (GFS) — the proportion of heterozygous gametes a tetraploid individual produces — reveals that all five EOs are CRITICAL: mean GFS ranges from 0.22 to 0.30 (well below the AABB benchmark of 0.667), and 52–62% of individuals per EO are AAAA (producing zero heterozygous gametes). Fewer than half of individuals in any EO carry more than one distinct SRK allele and can therefore support reproductive effort through compatible crosses ([Figure 13](#figure-13)): the proportion of supporting individuals (GFS > 0) ranges from only 38% in EO27 to 48% in EO76. No ABCD individual exists in the dataset. Only five individuals across the entire species carry an AABC genotype (GFS = 0.833) — all in EO67 and EO70 — making them the highest-priority seed parents for near-term managed crossing.
 
 Critically, these two tipping points interact: even if allele richness were restored through inter-EO transfers (TP1 intervention), the benefit would be limited if the incoming alleles are absorbed into AAAA or AAAB individuals. Effective restoration therefore requires simultaneously targeting allele richness (inter-EO transfers of rare alleles) and genotype quality (crosses designed to produce AABB, AABC, and ultimately ABCD offspring).
 

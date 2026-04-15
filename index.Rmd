@@ -73,7 +73,7 @@ The pipeline consists of **19 main steps organized into three phases**, progress
 16. [TP1 Tipping Point Analysis](#TP1) – **Health of the SI system**: diagnostic scatter plot asking (x) how many different alleles a population has retained and (y) how evenly those alleles are distributed across individuals; with CRITICAL zone shading and TP1 status flags.
 17. [Allele Composition Comparison Across Element Occurrences](#allelesharing) – UpSet plot and pairwise sharing heatmap quantifying how S-allele sets overlap and partition across Element Occurrences, identifying private alleles and alleles shared by all populations.
 18. [Individual Genotypic Fitness Score](#GFS) – Per-individual GFS quantifying the proportion of heterozygous diploid gametes a tetraploid individual can produce, differentiating dosage-imbalanced genotypes (e.g. AABB vs AAAB) invisible to simple zygosity classification.
-19. [TP2 Tipping Point Analysis](#TP2) – **Reproductive success**: EO-level tipping point assessment asking (x) what fraction of individuals are reproductive dead-ends (prop_AAAA) and (y) how much reproductive capacity the average individual still has (mean GFS); EOs breaching both thresholds simultaneously are flagged CRITICAL.
+19. [TP2 Tipping Point Analysis](#TP2) – **Reproductive Fitness**: EO-level tipping point assessment asking (x) what fraction of individuals are reproductive dead-ends (prop_AAAA) and (y) how much reproductive capacity the average individual still has (mean GFS); EOs breaching both thresholds simultaneously are flagged CRITICAL.
 20. [Reproductive Effort Support per Element Occurrence](#reproeffort) – Horizontal proportional bar chart showing the fraction of individuals at each GFS tier per EO, quantifying the proportion of the population capable of contributing allelic diversity to compatible crosses.
 
 ---
@@ -5619,12 +5619,12 @@ Rscript SRK_individual_GFS.R
 
 ### Overview
 
-The TP2 Tipping Point Analysis assesses **reproductive success** at the population level — the degree to which individuals within an EO can actually participate in compatible crosses and contribute allelic diversity to the next generation. While [Step 18](#GFS) characterises each individual's gametic diversity potential, this step synthesises those scores at the EO level and combines them with AAAA prevalence into a single diagnostic framework. Two complementary questions define the two axes:
+The TP2 Tipping Point Analysis assesses **reproductive fitness** at the population level — the degree to which individuals within an EO can actually participate in compatible crosses and contribute allelic diversity to the next generation. While [Step 18](#GFS) characterises each individual's gametic diversity potential, this step synthesises those scores at the EO level and combines them with AAAA prevalence into a single diagnostic framework. Two complementary questions define the two axes:
 
 - **What fraction of individuals are reproductive dead-ends?** (x-axis: `prop_AAAA`) — An AAAA individual cannot contribute to any compatible cross regardless of its mate, making it a complete loss to the breeding pool. As this fraction grows, the effective breeding population shrinks accordingly.
 - **How much reproductive capacity does the average individual still have?** (y-axis: `mean GFS`) — Even individuals that are not dead-ends vary in how much allelic diversity they can contribute per cross. When the population mean falls below the AABB benchmark (GFS = 0.667), even the functional breeders are producing predominantly homotypic gametes.
 
-Together, the two axes establish whether reproductive success has degraded beyond the point where within-EO crossing alone can recover it.
+Together, the two axes establish whether reproductive fitness has degraded beyond the point where within-EO crossing alone can recover it.
 
 ### Tipping Point 2 — Thresholds
 
