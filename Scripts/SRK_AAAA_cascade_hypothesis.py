@@ -52,43 +52,66 @@ ARROW_COL    = '#37474F'
 
 # ─── stage text content ────────────────────────────────────────────────────────
 TITLES = [
-    'Ancestral Bottleneck',
+    'Fragmentation Drives Bottleneck',
     'Balancing Selection Breaks Down',
     'Mate Limitation and Reproductive Skew',
     'Genetic Drift Overwhelms Balancing Selection',
     'Polyploid-Specific Self-Incompatibility Breakdown',
 ]
 
-BODY = [
-    ("A severe demographic bottleneck strips S-allele richness faster than neutral\n"
-     "models predict. Each S-allele is individually rare under balancing selection and\n"
-     "is easily lost when founder group size is small. LEPA retains only 9–23% of the\n"
-     "estimated species optimum of 65 alleles; 60–89% of the allele pool has been\n"
-     "permanently lost per population (Wright 1939; Schierup et al. 1997)."),
+# Two-part body text: (scientific rationale, our results)
+BODY_SCI = [
+    # Stage 1
+    ("Habitat fragmentation reduces effective population size, exposing isolated populations\n"
+     "to genetic drift. S-alleles are individually rare under balancing selection and are\n"
+     "easily lost when founder group size is small (Wright 1939; Schierup et al. 1997)."),
 
-    ("Under balancing selection, rare S-alleles are protected because their carriers\n"
-     "have more compatible mates. Below a diversity threshold, balancing selection\n"
-     "breaks down: S-allele A becomes numerically dominant, producing proportionally\n"
-     "more offspring, rare S-alleles cannot recover, and the collapse accelerates\n"
-     "rather than self-correcting (Castric & Vekemans 2004; Vekemans & Slatkin 1994)."),
+    # Stage 2
+    ("Under balancing selection, rare S-alleles are protected because carriers have more\n"
+     "compatible mates. Below ~30–40% dominant allele frequency, this protection collapses:\n"
+     "diversity loss becomes self-reinforcing rather than self-correcting (Castric & Vekemans 2004)."),
 
-    ("As homozygous individuals (AAAA) become predominant, those carrying rare S-alleles\n"
-     "find progressively fewer compatible mates — the self-incompatibility system excludes them.\n"
-     "Mate availability collapses sharply in small self-incompatible populations (Byers & Meagher 1992).\n"
-     "Lineages carrying rare S-alleles fail to set seed and are removed from the breeding\n"
-     "pool, irrespective of selection (Willi et al. 2005; Elam et al. 2007)."),
+    # Stage 3
+    ("As homozygous (AAAA) frequency rises, rare-S-allele carriers find progressively fewer\n"
+     "compatible mates — the SI system itself excludes them. Mate availability collapses\n"
+     "sharply in small SI populations (Byers & Meagher 1992; Willi et al. 2005)."),
 
-    ("At N = 25–40 individuals per population, genetic drift overwhelms balancing selection.\n"
-     "The effective S-allele number advantage under balancing selection collapses when\n"
-     "diversity is already low (Ne/N = 0.41–0.55 in LEPA). Rare S-alleles are\n"
-     "stochastically lost and cannot be recovered without external gene flow\n"
-     "(Willi et al. 2005; Aguilar et al. 2006)."),
+    # Stage 4
+    ("At small census sizes, genetic drift overwhelms balancing selection. The effective\n"
+     "S-allele number advantage collapses when diversity is already low, and once a rare\n"
+     "S-allele is lost it cannot be recovered without external gene flow (Aguilar et al. 2006)."),
 
-    ("In diploids, self-incompatibility (SI) blocks same-S-allele crosses. In tetraploids, AABB produces\n"
-     "AB pollen (4 of 6) carrying both A-SCR and B-SCR proteins. Both proteins\n"
-     "compete to bind their matching pistil S-receptors, producing\n"
-     "a signal too weak to trigger rejection — SI fails, self-fertilisation\n"
-     "occurs, and AAAB offspring accumulate toward full homozygosity (AAAA; Mable et al. 2004)."),
+    # Stage 5
+    ("In diploids, SI prevents same-S-allele crosses. In tetraploids, AABB produces AB pollen\n"
+     "(4 of 6 gametes) carrying two S-allele signals simultaneously — competing signals fail\n"
+     "to trigger rejection, SI breaks down, and offspring drift toward AAAA (Mable et al. 2004)."),
+]
+
+BODY_RES = [
+    # Stage 1 — spatial analysis pending
+    ("Spatial analysis is in progress to contextualise fragmentation in the landscape\n"
+     "and characterise the ancestral bottleneck."),
+
+    # Stage 2
+    ("Allele frequencies depart dramatically from the equal-frequency expectation at every\n"
+     "level (χ² p < 10⁻⁷ across all occurrences). Two alleles dominate each occurrence;\n"
+     "frequency evenness (Ne/N = 0.41–0.55) is far below the balancing selection ideal of 1.0."),
+
+    # Stage 3
+    ("52–62% of individuals per occurrence are AAAA and cannot participate in any compatible\n"
+     "cross. Only 38–48% of individuals support reproductive effort (carry >1 S-allele).\n"
+     "Only 5 individuals across the entire species carry an AABC genotype."),
+
+    # Stage 4
+    ("With N = 25–40 individuals per occurrence, genetic drift is the dominant force.\n"
+     "60–89% of S-allele bins have been irreversibly lost from each occurrence; effective-\n"
+     "to-observed allele ratios (Ne/N = 0.41–0.55) confirm ongoing frequency erosion.\n"
+     "All five occurrences are rated CRITICAL for SI system health."),
+
+    # Stage 5
+    ("56% of all individuals (105/189) are AAAA — producing only identical pollen,\n"
+     "unable to participate in any compatible cross. All five occurrences breach both\n"
+     "TP2 thresholds and are rated CRITICAL for individual reproductive fitness."),
 ]
 
 # ─── figure geometry (data units = inches) ────────────────────────────────────
@@ -164,8 +187,8 @@ def inset(x0_data, y0_data, w_data, h_data):
 
 # ─── TITLE ────────────────────────────────────────────────────────────────────
 ax.text(FW / 2, TITLE_Y,
-        'The Compatibility Collapse Cascade (C3) Hypothesis:\n'
-        'A five-stage mechanism linking habitat fragmentation to reproductive failure in self-incompatible plants',
+        'The Compatibility Collapse Cascade (C3):\n'
+        'A five-stage hypothesis linking habitat fragmentation to reproductive failure in self-incompatible plants',
         ha='center', va='top', fontsize=13, fontweight='bold', color='#1A1A1A')
 
 ax.text(FW / 2, TITLE_Y - 0.72,
@@ -191,10 +214,21 @@ def draw_stage(i):
             ha='left', va='top', fontsize=12, fontweight='bold',
             color='#1A1A1A', zorder=4)
 
-    # Body text — dropped below title line to prevent overlap
-    ax.text(TEXT_X0, y_top - 0.52, BODY[i],
-            ha='left', va='top', fontsize=11, color='#333333',
-            linespacing=1.50, zorder=4)
+    # Section 1: Scientific rationale
+    ax.text(TEXT_X0, y_top - 0.52, 'Scientific rationale',
+            ha='left', va='top', fontsize=9.5, fontweight='bold',
+            color='#1A1A1A', zorder=4)
+    ax.text(TEXT_X0, y_top - 0.70, BODY_SCI[i],
+            ha='left', va='top', fontsize=9.5, color='#333333',
+            linespacing=1.40, zorder=4)
+
+    # Section 2: Our results
+    ax.text(TEXT_X0, y_top - 1.40, 'Our results',
+            ha='left', va='top', fontsize=9.5, fontweight='bold',
+            color='#1A1A1A', zorder=4)
+    ax.text(TEXT_X0, y_top - 1.58, BODY_RES[i],
+            ha='left', va='top', fontsize=9.5, color='#333333',
+            linespacing=1.40, zorder=4)
 
     # Return inset bounds for the schematic (leave 0.3 padding top/bottom)
     pad = 0.30
@@ -244,7 +278,7 @@ ax1.text(5.0, 0.3, '2 alleles', ha='center', fontsize=8, color='#555')
 # ─── SCHEMATIC 2: Balancing Selection Breakdown ───────────────────────────────
 ax2 = draw_stage(1)
 ax2.set_xlim(0, 10)
-ax2.set_ylim(0, 4.5)
+ax2.set_ylim(0, 5.5)
 
 alleles_eq  = list('ABCDE')
 freqs_eq    = [1.0, 0.9, 1.1, 0.95, 1.0]
@@ -252,33 +286,47 @@ alleles_col = [A_COL, B_COL, C_COL, D_COL, E_COL]
 
 freqs_col   = [3.8, 0.3, 0.2, 0.15, 0.1]
 
+# ── Context header: left panel ────────────────────────────────────────────────
+ax2.add_patch(mpatches.FancyBboxPatch(
+    (0.20, 4.35), 3.10, 0.95,
+    boxstyle='round,pad=0.07', fc='#E8F5E9', ec='#2E7D32', lw=1.4))
+ax2.text(1.75, 4.96, 'Without fragmentation', ha='center', va='center',
+         fontsize=8, fontweight='bold', color='#1B5E20')
+ax2.text(1.75, 4.58, 'All S-alleles equally frequent', ha='center', va='center',
+         fontsize=7.2, color='#2E7D32', style='italic')
+
+# ── Context header: right panel ───────────────────────────────────────────────
+ax2.add_patch(mpatches.FancyBboxPatch(
+    (6.70, 4.35), 3.10, 0.95,
+    boxstyle='round,pad=0.07', fc='#FFEBEE', ec='#C62828', lw=1.4))
+ax2.text(8.25, 4.96, 'After bottleneck', ha='center', va='center',
+         fontsize=8, fontweight='bold', color='#B71C1C')
+ax2.text(8.25, 4.58, 'Rare alleles lost; A dominates', ha='center', va='center',
+         fontsize=7.2, color='#C62828', style='italic')
+
 # "Equilibrium" bar chart (left)
 x0_eq = 0.3
 bw = 0.55
 for j, (f, col) in enumerate(zip(freqs_eq, alleles_col)):
     ax2.bar(x0_eq + j * (bw + 0.15), f, width=bw, color=col,
             ec='white', linewidth=0.8, bottom=0)
-ax2.text(1.6, -0.5, 'Bal. sel. equilibrium', ha='center', fontsize=7.5,
+ax2.text(1.6, -0.5, 'S-allele frequencies at equilibrium', ha='center', fontsize=7.5,
          color='#333', style='italic')
-ax2.text(1.6, 4.2, '← Equal frequencies\n   (bal. sel. protecting all)', ha='center',
-         fontsize=6.8, color='#1B5E20')
 
 # Arrow
-ax2.annotate('', xy=(6.8, 2.5), xytext=(5.0, 2.5),
-             arrowprops=dict(arrowstyle='->', color='#B71C1C', lw=2.0,
-                             mutation_scale=18))
-ax2.text(5.9, 2.8, 'diversity\ncollapse', ha='center', fontsize=7,
-         color='#B71C1C', style='italic')
+ax2.annotate('', xy=(6.6, 2.5), xytext=(4.8, 2.5),
+             arrowprops=dict(arrowstyle='->', color='#B71C1C', lw=2.2,
+                             mutation_scale=20))
+ax2.text(5.7, 2.85, 'bottleneck\n+ drift', ha='center', fontsize=7.5,
+         color='#B71C1C', fontweight='bold')
 
 # "Collapsed" bar chart (right)
 x0_col = 7.0
 for j, (f, col) in enumerate(zip(freqs_col, alleles_col)):
     ax2.bar(x0_col + j * (bw + 0.1), f, width=bw, color=col,
             ec='white', linewidth=0.8, bottom=0)
-ax2.text(8.3, -0.5, 'Post-collapse', ha='center', fontsize=7.5,
+ax2.text(8.3, -0.5, 'S-allele frequencies after collapse', ha='center', fontsize=7.5,
          color='#333', style='italic')
-ax2.text(8.3, 4.2, '← A dominates;\n   rare alleles cannot\n   recover',
-         ha='center', fontsize=6.8, color='#B71C1C')
 
 # ─── SCHEMATIC 3: Mate Limitation ────────────────────────────────────────────
 ax3 = draw_stage(2)
@@ -327,48 +375,83 @@ ax3.text(5.7, 0.3, '3 × diverse — connected', ha='center', fontsize=7.5,
          color='#1565C0', fontweight='bold')
 
 # ─── SCHEMATIC 4: Genetic Drift ──────────────────────────────────────────────
-ax4 = draw_stage(3)
+# Use a custom taller inset so the schematic has more room
+draw_stage(3)
+_y4_bot = STAGE_Y[3] - BOX_H
+ax4 = inset(SCH_X0, _y4_bot + 0.10, SCH_W, BOX_H - 0.30)
+ax4.set_facecolor('none')
 ax4.set_xlim(0, 10)
-ax4.set_ylim(0, 4.5)
+ax4.set_ylim(-0.55, 5.5)
 
-# Show two generations side by side with allele frequency bars + small N label
-gen1_alleles = [A_COL] * 4 + [B_COL] * 2 + [C_COL] * 2 + [D_COL] * 1
-gen2_alleles = [A_COL] * 5 + [B_COL] * 2 + [C_COL] * 1   # D lost by drift
+# Three generations laid out left → right, each as a column of individual circles
+# Allele pools per generation: progressive loss of rare alleles
+GEN_ALLELES = [
+    # Gen 0: 5 individuals, 4 alleles present (A×2, B×1, C×1, D×1)
+    ['A', 'A', 'B', 'C', 'D'],
+    # Gen 1: 5 individuals, D lost by drift (A×3, B×1, C×1)
+    ['A', 'A', 'A', 'B', 'C'],
+    # Gen 2: 5 individuals, C also lost (A×4, B×1)
+    ['A', 'A', 'A', 'A', 'B'],
+]
+GEN_LABELS  = ['Generation 1', 'Generation 2', 'Generation 3']
+GEN_LOST    = [None, 'D lost', 'C lost']
+ALLELE_COLS = {'A': A_COL, 'B': B_COL, 'C': C_COL, 'D': D_COL}
 
-def mini_pop(ax_in, x0, allele_list, gen_label, n_label, lost=None):
-    cols_unique = list(dict.fromkeys(allele_list))
-    counts = {c: allele_list.count(c) for c in cols_unique}
-    total = len(allele_list)
-    bar_w = 1.1
-    freqs = [counts[c] / total for c in cols_unique]
-    bottoms = np.cumsum([0] + freqs[:-1])
-    for fc, f, bot in zip(cols_unique, freqs, bottoms):
-        ax_in.bar(x0, f, width=bar_w, bottom=bot, color=fc,
-                  ec='white', lw=0.8)
-    ax_in.text(x0, -0.45, gen_label, ha='center', fontsize=7.8, color='#333')
-    ax_in.text(x0, -0.85, n_label, ha='center', fontsize=7.2, color='#777')
-    if lost:
-        ax_in.text(x0, 1.08, f'"{lost}" lost\nby drift', ha='center',
-                   fontsize=7, color='#B71C1C', style='italic')
+col_x = [1.3, 4.5, 7.7]   # x-centre of each generation column
+r_ind = 0.38               # individual circle radius
 
-mini_pop(ax4, 2.0, gen1_alleles, 'Generation t', 'N = 9 allele copies',)
-mini_pop(ax4, 5.5, gen2_alleles, 'Generation t+1', 'N = 8 allele copies', lost='D')
+# Caption clarifying what circles represent (distinct from Stage 5 allele stacks)
+ax4.text(4.85, -0.38, 'Each circle = one individual plant  |  letter = S-allele it carries',
+         ha='center', va='center', fontsize=7.5, color='#555', style='italic')
 
-# Arrow between generations
-ax4.annotate('', xy=(4.7, 0.6), xytext=(3.0, 0.6),
-             arrowprops=dict(arrowstyle='->', color=ARROW_COL,
-                             lw=1.8, mutation_scale=16))
-ax4.text(3.85, 0.82, 'stochastic\nsampling', ha='center',
-         fontsize=7, color='#555', style='italic')
+for gi, (alleles, label, lost_label) in enumerate(
+        zip(GEN_ALLELES, GEN_LABELS, GEN_LOST)):
+    cx = col_x[gi]
+    n  = len(alleles)
+    # vertical positions: evenly spaced
+    ys = np.linspace(4.55, 1.10, n)
 
-# Small N emphasis
-ax4.text(7.0, 2.2, 'N = 25–40\nper population', ha='center', fontsize=10,
-         fontweight='bold', color='#B71C1C',
-         bbox=dict(boxstyle='round,pad=0.4', fc='#FFCDD2', ec='#C62828', lw=1.5))
-ax4.text(7.0, 0.3, 'drift\noverwhelms\nbal. selection', ha='center', fontsize=8,
-         color='#555', style='italic')
+    # Draw individuals as coloured circles
+    for al, cy in zip(alleles, ys):
+        col = ALLELE_COLS[al]
+        ax4.add_patch(Circle((cx, cy), r_ind, fc=col, ec='white', lw=1.4, zorder=3))
+        ax4.text(cx, cy, al, ha='center', va='center',
+                 fontsize=10, fontweight='bold', color='white', zorder=4)
 
-ax4.set_ylim(-1.0, 4.5)
+    # Generation label below
+    ax4.text(cx, 0.55, label, ha='center', va='top',
+             fontsize=8, fontweight='bold', color='#333')
+
+    # Unique allele count badge
+    n_unique = len(set(alleles))
+    ax4.text(cx, 0.15, f'{n_unique} S-allele{"s" if n_unique > 1 else ""}',
+             ha='center', va='top', fontsize=7.5, color='#555', style='italic')
+
+    # "Lost" annotation between generations
+    if lost_label:
+        mid_x = (col_x[gi - 1] + cx) / 2
+        ax4.annotate('', xy=(cx - r_ind - 0.15, 2.80),
+                     xytext=(col_x[gi - 1] + r_ind + 0.15, 2.80),
+                     arrowprops=dict(arrowstyle='->', color=ARROW_COL,
+                                     lw=2.0, mutation_scale=18))
+        ax4.add_patch(mpatches.FancyBboxPatch(
+            (mid_x - 1.15, 3.05), 2.30, 0.72,
+            boxstyle='round,pad=0.07', fc='#FFCDD2', ec='#C62828', lw=1.2, zorder=3))
+        ax4.text(mid_x, 3.46, f'S-allele {lost_label[0]} absent', ha='center', va='center',
+                 fontsize=7.5, fontweight='bold', color='#B71C1C', zorder=4)
+        ax4.text(mid_x, 3.12, 'no individual passed it on', ha='center', va='center',
+                 fontsize=6.8, color='#C62828', style='italic', zorder=4)
+        ax4.text(mid_x, 2.52, 'random loss —\nnot selected against', ha='center', va='top',
+                 fontsize=7, color='#555', style='italic')
+
+# Small N box on the right
+ax4.add_patch(mpatches.FancyBboxPatch(
+    (8.55, 3.60), 1.35, 1.10,
+    boxstyle='round,pad=0.10', fc='#FFCDD2', ec='#C62828', lw=1.8, zorder=3))
+ax4.text(9.22, 4.15, 'N = 25–40\nper occurrence', ha='center', va='center',
+         fontsize=8.5, fontweight='bold', color='#B71C1C', zorder=4)
+ax4.text(9.22, 3.35, 'drift dominates\nover selection', ha='center', va='top',
+         fontsize=7.5, color='#555', style='italic')
 
 # ─── SCHEMATIC 5: Polyploid SI Breakdown — clean 3-zone layout ────────────────
 # Use a custom inset with minimal padding so the schematic is taller
@@ -456,7 +539,7 @@ ax5.add_patch(mpatches.FancyBboxPatch(
     (7.14, bot5 - 0.10), 0.98, 4*0.28 + 0.20,
     boxstyle='round,pad=0.06', fc='none', ec='#B71C1C', lw=2.5))
 
-ax5.text(7.6, bot5 - 0.22, 'AAAA (homozygous)  ·  GFS = 0',
+ax5.text(7.6, bot5 - 0.22, 'AAAA — reproductive dead-end',
          ha='center', va='top', fontsize=8,
          fontweight='bold', color='#B71C1C')
 
@@ -466,6 +549,31 @@ for i in range(4):
     y_to   = STAGE_Y[i + 1]
     down_arrow(FW / 2, y_from, y_to)
 
+
+# ─── FEEDBACK ARROW: Stage 5 → Stage 2 (self-reinforcing loop) ───────────────
+stage2_mid_y = STAGE_Y[1] - BOX_H / 2
+stage5_mid_y = STAGE_Y[4] - BOX_H / 2
+LOOP_X    = 0.06               # x of the vertical left-margin segment
+BADGE_EDGE = BADGE_X - 0.36   # left edge of the badge circles (= 0.46)
+
+# Exit from Stage 5 badge left edge going left
+ax.plot([BADGE_EDGE, LOOP_X], [stage5_mid_y, stage5_mid_y],
+        color='#6A1B9A', lw=2.5, linestyle='--', zorder=8)
+# Travel up the left margin
+ax.plot([LOOP_X, LOOP_X], [stage5_mid_y, stage2_mid_y],
+        color='#6A1B9A', lw=2.5, linestyle='--', zorder=8)
+# Arrowhead pointing into Stage 2 badge
+ax.annotate('', xy=(BADGE_EDGE, stage2_mid_y), xytext=(LOOP_X, stage2_mid_y),
+            arrowprops=dict(arrowstyle='->', color='#6A1B9A', lw=2.5,
+                            mutation_scale=22), zorder=9)
+
+# Label with white background so it reads clearly against the box edges
+ax.text(LOOP_X + 0.04, (stage2_mid_y + stage5_mid_y) / 2,
+        'self-reinforcing loop',
+        ha='left', va='center', fontsize=8, color='#6A1B9A',
+        fontweight='bold', rotation=90, zorder=10,
+        bbox=dict(boxstyle='round,pad=0.25', fc='white', ec='#6A1B9A',
+                  lw=1.0, alpha=0.92))
 
 # ─── SAVE ─────────────────────────────────────────────────────────────────────
 os.makedirs('figures', exist_ok=True)
