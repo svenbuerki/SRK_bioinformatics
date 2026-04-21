@@ -52,47 +52,47 @@ ARROW_COL    = '#37474F'
 
 # ─── stage text content ────────────────────────────────────────────────────────
 TITLES = [
-    'Stage 1 — Ancestral Bottleneck',
-    'Stage 2 — Paradox of NFDS Under Impoverished Diversity',
-    'Stage 3 — Mate Limitation and Reproductive Skew',
-    'Stage 4 — Genetic Drift Overwhelms NFDS',
-    'Stage 5 — Polyploid-Specific SI Breakdown',
+    'Ancestral Bottleneck',
+    'Balancing Selection Breaks Down',
+    'Mate Limitation and Reproductive Skew',
+    'Genetic Drift Overwhelms Balancing Selection',
+    'Polyploid-Specific Self-Incompatibility Breakdown',
 ]
 
 BODY = [
-    ("A severe demographic bottleneck strips SRK allelic richness faster than neutral\n"
-     "models predict. Each S-allele is individually rare under NFDS and is easily lost\n"
-     "when founder group size is small. LEPA retains only 9–23% of the estimated\n"
-     "species optimum of 65 alleles; 60–89% of the allele pool has been permanently\n"
-     "lost per EO (Wright 1939; Schierup et al. 1997)."),
+    ("A severe demographic bottleneck strips S-allele richness faster than neutral\n"
+     "models predict. Each S-allele is individually rare under balancing selection and\n"
+     "is easily lost when founder group size is small. LEPA retains only 9–23% of the\n"
+     "estimated species optimum of 65 alleles; 60–89% of the allele pool has been\n"
+     "permanently lost per population (Wright 1939; Schierup et al. 1997)."),
 
-    ("Under normal NFDS, rare S-alleles are protected because their carriers have\n"
-     "more compatible mates. Below a diversity threshold this mechanism inverts:\n"
-     "the numerically dominant A haplotype produces proportionally more offspring,\n"
-     "rare alleles cannot recover, and the collapse accelerates rather than\n"
-     "self-correcting (Castric & Vekemans 2004; Vekemans & Slatkin 1994)."),
+    ("Under balancing selection, rare S-alleles are protected because their carriers\n"
+     "have more compatible mates. Below a diversity threshold, balancing selection\n"
+     "breaks down: S-allele A becomes numerically dominant, producing proportionally\n"
+     "more offspring, rare S-alleles cannot recover, and the collapse accelerates\n"
+     "rather than self-correcting (Castric & Vekemans 2004; Vekemans & Slatkin 1994)."),
 
-    ("As AAAA frequency rises, individuals with rare haplotypes find progressively\n"
-     "fewer compatible mates — the SI system itself excludes them. Mate availability\n"
-     "collapses sharply in small SSI populations (Byers & Meagher 1992). Rare-\n"
-     "haplotype lineages fail to set seed and are removed from the breeding pool,\n"
-     "irrespective of selection (Willi et al. 2005; Elam et al. 2007)."),
+    ("As homozygous individuals (AAAA) become predominant, those carrying rare S-alleles\n"
+     "find progressively fewer compatible mates — the self-incompatibility system excludes them.\n"
+     "Mate availability collapses sharply in small self-incompatible populations (Byers & Meagher 1992).\n"
+     "Lineages carrying rare S-alleles fail to set seed and are removed from the breeding\n"
+     "pool, irrespective of selection (Willi et al. 2005; Elam et al. 2007)."),
 
-    ("At N = 25–40 individuals per EO, genetic drift overwhelms NFDS. The effective\n"
-     "allele number advantage under frequency-dependent selection collapses when\n"
-     "diversity is already low (Ne/N = 0.41–0.55 in LEPA). Rare haplotypes are\n"
+    ("At N = 25–40 individuals per population, genetic drift overwhelms balancing selection.\n"
+     "The effective S-allele number advantage under balancing selection collapses when\n"
+     "diversity is already low (Ne/N = 0.41–0.55 in LEPA). Rare S-alleles are\n"
      "stochastically lost and cannot be recovered without external gene flow\n"
      "(Willi et al. 2005; Aguilar et al. 2006)."),
 
-    ("In diploids, SI blocks same-haplotype crosses. In tetraploids, AABB produces\n"
+    ("In diploids, self-incompatibility (SI) blocks same-S-allele crosses. In tetraploids, AABB produces\n"
      "AB pollen (4 of 6) carrying both A-SCR and B-SCR proteins. Both proteins\n"
-     "compete to bind their matching pistil receptors (SRK-A, SRK-B), producing\n"
+     "compete to bind their matching pistil S-receptors, producing\n"
      "a signal too weak to trigger rejection — SI fails, self-fertilisation\n"
-     "occurs, and AAAB offspring accumulate toward AAAA (Mable et al. 2004)."),
+     "occurs, and AAAB offspring accumulate toward full homozygosity (AAAA; Mable et al. 2004)."),
 ]
 
 # ─── figure geometry (data units = inches) ────────────────────────────────────
-FW, FH  = 15.0, 16.6   # figure dimensions in inches (used as data units too)
+FW, FH  = 15.0, 15.2   # figure dimensions in inches
 BOX_H   = 2.31          # stage box height (was 3.6)
 GAP     = 0.35          # gap between boxes / arrow space (was 0.42)
 MX      = 0.30          # left/right margin
@@ -106,7 +106,7 @@ TEXT_X0  = SCH_X0 + SCH_W + 0.25  # text left edge
 
 # y positions of top edge of each stage box (top-down layout)
 TITLE_Y  = FH - 0.40
-STAGE_Y  = [TITLE_Y - 0.95 - i * (BOX_H + GAP) for i in range(5)]
+STAGE_Y  = [TITLE_Y - 1.20 - i * (BOX_H + GAP) for i in range(5)]
 OUTCOME_Y = STAGE_Y[4] - BOX_H - GAP - 0.05
 
 # bottom panel: outcome + conservation side by side
@@ -164,12 +164,13 @@ def inset(x0_data, y0_data, w_data, h_data):
 
 # ─── TITLE ────────────────────────────────────────────────────────────────────
 ax.text(FW / 2, TITLE_Y,
-        'Five-Stage Cascade Hypothesis: Processes Leading to AAAA Predominance in LEPA',
-        ha='center', va='top', fontsize=14, fontweight='bold', color='#1A1A1A')
+        'The Compatibility Collapse Cascade (C3) Hypothesis:\n'
+        'A five-stage mechanism linking habitat fragmentation to reproductive failure in self-incompatible plants',
+        ha='center', va='top', fontsize=13, fontweight='bold', color='#1A1A1A')
 
-ax.text(FW / 2, TITLE_Y - 0.55,
+ax.text(FW / 2, TITLE_Y - 0.72,
         'Each stage is initiated by the stage above and amplifies the next, '
-        'creating a self-reinforcing collapse of SRK diversity.',
+        'creating a self-reinforcing cascade from habitat fragmentation to reproductive failure.',
         ha='center', va='top', fontsize=9.5, color='#444444', style='italic')
 
 
@@ -190,8 +191,8 @@ def draw_stage(i):
             ha='left', va='top', fontsize=12, fontweight='bold',
             color='#1A1A1A', zorder=4)
 
-    # Body text
-    ax.text(TEXT_X0, y_top - 0.20, BODY[i],
+    # Body text — dropped below title line to prevent overlap
+    ax.text(TEXT_X0, y_top - 0.52, BODY[i],
             ha='left', va='top', fontsize=11, color='#333333',
             linespacing=1.50, zorder=4)
 
@@ -240,7 +241,7 @@ for (px, py), (col, lbl) in zip(post_xy, post):
 ax1.text(1.0, 0.3, '8 alleles', ha='center', fontsize=8, color='#555')
 ax1.text(5.0, 0.3, '2 alleles', ha='center', fontsize=8, color='#555')
 
-# ─── SCHEMATIC 2: NFDS Inversion ──────────────────────────────────────────────
+# ─── SCHEMATIC 2: Balancing Selection Breakdown ───────────────────────────────
 ax2 = draw_stage(1)
 ax2.set_xlim(0, 10)
 ax2.set_ylim(0, 4.5)
@@ -257,9 +258,9 @@ bw = 0.55
 for j, (f, col) in enumerate(zip(freqs_eq, alleles_col)):
     ax2.bar(x0_eq + j * (bw + 0.15), f, width=bw, color=col,
             ec='white', linewidth=0.8, bottom=0)
-ax2.text(1.6, -0.5, 'NFDS equilibrium', ha='center', fontsize=7.5,
+ax2.text(1.6, -0.5, 'Bal. sel. equilibrium', ha='center', fontsize=7.5,
          color='#333', style='italic')
-ax2.text(1.6, 4.2, '← Equal frequencies\n   (NFDS protecting all)', ha='center',
+ax2.text(1.6, 4.2, '← Equal frequencies\n   (bal. sel. protecting all)', ha='center',
          fontsize=6.8, color='#1B5E20')
 
 # Arrow
@@ -320,7 +321,7 @@ ax3.text(8.6, 1.2, 'compatible', va='center', fontsize=7, color='#43A047')
 ax3.plot([7.8, 8.5], [0.6, 0.6], color='#EF9A9A', lw=1.2, linestyle='dashed')
 ax3.text(8.6, 0.6, 'incompatible', va='center', fontsize=7, color='#C62828')
 
-ax3.text(2.5, 0.3, '7 × AAAA — isolated', ha='center', fontsize=7.5,
+ax3.text(2.5, 0.3, '7 × homozygous (AAAA) — isolated', ha='center', fontsize=7.5,
          color='#B71C1C', fontweight='bold')
 ax3.text(5.7, 0.3, '3 × diverse — connected', ha='center', fontsize=7.5,
          color='#1565C0', fontweight='bold')
@@ -361,10 +362,10 @@ ax4.text(3.85, 0.82, 'stochastic\nsampling', ha='center',
          fontsize=7, color='#555', style='italic')
 
 # Small N emphasis
-ax4.text(7.0, 2.2, 'N = 25–40\nper EO', ha='center', fontsize=10,
+ax4.text(7.0, 2.2, 'N = 25–40\nper population', ha='center', fontsize=10,
          fontweight='bold', color='#B71C1C',
          bbox=dict(boxstyle='round,pad=0.4', fc='#FFCDD2', ec='#C62828', lw=1.5))
-ax4.text(7.0, 0.3, 'drift\noverwhelms\nNFDS', ha='center', fontsize=8,
+ax4.text(7.0, 0.3, 'drift\noverwhelms\nbal. selection', ha='center', fontsize=8,
          color='#555', style='italic')
 
 ax4.set_ylim(-1.0, 4.5)
@@ -455,8 +456,8 @@ ax5.add_patch(mpatches.FancyBboxPatch(
     (7.14, bot5 - 0.10), 0.98, 4*0.28 + 0.20,
     boxstyle='round,pad=0.06', fc='none', ec='#B71C1C', lw=2.5))
 
-ax5.text(7.6, bot5 - 0.22, 'AAAA  ·  GFS = 0',
-         ha='center', va='top', fontsize=9,
+ax5.text(7.6, bot5 - 0.22, 'AAAA (homozygous)  ·  GFS = 0',
+         ha='center', va='top', fontsize=8,
          fontweight='bold', color='#B71C1C')
 
 # ─── CONNECTING ARROWS ────────────────────────────────────────────────────────
@@ -465,47 +466,6 @@ for i in range(4):
     y_to   = STAGE_Y[i + 1]
     down_arrow(FW / 2, y_from, y_to)
 
-# ─── OUTCOME + CONSERVATION BOXES — side by side ──────────────────────────────
-PANEL_H = 1.15
-PANEL_Y = OUTCOME_Y - PANEL_H   # bottom edge of both panels
-
-# ── Left: Outcome ──────────────────────────────────────────────────────────────
-rounded_box(MX, PANEL_Y, HALF_W, PANEL_H, OUTCOME_BG, OUTCOME_EDGE, lw=2.5, zorder=2)
-
-ax.text(MX + 0.50, PANEL_Y + PANEL_H / 2, '⚠', ha='center', va='center',
-        fontsize=20, color='#C62828', zorder=5)
-
-ax.text(MX + 1.08, PANEL_Y + PANEL_H - 0.20,
-        'OUTCOME — Genotypic Fitness Collapse (TP2)',
-        ha='left', va='top', fontsize=10.0, fontweight='bold',
-        color='#B71C1C', zorder=4)
-
-ax.text(MX + 1.08, PANEL_Y + PANEL_H - 0.52,
-        '56% of individuals are AAAA (GFS = 0) — reproductive dead-ends.\n'
-        'Mean GFS per EO: 0.22–0.30. Only 5 AABC individuals (GFS = 0.833)\n'
-        'survive as the sole endogenous allele reservoirs across the species.',
-        ha='left', va='top', fontsize=8.5, color='#333333',
-        linespacing=1.45, zorder=4)
-
-# ── Right: Conservation Implication ───────────────────────────────────────────
-rounded_box(CI_X, PANEL_Y, HALF_W, PANEL_H, '#E8F5E9', '#2E7D32', lw=2.5, zorder=2)
-
-ax.add_patch(Circle((CI_X + 0.50, PANEL_Y + PANEL_H / 2), 0.30,
-                     fc='#2E7D32', ec='white', lw=2.0, zorder=5))
-ax.text(CI_X + 0.50, PANEL_Y + PANEL_H / 2, '!', ha='center', va='center',
-        fontsize=16, fontweight='bold', color='white', zorder=6)
-
-ax.text(CI_X + 1.08, PANEL_Y + PANEL_H - 0.20,
-        'Conservation Implication',
-        ha='left', va='top', fontsize=10.0, fontweight='bold',
-        color='#1B5E20', zorder=4)
-
-ax.text(CI_X + 1.08, PANEL_Y + PANEL_H - 0.52,
-        'Census size increase within an EO generates more AAAA offspring.\n'
-        'Inter-EO crosses with B, C, D haplotypes from the 5 AABC seed\n'
-        'parents restore SI compatibility and re-engage NFDS.',
-        ha='left', va='top', fontsize=8.5, color='#1A3B20',
-        linespacing=1.45, zorder=4)
 
 # ─── SAVE ─────────────────────────────────────────────────────────────────────
 os.makedirs('figures', exist_ok=True)
