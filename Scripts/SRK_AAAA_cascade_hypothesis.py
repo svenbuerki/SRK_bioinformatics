@@ -84,7 +84,9 @@ BODY_SCI = [
     # Stage 5
     ("In diploids, SI prevents same-S-allele crosses. In tetraploids, AABB produces AB pollen\n"
      "(4 of 6 gametes) carrying two S-allele signals simultaneously — competing signals fail\n"
-     "to trigger rejection, SI breaks down, and offspring drift toward AAAA (Mable et al. 2004)."),
+     "to trigger rejection, SI breaks down, and offspring drift toward AAAA (Mable et al. 2004).\n"
+     "Repeated self-fertilisation progressively reduces genome-wide heterozygosity, diminishing\n"
+     "both reproductive output and the adaptive capacity of the population."),
 ]
 
 BODY_RES = [
@@ -198,7 +200,7 @@ ax.text(FW / 2, TITLE_Y - 0.72,
 
 
 # ─── STAGE BOXES ──────────────────────────────────────────────────────────────
-def draw_stage(i):
+def draw_stage(i, res_offset=1.40):
     bg, edge, bfc = STAGE_PALETTE[i]
     y_top = STAGE_Y[i]
     y_bot = y_top - BOX_H
@@ -223,10 +225,10 @@ def draw_stage(i):
             linespacing=1.40, zorder=4)
 
     # Section 2: Our results
-    ax.text(TEXT_X0, y_top - 1.40, 'Our results',
+    ax.text(TEXT_X0, y_top - res_offset, 'Our results',
             ha='left', va='top', fontsize=9.5, fontweight='bold',
             color='#1A1A1A', zorder=4)
-    ax.text(TEXT_X0, y_top - 1.58, BODY_RES[i],
+    ax.text(TEXT_X0, y_top - res_offset - 0.18, BODY_RES[i],
             ha='left', va='top', fontsize=9.5, color='#333333',
             linespacing=1.40, zorder=4)
 
@@ -455,7 +457,8 @@ ax4.text(9.22, 3.35, 'drift dominates\nover selection', ha='center', va='top',
 
 # ─── SCHEMATIC 5: Polyploid SI Breakdown — clean 3-zone layout ────────────────
 # Use a custom inset with minimal padding so the schematic is taller
-draw_stage(4)
+# res_offset pushed down to clear the 5-line scientific rationale text
+draw_stage(4, res_offset=1.75)
 _y5_bot = STAGE_Y[4] - BOX_H
 ax5 = inset(SCH_X0, _y5_bot + 0.12, SCH_W, BOX_H - 0.57)
 ax5.set_xlim(0, 10)
