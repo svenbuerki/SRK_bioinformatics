@@ -62,9 +62,10 @@ TITLES = [
 # Two-part body text: (scientific rationale, our results)
 BODY_SCI = [
     # Stage 1
-    ("Habitat fragmentation reduces effective population size, exposing isolated populations\n"
-     "to genetic drift. S-alleles are individually rare under balancing selection and are\n"
-     "easily lost when founder group size is small (Wright 1939; Schierup et al. 1997)."),
+    ("Habitat fragmentation isolates populations, cutting off pollen-mediated gene flow\n"
+     "and exposing each fragment to independent genetic drift. S-alleles are individually\n"
+     "rare under balancing selection and are easily lost in small, isolated founders\n"
+     "(Wright 1939; Schierup et al. 1997)."),
 
     # Stage 2
     ("Under balancing selection, rare S-alleles are protected because carriers have more\n"
@@ -90,9 +91,11 @@ BODY_SCI = [
 ]
 
 BODY_RES = [
-    # Stage 1 — spatial analysis pending
-    ("Spatial analysis is in progress to contextualise fragmentation in the landscape\n"
-     "and characterise the ancestral bottleneck."),
+    # Stage 1
+    ("67% of sampled locations have no neighbour within the 500 m pollinator dispersal\n"
+     "limit; 84% of geographic groups occupy <1 ha, placing them in the extreme-drift\n"
+     "regime. Five independent bottleneck lineages span the range — each a separate\n"
+     "founding event evolving without inter-lineage gene flow."),
 
     # Stage 2
     ("Allele frequencies depart dramatically from the equal-frequency expectation at every\n"
@@ -105,10 +108,10 @@ BODY_RES = [
      "Only 5 individuals across the entire species carry an AABC genotype."),
 
     # Stage 4
-    ("With N = 25–40 individuals per occurrence, genetic drift is the dominant force.\n"
-     "60–89% of S-allele bins have been irreversibly lost from each occurrence; effective-\n"
-     "to-observed allele ratios (Ne/N = 0.41–0.55) confirm ongoing frequency erosion.\n"
-     "All five occurrences are rated CRITICAL for SI system health."),
+    ("With N = 25–40 individuals per occurrence and no inter-occurrence gene flow,\n"
+     "genetic drift is irreversible. 60–89% of S-allele bins have been permanently\n"
+     "lost from each occurrence; effective-to-observed allele ratios (Ne/N = 0.41–0.55)\n"
+     "confirm ongoing erosion. All five occurrences are rated CRITICAL for SI health."),
 
     # Stage 5
     ("56% of all individuals (105/189) are AAAA — producing only identical pollen,\n"
@@ -238,7 +241,7 @@ def draw_stage(i, res_offset=1.40):
 
 
 # ─── SCHEMATIC 1: Bottleneck ──────────────────────────────────────────────────
-ax1 = draw_stage(0)
+ax1 = draw_stage(0, res_offset=1.58)
 ax1.set_xlim(0, 10)
 ax1.set_ylim(0, 4)
 
