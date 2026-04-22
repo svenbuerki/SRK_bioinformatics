@@ -259,29 +259,7 @@ Full ranked lists per EO are available in `SRK_individual_GFS.tsv`; EO-level sum
 
 The genetic erosion documented in Sections 4a and 4b requires a spatial context: the TP1 and TP2 deficits are outcomes, but determining whether they reflect a shared species-level bottleneck or independent drift in isolated populations depends on knowing whether gene flow between Element Occurrences is even possible. We addressed this by analysing the spatial footprints and connectivity of all sampled locations relative to the maximum pollinator dispersal distance for *L. papilliferum* (~500 m; consistent with published estimates for small-bodied bee and fly pollinators in fragmented landscapes). Convex hull polygons were constructed from 758 georeferenced collection events across 39 locations in 19 EOs (UTM Zone 11N), and pairwise hull-to-hull distances were computed to assess which locations share a pollinator pool. A drift index (DI) was derived from the union area of connected-group hull polygons (DI = 0: largest group; DI = 1: smallest, expected-strongest drift) as a relative spatial proxy for Ne. The full analytical documentation is in `Data/EO_spatial_clustering_documentation.md`; the analysis script is `Scripts/EO_spatial_clustering.R`.
 
-**Overall connectivity.** Of 741 pairwise location comparisons, only **8 pairs** (1.1%) are connected within the 500 m pollinator dispersal threshold — and **7 of those 8 are within the same EO**. The sole between-EO connection is the hull overlap (0 m) between EO76 and EO118, which occupy the same or adjacent slickspot habitat and should be treated as a single demographic unit. All remaining EOs are completely isolated from each other under current conditions: there are no between-EO pollinator connections at the 500 m threshold beyond the EO76/EO118 co-occurrence.
-
-**Geographic groups.** The 500 m threshold partitions all 39 locations into **31 geographic groups** (connected components). Twenty-six of 39 locations (67%) are completely isolated — no neighbour within the pollinator dispersal limit. Only five groups contain more than one location:
-
-| Group | Locations | EO(s) | N locations | Notes |
-|-------|-----------|-------|-------------|-------|
-| 2 | 2, 4 | EO76, EO118 | 2 | Hull overlap (0 m); only between-EO connection |
-| 10 | 11, 12 | EO27 | 2 | 285.6 m apart |
-| 12 | 15–19 | EO18 | 5 | Fully connected chain; pairwise distances 358–493 m |
-| 24 | 31, 32 | EO26 | 2 | 369.3 m apart |
-| 25 | 33, 34 | EO26 | 2 | 364.1 m apart |
-
-EO18 (group 12) is the largest connected cluster — all five of its locations form a single connected component with a combined area of 8.1 ha (DI = 0.588). It is the strongest candidate for a population that retains meaningful internal gene flow. The closest unconnected group pair (EO26 groups 24 and 25) is 586.3 m — just outside the threshold — and several near-miss pairs in the 586–1,766 m range represent locations that could potentially be reconnected through targeted habitat management.
-
-**Drift index.** Group union areas span four orders of magnitude. Eighty-four percent of groups (26/31) occupy less than 1 ha (DI > 0.95), placing the vast majority of locations in the extreme-drift regime. Eight groups have zero measured area (DI = 1.000): all four EO24 locations (locs 22–25), EO68, EO48, EO67, and EO72 — all their collection events share the same recorded coordinate, reflecting the smallest spatial footprints (or GPS rounding) in the dataset. The three lowest-drift groups are EO27 group 10 (19.6 ha, DI = 0.000), EO32 (14.6 ha, DI = 0.255), and the EO76/EO118 group (11.6 ha, DI = 0.411).
-
-**Independent bottleneck lineages.** Ward's D2 hierarchical clustering of the 31 group centroids, with silhouette-optimised k = 5 (silhouette score = 0.74), identifies **five independent bottleneck lineages (BL1–BL5)** across the species range. Each lineage represents a set of geographic groups plausibly sharing a common ancestral colonisation event. Sampling for S-allele diversity must include populations from all five lineages to capture the full landscape-level allele pool; sampling within a single lineage will systematically miss alleles unique to other lineages.
-
-**Interpretation.** The dominant pattern is extreme spatial isolation combined with very small habitat footprints. Each of the 31 geographic groups represents an independent demographic unit in which S-allele erosion has proceeded without the buffering effect of gene flow. This directly supports the Stage 1 interpretation of the C3 cascade (Section 5): EO-level allele sets are largely private not by coincidence but because EOs have been genetically isolated for long enough that independent drift has drawn them apart. The five-lineage spatial structure, combined with largely non-overlapping EO allele sets (only 2 alleles shared across all five major EOs), is the expected outcome if each lineage was founded from a separate ancestral colonisation event and has subsequently evolved in isolation. Gene flow cannot explain the observed inter-EO allele partitioning — it is the near-complete absence of gene flow that explains it.
-
-**Cross-reference: bottleneck lineages, geographic groups, EOs, and population IDs**
-
-The full cross-reference table is in `tables/EO_group_BL_summary.csv`. The table below summarises all 31 groups sorted by bottleneck lineage (BL) and group number.
+**Independent bottleneck lineages.** Ward's D2 hierarchical clustering of the 31 group centroids, with silhouette-optimised k = 5 (silhouette score = 0.74), identifies **five independent bottleneck lineages (BL1–BL5)** across the species range ([Figure 4c](#figure-4c)). Each lineage represents a set of geographic groups plausibly sharing a common ancestral colonisation event. Sampling for S-allele diversity must include populations from all five lineages to capture the full landscape-level allele pool; sampling within a single lineage will systematically miss alleles unique to other lineages. The full cross-reference of BL, group, EO, and population IDs is in `tables/EO_group_BL_summary.csv`; the table below summarises all 31 groups sorted by lineage.
 
 | BL | Group | EO | Population IDs | N locs | Area (ha) | Drift index |
 |----|-------|----|----------------|:------:|----------:|:-----------:|
@@ -317,19 +295,45 @@ The full cross-reference table is in `tables/EO_group_BL_summary.csv`. The table
 | BL5 | 17 | EO24 | 24 | 1 | 0.00 | 1.000 |
 | BL5 | 18 | EO24 | 25 | 1 | 0.00 | 1.000 |
 
-![Figure 4c: EO spatial connectivity network with drift index](figures/EO_connectivity_network.png)
+<a name="figure-4c"></a>
 
-![Figure 4d: Independent bottleneck lineages — dendrogram of geographic groups](figures/EO_clustering_dendrogram.png)
+![Figure 4c: Independent bottleneck lineages — dendrogram of geographic groups](figures/EO_clustering_dendrogram.png)
+
+**Overall connectivity.** Of 741 pairwise location comparisons, only **8 pairs** (1.1%) are connected within the 500 m pollinator dispersal threshold — and **7 of those 8 are within the same EO**. The sole between-EO connection is the hull overlap (0 m) between EO76 and EO118, which occupy the same or adjacent slickspot habitat and should be treated as a single demographic unit. All remaining EOs are completely isolated from each other under current conditions: there are no between-EO pollinator connections at the 500 m threshold beyond the EO76/EO118 co-occurrence.
+
+**Geographic groups.** The 500 m threshold partitions all 39 locations into **31 geographic groups** (connected components). Twenty-six of 39 locations (67%) are completely isolated — no neighbour within the pollinator dispersal limit. Only five groups contain more than one location:
+
+| Group | Locations | EO(s) | N locations | Notes |
+|-------|-----------|-------|-------------|-------|
+| 2 | 2, 4 | EO76, EO118 | 2 | Hull overlap (0 m); only between-EO connection |
+| 10 | 11, 12 | EO27 | 2 | 285.6 m apart |
+| 12 | 15–19 | EO18 | 5 | Fully connected chain; pairwise distances 358–493 m |
+| 24 | 31, 32 | EO26 | 2 | 369.3 m apart |
+| 25 | 33, 34 | EO26 | 2 | 364.1 m apart |
+
+EO18 (group 12) is the largest connected cluster — all five of its locations form a single connected component with a combined area of 8.1 ha (DI = 0.588). It is the strongest candidate for a population that retains meaningful internal gene flow. The closest unconnected group pair (EO26 groups 24 and 25) is 586.3 m — just outside the threshold — and several near-miss pairs in the 586–1,766 m range represent locations that could potentially be reconnected through targeted habitat management.
+
+**Drift index.** Group union areas span four orders of magnitude. Eighty-four percent of groups (26/31) occupy less than 1 ha (DI > 0.95), placing the vast majority of locations in the extreme-drift regime. Eight groups have zero measured area (DI = 1.000): all four EO24 locations (locs 22–25), EO68, EO48, EO67, and EO72 — all their collection events share the same recorded coordinate, reflecting the smallest spatial footprints (or GPS rounding) in the dataset. The three lowest-drift groups are EO27 group 10 (19.6 ha, DI = 0.000), EO32 (14.6 ha, DI = 0.255), and the EO76/EO118 group (11.6 ha, DI = 0.411). The spatial distribution of groups and their drift indices is shown in [Figure 4d](#figure-4d).
+
+**Interpretation.** The dominant pattern is extreme spatial isolation combined with very small habitat footprints. Each of the 31 geographic groups represents an independent demographic unit in which S-allele erosion has proceeded without the buffering effect of gene flow. This directly supports the Stage 1 interpretation of the C3 cascade (Section 5): EO-level allele sets are largely private not by coincidence but because EOs have been genetically isolated for long enough that independent drift has drawn them apart. The five-lineage spatial structure, combined with largely non-overlapping EO allele sets (only 2 alleles shared across all five major EOs), is the expected outcome if each lineage was founded from a separate ancestral colonisation event and has subsequently evolved in isolation. Gene flow cannot explain the observed inter-EO allele partitioning — it is the near-complete absence of gene flow that explains it.
+
+<a name="figure-4d"></a>
+
+![Figure 4d: EO spatial connectivity network with drift index](figures/EO_connectivity_network.png)
 
 ---
 
 ### 5. The Compatibility Collapse Cascade (C3): A Mechanistic Framework Linking Habitat Fragmentation to Reproductive Failure
 
+<a name="figure-14"></a>
+
+![Figure 14: The Compatibility Collapse Cascade (C3): a five-stage mechanism linking habitat fragmentation to reproductive failure in LEPA](figures/SRK_AAAA_cascade_hypothesis.png)
+
 The analyses in Sections 3–4 document the *outcomes* of two converging processes — the erosion of S-allele diversity (TP1) and the degradation of individual reproductive fitness (TP2). The central question this section addresses is: *how* does habitat fragmentation translate into these outcomes? The **Compatibility Collapse Cascade (C3)** hypothesis proposes that fragmentation initiates a five-stage, self-reinforcing sequence of demographic and genetic processes that collectively degrade the SI system and accumulate reproductive dead-ends, even within populations where the SI gene itself remains functional. Each stage is initiated by the one above and amplifies the next — making the cascade increasingly irreversible once set in motion. Crucially, the C3 hypothesis also defines the intervention logic for informed breeding: each stage identifies a specific failure point that targeted genetic rescue can address.
 
 A critical baseline observation frames the entire section. Across all five EOs, functional SRK sequences were successfully recovered from all but five individuals in the dataset; in those five, sequence-level evidence suggests non-functional SRK alleles — the molecular signature of a self-compatibility mutation. The near-absence of molecular SI failure (<4% of individuals) is scientifically important for two reasons. First, it confirms that the sporophytic self-incompatibility system remains structurally intact across the species — the gene itself has not degenerated. Second, and more consequentially, it rules out widespread loss-of-function mutation as the primary driver of the 56% AAAA prevalence. If molecular breakdown of the SRK receptor were responsible for the genotypic pattern, we would expect a far higher proportion of individuals to carry non-functional alleles broadly distributed across EOs — not the near-uniform AAAA accumulation observed in populations that still express a working SI system. The five individuals with non-functional SRK sequences are instead consistent with rare, independent mutational events and may correspond to the five AABC individuals discussed in Stage 5 below, whose unusual allele combinations could reflect SI-bypassing self-fertilisation enabled by SRK dysfunction.
 
-This baseline leads directly to a more challenging question: if the SI machinery is functional, how does a species accumulate 56% reproductive dead-ends? The answer cannot be a simple one. The pattern is most consistent with a cascade of interacting demographic and genetic processes — each initiated by the stage above it and each amplifying the next — that collectively drive accumulation of homozygous (AAAA) individuals even within a nominally functioning SI system. The five stages of this cascade are described below and summarised in [Figure 14](#figure-14).
+This baseline leads directly to a more challenging question: if the SI machinery is functional, how does a species accumulate 56% reproductive dead-ends? The answer cannot be a simple one. The pattern is most consistent with a cascade of interacting demographic and genetic processes — each initiated by the stage above it and each amplifying the next — that collectively drive accumulation of homozygous (AAAA) individuals even within a nominally functioning SI system. The five stages of this cascade are described below and illustrated in [Figure 14](#figure-14) above.
 
 **Stage 1 — Ancestral bottleneck: loss of S-allele richness**
 
@@ -383,15 +387,11 @@ The presence of five AABC individuals — all confined to EO67 and EO70 — is p
 
 The five stages of the C3 cascade are not strictly linear — the output of Stage 5 re-enters the cascade at Stage 2, creating a self-reinforcing genetic loop that operates independently of any further landscape-level disturbance. Stage 5 produces a progressive accumulation of AAAA individuals: each generation of SI breakdown via AB pollen increases the proportion of homozygous genotypes in the population. This AAAA accumulation directly worsens the conditions described in Stage 2 — it further skews S-allele frequencies toward dominance by allele A, reducing the effective number of alleles contributing to compatible matings and thereby further eroding the frequency-dependent selection that would otherwise protect rare alleles. In other words, once the cascade has been initiated by fragmentation (Stage 1), the genetic system becomes self-propelling: AAAA individuals produced in Stage 5 are themselves the substrate for the next cycle of Stage 2 collapse. This feedback explains why the cascade is increasingly irreversible over time and why intervention must target the genetic system — not merely population size — to break the loop.
 
-The feedback loop is represented in Figure 14 as a dashed arrow from Stage 5 to Stage 2. It is distinct from the direct downward cascade arrows (which represent sequential causation) and is shown as a feedback arc to reflect its role as an amplifying, rather than initiating, mechanism.
+The feedback loop is represented in [Figure 14](#figure-14) as a dashed arrow from Stage 5 to Stage 2. It is distinct from the direct downward cascade arrows (which represent sequential causation) and is shown as a feedback arc to reflect its role as an amplifying, rather than initiating, mechanism.
 
 **Conservation implication**
 
 The C3 hypothesis has a direct practical corollary: it provides the scientific foundation for informed breeding. Each stage of the cascade identifies a specific failure point that a targeted intervention can address. Increasing census population size within an EO alone is insufficient to reverse the AAAA trajectory — if the prevailing AAAA frequency exceeds the reproductive dead-end threshold, within-population growth simply produces more AAAA offspring (Stage 3–4 dynamic). Allele introduction via inter-EO crosses is the primary lever. Introducing B, C, and D S-alleles from the five AABC individuals into crosses with AAAA individuals simultaneously restores SI compatibility and re-engages balancing selection — the self-reinforcing mechanism that, once functional, will favour the spread of introduced S-alleles through subsequent generations (reversing Stage 2). The five AABC seed parents identified in Section 4b are therefore not merely high-priority for seed production in the current season; they represent the only endogenous genetic resource capable of reversing the C3 cascade, and their deployment constitutes the first step of an evidence-based informed breeding strategy.
-
-<a name="figure-14"></a>
-
-![Figure 14: The Compatibility Collapse Cascade (C3): a five-stage mechanism linking habitat fragmentation to reproductive failure in LEPA](figures/SRK_AAAA_cascade_hypothesis.png)
 
 ---
 
