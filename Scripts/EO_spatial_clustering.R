@@ -190,6 +190,59 @@ loc_centroids <- merge(
 )
 
 # ============================================================
+# 4c. HIERARCHICAL CLUSTERING — computed early for shared colours
+#     Macro-cluster (BL) assignments used in both the network figure
+#     and dendrogram so both figures share the same colour palette.
+# ============================================================
+if (comps$no >= 3) {
+  grp_coords <- do.call(rbind, lapply(seq_len(comps$no), function(g_id) {
+    locs <- loc_centroids[loc_centroids$group == g_id, ]
+    data.frame(group = g_id, lat = mean(locs$lat), lon = mean(locs$lon))
+  }))
+  grp_sf     <- st_as_sf(grp_coords, coords = c("lon", "lat"), crs = 4326)
+  grp_sf_utm <- st_transform(grp_sf, crs = 32611)
+  grp_dist   <- matrix(as.numeric(st_distance(grp_sf_utm)),
+                       nrow = comps$no,
+                       dimnames = list(paste0("G", seq_len(comps$no)),
+                                       paste0("G", seq_len(comps$no)))) / 1000
+  hc    <- hclust(as.dist(grp_dist), method = "ward.D2")
+  k_max <- min(6, comps$no - 1)
+  if (k_max >= 2) {
+    sil_scores <- sapply(2:k_max, function(k) {
+      cl  <- cutree(hc, k = k)
+      sil <- silhouette(cl, as.dist(grp_dist))
+      mean(sil[, "sil_width"])
+    })
+    names(sil_scores) <- paste0("k=", 2:k_max)
+    best_k <- which.max(sil_scores) + 1
+    grp_coords$macro_cluster <- factor(cutree(hc, k = best_k))
+    loc_centroids$macro_cluster <- grp_coords$macro_cluster[
+      match(as.integer(as.character(loc_centroids$group)), grp_coords$group)
+    ]
+  } else {
+    best_k <- 1
+    grp_coords$macro_cluster <- factor(1)
+    loc_centroids$macro_cluster <- factor(1)
+  }
+} else {
+  grp_coords <- do.call(rbind, lapply(seq_len(comps$no), function(g_id) {
+    locs <- loc_centroids[loc_centroids$group == g_id, ]
+    data.frame(group = g_id, lat = mean(locs$lat), lon = mean(locs$lon),
+               macro_cluster = factor(1))
+  }))
+  loc_centroids$macro_cluster <- factor(1)
+  best_k <- 1
+  k_max  <- 1
+  hc     <- NULL
+  grp_dist   <- NULL
+  sil_scores <- NULL
+}
+clust_cols <- setNames(
+  RColorBrewer::brewer.pal(max(best_k, 3), "Set1")[seq_len(best_k)],
+  as.character(seq_len(best_k))
+)
+
+# ============================================================
 # 5. CONNECTIVITY EDGE LIST (for mapping)
 # ============================================================
 edge_list <- as.data.frame(as_edgelist(g), stringsAsFactors = FALSE)
@@ -663,44 +716,12 @@ ggsave(file.path(out_dir, "EO_distance_heatmap.png"),
 # ============================================================
 if (comps$no >= 3) {
 
-  # Group centroids (mean of member location centroids)
-  grp_coords <- do.call(rbind, lapply(seq_len(comps$no), function(g_id) {
-    locs <- loc_centroids[loc_centroids$group == g_id, ]
-    data.frame(group = g_id,
-               lat   = mean(locs$lat),
-               lon   = mean(locs$lon))
-  }))
-
-  # Haversine-like distance via st_distance on group centroids
-  grp_sf    <- st_as_sf(grp_coords, coords = c("lon", "lat"), crs = 4326)
-  grp_sf_utm <- st_transform(grp_sf, crs = 32611)
-  grp_dist  <- matrix(as.numeric(st_distance(grp_sf_utm)),
-                      nrow = comps$no,
-                      dimnames = list(paste0("G", seq_len(comps$no)),
-                                      paste0("G", seq_len(comps$no)))) / 1000  # km
-
-  hc <- hclust(as.dist(grp_dist), method = "ward.D2")
-
-  k_max <- min(6, comps$no - 1)
+  # Clustering pre-computed in Section 4c; print silhouette summary here
   if (k_max >= 2) {
-    sil_scores <- sapply(2:k_max, function(k) {
-      cl  <- cutree(hc, k = k)
-      sil <- silhouette(cl, as.dist(grp_dist))
-      mean(sil[, "sil_width"])
-    })
-    names(sil_scores) <- paste0("k=", 2:k_max)
     cat("=== Silhouette scores (group-level clustering) ===\n")
     print(round(sil_scores, 3))
-    best_k <- which.max(sil_scores) + 1
     cat(sprintf("\nOptimal k (group clusters): %d\n\n", best_k))
-    grp_coords$macro_cluster <- factor(cutree(hc, k = best_k))
-    loc_centroids$macro_cluster <- grp_coords$macro_cluster[
-      match(as.integer(as.character(loc_centroids$group)), grp_coords$group)
-    ]
   } else {
-    best_k <- 1
-    grp_coords$macro_cluster <- factor(1)
-    loc_centroids$macro_cluster <- factor(1)
     cat("Too few groups for silhouette analysis; single macro-cluster assigned.\n\n")
   }
 
@@ -721,6 +742,13 @@ if (comps$no >= 3) {
 
   clust_cols <- RColorBrewer::brewer.pal(max(best_k, 3), "Set1")[seq_len(best_k)]
 
+  # Tip colours matching EO colours in the network figure;
+  # multi-EO groups (e.g. EO118 + EO76) get grey.
+  tip_cols <- sapply(seq_len(comps$no), function(i) {
+    eos_i <- trimws(strsplit(grp_summary$EOs[grp_summary$group == i], ",")[[1]])
+    if (length(eos_i) == 1) eo_colours[eos_i] else "grey40"
+  })
+
   dend_plot <- function() {
     par(mar = c(10, 4.5, 5, 1))
     plot(hc_plot,
@@ -731,8 +759,15 @@ if (comps$no >= 3) {
          cex   = 0.72,
          hang  = -1,
          axes  = TRUE)
+    # Coloured circles at tips — EO identity matches node colours in network figure
+    points(x   = seq_len(comps$no),
+           y   = rep(0, comps$no),
+           pch = 21,
+           bg  = tip_cols[hc_plot$order],
+           col = "grey30",
+           cex = 1.4)
     if (k_max >= 2) {
-      rect.hclust(hc_plot, k = best_k, border = clust_cols)
+      rect.hclust(hc_plot, k = best_k, border = "black")
     }
     if (!is.na(cut_h)) {
       abline(h = cut_h, lty = 2, col = "grey40", lwd = 1.2)
@@ -740,21 +775,18 @@ if (comps$no >= 3) {
            labels = sprintf("k = %d independent bottleneck lineages", best_k),
            adj = c(0, 0), cex = 0.78, col = "grey20", font = 3)
     }
-    # BL labels — colors must match rect.hclust, which colors boxes left-to-right.
-    # Map each cutree cluster to its left-to-right rank in the dendrogram.
     cl_assign <- cutree(hc_plot, k = best_k)
     cl_order  <- hc_plot$order
     first_pos <- tapply(match(seq_len(comps$no), cl_order), cl_assign, min)
-    lr_rank   <- rank(first_pos, ties.method = "first")  # lr_rank[k] = LR position of cluster k
+    lr_rank   <- rank(first_pos, ties.method = "first")
     for (k_i in seq_len(best_k)) {
       leaves_in_k <- which(cl_assign == k_i)
       positions   <- which(cl_order %in% leaves_in_k)
       mid_pos     <- mean(range(positions))
       col_i       <- lr_rank[k_i]
       mtext(sprintf("BL%d", col_i), side = 1, line = -0.5,
-            at = mid_pos, col = clust_cols[col_i], cex = 0.80, font = 2)
+            at = mid_pos, col = "black", cex = 0.80, font = 2)
     }
-    # Title block
     mtext(
       "Independent ancestral bottleneck lineages of Lepidium papilliferum",
       side = 3, line = 3.2, cex = 1.00, font = 2, adj = 0.5
@@ -786,7 +818,6 @@ if (comps$no >= 3) {
 
 } else {
   cat("Fewer than 3 groups — skipping hierarchical clustering of groups.\n\n")
-  loc_centroids$macro_cluster <- factor(1)
 }
 
 # ============================================================
