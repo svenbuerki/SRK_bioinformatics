@@ -61,68 +61,84 @@ TITLES = [
 
 # Two-part body text: (scientific rationale, our results)
 BODY_SCI = [
-    # Stage 1
+    # Stage 1  (4 lines — general, broad)
     ("Habitat fragmentation isolates populations, cutting off pollen-mediated gene flow\n"
      "and exposing each fragment to independent genetic drift. S-alleles are individually\n"
      "rare under balancing selection and are easily lost in small, isolated founders\n"
      "(Wright 1939; Schierup et al. 1997)."),
 
-    # Stage 2
+    # Stage 2  (3 lines)
     ("Under balancing selection, rare S-alleles are protected because carriers have more\n"
      "compatible mates. Below ~30–40% dominant allele frequency, this protection collapses:\n"
      "diversity loss becomes self-reinforcing rather than self-correcting (Castric & Vekemans 2004)."),
 
-    # Stage 3
+    # Stage 3  (3 lines)
     ("As homozygous (AAAA) frequency rises, rare-S-allele carriers find progressively fewer\n"
      "compatible mates — the SI system itself excludes them. Mate availability collapses\n"
      "sharply in small SI populations (Byers & Meagher 1992; Willi et al. 2005)."),
 
-    # Stage 4
+    # Stage 4  (3 lines)
     ("At small census sizes, genetic drift overwhelms balancing selection. The effective\n"
      "S-allele number advantage collapses when diversity is already low, and once a rare\n"
      "S-allele is lost it cannot be recovered without external gene flow (Aguilar et al. 2006)."),
 
-    # Stage 5
+    # Stage 5  (4 lines — trimmed from 5 to stay clear of pred header at offset 1.50)
     ("In diploids, SI prevents same-S-allele crosses. In tetraploids, AABB produces AB pollen\n"
-     "(4 of 6 gametes) carrying two S-allele signals simultaneously — competing signals fail\n"
-     "to trigger rejection, SI breaks down, and offspring drift toward AAAA (Mable et al. 2004).\n"
-     "Repeated self-fertilisation progressively reduces genome-wide heterozygosity, diminishing\n"
-     "both reproductive output and the adaptive capacity of the population."),
+     "(4 of 6 gametes) — competing SCR proteins fail to trigger rejection, SI breaks down,\n"
+     "and offspring drift toward AAAA (Mable et al. 2004). Repeated selfing progressively\n"
+     "erodes heterozygosity and the adaptive capacity of the population."),
 ]
 
-BODY_RES = [
+# Predictions — specific to the model species; prospective / testable (2 lines each)
+BODY_PRED = [
     # Stage 1
-    ("67% of sampled locations have no neighbour within the 500 m pollinator dispersal\n"
-     "limit; 84% of geographic groups occupy <1 ha, placing them in the extreme-drift\n"
-     "regime. Five independent bottleneck lineages span the range — each a separate\n"
-     "founding event evolving without inter-lineage gene flow."),
+    ("Majority of locations isolated within 500 m; Ward's D2 clustering of group centroid\n"
+     "distances recovers 5 independent BLs (BL1–BL5) unequal in area and census size."),
 
     # Stage 2
-    ("Allele frequencies depart dramatically from the equal-frequency expectation at every\n"
-     "level (χ² p < 10⁻⁷ across all occurrences). Two alleles dominate each occurrence;\n"
-     "frequency evenness (Ne/N = 0.41–0.55) is far below the balancing selection ideal of 1.0."),
+    ("S-allele richness per population falls below species optimum, losses ranking with DI;\n"
+     "allele frequencies deviate from the equal-frequency expectation of balancing selection."),
 
     # Stage 3
-    ("52–62% of individuals per occurrence are AAAA and cannot participate in any compatible\n"
-     "cross. Only 38–48% of individuals support reproductive effort (carry >1 S-allele).\n"
-     "Only 5 individuals across the entire species carry an AABC genotype."),
+    (">50% of individuals AAAA (reproductive dead-ends) in every population; effective\n"
+     "breeding pool <50%; mean GFS well below the functional AABB benchmark (0.667)."),
 
     # Stage 4
-    ("With N = 25–40 individuals per occurrence and no inter-occurrence gene flow,\n"
-     "genetic drift is irreversible. 60–89% of S-allele bins have been permanently\n"
-     "lost from each occurrence; effective-to-observed allele ratios (Ne/N = 0.41–0.55)\n"
-     "confirm ongoing erosion. All five occurrences are rated CRITICAL for SI health."),
+    ("High-DI groups show greater S-allele erosion; private allele counts rank with DI gradient\n"
+     "(EO27 largest set, EO70 smallest); BL4 is the sharpest single-lineage test (DI: 0–1)."),
 
     # Stage 5
-    ("56% of all individuals (105/189) are AAAA — producing only identical pollen,\n"
-     "unable to participate in any compatible cross. All five occurrences breach both\n"
-     "TP2 thresholds and are rated CRITICAL for individual reproductive fitness."),
+    (">50% of individuals AAAA species-wide; ABCD genotype absent; forward simulations predict\n"
+     "allele richness collapses toward zero within 50–100 generations under random mating."),
+]
+
+# Preliminary results — what was observed in the model species (2 lines each)
+BODY_RES = [
+    # Stage 1
+    ("67% of locations (26/39) have no neighbour within 500 m; 31 groups, 26 fully isolated.\n"
+     "Five BLs confirmed (silhouette = 0.74): BL2 (0.01 ha, 457 ind.) to BL4 (26.1 ha, EO27)."),
+
+    # Stage 2
+    ("Each EO retains 9–23% of the S-allele optimum; 60–89% permanently lost to drift.\n"
+     "χ² p < 10⁻⁷; Ne/N = 0.41–0.55 — erosion ranking matches DI gradient (Stage 1)."),
+
+    # Stage 3
+    ("52–62% AAAA per population; only 38–48% support compatible crosses. Only 5 AABC\n"
+     "individuals across the entire model species. Mean GFS: 0.224–0.297 (AABB = 0.667)."),
+
+    # Stage 4
+    ("Private allele counts rank with DI: EO27=10, EO67=7, EO76=6, EO25=5, EO70=3 —\n"
+     "genetic fingerprint of independent drift; BL4 confirms the cleanest within-BL gradient."),
+
+    # Stage 5
+    ("56% AAAA (105/189); 21% AAAB, 21% AABB, 3% AABC; no ABCD in model species.\n"
+     "Mean GFS: 0.22–0.30. Simulations confirm collapse; managed crossing arrests trajectory."),
 ]
 
 # ─── figure geometry (data units = inches) ────────────────────────────────────
-FW, FH  = 15.0, 15.2   # figure dimensions in inches
-BOX_H   = 2.31          # stage box height (was 3.6)
-GAP     = 0.35          # gap between boxes / arrow space (was 0.42)
+FW, FH  = 15.0, 17.5   # figure dimensions in inches
+BOX_H   = 2.80          # stage box height — increased for three-section layout
+GAP     = 0.28          # gap between boxes / arrow space
 MX      = 0.30          # left/right margin
 BOX_W   = FW - 2 * MX  # stage box width
 
@@ -203,7 +219,7 @@ ax.text(FW / 2, TITLE_Y - 0.72,
 
 
 # ─── STAGE BOXES ──────────────────────────────────────────────────────────────
-def draw_stage(i, res_offset=1.40):
+def draw_stage(i, pred_offset=1.30, res_offset=1.92):
     bg, edge, bfc = STAGE_PALETTE[i]
     y_top = STAGE_Y[i]
     y_bot = y_top - BOX_H
@@ -214,21 +230,29 @@ def draw_stage(i, res_offset=1.40):
     # Badge
     badge(BADGE_X, y_bot + BOX_H / 2, i + 1, bfc)
 
-    # Stage title — left-aligned, flush with schematic left edge (beside badge)
+    # Stage title
     ax.text(SCH_X0, y_top - 0.24, TITLES[i],
             ha='left', va='top', fontsize=12, fontweight='bold',
             color='#1A1A1A', zorder=4)
 
-    # Section 1: Scientific rationale
-    ax.text(TEXT_X0, y_top - 0.52, 'Scientific rationale',
+    # Section 1: Scientific rationale (broad, general)
+    ax.text(TEXT_X0, y_top - 0.50, 'Scientific rationale',
             ha='left', va='top', fontsize=9.5, fontweight='bold',
             color='#1A1A1A', zorder=4)
-    ax.text(TEXT_X0, y_top - 0.70, BODY_SCI[i],
+    ax.text(TEXT_X0, y_top - 0.68, BODY_SCI[i],
             ha='left', va='top', fontsize=9.5, color='#333333',
             linespacing=1.40, zorder=4)
 
-    # Section 2: Our results
-    ax.text(TEXT_X0, y_top - res_offset, 'Our results',
+    # Section 2: Prediction(s) (model-species specific)
+    ax.text(TEXT_X0, y_top - pred_offset, 'Prediction(s)',
+            ha='left', va='top', fontsize=9.5, fontweight='bold',
+            color='#1A1A1A', zorder=4)
+    ax.text(TEXT_X0, y_top - pred_offset - 0.18, BODY_PRED[i],
+            ha='left', va='top', fontsize=9.5, color='#333333',
+            linespacing=1.40, zorder=4)
+
+    # Section 3: Preliminary results (model-species specific)
+    ax.text(TEXT_X0, y_top - res_offset, 'Preliminary results',
             ha='left', va='top', fontsize=9.5, fontweight='bold',
             color='#1A1A1A', zorder=4)
     ax.text(TEXT_X0, y_top - res_offset - 0.18, BODY_RES[i],
@@ -241,7 +265,7 @@ def draw_stage(i, res_offset=1.40):
 
 
 # ─── SCHEMATIC 1: Bottleneck ──────────────────────────────────────────────────
-ax1 = draw_stage(0, res_offset=1.58)
+ax1 = draw_stage(0, pred_offset=1.50, res_offset=2.12)
 ax1.set_xlim(0, 10)
 ax1.set_ylim(0, 4)
 
@@ -281,7 +305,7 @@ ax1.text(1.0, 0.3, '8 alleles', ha='center', fontsize=8, color='#555')
 ax1.text(5.0, 0.3, '2 alleles', ha='center', fontsize=8, color='#555')
 
 # ─── SCHEMATIC 2: Balancing Selection Breakdown ───────────────────────────────
-ax2 = draw_stage(1)
+ax2 = draw_stage(1, pred_offset=1.30, res_offset=1.92)
 ax2.set_xlim(0, 10)
 ax2.set_ylim(0, 5.5)
 
@@ -334,7 +358,7 @@ ax2.text(8.3, -0.5, 'S-allele frequencies after collapse', ha='center', fontsize
          color='#333', style='italic')
 
 # ─── SCHEMATIC 3: Mate Limitation ────────────────────────────────────────────
-ax3 = draw_stage(2)
+ax3 = draw_stage(2, pred_offset=1.30, res_offset=1.92)
 ax3.set_xlim(0, 10)
 ax3.set_ylim(0, 4.5)
 
@@ -381,7 +405,7 @@ ax3.text(5.7, 0.3, '3 × diverse — connected', ha='center', fontsize=7.5,
 
 # ─── SCHEMATIC 4: Genetic Drift ──────────────────────────────────────────────
 # Use a custom taller inset so the schematic has more room
-draw_stage(3)
+draw_stage(3, pred_offset=1.30, res_offset=1.92)
 _y4_bot = STAGE_Y[3] - BOX_H
 ax4 = inset(SCH_X0, _y4_bot + 0.10, SCH_W, BOX_H - 0.30)
 ax4.set_facecolor('none')
@@ -461,7 +485,7 @@ ax4.text(9.22, 3.35, 'drift dominates\nover selection', ha='center', va='top',
 # ─── SCHEMATIC 5: Polyploid SI Breakdown — clean 3-zone layout ────────────────
 # Use a custom inset with minimal padding so the schematic is taller
 # res_offset pushed down to clear the 5-line scientific rationale text
-draw_stage(4, res_offset=1.75)
+draw_stage(4, pred_offset=1.50, res_offset=2.12)
 _y5_bot = STAGE_Y[4] - BOX_H
 ax5 = inset(SCH_X0, _y5_bot + 0.12, SCH_W, BOX_H - 0.57)
 ax5.set_xlim(0, 10)
