@@ -37,7 +37,7 @@ Boise, Idaho, USA
 
 ## Pipeline Workflow
 
-The pipeline consists of **19 main steps organized into three phases**, progressing from within-library sequence assembly to cross-library integration and final population genetic analyses.
+The pipeline consists of **22 main steps organized into four phases**, progressing from within-library sequence assembly to cross-library integration, population genetic analyses, and experimental validation of S-allele hypotheses through controlled crosses.
 
 ## Phase 1: SRK Amplicon Sequence Assembly
 
@@ -68,6 +68,12 @@ The pipeline consists of **19 main steps organized into three phases**, progress
 17. **Allele Composition Comparison Across Element Occurrences** – UpSet plot and pairwise sharing heatmap quantifying how S-allele sets partition across Element Occurrences, identifying private alleles and alleles shared across all populations. Requires only standard Python dependencies (pandas, numpy, matplotlib).
 18. **Individual Genotypic Fitness Score (GFS)** – Per-individual metric quantifying the proportion of heterozygous diploid gametes a tetraploid can produce. Differentiates dosage-imbalanced genotypes (AABB vs AAAB) invisible to zygosity analysis alone. Outputs per-individual GFS values and ranked seed parent lists per EO.
 19. **TP2 Tipping Point Analysis** – EO-level assessment placing mean GFS and proportion of AAAA individuals in interaction. EOs breaching both thresholds simultaneously (mean GFS < 0.667; proportion AAAA > 30%) are flagged CRITICAL, AT RISK, or OK.
+20. **Reproductive Effort Support per Element Occurrence** – Horizontal proportional bar chart showing the fraction of individuals at each GFS tier per EO.
+
+## Phase 4: Testing S-allele Hypotheses
+
+21. **Allele Super-Group Clustering and Crossing Design** – Second-level UPGMA clustering of allele bins into super-groups using S-domain p-distance between representative sequences. Assigns each AAAA individual to a bin and super-group, and generates a prioritised crossing plan with three categories: W (within-bin, expected incompatible — negative control), N (within-cluster, closely related bins — hypothesis test), and P (between-cluster — positive control).
+22. **Cross Result Analysis** – Reads completed crossing records and tests whether the W / N / P category predicts seed yield, validating the sequence-based allele definitions against experimental cross-compatibility data. Activated by setting `CROSS_TSV` in the script once crossing data are available.
 
 ## Requirements
 
@@ -157,7 +163,7 @@ Rscript scripts/11_srk_allele_genotyping.R
 Rscript scripts/12_zygosity_analysis.R
 ```
 
-4.  **Phase 3 — Data Analyses (Steps 13–19):**
+4.  **Phase 3 — Data Analyses (Steps 13–20):**
 
 ``` bash
 # Step 13: Population genetics statistics
@@ -178,6 +184,17 @@ python SRK_allele_sharing_EOs.py
 
 # Steps 18–19: Individual Genotypic Fitness Score (Step 18) and TP2 tipping point analysis (Step 19)
 Rscript SRK_individual_GFS.R
+```
+
+5.  **Phase 4 — Testing S-allele Hypotheses (Steps 21–22):**
+
+``` bash
+# Step 21: Allele super-group clustering and crossing design
+python test_allele_definitions_from_crosses.py
+
+# Step 22: Cross result analysis
+# Set CROSS_TSV = "<your_cross_results_file>" in the script, then re-run:
+python test_allele_definitions_from_crosses.py
 ```
 
 ### Detailed Usage
@@ -218,6 +235,13 @@ For a concise step-by-step protocol (scripts, inputs, outputs, key parameters), 
 -   `SRK_individual_GFS.tsv` - Per-individual Genotypic Fitness Score, genotype class (AAAA/AAAB/AABB/AABC/ABCD), and EO assignment (Step 18)
 -   `SRK_EO_GFS_summary.tsv` - EO-level mean GFS, genotype class proportions, and Tipping Point 2 status (CRITICAL / AT RISK / OK) (Step 19)
 -   `SRK_GFS_plots.pdf` - Four diagnostic plots: stacked composition bars, individual GFS jitter with mean, TP2 tipping point map, and absolute count bars (Steps 18–19)
+
+### Phase 4 Outputs (Testing S-allele Hypotheses)
+
+-   `SRK_allele_supergroups.tsv` - Allele bin → super-group assignment with AAAA individual count and cross power rating (Step 21)
+-   `SRK_AAAA_cross_design.tsv` - All AAAA × AAAA plant pairs ranked by cross category (W / N / P), with allele IDs, super-group IDs, S-domain distance, and expected outcome (Step 21)
+-   `SRK_allele_cluster_figure.pdf` / `figures/SRK_allele_cluster_figure.png` - UPGMA dendrogram of allele bins coloured by super-group + AAAA availability bar chart (Step 21)
+-   `SRK_cross_result_analysis.pdf` - Seed yield distributions and success rates by cross category, with Kruskal-Wallis and Mann-Whitney U tests (Step 22; requires cross data)
 
 ### Quality Control Reports
 

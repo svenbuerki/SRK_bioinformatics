@@ -11,7 +11,7 @@
 
 <meta name="author" content="Sven Buerki - Boise State University" />
 
-<meta name="date" content="2026-04-14" />
+<meta name="date" content="2026-05-01" />
 
 <title>SRK Bioinformatics</title>
 
@@ -1469,7 +1469,7 @@ border-radius: 0px;
 <h1 class="title toc-ignore">SRK Bioinformatics</h1>
 <h3 class="subtitle">Nanopore-Based SRK Haplotype Reconstruction and Population Analysis Pipeline</h3>
 <h4 class="author">Sven Buerki - Boise State University</h4>
-<h4 class="date">2026-04-14</h4>
+<h4 class="date">2026-05-01</h4>
 
 </div>
 
@@ -1492,7 +1492,7 @@ border-radius: 0px;
 </div>
 <div id="pipeline-overview" class="section level1" number="3">
 <h1><span class="header-section-number">3</span> Pipeline Overview</h1>
-<p>The pipeline consists of <strong>19 main steps organized into three phases</strong>, progressing from within-library sequence assembly to cross-library integration and final population genetic analyses.</p>
+<p>The pipeline consists of <strong>22 main steps organized into four phases</strong>, progressing from within-library sequence assembly to cross-library integration, population genetic analyses, and experimental validation of S-allele hypotheses through controlled crosses.</p>
 <div id="phase-1-srk-amplicon-sequence-assembly" class="section level2" number="3.1">
 <h2><span class="header-section-number">3.1</span> <a href="#phase1">Phase 1: SRK amplicon sequence assembly</a></h2>
 <ol style="list-style-type: decimal">
@@ -1528,6 +1528,13 @@ border-radius: 0px;
 <li><a href="#GFS">Individual Genotypic Fitness Score</a> – Per-individual GFS quantifying the proportion of heterozygous diploid gametes a tetraploid individual can produce, differentiating dosage-imbalanced genotypes (e.g. AABB vs AAAB) invisible to simple zygosity classification.</li>
 <li><a href="#TP2">TP2 Tipping Point Analysis</a> – <strong>Reproductive Fitness</strong>: EO-level tipping point assessment asking (x) what fraction of individuals are reproductive dead-ends (prop_AAAA) and (y) how much reproductive capacity the average individual still has (mean GFS); EOs breaching both thresholds simultaneously are flagged CRITICAL.</li>
 <li><a href="#reproeffort">Reproductive Effort Support per Element Occurrence</a> – Horizontal proportional bar chart showing the fraction of individuals at each GFS tier per EO, quantifying the proportion of the population capable of contributing allelic diversity to compatible crosses.</li>
+</ol>
+</div>
+<div id="phase-4-testing-s-allele-hypotheses" class="section level2" number="3.4">
+<h2><span class="header-section-number">3.4</span> <a href="#phase4">Phase 4: Testing S-allele Hypotheses</a></h2>
+<ol start="21" style="list-style-type: decimal">
+<li><a href="#alleleclusters">Allele Super-Group Clustering and Crossing Design</a> – Second-level UPGMA clustering of the allele bins defined in Phase 2 into super-groups based on S-domain p-distance, producing a prioritised crossing plan for AAAA individuals with cross categories W (within-bin), N (within-cluster), and P (between-cluster).</li>
+<li><a href="#crossresults">Cross Result Analysis</a> – Statistical comparison of seed yield across W / N / P cross categories to test whether sequence-based allele bins predict functional recognition specificity.</li>
 </ol>
 <hr />
 </div>
@@ -7991,7 +7998,335 @@ python SRK_allele_sharing_EOs.py \
 <li><strong>Conservation triage</strong>: the proportion of supporting individuals per EO directly quantifies how much of the population is functional for managed crossing</li>
 <li><strong>Seed parent pool size</strong>: the annotated n / N count identifies how many individuals are candidates for inclusion in a crossing programme</li>
 <li><strong>Cross-EO comparison</strong>: ordering by mean GFS highlights which EOs are most degraded and therefore highest priority for allele importation combined with GFS-targeted crossing</li>
-<li><strong>Communication</strong>: the figure is designed for presentation to conservation managers, translating the GFS metric into an intuitive “proportion supporting reproductive effort” framing</li>
+<li><h2 id="communication-the-figure-is-designed-for-presentation-to-conservation-managers-translating-the-gfs-metric-into-an-intuitive-proportion-supporting-reproductive-effort-framing"><strong>Communication</strong>: the figure is designed for presentation to conservation managers, translating the GFS metric into an intuitive “proportion supporting reproductive effort” framing</h2></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="phase4" class="section level1" number="7">
+<h1><span class="header-section-number">7</span> Phase 4: Testing S-allele Hypotheses</h1>
+<div id="phase4-approach" class="section level2" number="7.1">
+<h2><span class="header-section-number">7.1</span> Scientific Approach</h2>
+<p>Phase 4 translates the sequence-based allele bins defined in Phase 2 into testable hypotheses about recognition specificity, using controlled crosses between genotyped individuals to validate whether sequence similarity predicts functional SI identity.</p>
+<p>The central question is: <strong>do alleles that are closely related in sequence share the same recognition specificity, or are they functionally distinct?</strong> This matters because the allele bins produced in <a href="#SRKalleledist">Step 10</a> are defined by sequence distance alone — two alleles grouped into the same bin are hypothesised to be functionally equivalent (same “lock”), but this has not been confirmed experimentally. Conversely, allele bins that are closely related but fall just outside the clustering threshold might still share the same recognition specificity and could be treated as synonymous for crossing purposes.</p>
+<p><strong>The experimental logic rests on three cross categories:</strong></p>
+<ul>
+<li><p><strong>W — within-bin</strong> (same allele bin, S-domain distance = 0): pollen and pistil carry the same SRK allele. Under a functional SI system, these crosses should fail — the pistil recognises the pollen as self and rejects it. These are negative controls. Any seed set observed in W crosses is direct evidence of SI breakdown, consistent with Stage 5 of the Compatibility Collapse Cascade.</p></li>
+<li><p><strong>N — within-cluster</strong> (different allele bins, same super-group): pollen and pistil carry alleles that are closely related in sequence but were defined as distinct bins. These crosses are the core of the hypothesis test — seed failure would indicate that sequence-similar alleles are functionally synonymous; seed set would confirm that they carry distinct recognition specificities.</p></li>
+<li><p><strong>P — between-cluster</strong> (alleles from different super-groups): pollen and pistil carry alleles that are substantially divergent in sequence. These crosses are expected to succeed. They serve as positive controls establishing that the SI system is functional and that compatible pollen is being applied correctly.</p></li>
+</ul>
+<p><strong>Why AAAA individuals?</strong> Individuals homozygous for a single allele across all four genome copies (AAAA genotype; 56% of all sampled plants) are the ideal cross parents for this experiment. Their pollen carries a single SCR identity — the allele assignment is unambiguous, and cross outcomes can be interpreted without accounting for pollen genotype distributions. Crosses between two AAAA plants are therefore the cleanest test of allele-level recognition specificity available in a tetraploid system.</p>
+<p><strong>Two-step analysis:</strong> <a href="#alleleclusters">Step 21</a> groups the allele bins into super-groups by second-level UPGMA clustering and generates the prioritised crossing plan. <a href="#crossresults">Step 22</a> reads completed cross records and tests whether the W / N / P category predicts seed yield, providing the statistical confirmation needed to validate or refine the sequence-based allele definitions.</p>
+<hr />
+</div>
+<div id="alleleclusters" class="section level2" number="7.2">
+<h2><span class="header-section-number">7.2</span> Allele Super-Group Clustering and Crossing Design</h2>
+<blockquote>
+<p>Requires <code>SRK_protein_allele_representatives.fasta</code> from <a href="#SRKalleledist">Step 10</a>, <code>SRK_individual_GFS.tsv</code> from <a href="#GFS">Step 18</a>, and <code>SRK_individual_allele_table.tsv</code> from <a href="#SRKfunctionalprotgenotype">Step 11</a>. Run after Steps 10, 11, and 18 have completed.</p>
+</blockquote>
+<div id="overview-18" class="section level3" number="7.2.1">
+<h3><span class="header-section-number">7.2.1</span> Overview</h3>
+<p>This step groups the allele bins defined in Phase 2 into super-groups by running a second-level UPGMA hierarchical clustering on pairwise S-domain p-distances between allele representative sequences. Each of the 105 AAAA individuals in the dataset is then assigned a bin and super-group, and all pairwise AAAA combinations are categorised as W, N, or P and ranked to produce a crossing plan. The result is a practical field guide: which crosses to prioritise, what to expect, and what each outcome means for the allele definitions.</p>
+<p>The step also prints a distance summary that diagnoses the structure of the allele distance space — in particular, whether the alleles form a single tight cluster (requiring a finer <code>N_SUPERGROUPS</code> setting to resolve useful sub-groups) or whether natural breaks exist at the chosen resolution.</p>
+</div>
+<div id="biological-rationale-2" class="section level3" number="7.2.2">
+<h3><span class="header-section-number">7.2.2</span> Biological Rationale</h3>
+<p>The allele bin boundaries from Phase 2 are sequence-based hypotheses. The super-group clustering adds a second level of resolution: within each super-group, allele bins are more similar to each other than to bins in other super-groups. This provides a gradient of expected recognition similarity — from identical (W, same bin) through closely related (N, same super-group) to divergent (P, different super-group) — that maps directly onto experimental predictions for seed yield. The three-tier design maximises the information return from a limited crossing experiment: every cross tests either a hypothesis (N) or anchors the interpretation via a control (W or P).</p>
+<p>Of the 55 allele bins currently defined, 22 have at least one AAAA representative in the dataset. Among these, 14 bins have two or more AAAA plants and can support the full three-tier crossing design (within-bin negative control, within-cluster hypothesis test, between-cluster positive control). The remaining 8 bins with a single AAAA individual can be used as cross partners but cannot provide a replicated within-bin incompatibility test. The 33 bins with no AAAA representatives require AAAB or AABB parents and are deferred to a future analysis extension.</p>
+</div>
+<div id="bioinformatics-18" class="section level3" number="7.2.3">
+<h3><span class="header-section-number">7.2.3</span> Bioinformatics</h3>
+<ul>
+<li>Script: <code>test_allele_definitions_from_crosses.py</code> (Part 1)</li>
+<li>Environment: Python 3 with numpy, pandas, matplotlib, scipy, biopython</li>
+<li>Execution (run from project root):</li>
+</ul>
+<pre class="bash"><code>python test_allele_definitions_from_crosses.py</code></pre>
+<div id="key-parameters-top-of-script-2" class="section level4" number="7.2.3.1">
+<h4><span class="header-section-number">7.2.3.1</span> Key Parameters (top of script)</h4>
+<table style="width:100%;">
+<colgroup>
+<col width="33%" />
+<col width="27%" />
+<col width="39%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>N_SUPERGROUPS</code></td>
+<td>8</td>
+<td>Number of super-groups; increase if most alleles collapse into one group (see distance summary in output)</td>
+</tr>
+<tr class="even">
+<td><code>SUPERGROUP_THRESHOLD</code></td>
+<td>0.10</td>
+<td>Alternative: p-distance cutoff used when <code>N_SUPERGROUPS = None</code></td>
+</tr>
+<tr class="odd">
+<td><code>DOMAIN_REGION</code></td>
+<td>(31, 430)</td>
+<td>S-domain columns used for distance; must match Step 10</td>
+</tr>
+<tr class="even">
+<td><code>CROSS_TSV</code></td>
+<td>None</td>
+<td>Set to cross results filename to activate Part 2 (Step 22)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tuning <code>N_SUPERGROUPS</code>:</strong> The script prints a distance summary on each run. If the counts for <code>dist &lt; 0.05</code>, <code>dist &lt; 0.10</code>, and <code>dist &lt; 0.20</code> are identical, the allele distance space is bimodal — most alleles form a tight cluster with no intermediate distances. In this case, increase <code>N_SUPERGROUPS</code> to 15–25 to force the algorithm to subdivide the cluster into experimentally manageable groups. Inspect <code>SRK_allele_cluster_figure.pdf</code> to choose a value where the dendrogram shows natural internal branching rather than an arbitrary cut through a flat cluster.</p>
+</div>
+<div id="input-files-6" class="section level4" number="7.2.3.2">
+<h4><span class="header-section-number">7.2.3.2</span> Input Files</h4>
+<table>
+<colgroup>
+<col width="31%" />
+<col width="68%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SRK_protein_allele_representatives.fasta</code></td>
+<td>One representative sequence per allele bin (output of Step 10)</td>
+</tr>
+<tr class="even">
+<td><code>SRK_individual_GFS.tsv</code></td>
+<td>Per-individual GFS scores and genotype pattern (output of Step 18)</td>
+</tr>
+<tr class="odd">
+<td><code>SRK_individual_allele_table.tsv</code></td>
+<td>Individual → allele → copy count table (output of Step 11)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="output-files-20" class="section level4" number="7.2.3.3">
+<h4><span class="header-section-number">7.2.3.3</span> Output Files</h4>
+<table>
+<colgroup>
+<col width="40%" />
+<col width="60%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SRK_allele_supergroups.tsv</code></td>
+<td>One row per allele bin: super-group assignment, AAAA individual count, cross power rating</td>
+</tr>
+<tr class="even">
+<td><code>SRK_AAAA_cross_design.tsv</code></td>
+<td>All AAAA × AAAA pairs ranked by category (W first, then N, then P), with allele IDs, super-group IDs, S-domain distance, and expected outcome</td>
+</tr>
+<tr class="odd">
+<td><code>SRK_allele_cluster_figure.pdf</code></td>
+<td>Left panel: UPGMA dendrogram of allele bins coloured by super-group. Right panel: bar chart of AAAA individuals per allele bin in the same leaf order, with dashed line at n = 2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="output-file-descriptions" class="section level4" number="7.2.3.4">
+<h4><span class="header-section-number">7.2.3.4</span> Output File Descriptions</h4>
+<p><strong><code>SRK_allele_supergroups.tsv</code></strong></p>
+<table>
+<colgroup>
+<col width="38%" />
+<col width="61%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Allele</code></td>
+<td>Allele bin name</td>
+</tr>
+<tr class="even">
+<td><code>SuperGroup</code></td>
+<td>Super-group assignment (SG01–SGxx)</td>
+</tr>
+<tr class="odd">
+<td><code>N_AAAA</code></td>
+<td>Number of AAAA individuals carrying this allele</td>
+</tr>
+<tr class="even">
+<td><code>CrossPower</code></td>
+<td><code>full</code> (≥2 AAAA, full 3-tier design possible), <code>singleton</code> (1 AAAA, partner only), <code>none</code> (no AAAA)</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>SRK_AAAA_cross_design.tsv</code></strong></p>
+<table>
+<colgroup>
+<col width="38%" />
+<col width="61%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Mother</code> / <code>Father</code></td>
+<td>Individual plant IDs</td>
+</tr>
+<tr class="even">
+<td><code>Mother_allele</code> / <code>Father_allele</code></td>
+<td>Allele bin carried by each plant</td>
+</tr>
+<tr class="odd">
+<td><code>Mother_SG</code> / <code>Father_SG</code></td>
+<td>Super-group of each allele</td>
+</tr>
+<tr class="even">
+<td><code>S_domain_dist</code></td>
+<td>Pairwise S-domain p-distance between the two alleles</td>
+</tr>
+<tr class="odd">
+<td><code>Category</code></td>
+<td><strong>W</strong>, <strong>N</strong>, or <strong>P</strong> — the key column for cross prioritisation</td>
+</tr>
+<tr class="even">
+<td><code>Expected</code></td>
+<td>Plain-language prediction for seed yield</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="scientific-applications-10" class="section level3" number="7.2.4">
+<h3><span class="header-section-number">7.2.4</span> Scientific Applications</h3>
+<ul>
+<li><strong>Cross prioritisation</strong>: N pairs (within-cluster hypothesis test) are the highest scientific priority — they directly test whether sequence-similar bins are functionally synonymous; P pairs confirm the SI system is working; W pairs confirm that the genotyping correctly identifies the allele</li>
+<li><strong>Allele bin refinement</strong>: if N crosses consistently fail (no seeds), the current bin boundaries may be too fine and neighbouring bins could be merged; if N crosses succeed, the bins are well-delimited</li>
+<li><strong>Conservation breeding</strong>: W crosses that yield seeds are direct evidence of SI breakdown and can be reported as Stage 5 Compatibility Collapse Cascade events in the individual plants tested</li>
+</ul>
+<hr />
+</div>
+</div>
+<div id="crossresults" class="section level2" number="7.3">
+<h2><span class="header-section-number">7.3</span> Cross Result Analysis</h2>
+<blockquote>
+<p>Requires <code>SRK_allele_supergroups.tsv</code> and <code>SRK_AAAA_cross_design.tsv</code> from <a href="#alleleclusters">Step 21</a>, plus a completed cross results file. Run after crossing experiments have been conducted and seed yields recorded.</p>
+</blockquote>
+<div id="overview-19" class="section level3" number="7.3.1">
+<h3><span class="header-section-number">7.3.1</span> Overview</h3>
+<p>This step reads completed cross records — a file with one row per cross, containing the mother and father plant IDs and a seed yield column — and assigns each cross to a W, N, or P category using the super-group structure from Step 21. It then tests whether category predicts seed yield using Kruskal-Wallis and pairwise Mann-Whitney U tests, and produces a figure showing seed yield distributions and success rates per category.</p>
+<p><strong>To activate this step</strong>, set <code>CROSS_TSV</code> in the settings section of <code>test_allele_definitions_from_crosses.py</code> to the filename of the completed cross records file, then re-run the script.</p>
+</div>
+<div id="biological-rationale-3" class="section level3" number="7.3.2">
+<h3><span class="header-section-number">7.3.2</span> Biological Rationale</h3>
+<p>The statistical test is a direct evaluation of the allele bin definitions: if the bins correctly capture functional recognition specificity, W crosses should show the lowest seed yield (same allele, rejected by SI), P crosses the highest (different super-group, fully compatible), and N crosses an intermediate or categorical pattern depending on whether the closely related bins are functionally synonymous or distinct. A significant Kruskal-Wallis result with the expected ordering (W &lt; N ≤ P) validates the sequence-based bin boundaries. A result where W ≥ N suggests the bins may be over-split and closely related alleles share specificity. A result where W &gt; 0 consistently indicates SI breakdown in the tested individuals.</p>
+</div>
+<div id="bioinformatics-19" class="section level3" number="7.3.3">
+<h3><span class="header-section-number">7.3.3</span> Bioinformatics</h3>
+<ul>
+<li>Script: <code>test_allele_definitions_from_crosses.py</code> (Part 2, activated by setting <code>CROSS_TSV</code>)</li>
+<li>Environment: Python 3 with numpy, pandas, matplotlib, scipy, biopython</li>
+</ul>
+<div id="input-files-7" class="section level4" number="7.3.3.1">
+<h4><span class="header-section-number">7.3.3.1</span> Input Files</h4>
+<table>
+<colgroup>
+<col width="31%" />
+<col width="68%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SRK_allele_supergroups.tsv</code></td>
+<td>Allele super-group assignments from Step 21</td>
+</tr>
+<tr class="even">
+<td><code>SRK_individual_allele_table.tsv</code></td>
+<td>Individual → allele table, used to assign alleles to non-AAAA cross parents</td>
+</tr>
+<tr class="odd">
+<td>Cross results file</td>
+<td>One row per cross; must contain <code>Mother</code>, <code>Father</code>, and a seed count column (auto-detected: <code>Seeds</code>, <code>germplasmQuantityEstimate</code>, <code>seed_count</code>, or first numeric column)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="output-files-21" class="section level4" number="7.3.3.2">
+<h4><span class="header-section-number">7.3.3.2</span> Output Files</h4>
+<table>
+<colgroup>
+<col width="40%" />
+<col width="60%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SRK_cross_result_analysis.pdf</code></td>
+<td>Left panel: box + strip plot of seed yield by W / N / P category. Right panel: bar chart of cross success rate (% with seeds &gt; 0) by category</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="statistical-tests" class="section level4" number="7.3.3.3">
+<h4><span class="header-section-number">7.3.3.3</span> Statistical Tests</h4>
+<table>
+<colgroup>
+<col width="40%" />
+<col width="60%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Test</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Kruskal-Wallis H</td>
+<td>Overall test of seed yield differences across W / N / P</td>
+</tr>
+<tr class="even">
+<td>Mann-Whitney U (pairwise)</td>
+<td>Post-hoc comparisons: W vs N, W vs P, N vs P</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="scientific-applications-11" class="section level3" number="7.3.4">
+<h3><span class="header-section-number">7.3.4</span> Scientific Applications</h3>
+<ul>
+<li><strong>Allele bin validation</strong>: significant W &lt; P difference with N intermediate confirms that the sequence-based bin structure maps onto functional recognition specificity</li>
+<li><strong>Synonymy detection</strong>: N crosses that consistently fail (seed yield not significantly different from W) indicate that the allele bins involved are synonymous and could be merged</li>
+<li><strong>SI breakdown documentation</strong>: W crosses yielding seeds identify individuals where the polyploid competitive interaction mechanism has enabled self-fertilisation, providing direct empirical evidence for Stage 5 of the Compatibility Collapse Cascade</li>
+<li><strong>Proposal preliminary data</strong>: even a small initial crossing experiment (n = 20–30 crosses) covering all three categories provides sufficient preliminary evidence to justify the full Objective 2 crossing design in the NSF proposal</li>
 </ul>
 </div>
 </div>

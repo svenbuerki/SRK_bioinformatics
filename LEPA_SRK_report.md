@@ -465,7 +465,31 @@ Random mating causes a mean loss of 7.4 allele bins by year 3 at the species lev
 
 ---
 
-### 7. Conclusion
+### 7. Testing S-allele Hypotheses: Crossing Design
+
+The allele bins defined in Section 1 are sequence-based hypotheses — each bin groups proteins that are sufficiently similar in the S-domain ectodomain to be considered functionally equivalent, but this equivalence has not been confirmed experimentally. Section 7 describes the design of controlled crossing experiments that will test whether the bin boundaries correctly predict recognition specificity.
+
+**Experimental logic.** AAAA individuals — 105 of 189 sampled plants (56%) — are the ideal cross parents because all four gene copies carry a single SRK allele, making pollen identity unambiguous. A cross between two AAAA plants is a direct test of whether their two alleles share recognition specificity: if they do, the pistil rejects the pollen and no seeds are produced; if they differ, the cross is compatible and seeds are set. Three cross categories structure the experiment:
+
+| Category | Definition | Expected outcome |
+|----------|------------|-----------------|
+| W — within-bin | Both plants carry the same allele bin (S-domain distance = 0) | No seeds — negative control; seeds indicate SI breakdown |
+| N — within-cluster | Different allele bins, same super-group (closely related sequences) | Unknown — core hypothesis test of allele bin boundaries |
+| P — between-cluster | Allele bins from different super-groups (divergent sequences) | Seeds — positive control confirming SI system is functional |
+
+**Allele super-group clustering.** To construct the W / N / P categories, the 55 allele representative sequences were clustered by a second-level UPGMA analysis on S-domain p-distances — the same distance metric used to define the bins in Step 10. The distance summary reveals a bimodal structure: all pairwise distances fall either below 0.05 or above 0.20, with no pairs in between. This indicates that most alleles form a tight sequence cluster with no intermediate-distance transitions, while a small number of alleles are highly divergent from the rest. The crossing design uses this structure directly: alleles within the same super-group are candidate synonymous pairs (N crosses), while alleles from different super-groups are expected to be functionally distinct (P crosses).
+
+The dendrogram of allele bins coloured by super-group and the associated AAAA availability bar chart are shown in Figure 15.
+
+<a name="figure-15"></a>
+
+![Figure 15: Allele bin super-group clustering and AAAA individual availability. Left: UPGMA dendrogram of the 55 allele representative sequences clustered by S-domain p-distance; colours indicate super-group assignment. Right: number of AAAA individuals carrying each allele in the same leaf order; the dashed line marks n = 2, the minimum for a replicated within-bin (W) cross.](figures/SRK_allele_cluster_figure.png)
+
+**Crossing power.** Of the 55 allele bins, 22 have at least one AAAA representative in the current dataset. Among these, 14 bins have two or more AAAA individuals and support the full three-tier design; 8 bins have a single AAAA individual and can serve as cross partners but not as replicated negative controls; the remaining 33 bins have no AAAA representatives and require AAAB or AABB parents. The 5,460 pairwise AAAA combinations decompose into 898 W pairs (within-bin), 4,062 N pairs (within-cluster hypothesis test), and 500 P pairs (between-cluster positive control). A complete ranked crossing plan is available in `SRK_AAAA_cross_design.tsv`.
+
+---
+
+### 8. Conclusion
 
 Habitat fragmentation has isolated *LEPA* Element Occurrences into independent demographic and genetic units, initiating a cascade of S-allele erosion now documented at three levels: spatial isolation, population-level allele diversity, and individual reproductive fitness.
 
