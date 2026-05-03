@@ -42,7 +42,7 @@ INPUT_FASTA    = "SRK_functional_proteins_aligned.fasta"
 # Option A — fix the NUMBER OF ALLELES (recommended when you can see an elbow
 #             on the sensitivity curve but cannot read the exact distance).
 #             Set N_ALLELES to the desired count; DIST_THRESHOLD is ignored.
-N_ALLELES = 50   # e.g. 50  — set to None to use Option B instead
+N_ALLELES = 63   # e.g. 50  — set to None to use Option B instead
 #
 # Option B — fix the DISTANCE THRESHOLD (p-distance = fraction of differing AA).
 #             Used only when N_ALLELES is None.

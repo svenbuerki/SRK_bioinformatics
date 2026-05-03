@@ -666,12 +666,38 @@ minimap2 -a "$REF_FASTA" "$FILE" > hap_vs_ref.sam
 - `-a`: Output in SAM format for downstream processing
 - Optimized for sequence similarity detection rather than read mapping
 
-#### Reverse-Complement Detection
+#### Off-Target Contig Filtering
 
-Identifies sequences aligned in antisense orientation using SAM flags:
+Before orientation, contigs are filtered to retain only those with a primary alignment to the reference. This removes off-target assemblies (e.g. contigs from a different genomic locus) that would otherwise stretch the downstream MAFFT alignment. SAM flags 4 (unmapped), 256 (secondary), and 2048 (supplementary) are excluded:
 
 ```bash
-samtools view -f 16 hap_vs_ref.sam \
+samtools view -F 2308 hap_vs_ref.sam \
+| cut -f1 \
+| sort -u \
+> mapped.txt
+```
+
+A WARNING is printed if any contigs are discarded:
+
+```bash
+total=$(grep -c "^>" "$FILE" || true)
+mapped_count=$(wc -l < mapped.txt)
+filtered=$((total - mapped_count))
+if [[ $filtered -gt 0 ]]; then
+    echo "  WARNING: $filtered of $total contigs had no primary alignment to reference and were removed"
+fi
+
+seqkit grep -f mapped.txt "$FILE" > mapped.fasta
+```
+
+**Why this filter was added:** Library009 produced off-target contigs in barcodes 72, 75, 94, 40, 38, and 28 that caused MAFFT to generate an 18,212 bp alignment instead of the expected ~4,500 bp.
+
+#### Reverse-Complement Detection
+
+Identifies sequences aligned in antisense orientation, restricted to primary alignments:
+
+```bash
+samtools view -f 16 -F 2308 hap_vs_ref.sam \
 | cut -f1 \
 | sort -u \
 > to_reverse.txt
@@ -680,28 +706,29 @@ samtools view -f 16 hap_vs_ref.sam \
 **SAM flag interpretation:**
 
 - Flag 16: Sequence is reverse-complemented in alignment
+- Flags excluded: 4 (unmapped), 256 (secondary), 2048 (supplementary)
 - Extracts sequence identifiers requiring orientation correction
 
 #### Conditional Sequence Reversal
 
-Implements conditional logic for sequence orientation correction:
+Implements conditional logic for sequence orientation correction, operating on the filtered mapped sequences:
 
 ```bash
 if [[ -s to_reverse.txt ]]; then
     # Reverse-complement identified sequences
-    seqkit grep -f to_reverse.txt "$FILE" \
+    seqkit grep -f to_reverse.txt mapped.fasta \
     | seqkit seq -r -p \
     > reversed.fasta
-    
+
     # Keep forward-oriented sequences unchanged
-    seqkit grep -v -f to_reverse.txt "$FILE" \
+    seqkit grep -v -f to_reverse.txt mapped.fasta \
     > forward.fasta
-    
+
     # Combine oriented sequences
     cat forward.fasta reversed.fasta > "$ORIENTED"
 else
     # No sequences require reversal
-    cp "$FILE" "$ORIENTED"
+    cp mapped.fasta "$ORIENTED"
 fi
 ```
 
@@ -727,18 +754,18 @@ Uses `$OLDPWD` to maintain correct path reference when changing directories.
 Removes intermediate files to conserve disk space:
 
 ```bash
-rm -f hap_vs_ref.sam forward.fasta reversed.fasta
+rm -f hap_vs_ref.sam forward.fasta reversed.fasta mapped.fasta mapped.txt
 ```
 
 ### Output Files
 
 #### Per-Sample Outputs
 
-- `${Library}_${BARCODE}_Phased_haplotypes.oriented.fasta`: Oriented haplotypes for individual samples
+- `${Library}_${BARCODE}_Phased_haplotypes.oriented.fasta`: On-target oriented haplotypes for individual samples
 
 #### Consolidated Output
 
-- `all_${Library}_Phased_haplotypes.fasta`: Master file containing all oriented haplotypes from the library
+- `all_${Library}_Phased_haplotypes.fasta`: Master file containing all on-target oriented haplotypes from the library
 
 ### Error Handling and Robustness
 
@@ -825,9 +852,28 @@ ORIENTED="${Library}_${BARCODE}_Phased_haplotypes.oriented.fasta"
 
 minimap2 -a "$REF_FASTA" "$FILE" > hap_vs_ref.sam
 
-# Detect reverse
+# Get sequences with a primary alignment to the reference
+# Flags excluded: 4 (unmapped), 256 (secondary), 2048 (supplementary)
 
-samtools view -f 16 hap_vs_ref.sam \
+samtools view -F 2308 hap_vs_ref.sam \
+| cut -f1 \
+| sort -u \
+> mapped.txt
+
+# Report filtered contigs
+total=$(grep -c "^>" "$FILE" || true)
+mapped_count=$(wc -l < mapped.txt)
+filtered=$((total - mapped_count))
+if [[ $filtered -gt 0 ]]; then
+    echo "  WARNING: $filtered of $total contigs had no primary alignment to reference and were removed"
+fi
+
+# Subset to on-target sequences only
+seqkit grep -f mapped.txt "$FILE" > mapped.fasta
+
+# Detect reverse among mapped sequences
+
+samtools view -f 16 -F 2308 hap_vs_ref.sam \
 | cut -f1 \
 | sort -u \
 > to_reverse.txt
@@ -836,11 +882,11 @@ samtools view -f 16 hap_vs_ref.sam \
 
 if [[ -s to_reverse.txt ]]; then
 
-seqkit grep -f to_reverse.txt "$FILE" \
+seqkit grep -f to_reverse.txt mapped.fasta \
 | seqkit seq -r -p \
 > reversed.fasta
 
-seqkit grep -v -f to_reverse.txt "$FILE" \
+seqkit grep -v -f to_reverse.txt mapped.fasta \
 > forward.fasta
 
 
@@ -849,11 +895,11 @@ cat forward.fasta reversed.fasta \
 
 else
 
-cp "$FILE" "$ORIENTED"
+cp mapped.fasta "$ORIENTED"
 
 fi
 
-rm -f hap_vs_ref.sam forward.fasta reversed.fasta
+rm -f hap_vs_ref.sam forward.fasta reversed.fasta mapped.fasta mapped.txt
 
 cat "$ORIENTED" >> "$OLDPWD/$FINAL_OUT"
 
@@ -885,12 +931,13 @@ Length filtering serves multiple scientific purposes in haplotype analysis:
 
 #### Input Parameters and Validation
 
-The script requires three user-specified parameters:
+The script requires four user-specified parameters:
 
 ```bash
 read -p "Enter merged haplotype FASTA file: " MERGED_FASTA
 read -p "Enter canonical reference FASTA file: " REF_FASTA
 read -p "Enter minimum sequence length (bp): " MINLEN
+read -p "Enter maximum sequence length (bp): " MAXLEN
 ```
 
 **Parameter specifications:**
@@ -898,6 +945,7 @@ read -p "Enter minimum sequence length (bp): " MINLEN
 - **Merged haplotype FASTA**: Output from previous haplotype consolidation step
 - **Canonical reference FASTA**: Known reference sequences for comparative context
 - **Minimum length threshold**: Quality control parameter (typically 80-90% of expected amplicon length)
+- **Maximum length threshold**: Removes mis-assembled or chimeric contigs. Library009 (96 samples) produced outlier assemblies of 4134–4841 bp in barcodes 32, 40, and 72 that caused MAFFT to generate an 18,212 bp-wide alignment instead of the expected ~4,500 bp. Set to **4000 bp** to eliminate such outliers.
 
 #### File Existence Validation
 
@@ -925,13 +973,13 @@ Generates descriptive output filenames that preserve processing parameters:
 
 ```bash
 BASENAME="${MERGED_FASTA%.fasta}"
-OUT="${BASENAME}_filtered_min${MINLEN}.fasta"
+OUT="${BASENAME}_filtered_min${MINLEN}_max${MAXLEN}.fasta"
 ```
 
 **Naming convention benefits:**
 
 - Preserves original filename stem
-- Documents filtering parameters in filename
+- Documents both filtering parameters in filename
 - Enables parameter tracking in complex workflows
 - Prevents accidental file overwrites
 
@@ -953,15 +1001,16 @@ cat "$REF_FASTA" "$MERGED_FASTA" > "$TMP_COMBINED"
 
 #### Length-Based Filtering
 
-Applies minimum length threshold using seqkit for efficient processing:
+Applies minimum and maximum length thresholds using seqkit for efficient processing:
 
 ```bash
-seqkit seq -m "$MINLEN" "$TMP_COMBINED" > "$OUT"
+seqkit seq -m "$MINLEN" -M "$MAXLEN" "$TMP_COMBINED" > "$OUT"
 ```
 
 **Seqkit parameters:**
 
 - `-m "$MINLEN"`: Minimum sequence length filter (3250 bp in our case)
+- `-M "$MAXLEN"`: Maximum sequence length filter (4000 bp in our case)
 - Efficient processing of large FASTA files
 - Preserves sequence headers and formatting
 - Maintains sequence order from input
@@ -987,12 +1036,12 @@ rm -f "$TMP_COMBINED"   # Cleanup after processing
 
 #### Primary Output
 
-- `${BASENAME}_filtered_min${MINLEN}.fasta`: Filtered sequences meeting length criteria, including canonical references
+- `${BASENAME}_filtered_min${MINLEN}_max${MAXLEN}.fasta`: Filtered sequences meeting both length thresholds, including canonical references
 
 **Output characteristics:**
 
 - Contains both reference and experimental sequences
-- All sequences meet minimum length requirement
+- All sequences meet minimum and maximum length requirements
 - Preserves original sequence identifiers
 - Ready for downstream phylogenetic analysis
 
@@ -1031,18 +1080,18 @@ This filtered dataset serves multiple research objectives:
 
 #### Length Threshold Selection
 
-Optimal minimum length depends on:
+Optimal minimum and maximum lengths depend on:
 
-- **Expected amplicon size**: Typically 80-90% of full-length sequence
+- **Expected amplicon size**: Minimum typically 80-90% of full-length sequence; maximum typically 110-120%
 - **Assembly quality**: Balance between inclusivity and quality
 - **Downstream requirements**: Alignment and phylogenetic analysis needs
 - **Reference sequence lengths**: Consistency with canonical sequences
 
 #### Typical Thresholds
 
-- **SRK amplicons**: 3000-4000 bp (for ~4500 bp expected length)
-- **Partial sequences**: 1500-2000 bp (for targeted regions)
-- **Quality control**: 70-80% of expected full length
+- **SRK amplicons**: minimum 3250 bp, maximum 4000 bp (for ~3500 bp expected amplicon length)
+- **Partial sequences**: 1500-2000 bp minimum (for targeted regions)
+- **Quality control**: 70-80% of expected full length for minimum; 110-120% for maximum
 
 ### Integration with Upstream Workflows
 
@@ -1058,18 +1107,19 @@ The filtered output serves as high-quality input for subsequent phylogenetic rec
 ### Bioinformatics
 
 - Script: `filter_and_add_references.sh`
-- Input: 
+- Input:
 	- Merged haplotypes for a library (`all_Library006_Phased_haplotypes.fasta`)
 	- Canonical reference FASTA file (`/Users/buerkilab/Documents/Amplicon_SRK/Canu_amplicon/Canonical_sequences/SRK_canonical_haplotype_sequences_revcomp_ATGfixed.fasta`)
 	- Minimum length: 3250
-	- Output: `all_Library003_Phased_haplotypes_filtered_min3250.fasta`
+	- Maximum length: 4000
+	- Output: `all_Library003_Phased_haplotypes_filtered_min3250_max4000.fasta`
 
 ```bash
 #!/bin/bash
 set -euo pipefail
 
 # ==========================================
-# Filter FASTA sequences by minimum length
+# Filter FASTA sequences by minimum and maximum length
 # and add canonical references
 # ==========================================
 
@@ -1079,6 +1129,7 @@ set -euo pipefail
 read -p "Enter merged haplotype FASTA file: " MERGED_FASTA
 read -p "Enter canonical reference FASTA file: " REF_FASTA
 read -p "Enter minimum sequence length (bp): " MINLEN
+read -p "Enter maximum sequence length (bp): " MAXLEN
 
 # Check if input files exist
 for f in "$MERGED_FASTA" "$REF_FASTA"; do
@@ -1090,7 +1141,7 @@ done
 
 # Determine output file name
 BASENAME="${MERGED_FASTA%.fasta}"
-OUT="${BASENAME}_filtered_min${MINLEN}.fasta"
+OUT="${BASENAME}_filtered_min${MINLEN}_max${MAXLEN}.fasta"
 
 # ----------------------------
 # Step 1: Combine canonical references with merged FASTA
@@ -1099,9 +1150,9 @@ TMP_COMBINED=$(mktemp)
 cat "$REF_FASTA" "$MERGED_FASTA" > "$TMP_COMBINED"
 
 # ----------------------------
-# Step 2: Filter sequences by minimum length using seqkit
+# Step 2: Filter sequences by minimum and maximum length using seqkit
 # ----------------------------
-seqkit seq -m "$MINLEN" "$TMP_COMBINED" > "$OUT"
+seqkit seq -m "$MINLEN" -M "$MAXLEN" "$TMP_COMBINED" > "$OUT"
 
 # Cleanup
 rm -f "$TMP_COMBINED"
@@ -1112,29 +1163,29 @@ echo "Filtered FASTA written to: $OUT"
 ## Multiple Sequence Alignment {#msa}
 
 - Align sequences with `MAFFT`
-- Input: `all_Library003_Phased_haplotypes_filtered_min3250.fasta`
+- Input: `all_Library00X_Phased_haplotypes_filtered_min3250_max4000.fasta`
 
 ```bash
-
-all_haplotypes=all_Library001_Phased_haplotypes_filtered_min3200.fasta
-
 # Library001
-mafft --auto --adjustdirection all_Library001_Phased_haplotypes_filtered_min3250.fasta > all_Library001_Phased_haplotypes_filtered_min3250_aligned.fasta
+mafft --auto --adjustdirection all_Library001_Phased_haplotypes_filtered_min3250_max4000.fasta > all_Library001_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta
 
 # Library002
-mafft --auto --adjustdirection all_Library002_Phased_haplotypes_filtered_min3250.fasta > all_Library002_Phased_haplotypes_filtered_min3250_aligned.fasta
+mafft --auto --adjustdirection all_Library002_Phased_haplotypes_filtered_min3250_max4000.fasta > all_Library002_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta
 
 # Library003
-mafft --auto --adjustdirection all_Library003_Phased_haplotypes_filtered_min3250.fasta > all_Library003_Phased_haplotypes_filtered_min3250_aligned.fasta
+mafft --auto --adjustdirection all_Library003_Phased_haplotypes_filtered_min3250_max4000.fasta > all_Library003_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta
 
 # Library004
-mafft --auto --adjustdirection all_Library004_Phased_haplotypes_filtered_min3250.fasta > all_Library004_Phased_haplotypes_filtered_min3250_aligned.fasta
+mafft --auto --adjustdirection all_Library004_Phased_haplotypes_filtered_min3250_max4000.fasta > all_Library004_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta
 
 # Library005
-mafft --auto --adjustdirection all_Library005_Phased_haplotypes_filtered_min3250.fasta > all_Library005_Phased_haplotypes_filtered_min3250_aligned.fasta
+mafft --auto --adjustdirection all_Library005_Phased_haplotypes_filtered_min3250_max4000.fasta > all_Library005_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta
 
 # Library006
-mafft --auto --adjustdirection all_Library006_Phased_haplotypes_filtered_min3250.fasta > all_Library006_Phased_haplotypes_filtered_min3250_aligned.fasta
+mafft --auto --adjustdirection all_Library006_Phased_haplotypes_filtered_min3250_max4000.fasta > all_Library006_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta
+
+# Library009
+mafft --auto --adjustdirection all_Library009_Phased_haplotypes_filtered_min3250_max4000.fasta > all_Library009_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta
 ```
 
 ## Exon Extraction from Multiple Sequence Alignments Pipeline {#exonextract}
@@ -1369,13 +1420,13 @@ The extracted exonic sequences provide the foundation for detailed molecular evo
 - Script: `extract_exons_with_annotation.py`
 
 Input:
-- MSA file: all_Library006_Phased_haplotypes_filtered_min3250_aligned.fasta
+- MSA file: all_Library006_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta
 - Name of ref sequence associated with Augustus annotation: `SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407`
 - Annotation file in csv: `/Users/buerkilab/Documents/Amplicon_SRK/Canu_amplicon/Canonical_sequences/augustus_SRK_canonical_haplotype_sequences_revcomp_ATGfixed_arabidopsis.csv`  -> This file was generated by annotating the canonical sequences using Augustus
 - Annotation strand: `+`
 - Min exon length: 0
 Output:
-	- `all_Library003_Phased_haplotypes_filtered_min3250_aligned_exons.fasta`
+	- `all_Library003_Phased_haplotypes_filtered_min3250_max4000_aligned_exons.fasta`
 
 ```python
 #!/usr/bin/env python3
@@ -1693,9 +1744,9 @@ Add primer sequences to fill out ends of the exon sequences.
 
 - Script: `backfill_alignment_ends.py`
 - Input: 
-	- MSA fasta file (exon): `all_Library006_Phased_haplotypes_filtered_min3250_aligned_exons.fasta`
+	- MSA fasta file (exon): `all_Library006_Phased_haplotypes_filtered_min3250_max4000_aligned_exons.fasta`
 	- Canonical reference ID (exact FASTA header): `SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407`
-- Output: `all_Library003_Phased_haplotypes_filtered_min3250_aligned_exons_backfilled.fasta`
+- Output: `all_Library003_Phased_haplotypes_filtered_min3250_max4000_aligned_exons_backfilled.fasta`
 
 ```python
 #!/usr/bin/env python3
@@ -2028,10 +2079,10 @@ This translation step bridges the gap between nucleotide-level haplotype reconst
 - `translate_filter_align_AA.py`
 - Only keep AA without stop codons in sequence
 - Input:
-	- Exon aligned fasta: all_Library006_Phased_haplotypes_filtered_min3250_aligned_exons_backfilled.fasta
+	- Exon aligned fasta: all_Library006_Phased_haplotypes_filtered_min3250_max4000_aligned_exons_backfilled.fasta
 	- Position for translation (here, 1st)
 - Output:
-	- 4 files, but this one if important: `all_Library003_Phased_haplotypes_filtered_min3250_aligned_exons_backfilled_frame1_AA_filtered_aligned.fasta`
+	- 4 files, but this one if important: `all_Library003_Phased_haplotypes_filtered_min3250_max4000_aligned_exons_backfilled_frame1_AA_filtered_aligned.fasta`
 	
 ```python
 #!/usr/bin/env python3
@@ -2455,7 +2506,7 @@ This pipeline provides a robust framework for identifying functional SRK protein
 
 - **Approach:** Merge `_exons_backfilled.fasta` files, translate sequences and discard those that do not produce functional proteins, and create protein sequences (with a key). Discarded samples carry information about whether they have lost SI due to non-functional SRK and will then be self-compatible.
 - **Script:** `define_functional_proteins.py`
-- **Input:** `*_exons_backfilled.fasta` (e.g., `all_Library003_Phased_haplotypes_filtered_min3250_aligned_exons_backfilled.fasta`)
+- **Input:** `*_exons_backfilled.fasta` (e.g., `all_Library003_Phased_haplotypes_filtered_min3250_max4000_aligned_exons_backfilled.fasta`)
     - frame = 1
     - filter = 5
     - max_alleles = 4
@@ -2958,7 +3009,7 @@ For each allele cluster, the **most central sequence** (minimum mean p-distance 
 | Parameter | Default | Description |
 |---|---|---|
 | `INPUT_FASTA` | `SRK_functional_proteins_aligned.fasta` | Aligned protein FASTA |
-| `N_ALLELES` | `None` | **Option A** — fix the number of alleles directly (overrides `DIST_THRESHOLD` when not `None`). Use when you can identify the elbow on the sensitivity curve but cannot read the exact distance. |
+| `N_ALLELES` | `63` | **Option A** — fix the number of alleles directly (overrides `DIST_THRESHOLD` when not `None`). Use when you can identify the elbow on the sensitivity curve but cannot read the exact distance. For the current dataset (Libraries 001–009, 308 individuals, 302 functional proteins), the sensitivity curve showed a plateau between 50–100 alleles centred at 63 (implied threshold ≈ 0.005). |
 | `DIST_THRESHOLD` | `0.01` (1%) | **Option B** — fix the distance cutoff. Used only when `N_ALLELES` is `None`. Adjust based on the sensitivity plot elbow. |
 | `DOMAIN_REGION` | `(31, 430)` | Alignment columns used for distance (1-based) |
 | `THRESH_MIN/MAX/STEP` | `0.0 / 0.05 / 0.0005` | Sensitivity analysis range |

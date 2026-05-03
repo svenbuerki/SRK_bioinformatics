@@ -113,8 +113,14 @@ Library001/
 - Library folder containing all `barcode*/` subdirectories with `*_Phased_haplotypes.fasta`
 - Canonical reference: `SRK_canonical_haplotype_sequences_revcomp_ATGfixed.fasta`
 
+**Key behaviour:**
+- Each barcode's contigs are aligned to the reference with minimap2
+- Contigs with **no primary alignment** to the reference are discarded (off-target assemblies). A WARNING is printed to the terminal for any barcode where this occurs.
+- Contigs mapping to the reverse strand are reverse-complemented
+- This filter was added after Library009 produced off-target contigs in barcodes 72, 75, 94, 40, 38, and 28 that stretched the MAFFT alignment from ~4,500 bp to 10,779 bp
+
 **Outputs:**
-- `${Library}_${barcode}_Phased_haplotypes.oriented.fasta` — oriented haplotypes per barcode
+- `${Library}_${barcode}_Phased_haplotypes.oriented.fasta` — on-target oriented haplotypes per barcode
 - `all_${Library}_Phased_haplotypes.fasta` — consolidated oriented haplotypes for the entire library
 
 ---
@@ -130,17 +136,18 @@ Library001/
 #   Merged haplotype FASTA (e.g. all_Library001_Phased_haplotypes.fasta)
 #   Canonical reference FASTA (full path)
 #   Minimum sequence length (bp)
+#   Maximum sequence length (bp)
 ```
 
 **Key parameters:**
 - Minimum length: **3250 bp** (for ~4500 bp expected amplicon)
-- Reference sequences are prepended before filtering so they are always retained
+- Maximum length: **4000 bp** — removes mis-assembled or chimeric contigs that stretch the MSA. Library009 (96 samples) produced outlier assemblies of 4134–4841 bp in barcodes 32, 40, and 72 that caused MAFFT to produce an 18,212 bp-wide alignment instead of the expected ~4,500 bp. The max filter eliminates these. Reference sequences are prepended before filtering and are always retained regardless of this threshold.
 
 **Input:**
 - `all_Library00X_Phased_haplotypes.fasta` — output of Step 3
 
 **Output:**
-- `all_Library00X_Phased_haplotypes_filtered_min3250.fasta` — length-filtered sequences including canonical references
+- `all_Library00X_Phased_haplotypes_filtered_min3250_max4000.fasta` — length-filtered sequences including canonical references
 
 ---
 
@@ -150,15 +157,15 @@ Library001/
 
 **Command:**
 ```bash
-mafft --auto --adjustdirection all_Library00X_Phased_haplotypes_filtered_min3250.fasta \
-  > all_Library00X_Phased_haplotypes_filtered_min3250_aligned.fasta
+mafft --auto --adjustdirection all_Library00X_Phased_haplotypes_filtered_min3250_max4000.fasta \
+  > all_Library00X_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta
 ```
 
 > Run this command for each library. `--adjustdirection` handles any residual orientation issues.
 
-**Input:** `all_Library00X_Phased_haplotypes_filtered_min3250.fasta`
+**Input:** `all_Library00X_Phased_haplotypes_filtered_min3250_max4000.fasta`
 
-**Output:** `all_Library00X_Phased_haplotypes_filtered_min3250_aligned.fasta`
+**Output:** `all_Library00X_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta`
 
 ---
 
@@ -170,7 +177,7 @@ mafft --auto --adjustdirection all_Library00X_Phased_haplotypes_filtered_min3250
 ```bash
 python extract_exons_with_annotation.py
 # Prompted inputs:
-#   MSA FASTA path (e.g. all_Library006_Phased_haplotypes_filtered_min3250_aligned.fasta)
+#   MSA FASTA path (e.g. all_Library006_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta)
 #   Canonical reference ID (exact header, e.g. SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407)
 #   AUGUSTUS CSV annotation file (full path)
 #   Strand of annotation for canonical reference (+)
@@ -185,7 +192,7 @@ python extract_exons_with_annotation.py
 - Min exon length: `0`
 
 **Output:**
-- `all_Library00X_Phased_haplotypes_filtered_min3250_aligned_exons.fasta`
+- `all_Library00X_Phased_haplotypes_filtered_min3250_max4000_aligned_exons.fasta`
 
 ---
 
@@ -205,9 +212,9 @@ python backfill_alignment_ends.py
 - `WINDOW = 25` bp backfilled from reference at each terminus (hardcoded)
 - Leading/trailing terminal gaps beyond the backfill window are replaced with `N`
 
-**Input:** `all_Library00X_Phased_haplotypes_filtered_min3250_aligned_exons.fasta`
+**Input:** `all_Library00X_Phased_haplotypes_filtered_min3250_max4000_aligned_exons.fasta`
 
-**Output:** `all_Library00X_Phased_haplotypes_filtered_min3250_aligned_exons_backfilled.fasta`
+**Output:** `all_Library00X_Phased_haplotypes_filtered_min3250_max4000_aligned_exons_backfilled.fasta`
 
 ---
 
@@ -230,10 +237,10 @@ python translate_filter_align_AA.py
 - Genetic code: standard nuclear (table 1)
 - Only sequences without internal stop codons are retained in the final filtered output
 
-**Input:** `all_Library00X_Phased_haplotypes_filtered_min3250_aligned_exons_backfilled.fasta`
+**Input:** `all_Library00X_Phased_haplotypes_filtered_min3250_max4000_aligned_exons_backfilled.fasta`
 
 **Key output:**
-- `all_Library00X_Phased_haplotypes_filtered_min3250_aligned_exons_backfilled_frame1_AA_filtered_aligned.fasta`
+- `all_Library00X_Phased_haplotypes_filtered_min3250_max4000_aligned_exons_backfilled_frame1_AA_filtered_aligned.fasta`
 
 ---
 
@@ -294,11 +301,11 @@ python define_SRK_alleles_from_distance.py
 | Parameter | Default | Notes |
 |-----------|---------|-------|
 | `INPUT_FASTA` | `SRK_functional_proteins_aligned.fasta` | Aligned proteins from Step 9 |
-| `N_ALLELES` | `None` | Option A: fix number of alleles directly |
+| `N_ALLELES` | `63` | Option A: fix number of alleles directly |
 | `DIST_THRESHOLD` | `0.01` (1%) | Option B: fix p-distance cutoff; use sensitivity plot elbow to calibrate |
 | `DOMAIN_REGION` | `(31, 430)` | S-domain columns (1-based); adjust if species-specific annotation available |
 
-> **Calibration:** inspect `SRK_protein_distance_analysis.pdf` sensitivity curve; choose the elbow (typically 1–2% for Nanopore data). Use `N_ALLELES` (Option A) if the elbow is easier to read on the y-axis than on the distance axis.
+> **Calibration:** inspect `SRK_protein_distance_analysis.pdf` sensitivity curve; choose the elbow (typically 1–2% for Nanopore data). Use `N_ALLELES` (Option A) if the elbow is easier to read on the y-axis than on the distance axis. For the current dataset (Libraries 001–009, 308 individuals, 302 functional proteins), the sensitivity curve showed a plateau between 50–100 alleles centred at 63 (implied threshold ≈ 0.005), which was used as `N_ALLELES`.
 
 **Outputs:**
 - `SRK_protein_allele_assignments.tsv` — Protein → Allele mapping

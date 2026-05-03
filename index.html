@@ -11,7 +11,7 @@
 
 <meta name="author" content="Sven Buerki - Boise State University" />
 
-<meta name="date" content="2026-05-01" />
+<meta name="date" content="2026-05-03" />
 
 <title>SRK Bioinformatics</title>
 
@@ -1469,7 +1469,7 @@ border-radius: 0px;
 <h1 class="title toc-ignore">SRK Bioinformatics</h1>
 <h3 class="subtitle">Nanopore-Based SRK Haplotype Reconstruction and Population Analysis Pipeline</h3>
 <h4 class="author">Sven Buerki - Boise State University</h4>
-<h4 class="date">2026-05-01</h4>
+<h4 class="date">2026-05-03</h4>
 
 </div>
 
@@ -2089,37 +2089,56 @@ fi</code></pre>
 <li>Optimized for sequence similarity detection rather than read mapping</li>
 </ul>
 </div>
-<div id="reverse-complement-detection" class="section level4" number="4.3.2.7">
-<h4><span class="header-section-number">4.3.2.7</span> Reverse-Complement Detection</h4>
-<p>Identifies sequences aligned in antisense orientation using SAM flags:</p>
-<pre class="bash"><code>samtools view -f 16 hap_vs_ref.sam \
+<div id="off-target-contig-filtering" class="section level4" number="4.3.2.7">
+<h4><span class="header-section-number">4.3.2.7</span> Off-Target Contig Filtering</h4>
+<p>Before orientation, contigs are filtered to retain only those with a primary alignment to the reference. This removes off-target assemblies (e.g. contigs from a different genomic locus) that would otherwise stretch the downstream MAFFT alignment. SAM flags 4 (unmapped), 256 (secondary), and 2048 (supplementary) are excluded:</p>
+<pre class="bash"><code>samtools view -F 2308 hap_vs_ref.sam \
+| cut -f1 \
+| sort -u \
+&gt; mapped.txt</code></pre>
+<p>A WARNING is printed if any contigs are discarded:</p>
+<pre class="bash"><code>total=$(grep -c &quot;^&gt;&quot; &quot;$FILE&quot; || true)
+mapped_count=$(wc -l &lt; mapped.txt)
+filtered=$((total - mapped_count))
+if [[ $filtered -gt 0 ]]; then
+    echo &quot;  WARNING: $filtered of $total contigs had no primary alignment to reference and were removed&quot;
+fi
+
+seqkit grep -f mapped.txt &quot;$FILE&quot; &gt; mapped.fasta</code></pre>
+<p><strong>Why this filter was added:</strong> Library009 produced off-target contigs in barcodes 72, 75, 94, 40, 38, and 28 that caused MAFFT to generate an 18,212 bp alignment instead of the expected ~4,500 bp.</p>
+</div>
+<div id="reverse-complement-detection" class="section level4" number="4.3.2.8">
+<h4><span class="header-section-number">4.3.2.8</span> Reverse-Complement Detection</h4>
+<p>Identifies sequences aligned in antisense orientation, restricted to primary alignments:</p>
+<pre class="bash"><code>samtools view -f 16 -F 2308 hap_vs_ref.sam \
 | cut -f1 \
 | sort -u \
 &gt; to_reverse.txt</code></pre>
 <p><strong>SAM flag interpretation:</strong></p>
 <ul>
 <li>Flag 16: Sequence is reverse-complemented in alignment</li>
+<li>Flags excluded: 4 (unmapped), 256 (secondary), 2048 (supplementary)</li>
 <li>Extracts sequence identifiers requiring orientation correction</li>
 </ul>
 </div>
-<div id="conditional-sequence-reversal" class="section level4" number="4.3.2.8">
-<h4><span class="header-section-number">4.3.2.8</span> Conditional Sequence Reversal</h4>
-<p>Implements conditional logic for sequence orientation correction:</p>
+<div id="conditional-sequence-reversal" class="section level4" number="4.3.2.9">
+<h4><span class="header-section-number">4.3.2.9</span> Conditional Sequence Reversal</h4>
+<p>Implements conditional logic for sequence orientation correction, operating on the filtered mapped sequences:</p>
 <pre class="bash"><code>if [[ -s to_reverse.txt ]]; then
     # Reverse-complement identified sequences
-    seqkit grep -f to_reverse.txt &quot;$FILE&quot; \
+    seqkit grep -f to_reverse.txt mapped.fasta \
     | seqkit seq -r -p \
     &gt; reversed.fasta
-    
+
     # Keep forward-oriented sequences unchanged
-    seqkit grep -v -f to_reverse.txt &quot;$FILE&quot; \
+    seqkit grep -v -f to_reverse.txt mapped.fasta \
     &gt; forward.fasta
-    
+
     # Combine oriented sequences
     cat forward.fasta reversed.fasta &gt; &quot;$ORIENTED&quot;
 else
     # No sequences require reversal
-    cp &quot;$FILE&quot; &quot;$ORIENTED&quot;
+    cp mapped.fasta &quot;$ORIENTED&quot;
 fi</code></pre>
 <p><strong>Seqkit parameters:</strong></p>
 <ul>
@@ -2129,16 +2148,16 @@ fi</code></pre>
 <li><code>-v</code>: Invert selection (exclude listed sequences)</li>
 </ul>
 </div>
-<div id="file-consolidation" class="section level4" number="4.3.2.9">
-<h4><span class="header-section-number">4.3.2.9</span> File Consolidation</h4>
+<div id="file-consolidation" class="section level4" number="4.3.2.10">
+<h4><span class="header-section-number">4.3.2.10</span> File Consolidation</h4>
 <p>Appends oriented haplotypes to the master output file:</p>
 <pre class="bash"><code>cat &quot;$ORIENTED&quot; &gt;&gt; &quot;$OLDPWD/$FINAL_OUT&quot;</code></pre>
 <p>Uses <code>$OLDPWD</code> to maintain correct path reference when changing directories.</p>
 </div>
-<div id="cleanup-operations" class="section level4" number="4.3.2.10">
-<h4><span class="header-section-number">4.3.2.10</span> Cleanup Operations</h4>
+<div id="cleanup-operations" class="section level4" number="4.3.2.11">
+<h4><span class="header-section-number">4.3.2.11</span> Cleanup Operations</h4>
 <p>Removes intermediate files to conserve disk space:</p>
-<pre class="bash"><code>rm -f hap_vs_ref.sam forward.fasta reversed.fasta</code></pre>
+<pre class="bash"><code>rm -f hap_vs_ref.sam forward.fasta reversed.fasta mapped.fasta mapped.txt</code></pre>
 </div>
 </div>
 <div id="output-files-1" class="section level3" number="4.3.3">
@@ -2146,13 +2165,13 @@ fi</code></pre>
 <div id="per-sample-outputs" class="section level4" number="4.3.3.1">
 <h4><span class="header-section-number">4.3.3.1</span> Per-Sample Outputs</h4>
 <ul>
-<li><code>${Library}_${BARCODE}_Phased_haplotypes.oriented.fasta</code>: Oriented haplotypes for individual samples</li>
+<li><code>${Library}_${BARCODE}_Phased_haplotypes.oriented.fasta</code>: On-target oriented haplotypes for individual samples</li>
 </ul>
 </div>
 <div id="consolidated-output" class="section level4" number="4.3.3.2">
 <h4><span class="header-section-number">4.3.3.2</span> Consolidated Output</h4>
 <ul>
-<li><code>all_${Library}_Phased_haplotypes.fasta</code>: Master file containing all oriented haplotypes from the library</li>
+<li><code>all_${Library}_Phased_haplotypes.fasta</code>: Master file containing all on-target oriented haplotypes from the library</li>
 </ul>
 </div>
 </div>
@@ -2244,9 +2263,28 @@ ORIENTED=&quot;${Library}_${BARCODE}_Phased_haplotypes.oriented.fasta&quot;
 
 minimap2 -a &quot;$REF_FASTA&quot; &quot;$FILE&quot; &gt; hap_vs_ref.sam
 
-# Detect reverse
+# Get sequences with a primary alignment to the reference
+# Flags excluded: 4 (unmapped), 256 (secondary), 2048 (supplementary)
 
-samtools view -f 16 hap_vs_ref.sam \
+samtools view -F 2308 hap_vs_ref.sam \
+| cut -f1 \
+| sort -u \
+&gt; mapped.txt
+
+# Report filtered contigs
+total=$(grep -c &quot;^&gt;&quot; &quot;$FILE&quot; || true)
+mapped_count=$(wc -l &lt; mapped.txt)
+filtered=$((total - mapped_count))
+if [[ $filtered -gt 0 ]]; then
+    echo &quot;  WARNING: $filtered of $total contigs had no primary alignment to reference and were removed&quot;
+fi
+
+# Subset to on-target sequences only
+seqkit grep -f mapped.txt &quot;$FILE&quot; &gt; mapped.fasta
+
+# Detect reverse among mapped sequences
+
+samtools view -f 16 -F 2308 hap_vs_ref.sam \
 | cut -f1 \
 | sort -u \
 &gt; to_reverse.txt
@@ -2255,11 +2293,11 @@ samtools view -f 16 hap_vs_ref.sam \
 
 if [[ -s to_reverse.txt ]]; then
 
-seqkit grep -f to_reverse.txt &quot;$FILE&quot; \
+seqkit grep -f to_reverse.txt mapped.fasta \
 | seqkit seq -r -p \
 &gt; reversed.fasta
 
-seqkit grep -v -f to_reverse.txt &quot;$FILE&quot; \
+seqkit grep -v -f to_reverse.txt mapped.fasta \
 &gt; forward.fasta
 
 
@@ -2268,11 +2306,11 @@ cat forward.fasta reversed.fasta \
 
 else
 
-cp &quot;$FILE&quot; &quot;$ORIENTED&quot;
+cp mapped.fasta &quot;$ORIENTED&quot;
 
 fi
 
-rm -f hap_vs_ref.sam forward.fasta reversed.fasta
+rm -f hap_vs_ref.sam forward.fasta reversed.fasta mapped.fasta mapped.txt
 
 cat &quot;$ORIENTED&quot; &gt;&gt; &quot;$OLDPWD/$FINAL_OUT&quot;
 
@@ -2305,15 +2343,17 @@ echo &quot;Output: $FINAL_OUT&quot;</code></pre>
 </div>
 <div id="input-parameters-and-validation" class="section level4" number="4.4.2.2">
 <h4><span class="header-section-number">4.4.2.2</span> Input Parameters and Validation</h4>
-<p>The script requires three user-specified parameters:</p>
+<p>The script requires four user-specified parameters:</p>
 <pre class="bash"><code>read -p &quot;Enter merged haplotype FASTA file: &quot; MERGED_FASTA
 read -p &quot;Enter canonical reference FASTA file: &quot; REF_FASTA
-read -p &quot;Enter minimum sequence length (bp): &quot; MINLEN</code></pre>
+read -p &quot;Enter minimum sequence length (bp): &quot; MINLEN
+read -p &quot;Enter maximum sequence length (bp): &quot; MAXLEN</code></pre>
 <p><strong>Parameter specifications:</strong></p>
 <ul>
 <li><strong>Merged haplotype FASTA</strong>: Output from previous haplotype consolidation step</li>
 <li><strong>Canonical reference FASTA</strong>: Known reference sequences for comparative context</li>
 <li><strong>Minimum length threshold</strong>: Quality control parameter (typically 80-90% of expected amplicon length)</li>
+<li><strong>Maximum length threshold</strong>: Removes mis-assembled or chimeric contigs. Library009 (96 samples) produced outlier assemblies of 4134–4841 bp in barcodes 32, 40, and 72 that caused MAFFT to generate an 18,212 bp-wide alignment instead of the expected ~4,500 bp. Set to <strong>4000 bp</strong> to eliminate such outliers.</li>
 </ul>
 </div>
 <div id="file-existence-validation" class="section level4" number="4.4.2.3">
@@ -2337,11 +2377,11 @@ done</code></pre>
 <h4><span class="header-section-number">4.4.2.4</span> Dynamic Output Naming</h4>
 <p>Generates descriptive output filenames that preserve processing parameters:</p>
 <pre class="bash"><code>BASENAME=&quot;${MERGED_FASTA%.fasta}&quot;
-OUT=&quot;${BASENAME}_filtered_min${MINLEN}.fasta&quot;</code></pre>
+OUT=&quot;${BASENAME}_filtered_min${MINLEN}_max${MAXLEN}.fasta&quot;</code></pre>
 <p><strong>Naming convention benefits:</strong></p>
 <ul>
 <li>Preserves original filename stem</li>
-<li>Documents filtering parameters in filename</li>
+<li>Documents both filtering parameters in filename</li>
 <li>Enables parameter tracking in complex workflows</li>
 <li>Prevents accidental file overwrites</li>
 </ul>
@@ -2361,11 +2401,12 @@ cat &quot;$REF_FASTA&quot; &quot;$MERGED_FASTA&quot; &gt; &quot;$TMP_COMBINED&qu
 </div>
 <div id="length-based-filtering" class="section level4" number="4.4.2.6">
 <h4><span class="header-section-number">4.4.2.6</span> Length-Based Filtering</h4>
-<p>Applies minimum length threshold using seqkit for efficient processing:</p>
-<pre class="bash"><code>seqkit seq -m &quot;$MINLEN&quot; &quot;$TMP_COMBINED&quot; &gt; &quot;$OUT&quot;</code></pre>
+<p>Applies minimum and maximum length thresholds using seqkit for efficient processing:</p>
+<pre class="bash"><code>seqkit seq -m &quot;$MINLEN&quot; -M &quot;$MAXLEN&quot; &quot;$TMP_COMBINED&quot; &gt; &quot;$OUT&quot;</code></pre>
 <p><strong>Seqkit parameters:</strong></p>
 <ul>
 <li><code>-m &quot;$MINLEN&quot;</code>: Minimum sequence length filter (3250 bp in our case)</li>
+<li><code>-M &quot;$MAXLEN&quot;</code>: Maximum sequence length filter (4000 bp in our case)</li>
 <li>Efficient processing of large FASTA files</li>
 <li>Preserves sequence headers and formatting</li>
 <li>Maintains sequence order from input</li>
@@ -2391,12 +2432,12 @@ rm -f &quot;$TMP_COMBINED&quot;   # Cleanup after processing</code></pre>
 <div id="primary-output" class="section level4" number="4.4.3.1">
 <h4><span class="header-section-number">4.4.3.1</span> Primary Output</h4>
 <ul>
-<li><code>${BASENAME}_filtered_min${MINLEN}.fasta</code>: Filtered sequences meeting length criteria, including canonical references</li>
+<li><code>${BASENAME}_filtered_min${MINLEN}_max${MAXLEN}.fasta</code>: Filtered sequences meeting both length thresholds, including canonical references</li>
 </ul>
 <p><strong>Output characteristics:</strong></p>
 <ul>
 <li>Contains both reference and experimental sequences</li>
-<li>All sequences meet minimum length requirement</li>
+<li>All sequences meet minimum and maximum length requirements</li>
 <li>Preserves original sequence identifiers</li>
 <li>Ready for downstream phylogenetic analysis</li>
 </ul>
@@ -2444,9 +2485,9 @@ rm -f &quot;$TMP_COMBINED&quot;   # Cleanup after processing</code></pre>
 <h3><span class="header-section-number">4.4.6</span> Parameter Optimization</h3>
 <div id="length-threshold-selection" class="section level4" number="4.4.6.1">
 <h4><span class="header-section-number">4.4.6.1</span> Length Threshold Selection</h4>
-<p>Optimal minimum length depends on:</p>
+<p>Optimal minimum and maximum lengths depend on:</p>
 <ul>
-<li><strong>Expected amplicon size</strong>: Typically 80-90% of full-length sequence</li>
+<li><strong>Expected amplicon size</strong>: Minimum typically 80-90% of full-length sequence; maximum typically 110-120%</li>
 <li><strong>Assembly quality</strong>: Balance between inclusivity and quality</li>
 <li><strong>Downstream requirements</strong>: Alignment and phylogenetic analysis needs</li>
 <li><strong>Reference sequence lengths</strong>: Consistency with canonical sequences</li>
@@ -2455,9 +2496,9 @@ rm -f &quot;$TMP_COMBINED&quot;   # Cleanup after processing</code></pre>
 <div id="typical-thresholds" class="section level4" number="4.4.6.2">
 <h4><span class="header-section-number">4.4.6.2</span> Typical Thresholds</h4>
 <ul>
-<li><strong>SRK amplicons</strong>: 3000-4000 bp (for ~4500 bp expected length)</li>
-<li><strong>Partial sequences</strong>: 1500-2000 bp (for targeted regions)</li>
-<li><strong>Quality control</strong>: 70-80% of expected full length</li>
+<li><strong>SRK amplicons</strong>: minimum 3250 bp, maximum 4000 bp (for ~3500 bp expected amplicon length)</li>
+<li><strong>Partial sequences</strong>: 1500-2000 bp minimum (for targeted regions)</li>
+<li><strong>Quality control</strong>: 70-80% of expected full length for minimum; 110-120% for maximum</li>
 </ul>
 </div>
 </div>
@@ -2481,14 +2522,15 @@ rm -f &quot;$TMP_COMBINED&quot;   # Cleanup after processing</code></pre>
 <li>Merged haplotypes for a library (<code>all_Library006_Phased_haplotypes.fasta</code>)</li>
 <li>Canonical reference FASTA file (<code>/Users/buerkilab/Documents/Amplicon_SRK/Canu_amplicon/Canonical_sequences/SRK_canonical_haplotype_sequences_revcomp_ATGfixed.fasta</code>)</li>
 <li>Minimum length: 3250</li>
-<li>Output: <code>all_Library003_Phased_haplotypes_filtered_min3250.fasta</code></li>
+<li>Maximum length: 4000</li>
+<li>Output: <code>all_Library003_Phased_haplotypes_filtered_min3250_max4000.fasta</code></li>
 </ul></li>
 </ul>
 <pre class="bash"><code>#!/bin/bash
 set -euo pipefail
 
 # ==========================================
-# Filter FASTA sequences by minimum length
+# Filter FASTA sequences by minimum and maximum length
 # and add canonical references
 # ==========================================
 
@@ -2498,6 +2540,7 @@ set -euo pipefail
 read -p &quot;Enter merged haplotype FASTA file: &quot; MERGED_FASTA
 read -p &quot;Enter canonical reference FASTA file: &quot; REF_FASTA
 read -p &quot;Enter minimum sequence length (bp): &quot; MINLEN
+read -p &quot;Enter maximum sequence length (bp): &quot; MAXLEN
 
 # Check if input files exist
 for f in &quot;$MERGED_FASTA&quot; &quot;$REF_FASTA&quot;; do
@@ -2509,7 +2552,7 @@ done
 
 # Determine output file name
 BASENAME=&quot;${MERGED_FASTA%.fasta}&quot;
-OUT=&quot;${BASENAME}_filtered_min${MINLEN}.fasta&quot;
+OUT=&quot;${BASENAME}_filtered_min${MINLEN}_max${MAXLEN}.fasta&quot;
 
 # ----------------------------
 # Step 1: Combine canonical references with merged FASTA
@@ -2518,9 +2561,9 @@ TMP_COMBINED=$(mktemp)
 cat &quot;$REF_FASTA&quot; &quot;$MERGED_FASTA&quot; &gt; &quot;$TMP_COMBINED&quot;
 
 # ----------------------------
-# Step 2: Filter sequences by minimum length using seqkit
+# Step 2: Filter sequences by minimum and maximum length using seqkit
 # ----------------------------
-seqkit seq -m &quot;$MINLEN&quot; &quot;$TMP_COMBINED&quot; &gt; &quot;$OUT&quot;
+seqkit seq -m &quot;$MINLEN&quot; -M &quot;$MAXLEN&quot; &quot;$TMP_COMBINED&quot; &gt; &quot;$OUT&quot;
 
 # Cleanup
 rm -f &quot;$TMP_COMBINED&quot;
@@ -2532,28 +2575,28 @@ echo &quot;Filtered FASTA written to: $OUT&quot;</code></pre>
 <h2><span class="header-section-number">4.5</span> Multiple Sequence Alignment</h2>
 <ul>
 <li>Align sequences with <code>MAFFT</code></li>
-<li>Input: <code>all_Library003_Phased_haplotypes_filtered_min3250.fasta</code></li>
+<li>Input: <code>all_Library00X_Phased_haplotypes_filtered_min3250_max4000.fasta</code></li>
 </ul>
-<pre class="bash"><code>
-all_haplotypes=all_Library001_Phased_haplotypes_filtered_min3200.fasta
-
-# Library001
-mafft --auto --adjustdirection all_Library001_Phased_haplotypes_filtered_min3250.fasta &gt; all_Library001_Phased_haplotypes_filtered_min3250_aligned.fasta
+<pre class="bash"><code># Library001
+mafft --auto --adjustdirection all_Library001_Phased_haplotypes_filtered_min3250_max4000.fasta &gt; all_Library001_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta
 
 # Library002
-mafft --auto --adjustdirection all_Library002_Phased_haplotypes_filtered_min3250.fasta &gt; all_Library002_Phased_haplotypes_filtered_min3250_aligned.fasta
+mafft --auto --adjustdirection all_Library002_Phased_haplotypes_filtered_min3250_max4000.fasta &gt; all_Library002_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta
 
 # Library003
-mafft --auto --adjustdirection all_Library003_Phased_haplotypes_filtered_min3250.fasta &gt; all_Library003_Phased_haplotypes_filtered_min3250_aligned.fasta
+mafft --auto --adjustdirection all_Library003_Phased_haplotypes_filtered_min3250_max4000.fasta &gt; all_Library003_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta
 
 # Library004
-mafft --auto --adjustdirection all_Library004_Phased_haplotypes_filtered_min3250.fasta &gt; all_Library004_Phased_haplotypes_filtered_min3250_aligned.fasta
+mafft --auto --adjustdirection all_Library004_Phased_haplotypes_filtered_min3250_max4000.fasta &gt; all_Library004_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta
 
 # Library005
-mafft --auto --adjustdirection all_Library005_Phased_haplotypes_filtered_min3250.fasta &gt; all_Library005_Phased_haplotypes_filtered_min3250_aligned.fasta
+mafft --auto --adjustdirection all_Library005_Phased_haplotypes_filtered_min3250_max4000.fasta &gt; all_Library005_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta
 
 # Library006
-mafft --auto --adjustdirection all_Library006_Phased_haplotypes_filtered_min3250.fasta &gt; all_Library006_Phased_haplotypes_filtered_min3250_aligned.fasta</code></pre>
+mafft --auto --adjustdirection all_Library006_Phased_haplotypes_filtered_min3250_max4000.fasta &gt; all_Library006_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta
+
+# Library009
+mafft --auto --adjustdirection all_Library009_Phased_haplotypes_filtered_min3250_max4000.fasta &gt; all_Library009_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta</code></pre>
 </div>
 <div id="exonextract" class="section level2" number="4.6">
 <h2><span class="header-section-number">4.6</span> Exon Extraction from Multiple Sequence Alignments Pipeline</h2>
@@ -2778,13 +2821,13 @@ SeqIO.write(exon_records, out_file, &quot;fasta&quot;)</code></pre>
 <li>Script: <code>extract_exons_with_annotation.py</code></li>
 </ul>
 <p>Input:
-- MSA file: all_Library006_Phased_haplotypes_filtered_min3250_aligned.fasta
+- MSA file: all_Library006_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta
 - Name of ref sequence associated with Augustus annotation: <code>SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407</code>
 - Annotation file in csv: <code>/Users/buerkilab/Documents/Amplicon_SRK/Canu_amplicon/Canonical_sequences/augustus_SRK_canonical_haplotype_sequences_revcomp_ATGfixed_arabidopsis.csv</code> -&gt; This file was generated by annotating the canonical sequences using Augustus
 - Annotation strand: <code>+</code>
 - Min exon length: 0
 Output:
-- <code>all_Library003_Phased_haplotypes_filtered_min3250_aligned_exons.fasta</code></p>
+- <code>all_Library003_Phased_haplotypes_filtered_min3250_max4000_aligned_exons.fasta</code></p>
 <pre class="python"><code>#!/usr/bin/env python3
 import csv
 from Bio import SeqIO
@@ -3091,10 +3134,10 @@ SeqIO.write(new_records, out_fasta, &quot;fasta&quot;)</code></pre>
 <li>Script: <code>backfill_alignment_ends.py</code></li>
 <li>Input:
 <ul>
-<li>MSA fasta file (exon): <code>all_Library006_Phased_haplotypes_filtered_min3250_aligned_exons.fasta</code></li>
+<li>MSA fasta file (exon): <code>all_Library006_Phased_haplotypes_filtered_min3250_max4000_aligned_exons.fasta</code></li>
 <li>Canonical reference ID (exact FASTA header): <code>SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407</code></li>
 </ul></li>
-<li>Output: <code>all_Library003_Phased_haplotypes_filtered_min3250_aligned_exons_backfilled.fasta</code></li>
+<li>Output: <code>all_Library003_Phased_haplotypes_filtered_min3250_max4000_aligned_exons_backfilled.fasta</code></li>
 </ul>
 <pre class="python"><code>#!/usr/bin/env python3
 from Bio import SeqIO
@@ -3414,12 +3457,12 @@ print(f&quot;AA FASTA written to: {out_fasta}&quot;)</code></pre>
 <li>Only keep AA without stop codons in sequence</li>
 <li>Input:
 <ul>
-<li>Exon aligned fasta: all_Library006_Phased_haplotypes_filtered_min3250_aligned_exons_backfilled.fasta</li>
+<li>Exon aligned fasta: all_Library006_Phased_haplotypes_filtered_min3250_max4000_aligned_exons_backfilled.fasta</li>
 <li>Position for translation (here, 1st)</li>
 </ul></li>
 <li>Output:
 <ul>
-<li>4 files, but this one if important: <code>all_Library003_Phased_haplotypes_filtered_min3250_aligned_exons_backfilled_frame1_AA_filtered_aligned.fasta</code></li>
+<li>4 files, but this one if important: <code>all_Library003_Phased_haplotypes_filtered_min3250_max4000_aligned_exons_backfilled_frame1_AA_filtered_aligned.fasta</code></li>
 </ul></li>
 </ul>
 <pre class="python"><code>#!/usr/bin/env python3
@@ -3822,7 +3865,7 @@ too_many = [row[&#39;Individual&#39;] for row in report_data
 <li><p><strong>Definition:</strong> A functional allele is defined by the number of distinct functional protein sequences (isoforms) underpinning all DNA SRK sequences. We need to include frequency to remove bioinformatics and sequencing noise (set to 5). Individuals with more distinct proteins than the ploidy level (set to 4 for allotetraploid) are excluded as likely data quality issues.</p></li>
 <li><p><strong>Approach:</strong> Merge <code>_exons_backfilled.fasta</code> files, translate sequences and discard those that do not produce functional proteins, and create protein sequences (with a key). Discarded samples carry information about whether they have lost SI due to non-functional SRK and will then be self-compatible.</p></li>
 <li><p><strong>Script:</strong> <code>define_functional_proteins.py</code></p></li>
-<li><p><strong>Input:</strong> <code>*_exons_backfilled.fasta</code> (e.g., <code>all_Library003_Phased_haplotypes_filtered_min3250_aligned_exons_backfilled.fasta</code>)</p>
+<li><p><strong>Input:</strong> <code>*_exons_backfilled.fasta</code> (e.g., <code>all_Library003_Phased_haplotypes_filtered_min3250_max4000_aligned_exons_backfilled.fasta</code>)</p>
 <ul>
 <li>frame = 1</li>
 <li>filter = 5</li>
@@ -4364,8 +4407,8 @@ print(f&quot;Too-many-alleles exclusions: {too_many_file}&quot;)</code></pre>
 </tr>
 <tr class="even">
 <td><code>N_ALLELES</code></td>
-<td><code>None</code></td>
-<td><strong>Option A</strong> — fix the number of alleles directly (overrides <code>DIST_THRESHOLD</code> when not <code>None</code>). Use when you can identify the elbow on the sensitivity curve but cannot read the exact distance.</td>
+<td><code>63</code></td>
+<td><strong>Option A</strong> — fix the number of alleles directly (overrides <code>DIST_THRESHOLD</code> when not <code>None</code>). Use when you can identify the elbow on the sensitivity curve but cannot read the exact distance. For the current dataset (Libraries 001–009, 308 individuals, 302 functional proteins), the sensitivity curve showed a plateau between 50–100 alleles centred at 63 (implied threshold ≈ 0.005).</td>
 </tr>
 <tr class="odd">
 <td><code>DIST_THRESHOLD</code></td>

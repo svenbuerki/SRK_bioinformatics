@@ -16,7 +16,9 @@ The analyses presented here address a single overarching conservation question: 
 
 ### 1. Allele Definition
 
-We targeted the S-domain of the SRK protein — the functional "lock" in the lock-and-key recognition mechanism — to define alleles. We first identified all unique functional protein sequences within this domain across the dataset and visualised amino acid variation across positions ([Figure 1](#figure-1)). We then applied a distance-based sensitivity analysis to cluster protein sequences into allele bins, selecting the clustering threshold that maximised biological resolution while minimising artefactual splitting ([Figure 2](#figure-2)). Each resulting cluster represents an S-allele bin — an allele hypothesis that groups functionally equivalent proteins under a single identity.
+We targeted the S-domain of the SRK protein — the functional "lock" in the lock-and-key recognition mechanism — to define alleles. We first identified all unique functional protein sequences within this domain across the dataset and visualised amino acid variation across positions ([Figure 1](#figure-1)). We then applied a distance-based sensitivity analysis to cluster protein sequences into allele bins, selecting the clustering threshold that maximised biological resolution while minimising artefactual splitting ([Figure 2](#figure-2)). The sensitivity curve for the current dataset (Libraries 001–009; 308 individuals; 302 functional proteins) showed a plateau between 50 and 100 alleles centred at **63**, corresponding to an implied p-distance threshold of ~0.005 (0.5%); this value was adopted as `N_ALLELES`. Each resulting cluster represents an S-allele bin — an allele hypothesis that groups functionally equivalent proteins under a single identity.
+
+> **Note:** Library009 (96 individuals) has been added to the dataset for allele definition (Steps 9–10). Genotyping (Step 11) and all downstream population genetic analyses (Steps 13–18) are pending re-run; the results reported in Sections 2–6 below are based on Libraries 001–008 only and will be updated once those steps are completed.
 
 <a name="figure-1"></a>
 
