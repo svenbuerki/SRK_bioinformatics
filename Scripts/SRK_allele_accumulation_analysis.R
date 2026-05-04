@@ -558,12 +558,8 @@ cat("PNG written: SRK_allele_accumulation_combined.png\n")
 
 cat("\nGenerating drift erosion stacked bar chart...\n")
 
-# Species MM from the richness estimates file
-sp_richness <- read.table(
-  "SRK_species_richness_estimates.tsv",
-  header = TRUE, sep = "\t"
-)
-species_MM <- sp_richness$MM_estimate[1]
+# Species MM from the freshly computed estimate (same run)
+species_MM <- mm_sp$Smax
 
 # Per-EO data: observed alleles and EO-level MM predicted total
 eo_df <- data.frame(

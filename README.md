@@ -262,14 +262,14 @@ This pipeline is designed for:
 
 For a full worked example of results produced by this pipeline, see [LEPA_SRK_report.md](LEPA_SRK_report.md).
 
-Key findings from **189 individuals across five Element Occurrences** (EO25, EO27, EO67, EO70, EO76):
-- **47 observed S-allele bins** species-wide, with a predicted total of **75** (consensus of Michaelis-Menten = 65 and Chao1 = 84)
-- All Element Occurrences retain only 11–40% of the species-level SI repertoire (EO70: 11%; EO27: 40%)
+Key findings from **272 individuals across five Element Occurrences** (EO25, EO27, EO67, EO70, EO76; Libraries 001–009):
+- **54 observed S-allele bins** species-wide, with a predicted total of **71** (consensus of Michaelis-Menten = 69 and Chao1 = 73)
+- All Element Occurrences retain only 9–32% of the species-level SI repertoire (EO70: 9%; EO27: 32%)
 - Allele frequencies are significantly skewed from NFDS expectations at every level (χ² *p* < 10⁻⁷)
-- 55.6% of individuals carry an AAAA genotype (single allele, four copies), flagging a high risk of reduced SI function
-- A further 20.6% carry an AAAB genotype (GFS = 0.500) — dosage-imbalanced individuals that appear heterozygous but produce fewer diverse gametes than AABB individuals (GFS = 0.667)
-- All five EOs are flagged **CRITICAL** for Tipping Point 2 (mean GFS 0.22–0.30; proportion AAAA 52–62%); EO67 is least degraded and holds the only AABC individuals
-- S-allele sets are largely private to each EO: only **2 alleles** (Allele_044 and Allele_048) are shared across all five EOs; EO27 holds the most private alleles (10), EO70 the fewest (3)
+- 60% of individuals carry an AAAA genotype (single allele, four copies), flagging a high risk of reduced SI function
+- A further 16% carry an AAAB genotype (GFS = 0.500) — dosage-imbalanced individuals that appear heterozygous but produce fewer diverse gametes than AABB individuals (GFS = 0.667)
+- All five EOs are flagged **CRITICAL** for Tipping Point 2 (mean GFS 0.18–0.32; proportion AAAA 53–69%); EO67 is least degraded; EO76 is most degraded with no AABC individuals
+- S-allele sets are largely private to each EO: only **2 alleles** (Allele_050 and Allele_057) are shared across all five EOs; EO27 holds the most private alleles (12), EO70 the fewest (2)
 - Managed crossing simulations show 77–95% variance reduction within one generation vs. random mating, with zero allele loss under optimised preservation strategies
 
 ## Citation

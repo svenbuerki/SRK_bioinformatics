@@ -5645,8 +5645,8 @@ Rscript SRK_individual_GFS.R
 
 | File | Description |
 |------|-------------|
-| `modeling/data/assigned_genotypes.tsv` | Per-individual tetraploid genotype assignments (4 allele columns + method) |
-| `modeling/data/salleles/sampling_metadata.csv` | Population metadata; must contain `SampleID`, `Pop`, and `Ingroup` columns |
+| `SRK_individual_zygosity.tsv` | Per-individual tetraploid genotype pattern from Step 12 (`AAAA`/`AAAB`/`AABB`/`AABC`/`ABCD`) |
+| `sampling_metadata.csv` | Population metadata; must contain `SampleID`, `Pop`, and `Ingroup` columns |
 
 #### Key Parameters (top of script)
 

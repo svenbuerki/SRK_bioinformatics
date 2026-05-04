@@ -33,8 +33,8 @@
 #
 # =============================================================================
 # INPUTS
-#   modeling/data/assigned_genotypes.tsv       — genotype assignments per individual
-#   modeling/data/salleles/sampling_metadata.csv — population metadata (Ingroup flag)
+#   SRK_individual_zygosity.tsv                   — genotype pattern per individual from Step 12
+#   sampling_metadata.csv                          — population metadata (Pop, Ingroup)
 #
 # OUTPUTS (written to current working directory)
 #   SRK_individual_GFS.tsv    — per-individual GFS with genotype class
@@ -62,8 +62,8 @@ if (!use_repel) {
 # =============================================================================
 
 # Paths (relative to the Canu_amplicon project root)
-GENO_FILE <- "modeling/data/assigned_genotypes.tsv"
-META_FILE <- "modeling/data/salleles/sampling_metadata.csv"
+GENO_FILE <- "SRK_individual_zygosity.tsv"
+META_FILE <- "sampling_metadata.csv"
 
 # Element Occurrence → Population mapping.
 # Sub-populations of the same EO share the same EO label.
@@ -88,22 +88,41 @@ TP2_PROP_AAAA <- 0.30    # proportion of AAAA individuals
 # =============================================================================
 cat("Loading data...\n")
 
-geno <- read_tsv(GENO_FILE, show_col_types = FALSE)
+zyg  <- read_tsv(GENO_FILE, show_col_types = FALSE)
 meta <- read_csv(META_FILE, show_col_types = FALSE)
 
-cat(sprintf("  Genotype file: %d individuals, %d columns\n", nrow(geno), ncol(geno)))
+cat(sprintf("  Genotype file: %d individuals\n", nrow(zyg)))
 cat(sprintf("  Metadata file: %d rows\n", nrow(meta)))
+
+# Join Pop and Ingroup from metadata
+meta_join <- meta %>%
+  select(SampleID, Pop, Ingroup) %>%
+  rename(Individual = SampleID) %>%
+  mutate(Pop = as.character(Pop))
+
+geno <- zyg %>%
+  rename(Genotype_Pattern = Genotype) %>%
+  mutate(Method = "zygosity_model") %>%
+  left_join(meta_join, by = "Individual")
 
 # =============================================================================
 # 2. COMPUTE GFS
 # =============================================================================
 cat("Computing GFS per individual...\n")
 
-compute_gfs <- function(a1, a2, a3, a4) {
-  # Count copies of each allele across the 4 tetraploid slots
-  n_k <- as.integer(table(c(a1, a2, a3, a4)))
-  # GFS = proportion of heterozygous gametes
-  1 - sum(n_k * (n_k - 1L)) / 12
+# GFS is computed directly from the called genotype pattern.
+# This avoids dependence on partial haplotype recovery (N_total_proteins < 4):
+# the zygosity model assigns the pattern from the number of distinct alleles,
+# and GFS reflects the expected heterozygous gamete proportion for that pattern.
+gfs_from_pattern <- function(pattern) {
+  dplyr::case_when(
+    pattern == "ABCD" ~ 1.000,
+    pattern == "AABC" ~ 5 / 6,
+    pattern == "AABB" ~ 4 / 6,
+    pattern == "AAAB" ~ 3 / 6,
+    pattern == "AAAA" ~ 0.000,
+    TRUE              ~ NA_real_
+  )
 }
 
 gfs_class_label <- function(gfs) {
@@ -120,22 +139,15 @@ gfs_class_label <- function(gfs) {
 }
 
 geno <- geno %>%
-  rowwise() %>%
   mutate(
-    GFS       = compute_gfs(Allele_1, Allele_2, Allele_3, Allele_4),
+    GFS       = gfs_from_pattern(Genotype_Pattern),
     GFS_class = gfs_class_label(GFS)
-  ) %>%
-  ungroup()
+  )
 
 # =============================================================================
-# 3. JOIN METADATA & ASSIGN EO
+# 3. ASSIGN EO & FILTER INGROUP
 # =============================================================================
-meta_join <- meta %>%
-  select(SampleID, Ingroup) %>%
-  rename(Individual = SampleID)
-
 geno <- geno %>%
-  left_join(meta_join, by = "Individual") %>%
   mutate(
     EO = EO_MAP[Pop],
     EO = if_else(is.na(EO), paste0("Pop_", Pop), EO)
