@@ -325,20 +325,21 @@ cmap_fg     = matplotlib.colormaps.get_cmap("tab10").resampled(max(len(fg_ids_un
 fg_col_map  = {fg: cmap_fg(i) for i, fg in enumerate(fg_ids_uniq)}
 strip_cols  = np.array([fg_col_map[fg] for fg in fg_ids_ord])   # (n, 4) RGBA
 
-fig = plt.figure(figsize=(13, 11))
+fig = plt.figure(figsize=(11, 10))
 
-# Layout: left colour strip | heatmap | right colour strip | colourbar
+# Layout: left colour strip | heatmap | colourbar
+# (right strip removed — left strip + colourbar are sufficient)
 gs = fig.add_gridspec(
-    2, 4,
-    width_ratios=[0.03, 1, 0.03, 0.04],
-    height_ratios=[1, 0.03],
-    hspace=0.04, wspace=0.04,
+    2, 3,
+    width_ratios=[0.025, 1, 0.045],
+    height_ratios=[1, 0.025],
+    hspace=0.025, wspace=0.025,
 )
 
-ax_hm    = fig.add_subplot(gs[0, 1])   # main heatmap
+ax_hm     = fig.add_subplot(gs[0, 1])   # main heatmap
 ax_lstrip = fig.add_subplot(gs[0, 0])  # left class strip
 ax_bstrip = fig.add_subplot(gs[1, 1])  # bottom class strip
-ax_cb    = fig.add_subplot(gs[0, 3])   # colourbar
+ax_cb     = fig.add_subplot(gs[0, 2])  # colourbar
 
 # Colour scale: stretch across within-class similarity range so W/N/P_within
 # variation is visible. Between-class values (Allele_061) fall below vmin and
@@ -393,21 +394,20 @@ def cb_pos(sim_val):
 
 if vmin_hm <= sim_thr <= vmax_hm:
     cb.ax.axhline(cb_pos(sim_thr), color="black", linewidth=1.2, linestyle="--")
-    cb.ax.text(1.7, cb_pos(sim_thr), f"N / P_within\n(d = {WITHIN_CLASS_THRESHOLD:.2f})",
-               va="center", fontsize=7, color="black",
-               transform=cb.ax.get_yaxis_transform())
+    cb.ax.text(0.5, cb_pos(sim_thr) + 0.02, f"N/P_within  d={WITHIN_CLASS_THRESHOLD:.2f}",
+               ha="center", va="bottom", fontsize=6.5, color="black",
+               transform=cb.ax.transAxes)
 cb.ax.axhline(cb_pos(1.0), color="#d62728", linewidth=1.8)
-cb.ax.text(1.7, cb_pos(1.0), "W  (d = 0)",
-           va="center", fontsize=7, color="#d62728",
-           transform=cb.ax.get_yaxis_transform())
-cb.ax.text(1.7, 0.04, "Between-class\n(saturated)",
-           va="bottom", fontsize=7, color="grey",
-           transform=cb.ax.get_yaxis_transform())
+cb.ax.text(0.5, cb_pos(1.0) - 0.02, "W  d=0",
+           ha="center", va="top", fontsize=6.5, color="#d62728",
+           transform=cb.ax.transAxes)
+cb.ax.text(0.5, 0.02, "Between-class\n(saturated)",
+           ha="center", va="bottom", fontsize=6.5, color="grey",
+           transform=cb.ax.transAxes)
 
-# Class legend
+# Class legend — inside the heatmap (lower-right corner)
 legend_patches = [mpatches.Patch(color=fg_col_map[fg], label=fg) for fg in fg_ids_uniq]
-ax_hm.legend(handles=legend_patches, loc="upper left",
-             bbox_to_anchor=(1.14, 1.01), fontsize=8,
+ax_hm.legend(handles=legend_patches, loc="lower right", fontsize=8,
              title="Class", title_fontsize=8, framealpha=0.9)
 
 ax_hm.set_title(

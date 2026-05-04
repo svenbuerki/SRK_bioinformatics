@@ -78,8 +78,8 @@ The pipeline consists of **22 main steps organized into four phases**, progressi
 
 ## [Phase 4: Testing S-allele Hypotheses](#phase4)
 
-21. [Allele Super-Group Clustering and Crossing Design](#alleleclusters) – Second-level UPGMA clustering of the allele bins defined in Phase 2 into super-groups based on S-domain p-distance, producing a prioritised crossing plan for AAAA individuals with cross categories W (within-bin), N (within-cluster), and P (between-cluster).
-22. [Cross Result Analysis](#crossresults) – Statistical comparison of seed yield across W / N / P cross categories to test whether sequence-based allele bins predict functional recognition specificity.
+21. [Hypervariable-Position Allele Hypothesis Testing and Crossing Design](#alleleclusters) – Moving-window scan to identify 75 hypervariable positions in the S-domain; UPGMA auto-threshold clustering detects Class I / Class II phylogenetic split; generates a prioritised crossing plan for 164 AAAA individuals with four categories: W (HV-identical), N (synonymy test), P_within (within-class positive control), P_cross (between-class positive control).
+22. [Cross Result Analysis](#crossresults) – Statistical comparison of seed yield across W / N / P_within / P_cross cross categories to test whether HV-based allele bin boundaries predict functional recognition specificity.
 
 ---
 
@@ -5784,146 +5784,176 @@ Phase 4 translates the sequence-based allele bins defined in Phase 2 into testab
 
 The central question is: **do alleles that are closely related in sequence share the same recognition specificity, or are they functionally distinct?** This matters because the allele bins produced in [Step 10](#SRKalleledist) are defined by sequence distance alone — two alleles grouped into the same bin are hypothesised to be functionally equivalent (same "lock"), but this has not been confirmed experimentally. Conversely, allele bins that are closely related but fall just outside the clustering threshold might still share the same recognition specificity and could be treated as synonymous for crossing purposes.
 
-**The experimental logic rests on three cross categories:**
+**The experimental logic rests on four cross categories:**
 
-- **W — within-bin** (same allele bin, S-domain distance = 0): pollen and pistil carry the same SRK allele. Under a functional SI system, these crosses should fail — the pistil recognises the pollen as self and rejects it. These are negative controls. Any seed set observed in W crosses is direct evidence of SI breakdown, consistent with Stage 5 of the Compatibility Collapse Cascade.
+- **W — HV-identical** (same allele bin, HV distance = 0): pollen and pistil carry the same SRK allele at all hypervariable positions. Under a functional SI system, these crosses should fail — the pistil recognises the pollen as self and rejects it. These are negative controls. Any seed set observed in W crosses is direct evidence of SI breakdown, consistent with Stage 5 of the Compatibility Collapse Cascade.
 
-- **N — within-cluster** (different allele bins, same super-group): pollen and pistil carry alleles that are closely related in sequence but were defined as distinct bins. These crosses are the core of the hypothesis test — seed failure would indicate that sequence-similar alleles are functionally synonymous; seed set would confirm that they carry distinct recognition specificities.
+- **N — near-synonymy test** (different allele bins, HV distance > 0 and < 0.04, same phylogenetic class): pollen and pistil carry alleles that differ at a small number of hypervariable positions. These crosses are the core of the hypothesis test — seed failure would indicate the allele bins are functionally synonymous (merge them); seed set would confirm the small HV difference is functionally real (keep bins separate).
 
-- **P — between-cluster** (alleles from different super-groups): pollen and pistil carry alleles that are substantially divergent in sequence. These crosses are expected to succeed. They serve as positive controls establishing that the SI system is functional and that compatible pollen is being applied correctly.
+- **P_within — within-class positive control** (HV distance ≥ 0.04, same phylogenetic class): pollen and pistil carry alleles that are substantially divergent within the same class. These crosses are expected to succeed and serve as within-class positive controls.
 
-**Why AAAA individuals?** Individuals homozygous for a single allele across all four genome copies (AAAA genotype; 56% of all sampled plants) are the ideal cross parents for this experiment. Their pollen carries a single SCR identity — the allele assignment is unambiguous, and cross outcomes can be interpreted without accounting for pollen genotype distributions. Crosses between two AAAA plants are therefore the cleanest test of allele-level recognition specificity available in a tetraploid system.
+- **P_cross — between-class control** (different phylogenetic classes): pollen and pistil carry alleles from Class I and Class II respectively. These crosses are guaranteed to succeed — between-class compatibility is maximally divergent. They anchor the upper end of the seed yield scale.
 
-**Two-step analysis:** [Step 21](#alleleclusters) groups the allele bins into super-groups by second-level UPGMA clustering and generates the prioritised crossing plan. [Step 22](#crossresults) reads completed cross records and tests whether the W / N / P category predicts seed yield, providing the statistical confirmation needed to validate or refine the sequence-based allele definitions.
+**Why AAAA individuals?** Individuals homozygous for a single allele across all four genome copies (AAAA genotype; 60% of all sampled plants, n = 164) are the ideal cross parents for this experiment. Their pollen carries a single SCR identity — the allele assignment is unambiguous, and cross outcomes can be interpreted without accounting for pollen genotype distributions. Crosses between two AAAA plants are therefore the cleanest test of allele-level recognition specificity available in a tetraploid system.
+
+**Two-step analysis:** [Step 21](#alleleclusters) identifies hypervariable positions in the S-domain, detects phylogenetic classes by UPGMA clustering, and generates the prioritised crossing plan with four categories. [Step 22](#crossresults) reads completed cross records and tests whether the W / N / P_within / P_cross category predicts seed yield, providing the statistical confirmation needed to validate or refine the sequence-based allele definitions.
 
 ---
 
-## Allele Super-Group Clustering and Crossing Design {#alleleclusters}
+## Hypervariable-Position Allele Hypothesis Testing and Crossing Design {#alleleclusters}
 
-> Requires `SRK_protein_allele_representatives.fasta` from [Step 10](#SRKalleledist), `SRK_individual_GFS.tsv` from [Step 18](#GFS), and `SRK_individual_allele_table.tsv` from [Step 11](#SRKfunctionalprotgenotype). Run after Steps 10, 11, and 18 have completed.
+> Requires `SRK_protein_allele_representatives.fasta` from [Step 10](#SRKalleledist), `SRK_individual_zygosity.tsv` from [Step 12](#zygosity), and `SRK_individual_metadata.tsv` from [Step 11](#SRKfunctionalprotgenotype). Run after Steps 10, 11, and 12 have completed.
 
 ### Overview
 
-This step groups the allele bins defined in Phase 2 into super-groups by running a second-level UPGMA hierarchical clustering on pairwise S-domain p-distances between allele representative sequences. Each of the 105 AAAA individuals in the dataset is then assigned a bin and super-group, and all pairwise AAAA combinations are categorised as W, N, or P and ranked to produce a crossing plan. The result is a practical field guide: which crosses to prioritise, what to expect, and what each outcome means for the allele definitions.
+This step implements a three-stage analysis to translate the sequence-based allele bins into a structured crossing experiment:
 
-The step also prints a distance summary that diagnoses the structure of the allele distance space — in particular, whether the alleles form a single tight cluster (requiring a finer `N_SUPERGROUPS` setting to resolve useful sub-groups) or whether natural breaks exist at the chosen resolution.
+1. **Hypervariable (HV) position identification** — A moving-window scan of per-column variability across the S-domain alignment identifies the positions that actually discriminate alleles. Distances computed on these HV positions are biologically meaningful for recognition specificity, unlike full-domain distances which are dominated by conserved structural residues.
+
+2. **Phylogenetic class detection** — UPGMA clustering of HV-only pairwise distances automatically detects the natural class structure. The largest gap in the merge-height sequence defines the cut point, splitting the 63 allele bins into Class I (62 alleles) and Class II (1 allele, Allele_061) — corresponding to the known phylogenetic lineages in *Brassica* SRK.
+
+3. **Cross design** — All pairwise AAAA × AAAA combinations are categorised using HV distance and class membership into four categories (W, N, P_within, P_cross) and ranked to produce a practical crossing plan.
+
+The 164 AAAA individuals (60% of 272 sampled plants) are the ideal cross parents: their pollen carries a single unambiguous SCR identity, making cross outcomes directly interpretable.
 
 ### Biological Rationale
 
-The allele bin boundaries from Phase 2 are sequence-based hypotheses. The super-group clustering adds a second level of resolution: within each super-group, allele bins are more similar to each other than to bins in other super-groups. This provides a gradient of expected recognition similarity — from identical (W, same bin) through closely related (N, same super-group) to divergent (P, different super-group) — that maps directly onto experimental predictions for seed yield. The three-tier design maximises the information return from a limited crossing experiment: every cross tests either a hypothesis (N) or anchors the interpretation via a control (W or P).
+**Why focus on hypervariable positions?** Full S-domain p-distances are dominated by conserved structural positions shared across all alleles, producing a bimodal distance distribution in which most allele pairs collapse to near-zero distances and only the Class I / Class II split creates a large gap. The 75 HV positions (concentrated in seven regions of the S-domain: alignment positions 149–151, 187–199, 236–253, 271, 276–290, 360–363, and 365–385) correspond to the known HV1 and HV2 loops responsible for SCR ligand recognition. Distances computed on these positions alone resolve the fine-scale allele structure that is biologically relevant for SI specificity.
 
-Of the 55 allele bins currently defined, 22 have at least one AAAA representative in the dataset. Among these, 14 bins have two or more AAAA plants and can support the full three-tier crossing design (within-bin negative control, within-cluster hypothesis test, between-cluster positive control). The remaining 8 bins with a single AAAA individual can be used as cross partners but cannot provide a replicated within-bin incompatibility test. The 33 bins with no AAAA representatives require AAAB or AABB parents and are deferred to a future analysis extension.
+**Why auto-detect classes?** The largest gap in UPGMA merge heights objectively identifies the phylogenetically meaningful cut point without arbitrary parameter tuning. In the current dataset this threshold is 0.5045, correctly separating the well-known Class I and Class II *Brassica* SRK lineages. Class II alleles are guaranteed to be compatible with all Class I alleles — providing unambiguous P_cross controls at the maximum possible HV distance.
+
+**Four-tier cross design:** The WITHIN_CLASS_THRESHOLD (default 0.04, approximately the median within-class HV distance) divides within-class pairs into three tiers. The N tier — small but non-zero HV differences — is the scientific core: an incompatible N cross means the two allele bins share recognition specificity (merge them); a compatible N cross confirms the small HV difference is functionally real (keep bins separate). In the current AAAA-only dataset, 6,273 N pairs are available for testing — the largest tier and the highest priority for the crossing experiment.
 
 ### Bioinformatics
 
-* Script: `test_allele_definitions_from_crosses.py` (Part 1)
+* Script: `srk_allele_hypotheses.py`
 * Environment: Python 3 with numpy, pandas, matplotlib, scipy, biopython
 * Execution (run from project root):
 
 ```bash
-python test_allele_definitions_from_crosses.py
+python srk_allele_hypotheses.py
 ```
 
 #### Key Parameters (top of script)
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `N_SUPERGROUPS` | 8 | Number of super-groups; increase if most alleles collapse into one group (see distance summary in output) |
-| `SUPERGROUP_THRESHOLD` | 0.10 | Alternative: p-distance cutoff used when `N_SUPERGROUPS = None` |
-| `DOMAIN_REGION` | (31, 430) | S-domain columns used for distance; must match Step 10 |
+| `DOMAIN_REGION` | (31, 430) | S-domain alignment columns; must match Step 10 |
+| `WINDOW_SIZE` | 20 | Moving-window size (aa) for variability scan |
+| `PEAK_SD_FACTOR` | 1.0 | Positions above mean + PEAK_SD_FACTOR × SD of smoothed profile are classified as HV |
+| `MIN_HV_POSITIONS` | 10 | Minimum HV positions required; script aborts if fewer detected |
+| `WITHIN_CLASS_THRESHOLD` | 0.04 | HV distance boundary between N and P_within categories |
+| `N_GROUPS` | None | Override auto-detected class count (None = use largest-gap auto-threshold) |
+| `DISTANCE_THRESHOLD` | None | Override auto-detected UPGMA cut height (None = auto) |
 | `CROSS_TSV` | None | Set to cross results filename to activate Part 2 (Step 22) |
-
-**Tuning `N_SUPERGROUPS`:** The script prints a distance summary on each run. If the counts for `dist < 0.05`, `dist < 0.10`, and `dist < 0.20` are identical, the allele distance space is bimodal — most alleles form a tight cluster with no intermediate distances. In this case, increase `N_SUPERGROUPS` to 15–25 to force the algorithm to subdivide the cluster into experimentally manageable groups. Inspect `SRK_allele_cluster_figure.pdf` to choose a value where the dendrogram shows natural internal branching rather than an arbitrary cut through a flat cluster.
 
 #### Input Files
 
 | File | Description |
 |------|-------------|
 | `SRK_protein_allele_representatives.fasta` | One representative sequence per allele bin (output of Step 10) |
-| `SRK_individual_GFS.tsv` | Per-individual GFS scores and genotype pattern (output of Step 18) |
-| `SRK_individual_allele_table.tsv` | Individual → allele → copy count table (output of Step 11) |
+| `SRK_individual_zygosity.tsv` | Per-individual tetraploid genotype pattern (output of Step 12) |
+| `SRK_individual_metadata.tsv` | Individual metadata including EO and ingroup flag (output of Step 11) |
 
 #### Output Files
 
 | File | Content |
 |------|---------|
-| `SRK_allele_supergroups.tsv` | One row per allele bin: super-group assignment, AAAA individual count, cross power rating |
-| `SRK_AAAA_cross_design.tsv` | All AAAA × AAAA pairs ranked by category (W first, then N, then P), with allele IDs, super-group IDs, S-domain distance, and expected outcome |
-| `SRK_allele_cluster_figure.pdf` | Left panel: UPGMA dendrogram of allele bins coloured by super-group. Right panel: bar chart of AAAA individuals per allele bin in the same leaf order, with dashed line at n = 2 |
+| `SRK_variability_landscape.pdf` | Per-column mean pairwise distance and smoothed profile; shaded HV regions above detection threshold |
+| `SRK_HV_allele_distances.tsv` | Pairwise HV-only p-distances for all 63 allele bin pairs |
+| `SRK_allele_similarity_heatmap.pdf` | 63 × 63 HV similarity matrix ordered by UPGMA; colour scaled to within-class range |
+| `SRK_functional_allele_groups.tsv` | One row per allele bin: class assignment, AAAA count, cross power |
+| `SRK_synonymy_candidates.tsv` | All within-class allele pairs with HV distance > 0, ranked by distance, with testability flag |
+| `SRK_AAAA_cross_design_HV.tsv` | All AAAA × AAAA pairs ranked by category (W, N, P_within, P_cross) with HV distances and expected outcomes |
+| `SRK_cross_design_summary.pdf` | Three-panel figure: HV distance distribution by category; cross design schematic; N-cross interpretation decision tree |
+| `SRK_HV_cluster_figure.pdf` | UPGMA dendrogram of allele bins coloured by class; AAAA individual count per bin |
+
+#### Key Output Statistics (current dataset: 272 individuals, 63 allele bins, 164 AAAA)
+
+| Cross category | Definition | Pair count | Priority |
+|----------------|-----------|:---:|---------|
+| W | HV-identical (d = 0) | 5,766 | Negative control — confirms allele identity |
+| N | 0 < d < 0.04, same class | 6,273 | **Synonymy test** — highest scientific priority |
+| P_within | d ≥ 0.04, same class | 1,327 | Within-class positive control |
+| P_cross | Different class | 0 (AAAA only) | Between-class control — requires AAAB parents |
+
+Allele bin availability: 20 bins with ≥ 2 AAAA individuals (full design), 14 bins with 1 AAAA (partner only), 29 bins with no AAAA (require AAAB/AABB). Synonymy candidates: 1,891 within-class pairs; 561 testable with available AAAA individuals.
 
 #### Output File Descriptions
 
-**`SRK_allele_supergroups.tsv`**
+**`SRK_functional_allele_groups.tsv`**
 
 | Column | Description |
 |--------|-------------|
 | `Allele` | Allele bin name |
-| `SuperGroup` | Super-group assignment (SG01–SGxx) |
+| `Class` | Phylogenetic class (Class_I or Class_II) |
 | `N_AAAA` | Number of AAAA individuals carrying this allele |
-| `CrossPower` | `full` (≥2 AAAA, full 3-tier design possible), `singleton` (1 AAAA, partner only), `none` (no AAAA) |
+| `CrossPower` | `full` (≥ 2 AAAA), `singleton` (1 AAAA), `none` (no AAAA) |
 
-**`SRK_AAAA_cross_design.tsv`**
+**`SRK_AAAA_cross_design_HV.tsv`**
 
 | Column | Description |
 |--------|-------------|
 | `Mother` / `Father` | Individual plant IDs |
 | `Mother_allele` / `Father_allele` | Allele bin carried by each plant |
-| `Mother_SG` / `Father_SG` | Super-group of each allele |
-| `S_domain_dist` | Pairwise S-domain p-distance between the two alleles |
-| `Category` | **W**, **N**, or **P** — the key column for cross prioritisation |
+| `Mother_class` / `Father_class` | Phylogenetic class of each allele |
+| `HV_distance` | Pairwise HV-only p-distance between the two alleles |
+| `Category` | **W**, **N**, **P_within**, or **P_cross** — key column for cross prioritisation |
 | `Expected` | Plain-language prediction for seed yield |
 
 ### Scientific Applications
 
-* **Cross prioritisation**: N pairs (within-cluster hypothesis test) are the highest scientific priority — they directly test whether sequence-similar bins are functionally synonymous; P pairs confirm the SI system is working; W pairs confirm that the genotyping correctly identifies the allele
-* **Allele bin refinement**: if N crosses consistently fail (no seeds), the current bin boundaries may be too fine and neighbouring bins could be merged; if N crosses succeed, the bins are well-delimited
-* **Conservation breeding**: W crosses that yield seeds are direct evidence of SI breakdown and can be reported as Stage 5 Compatibility Collapse Cascade events in the individual plants tested
+* **Cross prioritisation**: N pairs are the highest scientific priority — incompatibility confirms synonymy (merge bins); compatibility confirms the HV difference changes recognition specificity (retain bins)
+* **Allele bin refinement**: compatible N crosses → bin boundary is real; incompatible N crosses → merge bins into one functional allele
+* **Class validation**: P_cross crosses (requiring AAAB parents with Allele_061) provide maximum-distance compatible controls anchoring the upper end of the seed yield scale
+* **Conservation breeding**: W crosses yielding seeds are direct evidence of SI breakdown — Stage 5 Compatibility Collapse Cascade events — and identify individuals for immediate priority in inter-EO allele rescue crosses
+* **Extending the design**: adding AAAB parents unlocks the 29 allele bins currently without AAAA representatives and provides the P_cross controls absent from the AAAA-only dataset
 
 ---
 
 ## Cross Result Analysis {#crossresults}
 
-> Requires `SRK_allele_supergroups.tsv` and `SRK_AAAA_cross_design.tsv` from [Step 21](#alleleclusters), plus a completed cross results file. Run after crossing experiments have been conducted and seed yields recorded.
+> Requires `SRK_functional_allele_groups.tsv` and `SRK_AAAA_cross_design_HV.tsv` from [Step 21](#alleleclusters), plus a completed cross results file. Run after crossing experiments have been conducted and seed yields recorded.
 
 ### Overview
 
-This step reads completed cross records — a file with one row per cross, containing the mother and father plant IDs and a seed yield column — and assigns each cross to a W, N, or P category using the super-group structure from Step 21. It then tests whether category predicts seed yield using Kruskal-Wallis and pairwise Mann-Whitney U tests, and produces a figure showing seed yield distributions and success rates per category.
+This step reads completed cross records — a file with one row per cross, containing the mother and father plant IDs and a seed yield column — and assigns each cross to a W, N, P_within, or P_cross category using the HV-based class structure from Step 21. It then tests whether category predicts seed yield using Kruskal-Wallis and pairwise Mann-Whitney U tests, and produces a figure showing seed yield distributions and success rates per category.
 
-**To activate this step**, set `CROSS_TSV` in the settings section of `test_allele_definitions_from_crosses.py` to the filename of the completed cross records file, then re-run the script.
+**To activate this step**, set `CROSS_TSV` in the settings section of `srk_allele_hypotheses.py` to the filename of the completed cross records file, then re-run the script.
 
 ### Biological Rationale
 
-The statistical test is a direct evaluation of the allele bin definitions: if the bins correctly capture functional recognition specificity, W crosses should show the lowest seed yield (same allele, rejected by SI), P crosses the highest (different super-group, fully compatible), and N crosses an intermediate or categorical pattern depending on whether the closely related bins are functionally synonymous or distinct. A significant Kruskal-Wallis result with the expected ordering (W < N ≤ P) validates the sequence-based bin boundaries. A result where W ≥ N suggests the bins may be over-split and closely related alleles share specificity. A result where W > 0 consistently indicates SI breakdown in the tested individuals.
+The statistical test is a direct evaluation of the allele bin definitions using HV-distance-based categories. The expected ordering is W < N ≤ P_within < P_cross for seed yield: W crosses are rejected by SI (HV-identical alleles); N crosses test whether small HV differences change recognition specificity; P_within crosses are expected compatible within the same phylogenetic class; P_cross crosses between classes are maximally compatible and set the upper yield reference. A significant Kruskal-Wallis result with this ordering validates the HV-based bin structure. N crosses that fail (yield ≈ W) indicate synonymous allele bins that should be merged; N crosses that succeed confirm the small HV difference is functionally real. W crosses yielding seeds are direct evidence of SI breakdown.
 
 ### Bioinformatics
 
-* Script: `test_allele_definitions_from_crosses.py` (Part 2, activated by setting `CROSS_TSV`)
+* Script: `srk_allele_hypotheses.py` (Part 5, activated by setting `CROSS_TSV`)
 * Environment: Python 3 with numpy, pandas, matplotlib, scipy, biopython
 
 #### Input Files
 
 | File | Description |
 |------|-------------|
-| `SRK_allele_supergroups.tsv` | Allele super-group assignments from Step 21 |
-| `SRK_individual_allele_table.tsv` | Individual → allele table, used to assign alleles to non-AAAA cross parents |
-| Cross results file | One row per cross; must contain `Mother`, `Father`, and a seed count column (auto-detected: `Seeds`, `germplasmQuantityEstimate`, `seed_count`, or first numeric column) |
+| `SRK_functional_allele_groups.tsv` | Allele class assignments from Step 21 |
+| `SRK_AAAA_cross_design_HV.tsv` | Pairwise cross design with W / N / P_within / P_cross categories from Step 21 |
+| Cross results file | One row per cross; must contain `Mother`, `Father`, and a seed count column |
 
 #### Output Files
 
 | File | Content |
 |------|---------|
-| `SRK_cross_result_analysis.pdf` | Left panel: box + strip plot of seed yield by W / N / P category. Right panel: bar chart of cross success rate (% with seeds > 0) by category |
+| `SRK_cross_result_analysis.pdf` | Box + strip plot of seed yield by category (W / N / P_within / P_cross); bar chart of cross success rate per category |
 
 #### Statistical Tests
 
 | Test | Purpose |
 |------|---------|
-| Kruskal-Wallis H | Overall test of seed yield differences across W / N / P |
-| Mann-Whitney U (pairwise) | Post-hoc comparisons: W vs N, W vs P, N vs P |
+| Kruskal-Wallis H | Overall test of seed yield differences across W / N / P_within / P_cross |
+| Mann-Whitney U (pairwise) | Post-hoc comparisons: W vs N, W vs P_within, W vs P_cross, N vs P_within, N vs P_cross |
 
 ### Scientific Applications
 
-* **Allele bin validation**: significant W < P difference with N intermediate confirms that the sequence-based bin structure maps onto functional recognition specificity
-* **Synonymy detection**: N crosses that consistently fail (seed yield not significantly different from W) indicate that the allele bins involved are synonymous and could be merged
-* **SI breakdown documentation**: W crosses yielding seeds identify individuals where the polyploid competitive interaction mechanism has enabled self-fertilisation, providing direct empirical evidence for Stage 5 of the Compatibility Collapse Cascade
-* **Proposal preliminary data**: even a small initial crossing experiment (n = 20–30 crosses) covering all three categories provides sufficient preliminary evidence to justify the full Objective 2 crossing design in the NSF proposal
+* **Allele bin validation**: significant W < P_within difference with N intermediate confirms that the HV-based bin structure maps onto functional recognition specificity
+* **Synonymy detection**: N crosses that fail (yield not significantly different from W) indicate synonymous allele bins — merge them; N crosses that succeed confirm the bin boundary is real
+* **SI breakdown documentation**: W crosses yielding seeds identify individuals where the polyploid competitive interaction mechanism has enabled self-fertilisation — Stage 5 Compatibility Collapse Cascade events
+* **Proposal preliminary data**: even a small initial crossing experiment (n = 20–30 crosses) covering W, N, and P_within categories provides sufficient preliminary evidence to justify the full Objective 2 crossing design in the NSF proposal

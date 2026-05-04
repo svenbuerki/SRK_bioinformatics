@@ -437,47 +437,7 @@ Wright, S. (1939). The distribution of self-sterility alleles in populations. *G
 
 ---
 
-### 6. Crossing Strategy Simulations
-
-> **Note:** The simulations in this section are based on Libraries 001–008 (189 individuals, 47 alleles) and have not yet been re-run with the full dataset (Libraries 001–009, 272 individuals, 54 alleles). Results will be updated following re-analysis.
-
-To evaluate how different managed crossing strategies could restore allele frequency balance and prevent further allele loss, we simulated five years of crossing under four strategies across all five major EOs and for the combined species-wide metapopulation. All simulations used S-allele tetraploid genotypes with self-incompatibility constraints enforced, and were replicated across 10 stochastic trials.
-
-**Strategies compared:**
-
-1. **Random mating** — uniform random pairing among all SI-compatible pairs (baseline)
-2. **Optimised** — crosses weighted by L-BFGS-B gradient descent to minimise χ² distance from equal allele frequencies, recomputed each generation
-3. **Optimised + preservation** — adds rare-allele protection via elitism, mandatory rare-allele crosses, and an optimiser penalty
-4. **Optimised + preservation + demography** — as above, with logistic population growth toward a carrying capacity *K* and Poisson demographic stochasticity
-
-**Within-EO results (allele frequency variance reduction vs random mating):**
-
-| EO | N | Allele bins | Initial χ² | Year 1 Pres. | Year 1 Demo. | Year 5 Pres. | Year 5 Demo. | Allele loss (rand. yr5) | Allele loss (pres. yr5) |
-|----|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| EO25 | 32 | 11 | 1.53 | 88% | 91% | 77% | 91% | 0.8 | 0.0 |
-| EO27 | 29 | 15 | 1.36 | 79% | 80% | 81% | 95% | 3.3 | 0.0 |
-| EO67 | 32 | 12 | 1.31 | 77% | 80% | 89% | 93% | 1.9 | 0.0 |
-| EO70 | 40 |  6 | 1.08 | 83% | 86% | 91% | 95% | 0.5 | 0.0 |
-| EO76 | 25 |  9 | 0.58 | 68% | 74% | 84% | 90% | 1.1 | 0.0 |
-
-Variance reduction percentages are relative to random mating at the same year. All optimised strategies achieved zero allele loss across all EOs and all years, whereas random mating caused progressive allele extinction in every EO except EO70 (which already has too few alleles to lose further). EO27 is the most at risk under random mating, losing on average 3.3 allele bins within five years.
-
-**Species-wide (cross-population) results:**
-
-Treating all 189 individuals as a single metapopulation, with 30,141 compatible crosses available (84.8% of all directed pairs), the optimised strategies achieved rapid convergence:
-
-| Year | Random mating (var.) | Opt. + preserved (var.) | Variance reduction | Allele loss (random) | Allele loss (preserved) |
-|:----:|:---:|:---:|:---:|:---:|:---:|
-| 0 | 0.00242 | 0.00242 | — | 0.0 | 0.0 |
-| 1 | 0.00182 | 0.00010 | 95% | 3.5 | 0.0 |
-| 2 | 0.00130 | 0.00005 | 97% | 5.9 | 0.0 |
-| 3 | 0.00088 | 0.00003 | 96% | 7.4 | 0.0 |
-
-Random mating causes a mean loss of 7.4 allele bins by year 3 at the species level, whereas managed crosses with preservation eliminate allele loss entirely while driving allele frequency variance down by 95–97%. Cross-population crosses (inter-EO transfers) are critical: they are the primary mechanism for redistributing alleles that are private to single EOs and absent from the broader gene pool.
-
----
-
-### 7. Testing S-allele Hypotheses: Crossing Design
+### 6. Testing S-allele Hypotheses: Crossing Design
 
 The allele bins defined in Section 1 are sequence-based hypotheses — each bin groups proteins that are sufficiently similar in the S-domain ectodomain to be considered functionally equivalent, but this equivalence has not been confirmed experimentally. Section 7 describes the design of controlled crossing experiments that will test whether the bin boundaries correctly predict recognition specificity.
 
@@ -515,6 +475,46 @@ The N category is the core of the hypothesis test. An incompatible N cross means
 **Crossing power.** Of the 63 allele bins, 20 have two or more AAAA individuals (full three-tier design), 14 have a single AAAA individual (cross partner only), and 29 have no AAAA representatives (require AAAB or AABB parents). The 13,366 pairwise AAAA combinations decompose into 5,766 W pairs (HV-identical, expected incompatible), 6,273 N pairs (synonymy tests), 1,327 P_within pairs (within-class positive controls), and 0 P_cross pairs in the current AAAA-only dataset (Class II has no AAAA individuals — between-class crosses require AAAB parents). A complete ranked crossing plan is available in `SRK_AAAA_cross_design_HV.tsv` and a full list of synonymy candidate pairs with testability flags is in `SRK_synonymy_candidates.tsv` (1,891 within-class pairs; 561 testable with currently available AAAA individuals).
 
 **Scope and next steps.** The AAAA-only crossing design covers the full Class I allele set but cannot provide P_cross positive controls without AAAB individuals carrying Allele_061. Extending the design to AAAB parents would additionally allow testing of the 29 bins currently lacking AAAA representatives, and would provide the between-class compatibility controls needed to anchor the upper end of the seed yield scale.
+
+---
+
+### 7. Crossing Strategy Simulations
+
+> **Note:** The simulations in this section are based on Libraries 001–008 (189 individuals, 47 alleles) and have not yet been re-run with the full dataset (Libraries 001–009, 272 individuals, 54 alleles). Results will be updated following re-analysis.
+
+To evaluate how different managed crossing strategies could restore allele frequency balance and prevent further allele loss, we simulated five years of crossing under four strategies across all five major EOs and for the combined species-wide metapopulation. All simulations used S-allele tetraploid genotypes with self-incompatibility constraints enforced, and were replicated across 10 stochastic trials.
+
+**Strategies compared:**
+
+1. **Random mating** — uniform random pairing among all SI-compatible pairs (baseline)
+2. **Optimised** — crosses weighted by L-BFGS-B gradient descent to minimise χ² distance from equal allele frequencies, recomputed each generation
+3. **Optimised + preservation** — adds rare-allele protection via elitism, mandatory rare-allele crosses, and an optimiser penalty
+4. **Optimised + preservation + demography** — as above, with logistic population growth toward a carrying capacity *K* and Poisson demographic stochasticity
+
+**Within-EO results (allele frequency variance reduction vs random mating):**
+
+| EO | N | Allele bins | Initial χ² | Year 1 Pres. | Year 1 Demo. | Year 5 Pres. | Year 5 Demo. | Allele loss (rand. yr5) | Allele loss (pres. yr5) |
+|----|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| EO25 | 32 | 11 | 1.53 | 88% | 91% | 77% | 91% | 0.8 | 0.0 |
+| EO27 | 29 | 15 | 1.36 | 79% | 80% | 81% | 95% | 3.3 | 0.0 |
+| EO67 | 32 | 12 | 1.31 | 77% | 80% | 89% | 93% | 1.9 | 0.0 |
+| EO70 | 40 |  6 | 1.08 | 83% | 86% | 91% | 95% | 0.5 | 0.0 |
+| EO76 | 25 |  9 | 0.58 | 68% | 74% | 84% | 90% | 1.1 | 0.0 |
+
+Variance reduction percentages are relative to random mating at the same year. All optimised strategies achieved zero allele loss across all EOs and all years, whereas random mating caused progressive allele extinction in every EO except EO70 (which already has too few alleles to lose further). EO27 is the most at risk under random mating, losing on average 3.3 allele bins within five years.
+
+**Species-wide (cross-population) results:**
+
+Treating all 189 individuals as a single metapopulation, with 30,141 compatible crosses available (84.8% of all directed pairs), the optimised strategies achieved rapid convergence:
+
+| Year | Random mating (var.) | Opt. + preserved (var.) | Variance reduction | Allele loss (random) | Allele loss (preserved) |
+|:----:|:---:|:---:|:---:|:---:|:---:|
+| 0 | 0.00242 | 0.00242 | — | 0.0 | 0.0 |
+| 1 | 0.00182 | 0.00010 | 95% | 3.5 | 0.0 |
+| 2 | 0.00130 | 0.00005 | 97% | 5.9 | 0.0 |
+| 3 | 0.00088 | 0.00003 | 96% | 7.4 | 0.0 |
+
+Random mating causes a mean loss of 7.4 allele bins by year 3 at the species level, whereas managed crosses with preservation eliminate allele loss entirely while driving allele frequency variance down by 95–97%. Cross-population crosses (inter-EO transfers) are critical: they are the primary mechanism for redistributing alleles that are private to single EOs and absent from the broader gene pool.
 
 ---
 
