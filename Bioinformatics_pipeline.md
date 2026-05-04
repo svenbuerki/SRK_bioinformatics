@@ -728,70 +728,94 @@ EOs are ordered by mean GFS (ascending); the TP2 AAAA threshold (30%) is marked 
 
 > Phase 4 uses the allele bin definitions from Phase 2 and the individual GFS data from Phase 3 to design and analyse controlled crossing experiments. All scripts run from the same working directory as Phase 2 and Phase 3.
 
-### Step 21 — Allele Super-Group Clustering and Crossing Design
+### Step 21 — HV-Based Allele Hypothesis Testing and Crossing Design
 
-**Script:** `test_allele_definitions_from_crosses.py` (Part 1)
+**Script:** `srk_allele_hypotheses.py`
 
 **Command:**
 ```bash
-python test_allele_definitions_from_crosses.py
+python srk_allele_hypotheses.py
 ```
 
 **Inputs:**
 
 | File | From step | Description |
 |------|-----------|-------------|
-| `SRK_protein_allele_representatives.fasta` | Step 10a | One representative sequence per allele bin |
-| `SRK_individual_GFS.tsv` | Step 18 | Per-individual GFS scores and genotype pattern |
+| `SRK_protein_allele_representatives.fasta` | Step 10a | One representative sequence per allele bin (pre-aligned) |
+| `SRK_individual_zygosity.tsv` | Step 12 | Per-individual tetraploid genotype pattern |
 | `SRK_individual_allele_table.tsv` | Step 11 | Individual → allele → copy count table |
 
 **Key parameters (edit at top of script):**
 
 | Parameter | Default | Notes |
 |-----------|---------|-------|
-| `N_SUPERGROUPS` | `8` | Target number of super-groups. If the distance summary shows identical counts for `dist < 0.05`, `< 0.10`, and `< 0.20`, increase to 15–25 to resolve structure within the tight cluster |
-| `SUPERGROUP_THRESHOLD` | `0.10` | Alternative distance cutoff; used only when `N_SUPERGROUPS = None` |
-| `DOMAIN_REGION` | `(31, 430)` | S-domain columns for distance calculation; must match Step 10 |
+| `DOMAIN_REGION` | `(31, 430)` | S-domain columns; must match Step 10 |
+| `WINDOW_SIZE` | `20` | Sliding window width (aa) for smoothing the variability profile |
+| `PEAK_SD_FACTOR` | `1.0` | Positions above mean + k×SD of the smoothed profile are flagged HV; lower to include more HV positions |
+| `WITHIN_CLASS_THRESHOLD` | `0.04` | HV p-distance boundary between N (synonymy test) and P_within (compatible) within a class |
+| `N_GROUPS` | `None` | Override auto class detection with a fixed number of groups |
+| `DISTANCE_THRESHOLD` | `None` | Override auto class detection with a fixed HV distance cutoff |
 | `CROSS_TSV` | `None` | Set to cross results filename to activate Step 22 |
 
-> **Tuning `N_SUPERGROUPS`:** the script prints a distance summary on each run. Inspect `SRK_allele_cluster_figure.pdf` to verify that the super-groups reflect natural dendrogram branches rather than an arbitrary cut through a flat cluster.
+> **Auto class detection:** by default the script cuts the UPGMA tree at the largest gap in merge heights, which automatically identifies the Class I / Class II phylogenetic split. Inspect `SRK_HV_cluster_figure.pdf` and the printed gap table to verify the cut is biologically sensible before adjusting `WITHIN_CLASS_THRESHOLD`.
+
+**Script workflow:**
+
+| Part | Description |
+|------|-------------|
+| 1 | Moving-window per-column variability scan → identify HV positions |
+| 2 | HV-only pairwise distances + UPGMA clustering → phylogenetic class split |
+| 2b | Allele similarity heatmap (colour scale spans within-class range) |
+| 3 | Functional group table, synonymy candidates, AAAA cross design matrix |
+| 3b | Cross design summary figure (distance distribution, category schematic, N-cross interpretation) |
+| 4 | UPGMA dendrogram + AAAA availability bar chart |
+| 5 | Cross result analysis (activated when `CROSS_TSV` is set) |
 
 **Outputs:**
 
 | File | Content |
 |------|---------|
-| `SRK_allele_supergroups.tsv` | Allele bin → super-group, AAAA count, cross power (full / singleton / none) |
-| `SRK_AAAA_cross_design.tsv` | All AAAA × AAAA pairs ranked W → N → P, with allele IDs, super-group IDs, S-domain distance, expected outcome |
-| `SRK_allele_cluster_figure.pdf` | UPGMA dendrogram of allele bins coloured by super-group + AAAA availability bar chart |
-| `figures/SRK_allele_cluster_figure.png` | Same figure as PNG at 200 dpi (for reports) |
+| `SRK_variability_landscape.pdf` | Per-column and smoothed S-domain variability profile; HV regions shaded |
+| `SRK_HV_allele_distances.tsv` | Pairwise HV-only distance matrix (alleles × alleles) |
+| `SRK_allele_similarity_heatmap.pdf` | 63×63 HV similarity heatmap ordered by UPGMA; colour scale spans within-class range |
+| `SRK_functional_allele_groups.tsv` | Allele bin → class assignment, AAAA count, cross power (full / singleton / none) |
+| `SRK_synonymy_candidates.tsv` | All within-class allele pairs with HV distance, cross tier, and testability flag |
+| `SRK_AAAA_cross_design_HV.tsv` | All AAAA × AAAA pairs ranked W → N → P_within → P_cross, with HV distance and expected outcome |
+| `SRK_cross_design_summary.pdf` | Three-panel figure: HV distance distribution, cross category schematic, N-cross interpretation logic |
+| `SRK_HV_cluster_figure.pdf` | UPGMA dendrogram (HV distances) coloured by class + AAAA availability bar chart |
+| `figures/*.png` | PNG copies of all figures at 200 dpi |
 
 **Cross categories:**
 
-| Category | Definition | Expected outcome |
-|----------|------------|-----------------|
-| W — within-bin | Same allele bin (distance = 0) | No seeds — negative control; seeds indicate SI breakdown |
-| N — within-cluster | Different bin, same super-group | Unknown — core hypothesis test |
-| P — between-cluster | Different super-group | Seeds expected — positive control |
+| Category | HV distance | Definition | Expected outcome |
+|----------|-------------|------------|-----------------|
+| W | d = 0 | HV-identical alleles | No seeds — incompatibility predicted by sequence identity |
+| N | 0 < d < threshold | Small HV differences, same class | Unknown — synonymy test: does this substitution change specificity? |
+| P_within | d ≥ threshold, same class | Substantial within-class HV divergence | Seeds expected — within-class positive control |
+| P_cross | different class | Between phylogenetic classes | Seeds expected — guaranteed compatible (Class I × Class II) |
+
+> **Interpreting N-cross outcomes:** incompatible N cross → allele bins share SI specificity → merge bins (synonymous alleles). Compatible N cross → small HV difference is functionally real → bin boundary confirmed.
 
 ---
 
 ### Step 22 — Cross Result Analysis
 
-> Requires completed crossing records. Activate by setting `CROSS_TSV` in the script, then re-run `test_allele_definitions_from_crosses.py`.
+> Requires completed crossing records. Activate by setting `CROSS_TSV` in the script, then re-run `srk_allele_hypotheses.py`.
 
-**Script:** `test_allele_definitions_from_crosses.py` (Part 2)
+**Script:** `srk_allele_hypotheses.py` (Part 5)
 
 **Command:**
 ```bash
 # Edit the script: set CROSS_TSV = "<your_cross_results_file>"
-python test_allele_definitions_from_crosses.py
+python srk_allele_hypotheses.py
 ```
 
 **Inputs:**
 
 | File | Description |
 |------|-------------|
-| `SRK_allele_supergroups.tsv` | Super-group assignments from Step 21 |
+| `SRK_functional_allele_groups.tsv` | Class assignments from Step 21 |
+| `SRK_HV_allele_distances.tsv` | HV distances for cross category assignment |
 | `SRK_individual_allele_table.tsv` | Used to assign alleles to non-AAAA cross parents |
 | Cross results file | One row per cross; columns `Mother`, `Father`, and a seed count column (auto-detected) |
 
@@ -799,14 +823,14 @@ python test_allele_definitions_from_crosses.py
 
 | Test | Purpose |
 |------|---------|
-| Kruskal-Wallis H | Overall test of seed yield differences across W / N / P |
-| Mann-Whitney U (pairwise) | W vs N, W vs P, N vs P |
+| Kruskal-Wallis H | Overall test of seed yield differences across W / N / P_within / P_cross |
+| Mann-Whitney U (pairwise) | All category pairs |
 
 **Outputs:**
 
 | File | Content |
 |------|---------|
-| `SRK_cross_result_analysis.pdf` | Seed yield box/strip plot + success rate bar chart by cross category |
+| `SRK_cross_result_analysis_HV.pdf` | Seed yield box/strip plot + success rate bar chart by cross category |
 
 ---
 
@@ -826,8 +850,8 @@ python test_allele_definitions_from_crosses.py
 | Step 18 | `SRK_individual_GFS.tsv` |
 | Step 19 | `SRK_EO_GFS_summary.tsv` |
 | Step 20 | `SRK_GFS_reproductive_effort.pdf`, `SRK_GFS_reproductive_effort.png` |
-| Step 21 | `SRK_allele_supergroups.tsv`, `SRK_AAAA_cross_design.tsv` |
-| Step 22 | `SRK_cross_result_analysis.pdf` |
+| Step 21 | `SRK_functional_allele_groups.tsv`, `SRK_AAAA_cross_design_HV.tsv`, `SRK_synonymy_candidates.tsv` |
+| Step 22 | `SRK_cross_result_analysis_HV.pdf` |
 
 ---
 

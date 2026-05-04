@@ -72,7 +72,7 @@ The pipeline consists of **22 main steps organized into four phases**, progressi
 
 ## Phase 4: Testing S-allele Hypotheses
 
-21. **Allele Super-Group Clustering and Crossing Design** – Second-level UPGMA clustering of allele bins into super-groups using S-domain p-distance between representative sequences. Assigns each AAAA individual to a bin and super-group, and generates a prioritised crossing plan with three categories: W (within-bin, expected incompatible — negative control), N (within-cluster, closely related bins — hypothesis test), and P (between-cluster — positive control).
+21. **HV-Based Allele Hypothesis Testing and Crossing Design** – Moving-window variability scan of the S-domain alignment identifies hypervariable (HV) positions where alleles actually diverge. Pairwise distances restricted to those HV positions are used for UPGMA clustering, which automatically detects the Class I / Class II phylogenetic split. Within the majority class, three cross categories are assigned by HV distance: W (HV-identical alleles, d = 0 — expected incompatible), N (small HV difference, d < threshold — synonymy test), and P_within (substantial within-class HV divergence — expected compatible). Between-class crosses are labelled P_cross (guaranteed compatible positive controls). An allele similarity heatmap and cross design summary figure are also produced.
 22. **Cross Result Analysis** – Reads completed crossing records and tests whether the W / N / P category predicts seed yield, validating the sequence-based allele definitions against experimental cross-compatibility data. Activated by setting `CROSS_TSV` in the script once crossing data are available.
 
 ## Requirements
@@ -189,12 +189,12 @@ Rscript SRK_individual_GFS.R
 5.  **Phase 4 — Testing S-allele Hypotheses (Steps 21–22):**
 
 ``` bash
-# Step 21: Allele super-group clustering and crossing design
-python test_allele_definitions_from_crosses.py
+# Step 21: HV-based allele hypothesis testing and crossing design
+python srk_allele_hypotheses.py
 
 # Step 22: Cross result analysis
 # Set CROSS_TSV = "<your_cross_results_file>" in the script, then re-run:
-python test_allele_definitions_from_crosses.py
+python srk_allele_hypotheses.py
 ```
 
 ### Detailed Usage
@@ -238,10 +238,15 @@ For a concise step-by-step protocol (scripts, inputs, outputs, key parameters), 
 
 ### Phase 4 Outputs (Testing S-allele Hypotheses)
 
--   `SRK_allele_supergroups.tsv` - Allele bin → super-group assignment with AAAA individual count and cross power rating (Step 21)
--   `SRK_AAAA_cross_design.tsv` - All AAAA × AAAA plant pairs ranked by cross category (W / N / P), with allele IDs, super-group IDs, S-domain distance, and expected outcome (Step 21)
--   `SRK_allele_cluster_figure.pdf` / `figures/SRK_allele_cluster_figure.png` - UPGMA dendrogram of allele bins coloured by super-group + AAAA availability bar chart (Step 21)
--   `SRK_cross_result_analysis.pdf` - Seed yield distributions and success rates by cross category, with Kruskal-Wallis and Mann-Whitney U tests (Step 22; requires cross data)
+-   `SRK_variability_landscape.pdf` / `figures/SRK_variability_landscape.png` - Per-column S-domain variability profile with HV regions shaded (Step 21)
+-   `SRK_HV_allele_distances.tsv` - 63×63 pairwise distance matrix computed on 75 HV positions (Step 21)
+-   `SRK_functional_allele_groups.tsv` - Allele bin → phylogenetic class assignment, AAAA count, cross power (Step 21)
+-   `SRK_synonymy_candidates.tsv` - All within-class allele pairs with HV distance and testability flag (Step 21)
+-   `SRK_allele_similarity_heatmap.pdf` / `figures/SRK_allele_similarity_heatmap.png` - 63×63 HV similarity heatmap ordered by UPGMA with class strips (Step 21)
+-   `SRK_AAAA_cross_design_HV.tsv` - All AAAA × AAAA pairs ranked by category (W / N / P_within / P_cross) with HV distance and expected outcome (Step 21)
+-   `SRK_cross_design_summary.pdf` / `figures/SRK_cross_design_summary.png` - Three-panel figure: HV distance distribution, cross category schematic, N-cross interpretation (Step 21)
+-   `SRK_HV_cluster_figure.pdf` / `figures/SRK_HV_cluster_figure.png` - UPGMA dendrogram (HV distances) coloured by class + AAAA availability bar chart (Step 21)
+-   `SRK_cross_result_analysis_HV.pdf` - Seed yield distributions and success rates by cross category, with Kruskal-Wallis and Mann-Whitney U tests (Step 22; requires cross data)
 
 ### Quality Control Reports
 

@@ -481,25 +481,40 @@ Random mating causes a mean loss of 7.4 allele bins by year 3 at the species lev
 
 The allele bins defined in Section 1 are sequence-based hypotheses — each bin groups proteins that are sufficiently similar in the S-domain ectodomain to be considered functionally equivalent, but this equivalence has not been confirmed experimentally. Section 7 describes the design of controlled crossing experiments that will test whether the bin boundaries correctly predict recognition specificity.
 
-**Experimental logic.** AAAA individuals — 105 of 189 sampled plants (56%) — are the ideal cross parents because all four gene copies carry a single SRK allele, making pollen identity unambiguous. A cross between two AAAA plants is a direct test of whether their two alleles share recognition specificity: if they do, the pistil rejects the pollen and no seeds are produced; if they differ, the cross is compatible and seeds are set. Three cross categories structure the experiment:
+**Experimental logic.** AAAA individuals — 164 of 272 sampled plants (60%) — are the ideal cross parents because all four gene copies carry a single SRK allele, making pollen identity unambiguous. A cross between two AAAA plants is a direct test of whether their two alleles share recognition specificity: if they do, the pistil rejects the pollen and no seeds are produced; if they differ, the cross is compatible and seeds are set.
 
-| Category | Definition | Expected outcome |
-|----------|------------|-----------------|
-| W — within-bin | Both plants carry the same allele bin (S-domain distance = 0) | No seeds — negative control; seeds indicate SI breakdown |
-| N — within-cluster | Different allele bins, same super-group (closely related sequences) | Unknown — core hypothesis test of allele bin boundaries |
-| P — between-cluster | Allele bins from different super-groups (divergent sequences) | Seeds — positive control confirming SI system is functional |
+**Hypervariable position identification.** Rather than computing distances over the full 400-position S-domain — which is dominated by conserved structural positions — the analysis first identifies the positions where alleles actually diverge. A moving-window variability scan computes the mean pairwise distance at each alignment column, smoothed over a 20 aa window. Positions above mean + 1 SD of the smoothed profile are classified as hypervariable (HV). This yields 75 HV positions concentrated in seven regions of the S-domain (alignment positions 149–151, 187–199, 236–253, 271, 276–290, 360–363, and 365–385), consistent with the known HV1 and HV2 loops responsible for SCR ligand recognition. The variability landscape is shown in Figure 15a.
 
-**Allele super-group clustering.** To construct the W / N / P categories, the 55 allele representative sequences were clustered by a second-level UPGMA analysis on S-domain p-distances — the same distance metric used to define the bins in Step 10. The distance summary reveals a bimodal structure: all pairwise distances fall either below 0.05 or above 0.20, with no pairs in between. This indicates that most alleles form a tight sequence cluster with no intermediate-distance transitions, while a small number of alleles are highly divergent from the rest. The crossing design uses this structure directly: alleles within the same super-group are candidate synonymous pairs (N crosses), while alleles from different super-groups are expected to be functionally distinct (P crosses).
+**Phylogenetic class detection.** Pairwise distances recomputed on the 75 HV positions reveal a strongly bimodal structure: 139 allele pairs are HV-identical (distance = 0), while all remaining within-class pairs fall below 0.085, and one allele (Allele_061) is separated by a distance of 0.924 from all others. UPGMA clustering automatically detects this gap as the natural cut point, splitting the 63 allele bins into two groups corresponding to the known Class I (62 alleles) and Class II (1 allele) phylogenetic lineages. This class split is visible as a distinct off-diagonal block in the allele similarity heatmap (Figure 15b).
 
-The dendrogram of allele bins coloured by super-group and the associated AAAA availability bar chart are shown in Figure 15.
+**Cross categories.** Within the majority class, four cross categories are assigned by HV distance:
 
-<a name="figure-15"></a>
+| Category | HV distance | Definition | Expected outcome |
+|----------|-------------|------------|-----------------|
+| W | d = 0 | HV-identical alleles | No seeds — incompatibility predicted by sequence identity |
+| N | 0 < d < 0.04 | Small HV differences, same class | Unknown — synonymy test: does this substitution change specificity? |
+| P_within | d ≥ 0.04, same class | Substantial within-class HV divergence | Seeds expected — within-class positive control |
+| P_cross | different class | Between phylogenetic classes (Class I × Class II) | Seeds expected — guaranteed compatible |
 
-![Figure 15: Allele bin super-group clustering and AAAA individual availability. Left: UPGMA dendrogram of the 55 allele representative sequences clustered by S-domain p-distance; colours indicate super-group assignment. Right: number of AAAA individuals carrying each allele in the same leaf order; the dashed line marks n = 2, the minimum for a replicated within-bin (W) cross.](figures/SRK_allele_cluster_figure.png)
+The N category is the core of the hypothesis test. An incompatible N cross means the two allele bins share SI specificity and should be merged (synonymous alleles). A compatible N cross confirms that the small HV difference is functionally real and the bin boundary is correct. The cross design logic is summarised in Figure 15c.
 
-**Crossing power.** Of the 55 allele bins, 22 have at least one AAAA representative in the current dataset. Among these, 14 bins have two or more AAAA individuals and support the full three-tier design; 8 bins have a single AAAA individual and can serve as cross partners but not as replicated negative controls; the remaining 33 bins have no AAAA representatives and require AAAB or AABB parents. The 5,460 pairwise AAAA combinations decompose into 898 W pairs (within-bin), 4,062 N pairs (within-cluster hypothesis test), and 500 P pairs (between-cluster positive control). A complete ranked crossing plan is available in `SRK_AAAA_cross_design.tsv`.
+**Allele similarity heatmap and clustering.** The 63×63 HV similarity matrix, ordered by UPGMA and with colour scaled to the within-class range, is shown in Figure 15b. The large Class I block (upper left) shows the W/N/P_within gradient from bright green (HV-identical) through yellow-orange (small HV differences) to red (most divergent within-class pairs). The single Class II allele (lower right) appears as a saturated dark block, confirming it is maximally distinct from Class I.
 
-**Scope of the AAAA-based design.** The 33 bins with no AAAA representatives are not simply missing a convenient cross parent — they exist *exclusively* in heterozygous individuals (AABB, AABC). This means that 60% of the species' allele bins are entirely dependent on the heterozygous fraction for their representation in the dataset. The W/N/P hypothesis test based on AAAA × AAAA crosses therefore covers only 22 of 55 allele bins; validating the remaining 33 requires an extended design phase using AAAB or AABB parents. This also reinforces the conservation asymmetry described in Section 4 (Zygosity): AAAA × AAAA crosses, while analytically clean, sample predominantly from the two dominant alleles (Allele_044 and Allele_048). The rare alleles — and the functional diversity they represent — are held almost entirely within the heterozygous minority, whose members are both the highest-priority breeding individuals and the limiting factor for extending the hypothesis test to the full allele repertoire.
+<a name="figure-15a"></a>
+
+![Figure 15a: S-domain variability landscape. Per-column mean pairwise distance (blue fill) and smoothed profile (line); shaded regions mark the 75 HV positions above the detection threshold (dashed red line). Seven HV regions are identified across alignment positions 149–385.](figures/SRK_variability_landscape.png)
+
+<a name="figure-15b"></a>
+
+![Figure 15b: Allele pairwise HV similarity heatmap. 63×63 matrix ordered by UPGMA clustering of HV distances. Colour scale spans the within-class similarity range; between-class values saturate to dark red. White lines mark the Class I / Class II boundary. Coloured strips on the left and bottom indicate class membership.](figures/SRK_allele_similarity_heatmap.png)
+
+<a name="figure-15c"></a>
+
+![Figure 15c: Cross design framework. Left: distribution of within-class HV pairwise distances coloured by W / N / P_within category. Centre: schematic of the four cross categories across allele bins and classes. Right: decision tree for interpreting N-cross outcomes — incompatibility confirms synonymy (merge bins); compatibility confirms the bin boundary is real.](figures/SRK_cross_design_summary.png)
+
+**Crossing power.** Of the 63 allele bins, 20 have two or more AAAA individuals (full three-tier design), 14 have a single AAAA individual (cross partner only), and 29 have no AAAA representatives (require AAAB or AABB parents). The 13,366 pairwise AAAA combinations decompose into 5,766 W pairs (HV-identical, expected incompatible), 6,273 N pairs (synonymy tests), 1,327 P_within pairs (within-class positive controls), and 0 P_cross pairs in the current AAAA-only dataset (Class II has no AAAA individuals — between-class crosses require AAAB parents). A complete ranked crossing plan is available in `SRK_AAAA_cross_design_HV.tsv` and a full list of synonymy candidate pairs with testability flags is in `SRK_synonymy_candidates.tsv` (1,891 within-class pairs; 561 testable with currently available AAAA individuals).
+
+**Scope and next steps.** The AAAA-only crossing design covers the full Class I allele set but cannot provide P_cross positive controls without AAAB individuals carrying Allele_061. Extending the design to AAAB parents would additionally allow testing of the 29 bins currently lacking AAAA representatives, and would provide the between-class compatibility controls needed to anchor the upper end of the seed yield scale.
 
 ---
 
