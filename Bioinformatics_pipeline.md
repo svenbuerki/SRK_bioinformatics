@@ -698,7 +698,12 @@ EOs breaching both thresholds simultaneously are flagged **CRITICAL**; those bre
 Rscript SRK_GFS_reproductive_effort.R
 ```
 
-**Input:** `SRK_individual_GFS.tsv` — per-individual GFS scores from Step 18
+**Inputs:**
+
+| File | From step | Description |
+|------|-----------|-------------|
+| `SRK_individual_GFS.tsv` | Step 18 | Per-individual GFS scores and genotype classes |
+| `SRK_individual_zygosity.tsv` | Step 12 | Per-individual allele composition (`Allele_composition` field used to identify the allele carried by AAAA individuals) |
 
 **Key analysis:**
 
@@ -719,6 +724,8 @@ EOs are ordered by mean GFS (ascending); the TP2 AAAA threshold (30%) is marked 
 |------|---------|
 | `SRK_GFS_reproductive_effort.pdf` | Horizontal proportional bar chart — GFS tier composition per EO with reproductive effort annotations |
 | `SRK_GFS_reproductive_effort.png` | Same figure as PNG at 200 dpi |
+| `SRK_GFS_AAAA_allele_composition.pdf` | Stacked bar chart — allele identity of AAAA individuals per EO; pan-EO alleles highlighted (orange = Allele_050, blue = Allele_057); annotated with AAAA count and pan-EO percentage |
+| `SRK_GFS_AAAA_allele_composition.png` | Same figure as PNG at 200 dpi |
 
 ---
 
@@ -853,7 +860,7 @@ python srk_allele_hypotheses.py
 | Step 16 | `SRK_TP1_summary.tsv` |
 | Step 18 | `SRK_individual_GFS.tsv` |
 | Step 19 | `SRK_EO_GFS_summary.tsv` |
-| Step 20 | `SRK_GFS_reproductive_effort.pdf`, `SRK_GFS_reproductive_effort.png` |
+| Step 20 | `SRK_GFS_reproductive_effort.pdf`, `SRK_GFS_AAAA_allele_composition.pdf` |
 | Step 21 | `SRK_functional_allele_groups.tsv`, `SRK_AAAA_cross_design_HV.tsv`, `SRK_synonymy_candidates.tsv`, `SRK_synonymy_groups.csv` |
 | Step 22 | `SRK_cross_result_analysis_HV.pdf` |
 

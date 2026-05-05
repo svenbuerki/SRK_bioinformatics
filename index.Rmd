@@ -5749,6 +5749,7 @@ Rscript SRK_GFS_reproductive_effort.R
 | File | Description |
 |------|-------------|
 | `SRK_individual_GFS.tsv` | Per-individual GFS scores and genotype classes (output of Step 18) |
+| `SRK_individual_zygosity.tsv` | Per-individual allele composition including `Allele_composition` field (output of Step 12) |
 
 #### Key Parameters (top of script)
 
@@ -5763,17 +5764,22 @@ Rscript SRK_GFS_reproductive_effort.R
 |------|---------|
 | `SRK_GFS_reproductive_effort.pdf` | Horizontal proportional bar chart — GFS tier composition per EO, ordered by mean GFS, with reproductive effort annotations |
 | `SRK_GFS_reproductive_effort.png` | Same figure as PNG at 200 dpi |
+| `SRK_GFS_AAAA_allele_composition.pdf` | Stacked bar chart — allele identity of AAAA individuals per EO; pan-EO alleles (Allele_050, Allele_057) highlighted; annotated with total AAAA count and pan-EO percentage |
+| `SRK_GFS_AAAA_allele_composition.png` | Same figure as PNG at 200 dpi |
 
-#### Figure Description
+#### Figure Descriptions
 
-Each horizontal bar represents one EO. Segments are coloured by GFS class (red = AAAA through blue = ABCD), stacked left to right from lowest to highest GFS. The dashed vertical line marks the TP2 AAAA threshold (30%): bars where the red (AAAA) segment extends past this line indicate a TP2 breach. Annotations to the right of each bar show the proportion of supporting individuals (GFS > 0), the count (n / N), and the mean GFS for that EO. EOs are ordered from top (lowest mean GFS, most degraded) to bottom (highest mean GFS).
+**`SRK_GFS_reproductive_effort`:** Each horizontal bar represents one EO. Segments are coloured by GFS class (red = AAAA through blue = ABCD), stacked left to right from lowest to highest GFS. The dashed vertical line marks the TP2 AAAA threshold (30%): bars where the red (AAAA) segment extends past this line indicate a TP2 breach. Annotations to the right of each bar show the proportion of supporting individuals (GFS > 0), the count (n / N), and the mean GFS for that EO. EOs are ordered from top (lowest mean GFS, most degraded) to bottom (highest mean GFS).
+
+**`SRK_GFS_AAAA_allele_composition`:** Companion figure unpacking the AAAA bar from the reproductive effort figure. Each bar shows how many AAAA individuals in that EO carry each allele. Pan-EO alleles — those present as AAAA homozygotes in every focus EO — are highlighted in distinct colours (orange = Allele_050, blue = Allele_057); all remaining alleles are shown as a single grey "Other alleles" segment. Annotations show total AAAA count and the percentage carrying a pan-EO allele. EO ordering matches the reproductive effort figure.
 
 ### Scientific Applications
 
 * **Conservation triage**: the proportion of supporting individuals per EO directly quantifies how much of the population is functional for managed crossing
 * **Seed parent pool size**: the annotated n / N count identifies how many individuals are candidates for inclusion in a crossing programme
 * **Cross-EO comparison**: ordering by mean GFS highlights which EOs are most degraded and therefore highest priority for allele importation combined with GFS-targeted crossing
-* **Communication**: the figure is designed for presentation to conservation managers, translating the GFS metric into an intuitive "proportion supporting reproductive effort" framing
+* **AAAA allele identity**: the companion figure reveals that most AAAA homozygosity is concentrated in two alleles (Allele_050 and Allele_057) present across all EOs — both members of W-group 1 (see Step 21) and therefore likely the same SI specificity; this substantially reduces the effective number of distinct locks in the AAAA fraction
+* **Communication**: both figures are designed for presentation to conservation managers, translating GFS and allele identity into intuitive breeding-pool diagnostics
 ---
 
 # Phase 4: Testing S-allele Hypotheses {#phase4}

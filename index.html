@@ -7973,6 +7973,10 @@ python SRK_allele_sharing_EOs.py \
 <td><code>SRK_individual_GFS.tsv</code></td>
 <td>Per-individual GFS scores and genotype classes (output of Step 18)</td>
 </tr>
+<tr class="even">
+<td><code>SRK_individual_zygosity.tsv</code></td>
+<td>Per-individual allele composition including <code>Allele_composition</code> field (output of Step 12)</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -8027,12 +8031,21 @@ python SRK_allele_sharing_EOs.py \
 <td><code>SRK_GFS_reproductive_effort.png</code></td>
 <td>Same figure as PNG at 200 dpi</td>
 </tr>
+<tr class="odd">
+<td><code>SRK_GFS_AAAA_allele_composition.pdf</code></td>
+<td>Stacked bar chart — allele identity of AAAA individuals per EO; pan-EO alleles (Allele_050, Allele_057) highlighted; annotated with total AAAA count and pan-EO percentage</td>
+</tr>
+<tr class="even">
+<td><code>SRK_GFS_AAAA_allele_composition.png</code></td>
+<td>Same figure as PNG at 200 dpi</td>
+</tr>
 </tbody>
 </table>
 </div>
-<div id="figure-description" class="section level4" number="6.9.3.4">
-<h4><span class="header-section-number">6.9.3.4</span> Figure Description</h4>
-<p>Each horizontal bar represents one EO. Segments are coloured by GFS class (red = AAAA through blue = ABCD), stacked left to right from lowest to highest GFS. The dashed vertical line marks the TP2 AAAA threshold (30%): bars where the red (AAAA) segment extends past this line indicate a TP2 breach. Annotations to the right of each bar show the proportion of supporting individuals (GFS &gt; 0), the count (n / N), and the mean GFS for that EO. EOs are ordered from top (lowest mean GFS, most degraded) to bottom (highest mean GFS).</p>
+<div id="figure-descriptions" class="section level4" number="6.9.3.4">
+<h4><span class="header-section-number">6.9.3.4</span> Figure Descriptions</h4>
+<p><strong><code>SRK_GFS_reproductive_effort</code>:</strong> Each horizontal bar represents one EO. Segments are coloured by GFS class (red = AAAA through blue = ABCD), stacked left to right from lowest to highest GFS. The dashed vertical line marks the TP2 AAAA threshold (30%): bars where the red (AAAA) segment extends past this line indicate a TP2 breach. Annotations to the right of each bar show the proportion of supporting individuals (GFS &gt; 0), the count (n / N), and the mean GFS for that EO. EOs are ordered from top (lowest mean GFS, most degraded) to bottom (highest mean GFS).</p>
+<p><strong><code>SRK_GFS_AAAA_allele_composition</code>:</strong> Companion figure unpacking the AAAA bar from the reproductive effort figure. Each bar shows how many AAAA individuals in that EO carry each allele. Pan-EO alleles — those present as AAAA homozygotes in every focus EO — are highlighted in distinct colours (orange = Allele_050, blue = Allele_057); all remaining alleles are shown as a single grey “Other alleles” segment. Annotations show total AAAA count and the percentage carrying a pan-EO allele. EO ordering matches the reproductive effort figure.</p>
 </div>
 </div>
 <div id="scientific-applications-9" class="section level3" number="6.9.4">
@@ -8041,7 +8054,8 @@ python SRK_allele_sharing_EOs.py \
 <li><strong>Conservation triage</strong>: the proportion of supporting individuals per EO directly quantifies how much of the population is functional for managed crossing</li>
 <li><strong>Seed parent pool size</strong>: the annotated n / N count identifies how many individuals are candidates for inclusion in a crossing programme</li>
 <li><strong>Cross-EO comparison</strong>: ordering by mean GFS highlights which EOs are most degraded and therefore highest priority for allele importation combined with GFS-targeted crossing</li>
-<li><h2 id="communication-the-figure-is-designed-for-presentation-to-conservation-managers-translating-the-gfs-metric-into-an-intuitive-proportion-supporting-reproductive-effort-framing"><strong>Communication</strong>: the figure is designed for presentation to conservation managers, translating the GFS metric into an intuitive “proportion supporting reproductive effort” framing</h2></li>
+<li><strong>AAAA allele identity</strong>: the companion figure reveals that most AAAA homozygosity is concentrated in two alleles (Allele_050 and Allele_057) present across all EOs — both members of W-group 1 (see Step 21) and therefore likely the same SI specificity; this substantially reduces the effective number of distinct locks in the AAAA fraction</li>
+<li><h2 id="communication-both-figures-are-designed-for-presentation-to-conservation-managers-translating-gfs-and-allele-identity-into-intuitive-breeding-pool-diagnostics"><strong>Communication</strong>: both figures are designed for presentation to conservation managers, translating GFS and allele identity into intuitive breeding-pool diagnostics</h2></li>
 </ul>
 </div>
 </div>

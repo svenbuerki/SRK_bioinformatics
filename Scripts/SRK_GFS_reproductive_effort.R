@@ -28,6 +28,7 @@
 suppressPackageStartupMessages({
   library(readr)
   library(dplyr)
+  library(stringr)
   library(ggplot2)
   library(forcats)
   library(scales)
@@ -38,6 +39,7 @@ suppressPackageStartupMessages({
 # =============================================================================
 
 GFS_FILE   <- "SRK_individual_GFS.tsv"
+ZYGO_FILE  <- "SRK_individual_zygosity.tsv"
 EO_FOCUS   <- c("EO25", "EO27", "EO67", "EO70", "EO76")
 
 TP2_PROP_AAAA <- 0.30   # TP2 threshold: >30% AAAA = CRITICAL
@@ -205,5 +207,140 @@ cat("  Written: SRK_GFS_reproductive_effort.pdf\n")
 ggsave("SRK_GFS_reproductive_effort.png", plot = p,
        width = 11, height = 6, dpi = 200)
 cat("  Written: SRK_GFS_reproductive_effort.png\n")
+
+# =============================================================================
+# 5. AAAA ALLELE IDENTITY FIGURE
+# =============================================================================
+# Unpacks the AAAA bar in the reproductive effort figure: for each EO, shows
+# how many AAAA individuals carry each allele. Two alleles — Allele_050 and
+# Allele_057 — are present in AAAA individuals across all five EOs and are
+# both members of W-group 1 (likely the same SI specificity). All other alleles
+# are grouped as "Other alleles" to keep the figure readable.
+# =============================================================================
+cat("\nGenerating AAAA allele identity figure...\n")
+
+zygo <- read_tsv(ZYGO_FILE, show_col_types = FALSE)
+
+# Extract each AAAA individual's allele from Allele_composition
+# (AAAA individuals carry one allele — Allele_composition is e.g. "Allele_050(2)")
+aaaa_raw <- gfs %>%
+  filter(Genotype_Pattern == "AAAA", EO %in% EO_FOCUS) %>%
+  select(Individual, EO) %>%
+  left_join(zygo %>% select(Individual, Allele_composition), by = "Individual") %>%
+  mutate(
+    Allele = str_extract(Allele_composition, "Allele_\\d+"),
+    EO     = factor(EO, levels = levels(eo_ann$EO))   # match existing figure order
+  )
+
+# Pan-EO alleles: present in AAAA individuals in every focus EO
+pan_eo <- aaaa_raw %>%
+  group_by(Allele) %>%
+  summarise(n_eos = n_distinct(EO), .groups = "drop") %>%
+  filter(n_eos == length(EO_FOCUS)) %>%
+  pull(Allele) %>%
+  sort()
+
+cat(sprintf("  Pan-EO AAAA alleles (present in all %d EOs): %s\n",
+            length(EO_FOCUS), paste(pan_eo, collapse = ", ")))
+
+# Assign display group: pan-EO alleles labelled individually, rest grouped
+pan_labels <- setNames(
+  paste0(pan_eo, "  (pan-EO, W-group 1)"),
+  pan_eo
+)
+group_levels <- c(pan_labels, "Other alleles")
+
+aaaa_raw <- aaaa_raw %>%
+  mutate(
+    Allele_group = if_else(
+      Allele %in% pan_eo,
+      pan_labels[Allele],
+      "Other alleles"
+    ),
+    Allele_group = factor(Allele_group, levels = group_levels)
+  )
+
+# Counts per EO × allele group
+aaaa_counts <- aaaa_raw %>%
+  count(EO, Allele_group, .drop = FALSE)
+
+# Per-EO totals and pan-EO proportion for annotation
+aaaa_ann <- aaaa_raw %>%
+  group_by(EO) %>%
+  summarise(
+    n_total  = n(),
+    n_pan    = sum(Allele %in% pan_eo),
+    pct_pan  = round(100 * mean(Allele %in% pan_eo)),
+    .groups  = "drop"
+  )
+
+cat("\nAAA allele summary per EO:\n")
+print(aaaa_ann, n = Inf)
+
+# Colours: one per pan-EO allele + grey for Other
+pan_colours <- c("#e6550d", "#3182bd")[seq_along(pan_eo)]
+names(pan_colours) <- pan_labels
+allele_colours <- c(pan_colours, "Other alleles" = "#bdbdbd")
+
+ann_x <- max(aaaa_ann$n_total) * 1.03
+
+p_alleles <- ggplot(aaaa_counts, aes(y = EO, x = n, fill = Allele_group)) +
+  geom_col(
+    position  = position_stack(reverse = TRUE),
+    colour    = "white",
+    linewidth = 0.35
+  ) +
+  geom_text(
+    data        = aaaa_ann,
+    aes(
+      y     = EO,
+      x     = ann_x,
+      label = sprintf("n = %d  (%d%% pan-EO)", n_total, pct_pan)
+    ),
+    inherit.aes = FALSE,
+    hjust       = 0,
+    size        = 3.2,
+    colour      = "grey20"
+  ) +
+  scale_fill_manual(values = allele_colours, name = "Allele") +
+  scale_x_continuous(
+    expand = expansion(mult = c(0, 0.30)),
+    breaks = breaks_pretty()
+  ) +
+  labs(
+    title    = "Allele identity of AAAA individuals per Element Occurrence",
+    subtitle = paste0(
+      "Each AAAA individual carries a single SRK allele across all four genome copies. ",
+      paste(pan_eo, collapse = " and "),
+      " are present in AAAA\n",
+      "individuals across all five EOs and are both members of W-group 1 ",
+      "(HV-identical - likely the same SI specificity).\n",
+      "Annotation: total AAAA count and percentage carrying a pan-EO allele. ",
+      "EOs ordered by mean GFS (ascending), matching Figure 20a."
+    ),
+    x = "Number of AAAA individuals",
+    y = "Element Occurrence"
+  ) +
+  theme_bw(base_size = 13) +
+  theme(
+    legend.position    = "bottom",
+    legend.key.size    = unit(0.55, "cm"),
+    legend.text        = element_text(size = 9),
+    legend.title       = element_text(size = 10, face = "bold"),
+    plot.title         = element_text(face = "bold", size = 13),
+    plot.subtitle      = element_text(size = 9, colour = "grey30", lineheight = 1.3),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor   = element_blank(),
+    axis.text.y        = element_text(face = "bold", size = 12)
+  ) +
+  guides(fill = guide_legend(nrow = 1))
+
+ggsave("SRK_GFS_AAAA_allele_composition.pdf", plot = p_alleles,
+       width = 11, height = 6)
+cat("  Written: SRK_GFS_AAAA_allele_composition.pdf\n")
+
+ggsave("SRK_GFS_AAAA_allele_composition.png", plot = p_alleles,
+       width = 11, height = 6, dpi = 200)
+cat("  Written: SRK_GFS_AAAA_allele_composition.png\n")
 
 cat("\nDone.\n")
