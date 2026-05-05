@@ -11,7 +11,7 @@
 
 <meta name="author" content="Sven Buerki - Boise State University" />
 
-<meta name="date" content="2026-05-04" />
+<meta name="date" content="2026-05-05" />
 
 <title>SRK Bioinformatics</title>
 
@@ -1469,7 +1469,7 @@ border-radius: 0px;
 <h1 class="title toc-ignore">SRK Bioinformatics</h1>
 <h3 class="subtitle">Nanopore-Based SRK Haplotype Reconstruction and Population Analysis Pipeline</h3>
 <h4 class="author">Sven Buerki - Boise State University</h4>
-<h4 class="date">2026-05-04</h4>
+<h4 class="date">2026-05-05</h4>
 
 </div>
 
@@ -8226,6 +8226,18 @@ python SRK_allele_sharing_EOs.py \
 <td><code>SRK_HV_cluster_figure.pdf</code></td>
 <td>UPGMA dendrogram of allele bins coloured by class; AAAA individual count per bin</td>
 </tr>
+<tr class="odd">
+<td><code>SRK_synonymy_network_W.pdf</code></td>
+<td>Two-panel figure: HV-identical W-groups (left, individual alleles, node size ∝ individuals observed); isolated alleles with no HV-identical partner (right)</td>
+</tr>
+<tr class="even">
+<td><code>SRK_synonymy_network_N.pdf</code></td>
+<td>Condensed super-node graph showing N-connectivity between W-groups; each node = one W-group or isolated allele; edges = N-bridges; node size ∝ individuals observed; edge width ∝ log(N-bridge count)</td>
+</tr>
+<tr class="odd">
+<td><code>SRK_synonymy_groups.csv</code></td>
+<td>Per-allele synonymy group membership table — see column descriptions below</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -8344,6 +8356,45 @@ python SRK_allele_sharing_EOs.py \
 <tr class="even">
 <td><code>Expected</code></td>
 <td>Plain-language prediction for seed yield</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>SRK_synonymy_groups.csv</code></strong></p>
+<table>
+<colgroup>
+<col width="38%" />
+<col width="61%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Allele</code></td>
+<td>Allele bin name</td>
+</tr>
+<tr class="even">
+<td><code>Synonymy_group</code></td>
+<td><code>W-group 1</code> through <code>W-group 9</code> for HV-identical clusters; <code>Isolated</code> for alleles with no HV-identical partner</td>
+</tr>
+<tr class="odd">
+<td><code>Group_size</code></td>
+<td>Number of allele bins in this synonymy group (1 for isolated alleles)</td>
+</tr>
+<tr class="even">
+<td><code>Obs_count</code></td>
+<td>Number of individuals (all genotypes) observed carrying this specific allele</td>
+</tr>
+<tr class="odd">
+<td><code>AAAA_count</code></td>
+<td>Number of AAAA individuals carrying this allele (cross-design availability)</td>
+</tr>
+<tr class="even">
+<td><code>Group_obs_total</code></td>
+<td>Total individuals observed across all alleles in the group — indicates the combined breeding relevance of the group</td>
 </tr>
 </tbody>
 </table>

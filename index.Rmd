@@ -5867,6 +5867,9 @@ python srk_allele_hypotheses.py
 | `SRK_AAAA_cross_design_HV.tsv` | All AAAA × AAAA pairs ranked by category (W, N, P_within, P_cross) with HV distances and expected outcomes |
 | `SRK_cross_design_summary.pdf` | Three-panel figure: HV distance distribution by category; cross design schematic; N-cross interpretation decision tree |
 | `SRK_HV_cluster_figure.pdf` | UPGMA dendrogram of allele bins coloured by class; AAAA individual count per bin |
+| `SRK_synonymy_network_W.pdf` | Two-panel figure: HV-identical W-groups (left, individual alleles, node size ∝ individuals observed); isolated alleles with no HV-identical partner (right) |
+| `SRK_synonymy_network_N.pdf` | Condensed super-node graph showing N-connectivity between W-groups; each node = one W-group or isolated allele; edges = N-bridges; node size ∝ individuals observed; edge width ∝ log(N-bridge count) |
+| `SRK_synonymy_groups.csv` | Per-allele synonymy group membership table — see column descriptions below |
 
 #### Key Output Statistics (current dataset: 272 individuals, 63 allele bins, 164 AAAA)
 
@@ -5900,6 +5903,17 @@ Allele bin availability: 20 bins with ≥ 2 AAAA individuals (full design), 14 b
 | `HV_distance` | Pairwise HV-only p-distance between the two alleles |
 | `Category` | **W**, **N**, **P_within**, or **P_cross** — key column for cross prioritisation |
 | `Expected` | Plain-language prediction for seed yield |
+
+**`SRK_synonymy_groups.csv`**
+
+| Column | Description |
+|--------|-------------|
+| `Allele` | Allele bin name |
+| `Synonymy_group` | `W-group 1` through `W-group 9` for HV-identical clusters; `Isolated` for alleles with no HV-identical partner |
+| `Group_size` | Number of allele bins in this synonymy group (1 for isolated alleles) |
+| `Obs_count` | Number of individuals (all genotypes) observed carrying this specific allele |
+| `AAAA_count` | Number of AAAA individuals carrying this allele (cross-design availability) |
+| `Group_obs_total` | Total individuals observed across all alleles in the group — indicates the combined breeding relevance of the group |
 
 ### Scientific Applications
 

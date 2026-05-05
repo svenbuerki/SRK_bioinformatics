@@ -768,6 +768,7 @@ python srk_allele_hypotheses.py
 | 2b | Allele similarity heatmap (colour scale spans within-class range) |
 | 3 | Functional group table, synonymy candidates, AAAA cross design matrix |
 | 3b | Cross design summary figure (distance distribution, category schematic, N-cross interpretation) |
+| 3c | Synonymy network: W-only groups figure + N-connectivity condensed figure; per-allele synonymy group CSV |
 | 4 | UPGMA dendrogram + AAAA availability bar chart |
 | 5 | Cross result analysis (activated when `CROSS_TSV` is set) |
 
@@ -783,6 +784,9 @@ python srk_allele_hypotheses.py
 | `SRK_AAAA_cross_design_HV.tsv` | All AAAA × AAAA pairs ranked W → N → P_within → P_cross, with HV distance and expected outcome |
 | `SRK_cross_design_summary.pdf` | Three-panel figure: HV distance distribution, cross category schematic, N-cross interpretation logic |
 | `SRK_HV_cluster_figure.pdf` | UPGMA dendrogram (HV distances) coloured by class + AAAA availability bar chart |
+| `SRK_synonymy_network_W.pdf` | Two-panel figure: HV-identical W-groups (left, individual alleles); isolated alleles with no HV-identical partner (right) |
+| `SRK_synonymy_network_N.pdf` | Condensed super-node graph: each node = one W-group or isolated allele; edges = N-bridges between groups; node size ∝ individuals observed |
+| `SRK_synonymy_groups.csv` | Per-allele synonymy group membership: group ID, group size, observed individual count (all genotypes), AAAA count, group total observed |
 | `figures/*.png` | PNG copies of all figures at 200 dpi |
 
 **Cross categories:**
@@ -850,7 +854,7 @@ python srk_allele_hypotheses.py
 | Step 18 | `SRK_individual_GFS.tsv` |
 | Step 19 | `SRK_EO_GFS_summary.tsv` |
 | Step 20 | `SRK_GFS_reproductive_effort.pdf`, `SRK_GFS_reproductive_effort.png` |
-| Step 21 | `SRK_functional_allele_groups.tsv`, `SRK_AAAA_cross_design_HV.tsv`, `SRK_synonymy_candidates.tsv` |
+| Step 21 | `SRK_functional_allele_groups.tsv`, `SRK_AAAA_cross_design_HV.tsv`, `SRK_synonymy_candidates.tsv`, `SRK_synonymy_groups.csv` |
 | Step 22 | `SRK_cross_result_analysis_HV.pdf` |
 
 ---

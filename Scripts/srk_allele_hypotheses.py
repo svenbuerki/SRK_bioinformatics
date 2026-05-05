@@ -458,6 +458,10 @@ aaaa_count = {}
 for allele in aaaa_allele.values():
     aaaa_count[allele] = aaaa_count.get(allele, 0) + 1
 
+# Number of distinct individuals carrying each allele (all genotypes)
+obs_count = (df_allele_table.groupby("Allele")["Individual"]
+             .nunique().to_dict())
+
 # ── Functional group table ────────────────────────────────────────────────────
 
 fg_rows = []
@@ -809,6 +813,418 @@ plt.close()
 print(f"Saved {OUT_SUMMARY_FIG}")
 
 # ─────────────────────────────────────────────────────────────────────────────
+# PART 3c — Synonymy network (two-panel: W-only  vs  W+N)
+#
+# Panel A — W-only edges (d=0, HV-identical): tight synonymy groups; layout
+#           separates them so each cluster is visually distinct.
+# Panel B — same node positions; N-edges (dashed) added as overlay to show
+#           how small HV differences chain W-groups into larger components.
+#
+# Node colour encodes W-only component membership → colour is constant across
+# both panels, making the chaining effect immediately legible.
+# ─────────────────────────────────────────────────────────────────────────────
+
+try:
+    import networkx as nx
+    _HAS_NX = True
+except ImportError:
+    print("\nWARNING: networkx not installed — skipping synonymy network figure.")
+    print("  Install with: pip install networkx")
+    _HAS_NX = False
+
+OUT_NET_W        = "SRK_synonymy_network_W.pdf"
+OUT_NET_N        = "SRK_synonymy_network_N.pdf"
+OUT_SYN_GROUPS   = "SRK_synonymy_groups.csv"
+
+if _HAS_NX:
+    print(f"\nBuilding synonymy network ...")
+
+    # ── Build two graphs ──────────────────────────────────────────────────────
+    G_w  = nx.Graph()   # W edges only  (d = 0)
+    G_wn = nx.Graph()   # W + N edges   (d < WITHIN_CLASS_THRESHOLD)
+
+    for allele in allele_names:
+        for G_ in (G_w, G_wn):
+            G_.add_node(allele,
+                        fg=allele_to_fg[allele],
+                        n_aaaa=aaaa_count.get(allele, 0))
+
+    for i, a1 in enumerate(allele_names):
+        for j in range(i + 1, n_alleles):
+            a2   = allele_names[j]
+            d_ij = dist_hv[i, j]
+            if allele_to_fg[a1] != allele_to_fg[a2]:
+                continue                              # between-class: skip
+            if d_ij >= WITHIN_CLASS_THRESHOLD:
+                continue                              # P_within: skip
+            cat = CAT_W if d_ij == 0.0 else CAT_N
+            G_wn.add_edge(a1, a2, distance=round(d_ij, 4), category=cat)
+            if d_ij == 0.0:
+                G_w.add_edge(a1, a2, distance=0.0, category=CAT_W)
+
+    # ── Connected components ──────────────────────────────────────────────────
+    w_comps  = sorted(nx.connected_components(G_w),  key=len, reverse=True)
+    wn_comps = sorted(nx.connected_components(G_wn), key=len, reverse=True)
+    w_multi  = [c for c in w_comps  if len(c) > 1]
+    w_iso    = [list(c)[0] for c in w_comps if len(c) == 1]
+    wn_multi = [c for c in wn_comps if len(c) > 1]
+    wn_iso   = [list(c)[0] for c in wn_comps if len(c) == 1]
+
+    n_w_edges   = G_w.number_of_edges()
+    n_wn_edges  = G_wn.number_of_edges()
+    n_n_edges   = n_wn_edges - n_w_edges
+
+    print(f"  W-only graph   : {n_w_edges} edges  →  {len(w_multi)} groups, {len(w_iso)} isolated")
+    print(f"  W+N graph      : {n_wn_edges} edges  →  {len(wn_multi)} groups, {len(wn_iso)} isolated")
+    print(f"    W (d = 0)    : {n_w_edges}")
+    print(f"    N (0 < d)    : {n_n_edges}")
+
+    # ── Node colours: one colour per W-only multi-node component; grey = isolated ─
+    n_w_multi  = len(w_multi)
+    cmap_comp  = matplotlib.colormaps.get_cmap("tab20").resampled(max(n_w_multi, 2))
+    w_node_col = {}
+    for ci, comp in enumerate(w_multi):
+        col = cmap_comp(ci % 20)
+        for allele in comp:
+            w_node_col[allele] = col
+    for allele in w_iso:
+        w_node_col[allele] = (0.75, 0.75, 0.75, 1.0)
+
+    # ── Layout: per-W-component tiling ───────────────────────────────────────
+    # Each W-only multi-node component is laid out independently with
+    # kamada_kawai_layout, then tiled in a grid.  Isolated nodes go in a
+    # dense row below.  This keeps the W-groups visually separated so
+    # Panel A is clean, and N-edges in Panel B visibly bridge them.
+    CELL  = 2.5     # grid cell size (data units) per W-component
+    NCOLS = max(1, int(np.ceil(np.sqrt(max(n_w_multi, 1)))))
+
+    pos = {}
+    w_comp_layouts = []   # list of (comp_set, sub_pos_dict)
+
+    for comp in w_multi:
+        sub = G_w.subgraph(comp)
+        if len(comp) == 2:
+            nodes_c = list(comp)
+            sub_pos = {nodes_c[0]: np.array([0.0, 0.0]),
+                       nodes_c[1]: np.array([1.0, 0.0])}
+        else:
+            sub_pos = nx.kamada_kawai_layout(sub, weight=None)
+        w_comp_layouts.append((comp, sub_pos))
+
+    for ci, (comp, sub_pos) in enumerate(w_comp_layouts):
+        col_ci = ci % NCOLS
+        row_ci = ci // NCOLS
+        offset = np.array([col_ci * CELL, -row_ci * CELL])
+        for node, xy in sub_pos.items():
+            pos[node] = np.array(xy) + offset
+
+    n_rows_used = (n_w_multi - 1) // NCOLS + 1 if w_multi else 0
+    iso_y_start = -(n_rows_used * CELL + 1.5)
+    ISO_COLS    = max(1, min(12, len(w_iso)))
+    for ii, node in enumerate(w_iso):
+        ic = ii % ISO_COLS
+        ir = ii // ISO_COLS
+        pos[node] = np.array([ic * 1.2, iso_y_start - ir * 1.2])
+
+    # ── Canvas size from pos extents ─────────────────────────────────────────
+    all_xy = np.array(list(pos.values()))
+    x_min, x_max = all_xy[:, 0].min(), all_xy[:, 0].max()
+    y_min, y_max = all_xy[:, 1].min(), all_xy[:, 1].max()
+    pad = 1.0
+    ax_xlim = (x_min - pad, x_max + pad)
+    ax_ylim = (y_min - pad, y_max + pad)
+
+    node_list   = list(G_w.nodes())   # consistent node order for both panels
+    node_colors = [w_node_col[n] for n in node_list]
+    node_sizes  = [max(100, obs_count.get(n, 0) * 55 + 120) for n in node_list]
+
+    # ── Synonymy-collapsed allele count (W-only, HV-identical) ──────────────
+    n_merged_W        = len(w_multi) + len(w_iso)
+    n_collapsed       = sum(len(c) for c in w_multi) - len(w_multi)
+    print(f"\n── Synonymy-collapsed allele count (W-only, HV-identical) ──")
+    print(f"  Original allele count : {n_alleles}")
+    print(f"  After merging W-groups: {n_merged_W}  "
+          f"({len(w_multi)} groups + {len(w_iso)} singletons)")
+    print(f"  Alleles collapsed     : {n_collapsed} bins removed "
+          f"({sum(len(c) for c in w_multi)} alleles → {len(w_multi)} groups)")
+
+    # ── Figure A: two panels — W-groups (left) | isolated alleles (right) ────
+    w_iso_set     = set(w_iso)
+    grp_node_list = [n for n in node_list if n not in w_iso_set]
+    grp_colors    = [w_node_col[n] for n in grp_node_list]
+    grp_sizes     = [max(100, obs_count.get(n, 0) * 55 + 120) for n in grp_node_list]
+
+    # Main-panel limits: W-group nodes only (removes the iso row from extent)
+    grp_xy   = np.array([pos[n] for n in grp_node_list]) if grp_node_list else np.array([[0, 0]])
+    xg_min, xg_max = grp_xy[:, 0].min(), grp_xy[:, 0].max()
+    yg_min, yg_max = grp_xy[:, 1].min(), grp_xy[:, 1].max()
+    ax_main_xlim = (xg_min - pad, xg_max + pad)
+    ax_main_ylim = (yg_min - pad, yg_max + pad)
+    fig_h = max(8, (yg_max - yg_min + 2 * pad) * 1.8)
+
+    # Isolated alleles: grid positions sorted by obs_count descending
+    w_iso_sorted  = sorted(w_iso, key=lambda a: obs_count.get(a, 0), reverse=True)
+    ISO_GRID_COLS = 3
+    iso_grid_pos  = {}
+    for ii, node in enumerate(w_iso_sorted):
+        ic = ii % ISO_GRID_COLS
+        ir = ii // ISO_GRID_COLS
+        iso_grid_pos[node] = np.array([ic * 1.8, -ir * 1.8], dtype=float)
+    iso_sizes = [max(100, obs_count.get(n, 0) * 55 + 120) for n in w_iso_sorted]
+
+    fig_a, (ax_main, ax_iso) = plt.subplots(
+        1, 2, figsize=(fig_h * 1.5, fig_h),
+        gridspec_kw={"width_ratios": [3, 1]})
+    for ax in (ax_main, ax_iso):
+        ax.set_aspect("equal")
+        ax.axis("off")
+
+    ax_main.set_xlim(*ax_main_xlim)
+    ax_main.set_ylim(*ax_main_ylim)
+
+    # W-group nodes and edges in ax_main
+    nx.draw_networkx_edges(G_w, pos, edgelist=list(G_w.edges()),
+                           edge_color="#d62728", width=3.0, alpha=0.80, ax=ax_main)
+    nx.draw_networkx_nodes(G_w, pos, nodelist=grp_node_list,
+                           node_color=grp_colors, node_size=grp_sizes,
+                           alpha=0.92, linewidths=0.8, edgecolors="white", ax=ax_main)
+    nx.draw_networkx_labels(G_w, pos,
+                            labels={n: n for n in grp_node_list},
+                            font_size=5.5, font_color="white",
+                            font_weight="bold", ax=ax_main)
+
+    for comp, _ in w_comp_layouts:
+        gxs = [pos[n][0] for n in comp]
+        gys = [pos[n][1] for n in comp]
+        ax_main.text(np.mean(gxs), max(gys) + 0.28,
+                     f"W-group  ({len(comp)} alleles)",
+                     ha="center", va="bottom", fontsize=5.5,
+                     color="dimgrey", style="italic")
+
+    ax_main.set_title(
+        f"HV-identical synonymy groups  (d = 0)\n"
+        f"{n_w_edges} W-edges  ·  {len(w_multi)} synonymy groups",
+        fontsize=11, fontweight="bold", pad=8)
+
+    # Isolated alleles in ax_iso: grey nodes, dark labels (allele ID + obs count)
+    nx.draw_networkx_nodes(G_w, iso_grid_pos, nodelist=w_iso_sorted,
+                           node_color=[(0.75, 0.75, 0.75, 1.0)] * len(w_iso_sorted),
+                           node_size=iso_sizes,
+                           alpha=0.92, linewidths=0.8, edgecolors="white", ax=ax_iso)
+    for node in w_iso_sorted:
+        x, y = iso_grid_pos[node]
+        ax_iso.text(x, y, f"{node.replace('Allele_', 'A')}\n({obs_count.get(node, 0)})",
+                    ha="center", va="center", fontsize=5.5,
+                    color="#111111", fontweight="bold")
+
+    if iso_grid_pos:
+        iso_xy = np.array(list(iso_grid_pos.values()))
+        ax_iso.set_xlim(iso_xy[:, 0].min() - 1.2, iso_xy[:, 0].max() + 1.2)
+        ax_iso.set_ylim(iso_xy[:, 1].min() - 1.2, iso_xy[:, 1].max() + 1.2)
+    ax_iso.set_title(
+        f"Isolated  ({len(w_iso)} alleles)\nno HV-identical partner",
+        fontsize=11, fontweight="bold", pad=8)
+
+    # Synonymy count annotation
+    fig_a.text(
+        0.5, 0.01,
+        f"Synonymy-collapsed allele count:  {n_alleles} observed alleles  →  "
+        f"{n_merged_W} functional groups  (merging {n_collapsed} HV-identical bins)",
+        ha="center", va="bottom", fontsize=9,
+        style="italic", color="dimgrey",
+        bbox=dict(boxstyle="round,pad=0.3", fc="white", alpha=0.85, ec="lightgrey"))
+
+    legend_elems_a = [
+        plt.Line2D([0], [0], color="#d62728", linewidth=3,
+                   label="W-edge  d = 0  (HV-identical)"),
+        mpatches.Patch(facecolor=(0.75, 0.75, 0.75), edgecolor="white",
+                       label="Isolated allele (no W-edges)"),
+        mpatches.Patch(facecolor="none", edgecolor="none",
+                       label="Node colour = W-only group  ·  node size ∝ individuals observed  ·  label = allele ID (obs. count)"),
+    ]
+    fig_a.legend(handles=legend_elems_a, loc="lower center", ncol=3,
+                 fontsize=9, framealpha=0.9, bbox_to_anchor=(0.5, -0.04))
+
+    fig_a.suptitle(
+        "SRK allele synonymy network — HV-identical W-groups",
+        fontsize=12, fontweight="bold", y=1.01)
+
+    plt.tight_layout()
+    plt.savefig(OUT_NET_W, format="pdf", dpi=150, bbox_inches="tight")
+    plt.savefig(os.path.join("figures", OUT_NET_W.replace(".pdf", ".png")),
+                format="png", dpi=200, bbox_inches="tight")
+    plt.close()
+    print(f"Saved {OUT_NET_W}")
+
+    # ── Figure B: Condensed super-node graph — N-connectivity between W-groups ─
+    # Each node = one W-only group (or one isolated allele).
+    # An edge exists when ≥1 N-edge (0 < d < threshold) bridges the two groups.
+    # Edge width ∝ log(number of N-bridges).
+
+    allele_to_cid = {}
+    cid_alleles   = {}
+    cid_color     = {}
+    cid_n_alleles = {}
+    cid_obs       = {}
+
+    for ci, comp in enumerate(w_multi):
+        cid = f"Group {ci + 1}"
+        for a in comp:
+            allele_to_cid[a] = cid
+        cid_alleles[cid]   = sorted(comp)
+        cid_color[cid]     = cmap_comp(ci % 20)
+        cid_n_alleles[cid] = len(comp)
+        cid_obs[cid]       = sum(obs_count.get(a, 0) for a in comp)
+
+    for a in w_iso:
+        allele_to_cid[a] = a
+        cid_alleles[a]   = [a]
+        cid_color[a]     = (0.75, 0.75, 0.75, 1.0)
+        cid_n_alleles[a] = 1
+        cid_obs[a]       = obs_count.get(a, 0)
+
+    G_super = nx.Graph()
+    for cid in cid_alleles:
+        G_super.add_node(cid)
+
+    n_bridges_dict = {}
+    for u, v, d in G_wn.edges(data=True):
+        if d["category"] != CAT_N:
+            continue
+        cu, cv = allele_to_cid[u], allele_to_cid[v]
+        if cu == cv:
+            continue
+        key = tuple(sorted([cu, cv]))
+        n_bridges_dict[key] = n_bridges_dict.get(key, 0) + 1
+
+    for (cu, cv), cnt in n_bridges_dict.items():
+        G_super.add_edge(cu, cv, n_bridges=cnt)
+
+    super_pos = nx.kamada_kawai_layout(G_super)
+
+    super_nodes   = list(G_super.nodes())
+    super_colors  = [cid_color[n] for n in super_nodes]
+    super_sizes   = [max(250, cid_obs[n] * 55 + 120) for n in super_nodes]
+
+    s_edge_list   = list(G_super.edges(data=True))
+    s_edge_widths = [max(0.8, np.log1p(d["n_bridges"]) * 1.2)
+                     for _, _, d in s_edge_list]
+
+    super_comps   = list(nx.connected_components(G_super))
+    n_super_multi = len([c for c in super_comps if len(c) > 1])
+    n_super_iso   = len([c for c in super_comps if len(c) == 1])
+
+    fig_b, ax_b = plt.subplots(1, 1, figsize=(12, 12))
+    ax_b.set_aspect("equal")
+    ax_b.axis("off")
+
+    nx.draw_networkx_edges(G_super, super_pos,
+                           edgelist=[(u, v) for u, v, _ in s_edge_list],
+                           width=s_edge_widths,
+                           edge_color="#ff7f0e", alpha=0.75, ax=ax_b)
+    nx.draw_networkx_nodes(G_super, super_pos, nodelist=super_nodes,
+                           node_color=super_colors, node_size=super_sizes,
+                           alpha=0.92, linewidths=0.8, edgecolors="white", ax=ax_b)
+
+    grp_nodes  = [n for n in super_nodes if cid_n_alleles[n] > 1]
+    iso_snodes = [n for n in super_nodes if cid_n_alleles[n] == 1]
+
+    def _slabel(cid):
+        if cid_n_alleles[cid] > 1:
+            return f"{cid}\n{cid_n_alleles[cid]} alleles\n{cid_obs[cid]} indiv."
+        return cid.replace("Allele_", "A")
+
+    if grp_nodes:
+        nx.draw_networkx_labels(G_super, super_pos,
+                                labels={n: _slabel(n) for n in grp_nodes},
+                                font_size=6.5, font_color="white",
+                                font_weight="bold", ax=ax_b)
+    if iso_snodes:
+        nx.draw_networkx_labels(G_super, super_pos,
+                                labels={n: _slabel(n) for n in iso_snodes},
+                                font_size=5.0, font_color="#333333",
+                                font_weight="normal", ax=ax_b)
+
+    ax_b.set_title(
+        f"N-connectivity between W-groups (condensed)\n"
+        f"Each node = one W-group or isolated allele  ·  "
+        f"{G_super.number_of_edges()} inter-group N-bridges  ·  "
+        f"{n_super_multi} merged component(s)  ·  {n_super_iso} isolated",
+        fontsize=11, fontweight="bold", pad=8)
+
+    legend_elems_b = [
+        plt.Line2D([0], [0], color="#ff7f0e", linewidth=2, alpha=0.75,
+                   label=f"N-bridge  0 < d < {WITHIN_CLASS_THRESHOLD}  (synonymy test)"),
+        mpatches.Patch(facecolor=(0.75, 0.75, 0.75), edgecolor="white",
+                       label="Isolated allele (no W-edges)"),
+        mpatches.Patch(facecolor="none", edgecolor="none",
+                       label="Node colour = W-only group  ·  node size ∝ individuals observed  ·  edge width ∝ log(N-bridges)"),
+    ]
+    fig_b.legend(handles=legend_elems_b, loc="lower center", ncol=3,
+                 fontsize=9, framealpha=0.9, bbox_to_anchor=(0.5, -0.04))
+
+    fig_b.suptitle(
+        "SRK allele synonymy network — N-connectivity between W-groups",
+        fontsize=12, fontweight="bold", y=1.01)
+
+    plt.tight_layout()
+    plt.savefig(OUT_NET_N, format="pdf", dpi=150, bbox_inches="tight")
+    plt.savefig(os.path.join("figures", OUT_NET_N.replace(".pdf", ".png")),
+                format="png", dpi=200, bbox_inches="tight")
+    plt.close()
+    print(f"Saved {OUT_NET_N}")
+
+    # ── Synonymy groups CSV ───────────────────────────────────────────────────
+    syn_grp_rows = []
+    for ci, comp in enumerate(w_multi, 1):
+        grp_label   = f"W-group {ci}"
+        grp_size    = len(comp)
+        grp_obs_tot = sum(obs_count.get(a, 0) for a in comp)
+        for a in sorted(comp):
+            syn_grp_rows.append({
+                "Allele":           a,
+                "Synonymy_group":   grp_label,
+                "Group_size":       grp_size,
+                "Obs_count":        obs_count.get(a, 0),
+                "AAAA_count":       aaaa_count.get(a, 0),
+                "Group_obs_total":  grp_obs_tot,
+            })
+    for a in sorted(w_iso):
+        syn_grp_rows.append({
+            "Allele":           a,
+            "Synonymy_group":   "Isolated",
+            "Group_size":       1,
+            "Obs_count":        obs_count.get(a, 0),
+            "AAAA_count":       aaaa_count.get(a, 0),
+            "Group_obs_total":  obs_count.get(a, 0),
+        })
+    df_syn_grp = (pd.DataFrame(syn_grp_rows)
+                    .sort_values(["Synonymy_group", "Allele"])
+                    .reset_index(drop=True))
+    df_syn_grp.to_csv(OUT_SYN_GROUPS, index=False)
+    print(f"Saved {OUT_SYN_GROUPS}  ({len(df_syn_grp)} alleles: "
+          f"{len(w_multi)} W-groups + {len(w_iso)} isolated)")
+
+    # ── Console summary ───────────────────────────────────────────────────────
+    print("\n── W-only synonymy groups (HV-identical; strong merge-bin candidates) ──")
+    for ci, comp in enumerate(w_multi, 1):
+        alleles_sorted = sorted(comp)
+        n_aaaa_grp = sum(aaaa_count.get(a, 0) for a in alleles_sorted)
+        print(f"  Group {ci}: {len(comp)} alleles,  {n_aaaa_grp} AAAA total")
+        print(f"    {', '.join(alleles_sorted)}")
+
+    print("\n── W+N components (chaining via small HV differences) ──")
+    for ci, comp in enumerate(wn_multi, 1):
+        alleles_sorted = sorted(comp)
+        sub = G_wn.subgraph(comp)
+        w_cnt = sum(1 for *_, d in sub.edges(data=True) if d["category"] == CAT_W)
+        n_cnt = sum(1 for *_, d in sub.edges(data=True) if d["category"] == CAT_N)
+        n_aaaa_grp = sum(aaaa_count.get(a, 0) for a in alleles_sorted)
+        print(f"  Component {ci}: {len(comp)} alleles  "
+              f"({w_cnt} W-edges, {n_cnt} N-edges, {n_aaaa_grp} AAAA total)")
+        print(f"    {', '.join(alleles_sorted)}")
+
+# ─────────────────────────────────────────────────────────────────────────────
 # PART 4 — Cluster figure: HV dendrogram + AAAA availability
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -887,6 +1303,10 @@ if not (CROSS_TSV and os.path.exists(CROSS_TSV)):
     print(f"  {OUT_SYNONYMY}       — synonymy candidate pairs")
     print(f"  {OUT_CROSS_DESIGN}   — AAAA × AAAA cross design (W/N/P)")
     print(f"  {OUT_CLUSTER_FIG}    — HV-distance dendrogram")
+    if _HAS_NX:
+        print(f"  {OUT_NET_W}   — synonymy network (W-only groups)")
+        print(f"  {OUT_NET_N}   — synonymy network (N-connectivity condensed)")
+        print(f"  {OUT_SYN_GROUPS}        — per-allele synonymy group membership")
     sys.exit(0)
 
 df_cx = pd.read_csv(CROSS_TSV, sep="\t", encoding="utf-8-sig")
