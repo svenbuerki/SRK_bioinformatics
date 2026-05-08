@@ -6,37 +6,27 @@ Self-incompatibility (SI) in *LEPA* is controlled by the S-locus, where the extr
 
 The analyses presented here address a single overarching conservation question: **what is the impact of genetic drift on reproductive success?** Five sequential questions structure the assessment:
 
-1. **What is the S-allele richness of the species?** The species-level allele pool approximates the balancing selection richness equilibrium and serves as the reference baseline against which population-level deficits are measured ([Section 2](#2-allelic-richness-in-lepa)).
-2. **How is the species spatially structured into independent bottleneck lineages, and is the contemporary drift signal lineage-specific or species-wide?** Spatial-connectivity analysis performed in the sibling repository [**LEPA_EO_spatial_clustering**](https://github.com/svenbuerki/LEPA_EO_spatial_clustering) partitions the species into **five independent bottleneck lineages (BL1–BL5)** by Ward's D2 clustering of geographic group centroids ([Section 1b](#1b-bottleneck-lineages-the-spatial-drift-framework)). The BL framework provides the demographic stratum against which every drift signal in this report is tested in parallel with the EO-level view; the test of independence itself is delivered by the per-BL allele richness and allele-sharing analyses ([Sections 2](#2-allelic-richness-in-lepa) and [4](#4-reproductive-status-of-element-occurrences)).
-3. **How did genetic drift impact populations' S-allele diversity?** [Tipping Point 1 (TP1)](#4a-tipping-point-1-tp1--health-of-the-si-system) identifies Element Occurrences (EOs) and bottleneck lineages (BLs) where allele loss and frequency skew are so severe that inter-population allele transfers are required to restore the SI system.
-4. **How did genetic drift impact the reproductive fitness of individuals within populations?** [Tipping Point 2 (TP2)](#4b-individual-genotypic-fitness-score-gfs-and-tipping-point-2-tp2--reproductive-fitness) identifies EOs and BLs where allele copy-count imbalances at the individual level have degraded reproductive output to the point that within-population crosses alone cannot restore fitness.
-5. **How does habitat fragmentation mechanistically translate into S-allele erosion and the accumulation of reproductive dead-ends?** The [Compatibility Collapse Cascade (C3; Section 5)](#5-the-compatibility-collapse-cascade-c3-a-mechanistic-framework-linking-habitat-fragmentation-to-reproductive-failure) integrates the findings above into a five-stage self-reinforcing mechanism explaining how spatial isolation drives reproductive failure even within populations where the SI system remains structurally intact.
+1. **How is the species spatially structured into independent bottleneck lineages, and is the contemporary drift signal lineage-specific or species-wide?** Spatial-connectivity analysis performed in the sibling repository [**LEPA_EO_spatial_clustering**](https://github.com/svenbuerki/LEPA_EO_spatial_clustering) partitions the species into **five independent bottleneck lineages (BL1–BL5)** by Ward's D2 clustering of geographic group centroids ([Section 1](#1-bottleneck-lineages-the-spatial-drift-framework)). The BL framework provides the demographic stratum against which every drift signal in this report is tested in parallel with the EO-level view; the test of independence itself is delivered by the per-BL allele richness and allele-sharing analyses ([Sections 3](#3-allelic-richness-in-lepa) and [5](#5-reproductive-status-of-element-occurrences)).
+2. **What is the S-allele richness of the species?** The species-level allele pool approximates the balancing selection richness equilibrium and serves as the reference baseline against which population-level deficits are measured ([Section 3](#3-allelic-richness-in-lepa)).
+3. **How did genetic drift impact populations' S-allele diversity?** [Tipping Point 1 (TP1)](#5a-tipping-point-1-tp1--health-of-the-si-system) identifies Element Occurrences (EOs) and bottleneck lineages (BLs) where allele loss and frequency skew are so severe that inter-population allele transfers are required to restore the SI system.
+4. **How did genetic drift impact the reproductive fitness of individuals within populations?** [Tipping Point 2 (TP2)](#5b-individual-genotypic-fitness-score-gfs-and-tipping-point-2-tp2--reproductive-fitness) identifies EOs and BLs where allele copy-count imbalances at the individual level have degraded reproductive output to the point that within-population crosses alone cannot restore fitness.
+5. **How does habitat fragmentation mechanistically translate into S-allele erosion and the accumulation of reproductive dead-ends?** The [Compatibility Collapse Cascade (C3; Section 6)](#6-the-compatibility-collapse-cascade-c3-a-mechanistic-framework-linking-habitat-fragmentation-to-reproductive-failure) integrates the findings above into a five-stage self-reinforcing mechanism explaining how spatial isolation drives reproductive failure even within populations where the SI system remains structurally intact.
 
 ---
 
-### 1. Allele Definition
+### 1. Bottleneck Lineages: The Spatial Drift Framework
 
-We targeted the S-domain of the SRK protein — the functional "lock" in the lock-and-key recognition mechanism — to define alleles. We first identified all unique functional protein sequences within this domain across the dataset and visualised amino acid variation across positions ([Figure 1](#figure-1)). We then applied a distance-based sensitivity analysis to cluster protein sequences into allele bins, selecting the clustering threshold that maximised biological resolution while minimising artefactual splitting ([Figure 2](#figure-2)). The sensitivity curve for the current dataset (Libraries 001–009; 308 individuals; 302 functional proteins) showed a plateau between 50 and 100 alleles centred at **63**, corresponding to an implied p-distance threshold of ~0.005 (0.5%); this value was adopted as `N_ALLELES`. Each resulting cluster represents an S-allele bin — an allele hypothesis that groups functionally equivalent proteins under a single identity.
+Genetic drift acts within demographically isolated populations. Before defining S-alleles or evaluating how drift has impacted S-allele diversity in *L. papilliferum*, we must establish how the species is spatially structured into demographically distinct units. This was done in a companion analysis published in the sibling GitHub repository [**LEPA_EO_spatial_clustering**](https://github.com/svenbuerki/LEPA_EO_spatial_clustering), which: (1) constructed convex-hull polygons from 758 georeferenced collection events across 39 locations in 19 EOs (UTM Zone 11N); (2) partitioned the locations into geographic groups using the maximum pollinator dispersal distance for *L. papilliferum* (~500 m; consistent with published estimates for small-bodied bee and fly pollinators in fragmented landscapes) as the connectivity threshold; (3) clustered the 32 resulting group centroids by Ward's D2 hierarchical clustering of geographic distances; and (4) selected k = 5 by silhouette optimisation (silhouette score = 0.73), yielding **five independent bottleneck lineages (BL1–BL5)** ([Figure 1](#figure-1)). A complementary drift-intensity index (DI) was derived from the union area of connected-group hull polygons (DI = 0: largest group, weakest drift; DI = 1: smallest, expected-strongest drift) as a relative spatial proxy for *Ne* and is visualised lineage-by-lineage in [Figure 2](#figure-2). Full methodological documentation, the per-group polygon dataset, and the analysis script are published in the [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering) repository (`Data/EO_spatial_clustering_documentation.md`, `Scripts/EO_spatial_clustering.R`); the BL × group × EO cross-reference is in `tables/EO_group_BL_summary.csv` and is propagated to this repository as the input to [Step 13](Bioinformatics_pipeline.md) of the SRK pipeline (`SRK_BL_integration.py`), which writes per-individual BL assignments (`SRK_individual_BL_assignments.tsv`) consumed by every Phase 3 / Phase 4 analysis.
+
+The BL framework is used throughout this report as the primary demographic stratum for testing whether drift signals are common to the species or specific to individual lineages. Element Occurrences (EOs) remain the management unit (sorted by parent BL in every figure and table); BLs are the inferential unit (aggregated across all member individuals to gain power, especially in the small-N localities). The locked Set1 colour palette — BL1 red `#E41A1C`, BL2 blue `#377EB8`, BL3 green `#4DAF4A`, BL4 purple `#984EA3`, BL5 orange `#FF7F00` — is used consistently in both repositories so that the dendrogram, drift-intensity panels, and every BL-stratified figure in this report cross-reference visually.
 
 <a name="figure-1"></a>
 
-![Figure 1: SRK amino acid frequency heatmap](figures/SRK_AA_frequency_heatmap.png)
+![Figure 1: Ward's D2 hierarchical clustering of the 32 geographic groups (across 19 EOs of *L. papilliferum*) partitions the species into five independent bottleneck lineages (BL1–BL5; silhouette-optimal k = 5; silhouette score = 0.73). Lower strip: per-group drift index (red = strong drift / DI > 0.75; blue = weak drift / DI < 0.5). Bottom strip: census size N per group. Set1 palette matches the BL colour scheme used throughout this report. Source: `EO_clustering_dendrogram.png` from the [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering) repository.](figures/EO_clustering_dendrogram.png)
 
 <a name="figure-2"></a>
 
-![Figure 2: SRK protein distance analysis](figures/SRK_protein_distance_analysis.png)
-
----
-
-### 1b. Bottleneck Lineages: The Spatial Drift Framework {#1b-bottleneck-lineages-the-spatial-drift-framework}
-
-Genetic drift acts within demographically isolated populations. Before evaluating how drift has impacted S-allele diversity in *L. papilliferum*, we must establish how the species is spatially structured into demographically distinct units. This was done in a companion analysis published in the sibling GitHub repository [**LEPA_EO_spatial_clustering**](https://github.com/svenbuerki/LEPA_EO_spatial_clustering), which: (1) constructed convex-hull polygons from 758 georeferenced collection events across 39 locations in 19 EOs (UTM Zone 11N); (2) partitioned the locations into geographic groups using the maximum pollinator dispersal distance for *L. papilliferum* (~500 m) as the connectivity threshold; (3) clustered the 32 resulting group centroids by Ward's D2 hierarchical clustering of geographic distances; and (4) selected k = 5 by silhouette optimisation (silhouette score = 0.73), yielding **five independent bottleneck lineages (BL1–BL5)** ([Figure 1b](#figure-1b)). The full spatial-mechanics breakdown — pollinator connectivity, geographic groups, and per-group drift index — is summarised in [Section 4c](#4c-spatial-connectivity-of-element-occurrences-isolating-the-ancestral-bottleneck); the BL × group × EO cross-reference is published in `tables/EO_group_BL_summary.csv` of the spatial-clustering repository and propagated to this repository as the input to [Step 13](Bioinformatics_pipeline.md) of the SRK pipeline (`SRK_BL_integration.py`), which writes per-individual BL assignments (`SRK_individual_BL_assignments.tsv`) consumed by every Phase 3 / Phase 4 analysis.
-
-The BL framework is used throughout this report as the primary demographic stratum for testing whether drift signals are common to the species or specific to individual lineages. Element Occurrences (EOs) remain the management unit (sorted by parent BL in every figure and table); BLs are the inferential unit (aggregated across all member individuals to gain power, especially in the small-N localities). The locked Set1 colour palette — BL1 red `#E41A1C`, BL2 blue `#377EB8`, BL3 green `#4DAF4A`, BL4 purple `#984EA3`, BL5 orange `#FF7F00` — is used consistently in both repositories so that the dendrogram, drift-index map, and every BL-stratified panel in this report cross-reference visually.
-
-<a name="figure-1b"></a>
-
-![Figure 1b: Ward's D2 hierarchical clustering of the 32 geographic groups (across 19 EOs of *L. papilliferum*) partitions the species into five independent bottleneck lineages (BL1–BL5; silhouette-optimal k = 5). Lower strip: per-group drift index (red = strong drift / DI > 0.75; blue = weak drift / DI < 0.5). Bottom strip: census size N per group. Set1 palette matches the BL colour scheme used throughout this report. Source: `EO_clustering_dendrogram.png` from the [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering) repository.](figures/EO_clustering_dendrogram.png)
+![Figure 2: Predicted genetic drift intensity across the five independent bottleneck lineages of *L. papilliferum*. One panel per BL (BL1–BL5, in lineage order); each panel shows the geographic groups within that lineage as polygons coloured by drift index (red = strong drift / small habitat footprint; blue = weak drift / large footprint), sized by census population size, with within-BL pollinator connections shown as solid lines (≤ 500 m) and between-group separations as dashed lines (> 500 m). The lineage-level panels show how isolation and drift intensity are distributed within each BL — for example, BL4 contains the only large-area / low-DI group in the species (EO27 group 11 at 19.6 ha, DI = 0.000), while BL1 is dominated by extreme-DI singletons. Source: `EO_BL_drift_panel.png` from the [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering) repository.](figures/EO_BL_drift_panel.png)
 
 **Bottleneck-lineage membership and SRK sample sizes** (262 of 272 BL-assigned ingroup individuals; 10 germplasm sub-codes remain Unassigned and contribute only to species-level baselines):
 
@@ -48,13 +38,81 @@ The BL framework is used throughout this report as the primary demographic strat
 | BL4 | 7                   | 8           | 4     | 78                  | **31**             | **57%**                              |
 | BL5 | 9                   | 13          | 5     | 60                  | 18                 | 33%                                  |
 
-**The BL framework provides three analytical advantages that the EO-only view cannot.** First, it rescues the 21 small localities (n = 1–3 each) that cannot support EO-level statistics on their own — pooling them into their parent BL yields five lineage aggregates of n = 5–78 individuals. Second, it allows a direct empirical test of the independent-bottleneck hypothesis: if drift trajectories were independent in each lineage, the allele sets retained in each BL should be largely private. This prediction is confirmed quantitatively in [Section 4](#4-reproductive-status-of-element-occurrences) — 33 of 54 alleles (61%) are private to a single BL, and only Allele_050 and Allele_057 are shared across all five lineages — providing the sharpest available evidence that the contemporary species allele pool was shaped by **multiple independent founder events**, not a single shared ancestral bottleneck. Third, it preserves the full 272-individual species pool for any species-level baseline (e.g., the MM = 69 species-richness estimate used as the NFDS optimum in Section 2) by stratifying only at the population/lineage level rather than the species level.
+**Overall connectivity.** Of 741 pairwise location comparisons, only **7 pairs** (0.9%) are connected within the 500 m pollinator dispersal threshold — and **all 7 are within the same EO**. There are no between-EO pollinator connections anywhere in the dataset under current conditions: every Element Occurrence is a closed demographic unit at the pollination scale, and any inter-EO gene flow would have to traverse landscape distances orders of magnitude beyond the species' pollinator dispersal limit.
 
-Cross-references throughout this report use the BL1–BL5 labels and Set1 palette established here. Sections [2](#2-allelic-richness-in-lepa) (allele richness), [4](#4-reproductive-status-of-element-occurrences) (allele composition / sharing), [4a](#4a-tipping-point-1-tp1--health-of-the-si-system) (TP1) and [4b](#4b-individual-genotypic-fitness-score-gfs-and-tipping-point-2-tp2--reproductive-fitness) (TP2) all present results in two parallel views — sorted by EO with BL-coloured labels (management view) and aggregated by BL (lineage / inferential view).
+**Geographic groups.** The 500 m threshold partitions all 39 locations into **32 geographic groups** (connected components). Twenty-six of 39 locations (67%) are completely isolated — no neighbour within the pollinator dispersal limit. Only four groups contain more than one location:
+
+| Group | Locations | EO(s) | N locations | Notes |
+|-------|-----------|-------|-------------|-------|
+| 11 | 11, 12 | EO27 | 2 | 285.6 m apart |
+| 13 | 15–19 | EO18 | 5 | Fully connected chain; pairwise distances 358–493 m |
+| 25 | 31, 32 | EO26 | 2 | 369.3 m apart |
+| 26 | 33, 34 | EO26 | 2 | 364.1 m apart |
+
+EO18 (group 13) is the largest connected cluster — all five of its locations form a single connected component with a combined area of 8.1 ha (DI = 0.588). It is the strongest candidate for a population that retains meaningful internal gene flow. The closest unconnected group pair (EO26 groups 25 and 26) is 586.3 m — just outside the threshold — and several near-miss pairs in the 586–1,766 m range represent locations that could potentially be reconnected through targeted habitat management.
+
+**Drift index.** Group union areas span four orders of magnitude. The vast majority of groups (≈84%) occupy less than 1 ha (DI > 0.95), placing them in the extreme-drift regime. Several groups have effectively zero measured area (DI = 1.000): all four EO24 locations (locs 22–25), EO68, EO48, EO67, EO72, and EO118 — all their collection events share the same recorded coordinate, reflecting the smallest spatial footprints (or GPS rounding) in the dataset. The three lowest-drift groups are EO27 group 11 (19.6 ha, DI = 0.000), EO32 (14.6 ha, DI = 0.255), and EO18 (8.1 ha, DI = 0.588 over a fully-connected 5-location chain). The spatial distribution of groups and their drift indices, broken down by parent BL, is shown in [Figure 2](#figure-2).
+
+**Detailed BL × group × EO × population reference** (all 32 groups, sorted by lineage):
+
+| BL | Group | EO | Population IDs | N locs | Area (ha) | Drift index |
+|----|-------|----|----------------|:------:|----------:|:-----------:|
+| BL1 | 7 | EO29 | 8 | 1 | 0.04 | 0.998 |
+| BL1 | 20 | EO08 | 27 | 1 | 1.27 | 0.935 |
+| BL1 | 21 | EO08 | 28 | 1 | 3.44 | 0.825 |
+| BL1 | 22 | EO08 | 29 | 1 | 0.61 | 0.969 |
+| BL1 | 23 | EO26 | 30 | 1 | 0.48 | 0.976 |
+| BL1 | 24 | EO26 | 31, 32 | 2 | 0.66 | 0.967 |
+| BL1 | 25 | EO26 | 33, 34 | 2 | 0.44 | 0.977 |
+| BL1 | 26 | EO26 | 35 | 1 | 0.13 | 0.993 |
+| BL1 | 27 | EO26 | 36 | 1 | 0.06 | 0.997 |
+| BL1 | 29 | EO61 | 38 | 1 | 0.89 | 0.955 |
+| BL2 | 4 | EO68 | 5 | 1 | 0.00 | 1.000 |
+| BL2 | 19 | EO70 | 26 | 1 | 0.01 | 0.999 |
+| BL3 | 1 | EO38 | 1 | 1 | 1.23 | 0.938 |
+| BL3 | 2 | EO76 | 2 | 1 | 7.11 | 0.638 |
+| BL3 | 3 | EO52 | 3 | 1 | 0.26 | 0.987 |
+| BL3 | 4 | EO118 | 4 | 1 | 0.00 | 1.000 |
+| BL4 | 8 | EO27 | 9 | 1 | 0.09 | 0.995 |
+| BL4 | 9 | EO27 | 10 | 1 | 0.24 | 0.988 |
+| BL4 | 10 | EO27 | 11, 12 | 2 | 19.63 | 0.000 |
+| BL4 | 11 | EO30 | 13 | 1 | 0.53 | 0.973 |
+| BL4 | 28 | EO27 | 37 | 1 | 5.57 | 0.716 |
+| BL4 | 30 | EO67 | 39 | 1 | 0.00 | 1.000 |
+| BL4 | 31 | EO72 | 40 | 1 | 0.00 | 1.000 |
+| BL5 | 5 | EO32 | 6 | 1 | 14.62 | 0.255 |
+| BL5 | 6 | EO48 | 7 | 1 | 0.00 | 1.000 |
+| BL5 | 12 | EO18 | 15, 16, 17, 18, 19 | 5 | 8.08 | 0.588 |
+| BL5 | 13 | EO25 | 20 | 1 | 0.81 | 0.959 |
+| BL5 | 14 | EO25 | 21 | 1 | 0.05 | 0.997 |
+| BL5 | 15 | EO24 | 22 | 1 | 0.00 | 1.000 |
+| BL5 | 16 | EO24 | 23 | 1 | 0.00 | 1.000 |
+| BL5 | 17 | EO24 | 24 | 1 | 0.00 | 1.000 |
+| BL5 | 18 | EO24 | 25 | 1 | 0.00 | 1.000 |
+
+**The BL framework provides three analytical advantages that the EO-only view cannot.** First, it rescues the 21 small localities (n = 1–3 each) that cannot support EO-level statistics on their own — pooling them into their parent BL yields five lineage aggregates of n = 5–78 individuals. Second, it allows a direct empirical test of the independent-bottleneck hypothesis: if drift trajectories were independent in each lineage, the allele sets retained in each BL should be largely private. This prediction is confirmed quantitatively in [Section 5](#5-reproductive-status-of-element-occurrences) — 33 of 54 alleles (61%) are private to a single BL, and only Allele_050 and Allele_057 are shared across all five lineages — providing the sharpest available evidence that the contemporary species allele pool was shaped by **multiple independent founder events**, not a single shared ancestral bottleneck. Third, it preserves the full 272-individual species pool for any species-level baseline (e.g., the MM = 69 species-richness estimate used as the NFDS optimum in [Section 3](#3-allelic-richness-in-lepa)) by stratifying only at the population/lineage level rather than the species level.
+
+**Interpretation.** The dominant pattern is extreme spatial isolation combined with very small habitat footprints. Each of the 32 geographic groups represents an independent demographic unit in which S-allele erosion has proceeded without the buffering effect of gene flow. This directly supports the Stage 1 interpretation of the C3 cascade ([Section 6](#6-the-compatibility-collapse-cascade-c3-a-mechanistic-framework-linking-habitat-fragmentation-to-reproductive-failure)): EO-level allele sets are largely private not by coincidence but because EOs have been genetically isolated for long enough that independent drift has drawn them apart. The five-lineage spatial structure, combined with largely non-overlapping EO allele sets (only 2 alleles shared across all five major EOs), is the expected outcome if each lineage was founded from a separate ancestral colonisation event and has subsequently evolved in isolation. Gene flow cannot explain the observed inter-EO allele partitioning — it is the near-complete absence of gene flow that explains it.
+
+Cross-references throughout this report use the BL1–BL5 labels and Set1 palette established here. Sections [3](#3-allelic-richness-in-lepa) (allele richness), [5](#5-reproductive-status-of-element-occurrences) (allele composition / sharing), [5a](#5a-tipping-point-1-tp1--health-of-the-si-system) (TP1) and [5b](#5b-individual-genotypic-fitness-score-gfs-and-tipping-point-2-tp2--reproductive-fitness) (TP2) all present results in two parallel views — sorted by EO with BL-coloured labels (management view) and aggregated by BL (lineage / inferential view).
 
 ---
 
-### 2. Allelic Richness in *LEPA*
+### 2. Allele Definition
+
+We targeted the S-domain of the SRK protein — the functional "lock" in the lock-and-key recognition mechanism — to define alleles. We first identified all unique functional protein sequences within this domain across the dataset and visualised amino acid variation across positions ([Figure 3](#figure-3-aa-heatmap)). We then applied a distance-based sensitivity analysis to cluster protein sequences into allele bins, selecting the clustering threshold that maximised biological resolution while minimising artefactual splitting ([Figure 4](#figure-4-protein-distance)). The sensitivity curve for the current dataset (Libraries 001–009; 308 individuals; 302 functional proteins) showed a plateau between 50 and 100 alleles centred at **63**, corresponding to an implied p-distance threshold of ~0.005 (0.5%); this value was adopted as `N_ALLELES`. Each resulting cluster represents an S-allele bin — an allele hypothesis that groups functionally equivalent proteins under a single identity.
+
+<a name="figure-3-aa-heatmap"></a>
+
+![Figure 3: SRK amino acid frequency heatmap](figures/SRK_AA_frequency_heatmap.png)
+
+<a name="figure-4-protein-distance"></a>
+
+![Figure 4: SRK protein distance analysis](figures/SRK_protein_distance_analysis.png)
+
+---
+
+### 3. Allelic Richness in *LEPA*
 
 **Observed richness:** Across **272 individuals** sampled from **26 population localities** spanning the species range, we identified **54 distinct S-allele bins** ([Figure 3](#figure-3)). The sample comprises five main EOs with sufficient individuals for population-level analysis (EO25, EO27, EO67, EO70, EO76; n = 53, 42, 36, 48, 62 respectively; total n = 241), plus 21 additional small localities (n = 1–3 each; total n = 31) contributing to species-level allele discovery.
 
@@ -72,7 +130,7 @@ Cross-references throughout this report use the BL1–BL5 labels and Set1 palett
 
 The **MM estimate of 69 alleles** is adopted as the species optimum — the allele richness expected under balancing selection at evolutionary equilibrium, used here as the reference baseline against which population deficits are measured. An additional **49 individuals** would need to be sampled to discover the next new allele, and reaching 80% of the MM estimate would require sampling approximately **55 more individuals**, underscoring that the species SI repertoire remains substantially under-characterised.
 
-**Allele richness across bottleneck lineages.** When the same individuals are partitioned into the five independent bottleneck lineages introduced in [Section 1b](#1b-bottleneck-lineages-the-spatial-drift-framework) (BL1–BL5; spatial derivation summarised in [Section 4c](#4c-spatial-connectivity-of-element-occurrences-isolating-the-ancestral-bottleneck)), S-allele richness varies dramatically across lineages despite comparable sampling effort ([Figure 3a](#figure-3a)).
+**Allele richness across bottleneck lineages.** When the same individuals are partitioned into the five independent bottleneck lineages introduced in [Section 1](#1-bottleneck-lineages-the-spatial-drift-framework) (BL1–BL5), S-allele richness varies dramatically across lineages despite comparable sampling effort ([Figure 3a](#figure-3a)).
 
 | BL  | N EOs | N individuals | N alleles observed | MM estimate | % of species pool lost to drift |
 |-----|------:|--------------:|-------------------:|------------:|--------------------------------:|
@@ -96,7 +154,7 @@ The **MM estimate of 69 alleles** is adopted as the species optimum — the alle
 
 ---
 
-### 3. Implications for Seed Production
+### 4. Implications for Seed Production
 
 The species optimum of 69 alleles is the critical baseline for seed production planning. Under balancing selection, the SI system is self-stabilising when all alleles are present and approximately equally frequent: rare alleles are automatically favoured because they are compatible with more partners. This means:
 
@@ -106,7 +164,7 @@ The species optimum of 69 alleles is the critical baseline for seed production p
 
 ---
 
-### 4. Reproductive Status of Element Occurrences
+### 5. Reproductive Status of Element Occurrences
 
 **Allele richness deficit ([Figure 4](#figure-4)):**
 
@@ -222,13 +280,13 @@ Genotype reconstruction from the tetraploid allele copy-count matrix reveals the
 
 A majority of individuals (60%, 164/272) carry only a single allele bin (AAAA genotype), making them functionally equivalent to homozygotes with respect to SI. These individuals are candidates for self-compatibility and cannot contribute compatible pollen to any partner carrying the same allele. The proportion is consistent across EOs: EO25 (53%), EO27 (64%), EO67 (53%), EO70 (60%), EO76 (69%).
 
-**The AAAA majority is not allele-diverse: two dominant alleles drive most homozygosity.** The 60% AAAA prevalence does not reflect a uniform distribution of homozygosity across the S-allele repertoire. Cross-referencing zygosity with the allele frequency data reveals a strongly asymmetric structure. Allele_050 and Allele_057 are the only two alleles present in AAAA individuals across all five EOs, and together they account for 70 of the 164 AAAA individuals species-wide (43%): Allele_057 in 38 individuals, Allele_050 in 32. In a tetraploid, the probability of inheriting four copies of any given allele scales steeply with frequency (proportional to p⁴ under drift); alleles that have drifted to high frequency therefore generate AAAA homozygotes at a disproportionate rate. Most AAAA individuals are consequently genetically redundant copies of the same one or two dominant alleles. The per-EO allele identity breakdown is shown in [Figure 13b](#figure-13b).
+**The AAAA majority is not allele-diverse: two dominant alleles drive most homozygosity.** The 60% AAAA prevalence does not reflect a uniform distribution of homozygosity across the S-allele repertoire. Cross-referencing zygosity with the allele frequency data reveals a strongly asymmetric structure. Allele_050 and Allele_057 are the only two alleles present in AAAA individuals across all five EOs, and together they account for 70 of the 164 AAAA individuals species-wide (43%): Allele_057 in 38 individuals, Allele_050 in 32. In a tetraploid, the probability of inheriting four copies of any given allele scales steeply with frequency (proportional to p⁴ under drift); alleles that have drifted to high frequency therefore generate AAAA homozygotes at a disproportionate rate. Most AAAA individuals are consequently genetically redundant copies of the same one or two dominant alleles. The per-EO allele identity breakdown is shown in [Figure 13c](#figure-13c).
 
 The remaining S-allele bins — representing the majority of functional allele diversity documented in Section 2 — are present predominantly or exclusively in heterozygous individuals (AABB, AABC). Among the 55 allele bins characterised in Section 7, 33 (60%) have no AAAA representative in the current dataset: those alleles exist entirely within the heterozygous minority. In other words, the ~40% of individuals that are heterozygous carry the vast majority of the species' S-allele diversity, while the ~60% AAAA majority is dominated by just two alleles and is genetically redundant at the S-locus. This asymmetry has a direct conservation implication: the AAAA individuals, though numerically dominant, contribute little to allele diversity; the AABB and AABC individuals are the sole carriers of rare alleles. Loss of even a few of these heterozygous individuals could eliminate allele bins with no representation anywhere else in the dataset.
 
 ---
 
-### 4a. Tipping Point 1 (TP1) — Health of the SI System
+### 5a. Tipping Point 1 (TP1) — Health of the SI System
 
 TP1 assesses the **health of the self-incompatibility system** — the degree to which the S-allele pool within a population is capable of sustaining compatible mating. It is breached when allele loss is so severe that inter-population allele transfers are required to restore SI function. Two complementary questions structure the assessment ([Figure 9](#figure-9)):
 
@@ -257,11 +315,11 @@ All five EOs are CRITICAL on both axes. No EO retains more than 32% of the speci
 
 The richness and evenness axes of the TP1 plot capture different aspects of demographic history and together allow a partial — though not definitive — reading of the processes that generated the observed deficits. Low allele richness (prop_optimum) is the primary signature of a founder event or population bottleneck: the rapid, simultaneous loss of alleles when population size was severely reduced. Low frequency evenness (Ne/N) is more characteristic of ongoing genetic drift in small populations — the progressive accumulation of one or a few dominant alleles at the expense of rare survivors. An EO that experienced only a historical bottleneck with no subsequent drift would be expected to show low richness but moderate evenness (founders sampled stochastically, but the alleles they carried may be at similar frequencies). An EO experiencing only ongoing drift without a prior bottleneck would retain more alleles but show declining evenness as dominant frequencies grow.
 
-LEPA EOs are severely deficient on **both** axes simultaneously, which is most consistent with a historical bottleneck that reduced richness sharply, followed by prolonged ongoing drift that further eroded evenness among the surviving alleles. This two-phase interpretation is reinforced by the allele composition analysis ([Figures 5](#figure-5)–[6](#figure-6)): if all EOs had been founded from the same bottlenecked ancestral pool, they would be missing the *same* alleles. The observation that each EO holds a largely private allele set — with only two alleles shared across all five EOs — points instead to **independent drift in isolated populations**, each losing different alleles stochastically, superimposed on a possible earlier species-level richness reduction. Formally resolving the relative contribution of each process requires genome-wide neutral marker data and demographic modelling (see Section 5).
+LEPA EOs are severely deficient on **both** axes simultaneously, which is most consistent with a historical bottleneck that reduced richness sharply, followed by prolonged ongoing drift that further eroded evenness among the surviving alleles. This two-phase interpretation is reinforced by the allele composition analysis ([Figures 5](#figure-5)–[6](#figure-6)): if all EOs had been founded from the same bottlenecked ancestral pool, they would be missing the *same* alleles. The observation that each EO holds a largely private allele set — with only two alleles shared across all five EOs — points instead to **independent drift in isolated populations**, each losing different alleles stochastically, superimposed on a possible earlier species-level richness reduction. Formally resolving the relative contribution of each process requires genome-wide neutral marker data and demographic modelling (see Section 6).
 
 ---
 
-### 4b. Individual Genotypic Fitness Score (GFS) and Tipping Point 2 (TP2) — Reproductive Fitness
+### 5b. Individual Genotypic Fitness Score (GFS) and Tipping Point 2 (TP2) — Reproductive Fitness
 
 The zygosity classification above groups individuals by the *number* of unique alleles, but for seed production the *dosage balance* of those alleles also matters. In self-incompatible plants, an individual's value as a breeding partner depends not only on which key/lock types it carries, but also on the number of distinct alleles present across its genome copies. Individuals with more key/lock types can participate in more compatible crosses, making them especially valuable in a managed breeding program. A tetraploid produces diploid gametes by randomly sampling 2 of its 4 allele copies — yielding C(4,2) = 6 equally probable gamete combinations. An individual with genotype AABB (two alleles, balanced 2+2) produces heterozygous gametes in 4 of 6 combinations (GFS = 0.667), whereas an AAAB individual (two alleles, unbalanced 3+1) produces heterozygous gametes in only 3 of 6 (GFS = 0.500). This distinction — invisible to zygosity analysis alone — is captured by the **Genotypic Fitness Score (GFS)**:
 
@@ -370,79 +428,13 @@ Full ranked lists per EO are available in `SRK_individual_GFS.tsv`; EO-level sum
 
 ---
 
-### 4c. Spatial Connectivity of Element Occurrences: Isolating the Ancestral Bottleneck
-
-The genetic erosion documented in Sections 4a and 4b requires a spatial context: the TP1 and TP2 deficits are outcomes, but determining whether they reflect a shared species-level bottleneck or independent drift in isolated populations depends on knowing whether gene flow between Element Occurrences is even possible. The bottleneck-lineage framework introduced upfront in [Section 1b](#1b-bottleneck-lineages-the-spatial-drift-framework) — five lineages BL1–BL5 derived from Ward's D2 clustering of geographic group centroids — answers the *what*; this section provides the *how* and *why*. We addressed connectivity by analysing the spatial footprints of all sampled locations relative to the maximum pollinator dispersal distance for *L. papilliferum* (~500 m; consistent with published estimates for small-bodied bee and fly pollinators in fragmented landscapes). Convex hull polygons were constructed from 758 georeferenced collection events across 39 locations in 19 EOs (UTM Zone 11N), and pairwise hull-to-hull distances were computed to assess which locations share a pollinator pool. A drift index (DI) was derived from the union area of connected-group hull polygons (DI = 0: largest group; DI = 1: smallest, expected-strongest drift) as a relative spatial proxy for *Ne*. Full methodological documentation, the per-group polygon dataset, and the analysis script are published in the [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering) repository (`Data/EO_spatial_clustering_documentation.md`, `Scripts/EO_spatial_clustering.R`).
-
-**Bottleneck-lineage membership.** The Ward's D2 clustering identifies five independent lineages — see [Figure 1b](#figure-1b) and the summary table in [Section 1b](#1b-bottleneck-lineages-the-spatial-drift-framework) for the lineage-level allele counts. Each lineage represents a set of geographic groups plausibly sharing a common ancestral colonisation event. Sampling for S-allele diversity must include populations from all five lineages to capture the full landscape-level allele pool; sampling within a single lineage will systematically miss alleles unique to other lineages. The full cross-reference of BL, group, EO, and population IDs is in `tables/EO_group_BL_summary.csv` of the spatial-clustering repository; the table below summarises all 32 geographic groups sorted by lineage.
-
-| BL | Group | EO | Population IDs | N locs | Area (ha) | Drift index |
-|----|-------|----|----------------|:------:|----------:|:-----------:|
-| BL1 | 7 | EO29 | 8 | 1 | 0.04 | 0.998 |
-| BL1 | 20 | EO08 | 27 | 1 | 1.27 | 0.935 |
-| BL1 | 21 | EO08 | 28 | 1 | 3.44 | 0.825 |
-| BL1 | 22 | EO08 | 29 | 1 | 0.61 | 0.969 |
-| BL1 | 23 | EO26 | 30 | 1 | 0.48 | 0.976 |
-| BL1 | 24 | EO26 | 31, 32 | 2 | 0.66 | 0.967 |
-| BL1 | 25 | EO26 | 33, 34 | 2 | 0.44 | 0.977 |
-| BL1 | 26 | EO26 | 35 | 1 | 0.13 | 0.993 |
-| BL1 | 27 | EO26 | 36 | 1 | 0.06 | 0.997 |
-| BL1 | 29 | EO61 | 38 | 1 | 0.89 | 0.955 |
-| BL2 | 4 | EO68 | 5 | 1 | 0.00 | 1.000 |
-| BL2 | 19 | EO70 | 26 | 1 | 0.01 | 0.999 |
-| BL3 | 1 | EO38 | 1 | 1 | 1.23 | 0.938 |
-| BL3 | 2 | EO76 | 2 | 1 | 7.11 | 0.638 |
-| BL3 | 3 | EO52 | 3 | 1 | 0.26 | 0.987 |
-| BL3 | 4 | EO118 | 4 | 1 | 0.00 | 1.000 |
-| BL4 | 8 | EO27 | 9 | 1 | 0.09 | 0.995 |
-| BL4 | 9 | EO27 | 10 | 1 | 0.24 | 0.988 |
-| BL4 | 10 | EO27 | 11, 12 | 2 | 19.63 | 0.000 |
-| BL4 | 11 | EO30 | 13 | 1 | 0.53 | 0.973 |
-| BL4 | 28 | EO27 | 37 | 1 | 5.57 | 0.716 |
-| BL4 | 30 | EO67 | 39 | 1 | 0.00 | 1.000 |
-| BL4 | 31 | EO72 | 40 | 1 | 0.00 | 1.000 |
-| BL5 | 5 | EO32 | 6 | 1 | 14.62 | 0.255 |
-| BL5 | 6 | EO48 | 7 | 1 | 0.00 | 1.000 |
-| BL5 | 12 | EO18 | 15, 16, 17, 18, 19 | 5 | 8.08 | 0.588 |
-| BL5 | 13 | EO25 | 20 | 1 | 0.81 | 0.959 |
-| BL5 | 14 | EO25 | 21 | 1 | 0.05 | 0.997 |
-| BL5 | 15 | EO24 | 22 | 1 | 0.00 | 1.000 |
-| BL5 | 16 | EO24 | 23 | 1 | 0.00 | 1.000 |
-| BL5 | 17 | EO24 | 24 | 1 | 0.00 | 1.000 |
-| BL5 | 18 | EO24 | 25 | 1 | 0.00 | 1.000 |
-
-*The lineage dendrogram is shown in [Figure 1b](#figure-1b); the SRK-cohort summary table is in [Section 1b](#1b-bottleneck-lineages-the-spatial-drift-framework).*
-
-**Overall connectivity.** Of 741 pairwise location comparisons, only **7 pairs** (0.9%) are connected within the 500 m pollinator dispersal threshold — and **all 7 are within the same EO**. There are no between-EO pollinator connections anywhere in the dataset under current conditions: every Element Occurrence is a closed demographic unit at the pollination scale, and any inter-EO gene flow would have to traverse landscape distances orders of magnitude beyond the species' pollinator dispersal limit.
-
-**Geographic groups.** The 500 m threshold partitions all 39 locations into **32 geographic groups** (connected components). Twenty-six of 39 locations (67%) are completely isolated — no neighbour within the pollinator dispersal limit. Only four groups contain more than one location:
-
-| Group | Locations | EO(s) | N locations | Notes |
-|-------|-----------|-------|-------------|-------|
-| 11 | 11, 12 | EO27 | 2 | 285.6 m apart |
-| 13 | 15–19 | EO18 | 5 | Fully connected chain; pairwise distances 358–493 m |
-| 25 | 31, 32 | EO26 | 2 | 369.3 m apart |
-| 26 | 33, 34 | EO26 | 2 | 364.1 m apart |
-
-EO18 (group 13) is the largest connected cluster — all five of its locations form a single connected component with a combined area of 8.1 ha (DI = 0.588). It is the strongest candidate for a population that retains meaningful internal gene flow. The closest unconnected group pair (EO26 groups 25 and 26) is 586.3 m — just outside the threshold — and several near-miss pairs in the 586–1,766 m range represent locations that could potentially be reconnected through targeted habitat management.
-
-**Drift index.** Group union areas span four orders of magnitude. The vast majority of groups (≈84%) occupy less than 1 ha (DI > 0.95), placing them in the extreme-drift regime. Several groups have effectively zero measured area (DI = 1.000): all four EO24 locations (locs 22–25), EO68, EO48, EO67, EO72, and EO118 — all their collection events share the same recorded coordinate, reflecting the smallest spatial footprints (or GPS rounding) in the dataset. The three lowest-drift groups are EO27 group 11 (19.6 ha, DI = 0.000), EO32 (14.6 ha, DI = 0.255), and EO18 (8.1 ha, DI = 0.588 over a fully-connected 5-location chain). The spatial distribution of groups and their drift indices, broken down by parent BL, is shown in [Figure 4d](#figure-4d).
-
-**Interpretation.** The dominant pattern is extreme spatial isolation combined with very small habitat footprints. Each of the 32 geographic groups represents an independent demographic unit in which S-allele erosion has proceeded without the buffering effect of gene flow. This directly supports the Stage 1 interpretation of the C3 cascade (Section 5): EO-level allele sets are largely private not by coincidence but because EOs have been genetically isolated for long enough that independent drift has drawn them apart. The five-lineage spatial structure, combined with largely non-overlapping EO allele sets (only 2 alleles shared across all five major EOs), is the expected outcome if each lineage was founded from a separate ancestral colonisation event and has subsequently evolved in isolation. Gene flow cannot explain the observed inter-EO allele partitioning — it is the near-complete absence of gene flow that explains it.
-
-<a name="figure-4d"></a>
-
-![Figure 4d: Predicted genetic drift intensity across the five independent bottleneck lineages of *Lepidium papilliferum*. One panel per BL; each panel shows the geographic groups within that lineage as polygons coloured by drift index (blue = strongly drifting, red = least drifting), sized by population size, with within-BL pollinator connections shown as solid lines (≤ 500 m) and between-group separations as dashed lines (> 500 m). Source: `EO_BL_drift_panel.png` from the LEPA_EO_spatial_clustering repository.](figures/EO_BL_drift_panel.png)
-
----
-
-### 5. The Compatibility Collapse Cascade (C3): A Mechanistic Framework Linking Habitat Fragmentation to Reproductive Failure
+### 6. The Compatibility Collapse Cascade (C3): A Mechanistic Framework Linking Habitat Fragmentation to Reproductive Failure
 
 <a name="figure-14"></a>
 
 ![Figure 14: The Compatibility Collapse Cascade (C3): a five-stage mechanism linking habitat fragmentation to reproductive failure in LEPA](figures/SRK_AAAA_cascade_hypothesis.png)
 
-The analyses in Sections 3–4 document the *outcomes* of two converging processes — the erosion of S-allele diversity (TP1) and the degradation of individual reproductive fitness (TP2). The central question this section addresses is: *how* does habitat fragmentation translate into these outcomes? The **Compatibility Collapse Cascade (C3)** hypothesis proposes that fragmentation initiates a five-stage, self-reinforcing sequence of demographic and genetic processes that collectively degrade the SI system and accumulate reproductive dead-ends, even within populations where the SI gene itself remains functional. Each stage is initiated by the one above and amplifies the next — making the cascade increasingly irreversible once set in motion. Crucially, the C3 hypothesis also defines the intervention logic for informed breeding: each stage identifies a specific failure point that targeted genetic rescue can address.
+The analyses in Sections 3–5 document the *outcomes* of two converging processes — the erosion of S-allele diversity (TP1) and the degradation of individual reproductive fitness (TP2). The central question this section addresses is: *how* does habitat fragmentation translate into these outcomes? The **Compatibility Collapse Cascade (C3)** hypothesis proposes that fragmentation initiates a five-stage, self-reinforcing sequence of demographic and genetic processes that collectively degrade the SI system and accumulate reproductive dead-ends, even within populations where the SI gene itself remains functional. Each stage is initiated by the one above and amplifies the next — making the cascade increasingly irreversible once set in motion. Crucially, the C3 hypothesis also defines the intervention logic for informed breeding: each stage identifies a specific failure point that targeted genetic rescue can address.
 
 A critical baseline observation frames the entire section. Across all five EOs, functional SRK sequences were successfully recovered from all but five individuals in the dataset; in those five, sequence-level evidence suggests non-functional SRK alleles — the molecular signature of a self-compatibility mutation. The near-absence of molecular SI failure (<4% of individuals) is scientifically important for two reasons. First, it confirms that the sporophytic self-incompatibility system remains structurally intact across the species — the gene itself has not degenerated. Second, and more consequentially, it rules out widespread loss-of-function mutation as the primary driver of the 60% AAAA prevalence. If molecular breakdown of the SRK receptor were responsible for the genotypic pattern, we would expect a far higher proportion of individuals to carry non-functional alleles broadly distributed across EOs — not the near-uniform AAAA accumulation observed in populations that still express a working SI system. The five individuals with non-functional SRK sequences are instead consistent with rare, independent mutational events and may correspond to the five AABC individuals discussed in Stage 5 below, whose unusual allele combinations could reflect SI-bypassing self-fertilisation enabled by SRK dysfunction.
 
@@ -450,7 +442,7 @@ This baseline leads directly to a more challenging question: if the SI machinery
 
 **Stage 1 — Ancestral bottleneck: loss of S-allele richness**
 
-The most parsimonious starting point is a severe demographic bottleneck associated with historical habitat loss and fragmentation. Bottlenecks reduce S-allele richness faster than expected under neutral models, because S-alleles are individually rare even in healthy populations under balancing selection and are easily lost when founder group size is small. The spatial connectivity analysis in Section 4c establishes the landscape context for this bottleneck: 26 of 39 sampled locations (67%) have no neighbour within the 500 m maximum pollinator dispersal distance, ≈84% of geographic groups occupy less than 1 ha of habitat, and **no between-EO pollinator connections exist anywhere in the dataset** — meaning that every EO is an independent evolutionary unit in which S-allele erosion has proceeded in isolation. This isolation is reflected directly in the allele composition data: EO allele sets are largely non-overlapping (only 2 alleles shared across all five major EOs), and the five independent bottleneck lineages identified by hierarchical clustering of group centroids provide the expected number of independent founding events consistent with the spatial and genetic partitioning observed. The observed richness of 9–32% of the species optimum per population, combined with the irreversible loss of 45–90% of the species allele pool per occurrence (Section 4a), is consistent with pronounced and prolonged founder effects in each lineage evolving independently of the others (Wright 1939; Schierup et al. 1997).
+The most parsimonious starting point is a severe demographic bottleneck associated with historical habitat loss and fragmentation. Bottlenecks reduce S-allele richness faster than expected under neutral models, because S-alleles are individually rare even in healthy populations under balancing selection and are easily lost when founder group size is small. The spatial connectivity analysis in [Section 1](#1-bottleneck-lineages-the-spatial-drift-framework) establishes the landscape context for this bottleneck: 26 of 39 sampled locations (67%) have no neighbour within the 500 m maximum pollinator dispersal distance, ≈84% of geographic groups occupy less than 1 ha of habitat, and **no between-EO pollinator connections exist anywhere in the dataset** — meaning that every EO is an independent evolutionary unit in which S-allele erosion has proceeded in isolation. This isolation is reflected directly in the allele composition data: EO allele sets are largely non-overlapping (only 2 alleles shared across all five major EOs), and the five independent bottleneck lineages identified by hierarchical clustering of group centroids provide the expected number of independent founding events consistent with the spatial and genetic partitioning observed. The observed richness of 9–32% of the species optimum per population, combined with the irreversible loss of 45–90% of the species allele pool per occurrence (Section 5a), is consistent with pronounced and prolonged founder effects in each lineage evolving independently of the others (Wright 1939; Schierup et al. 1997).
 
 **Bottleneck versus ongoing drift: what the pipeline can and cannot resolve**
 
@@ -458,7 +450,7 @@ The term "genetic drift" is used throughout this report in its broadest sense �
 
 The current pipeline measures the net outcome of both processes combined — the allele richness deficit relative to the MM species optimum — but cannot partition how much was lost in a historical bottleneck versus how much is being actively eroded today. This limitation is inherent to the SRK locus itself: it is under balancing selection, which invalidates standard bottleneck-detection tools (e.g., BOTTLENECK software; Cornuet & Luikart 1996; Garza & Williamson 2001) that assume neutral allele dynamics. Resolving the relative contribution of each process would require genome-wide neutral marker data (e.g., SNPs from RADseq or whole-genome sequencing) analysed with demographic modelling approaches such as SMC++ or PSMC.
 
-Nonetheless, the two TP1 axes — allele richness and frequency evenness — carry a weak but informative signal (see Section 4a). A bottleneck founder effect tends to reduce richness while leaving surviving alleles at roughly similar frequencies among founders; subsequent ongoing drift in small populations then additionally distorts those frequencies, further eroding evenness. LEPA shows both severely low richness (9–32% of species optimum) and very low evenness (Ne/N = 0.42–0.66), most consistent with a historical bottleneck followed by prolonged ongoing drift. The allele composition analysis ([Figures 5](#figure-5)–[6](#figure-6)) adds a second line of evidence: if losses were caused by a single shared ancestral bottleneck, EOs would be missing the *same* alleles. Instead, each EO holds a largely private allele set with minimal inter-EO sharing, consistent with independent drift in isolated EOs rather than one common founding event — though a prior reduction of the species-level pool cannot be excluded.
+Nonetheless, the two TP1 axes — allele richness and frequency evenness — carry a weak but informative signal (see Section 5a). A bottleneck founder effect tends to reduce richness while leaving surviving alleles at roughly similar frequencies among founders; subsequent ongoing drift in small populations then additionally distorts those frequencies, further eroding evenness. LEPA shows both severely low richness (9–32% of species optimum) and very low evenness (Ne/N = 0.42–0.66), most consistent with a historical bottleneck followed by prolonged ongoing drift. The allele composition analysis ([Figures 5](#figure-5)–[6](#figure-6)) adds a second line of evidence: if losses were caused by a single shared ancestral bottleneck, EOs would be missing the *same* alleles. Instead, each EO holds a largely private allele set with minimal inter-EO sharing, consistent with independent drift in isolated EOs rather than one common founding event — though a prior reduction of the species-level pool cannot be excluded.
 
 For conservation purposes, the distinction matters less than the intervention it implies: the alleles are absent regardless of when they were lost, and the urgency of inter-EO allele transfers is identical under either interpretation.
 
@@ -504,7 +496,7 @@ The feedback loop is represented in [Figure 14](#figure-14) as a dashed arrow fr
 
 **Conservation implication**
 
-The C3 hypothesis has a direct practical corollary: it provides the scientific foundation for informed breeding. Each stage of the cascade identifies a specific failure point that a targeted intervention can address. Increasing census population size within an EO alone is insufficient to reverse the AAAA trajectory — if the prevailing AAAA frequency exceeds the reproductive dead-end threshold, within-population growth simply produces more AAAA offspring (Stage 3–4 dynamic). Allele introduction via inter-EO crosses is the primary lever. Introducing B, C, and D S-alleles from the 13 AABC individuals into crosses with AAAA individuals simultaneously restores SI compatibility and re-engages balancing selection — the self-reinforcing mechanism that, once functional, will favour the spread of introduced S-alleles through subsequent generations (reversing Stage 2). The 13 AABC seed parents identified in Section 4b are therefore not merely high-priority for seed production in the current season; they represent the only endogenous genetic resource capable of reversing the C3 cascade, and their deployment constitutes the first step of an evidence-based informed breeding strategy.
+The C3 hypothesis has a direct practical corollary: it provides the scientific foundation for informed breeding. Each stage of the cascade identifies a specific failure point that a targeted intervention can address. Increasing census population size within an EO alone is insufficient to reverse the AAAA trajectory — if the prevailing AAAA frequency exceeds the reproductive dead-end threshold, within-population growth simply produces more AAAA offspring (Stage 3–4 dynamic). Allele introduction via inter-EO crosses is the primary lever. Introducing B, C, and D S-alleles from the 13 AABC individuals into crosses with AAAA individuals simultaneously restores SI compatibility and re-engages balancing selection — the self-reinforcing mechanism that, once functional, will favour the spread of introduced S-alleles through subsequent generations (reversing Stage 2). The 13 AABC seed parents identified in Section 5b are therefore not merely high-priority for seed production in the current season; they represent the only endogenous genetic resource capable of reversing the C3 cascade, and their deployment constitutes the first step of an evidence-based informed breeding strategy.
 
 ---
 
@@ -538,7 +530,7 @@ Wright, S. (1939). The distribution of self-sterility alleles in populations. *G
 
 ---
 
-### 6. Testing S-allele Hypotheses: Crossing Design
+### 7. Testing S-allele Hypotheses: Crossing Design
 
 The allele bins defined in Section 1 are sequence-based hypotheses — each bin groups proteins that are sufficiently similar in the S-domain ectodomain to be considered functionally equivalent, but this equivalence has not been confirmed experimentally. Section 7 describes the design of controlled crossing experiments that will test whether the bin boundaries correctly predict recognition specificity.
 
@@ -591,7 +583,7 @@ The connectivity structure among groups through N-connections (small but non-zer
 
 ---
 
-### 7. Crossing Strategy Simulations
+### 8. Crossing Strategy Simulations
 
 > **Note:** The simulations in this section are based on Libraries 001–008 (189 individuals, 47 alleles) and have not yet been re-run with the full dataset (Libraries 001–009, 272 individuals, 54 alleles). Results will be updated following re-analysis.
 
@@ -631,15 +623,15 @@ Random mating causes a mean loss of 7.4 allele bins by year 3 at the species lev
 
 ---
 
-### 8. Conclusion
+### 9. Conclusion
 
 Habitat fragmentation has isolated *LEPA* Element Occurrences into independent demographic and genetic units, initiating a cascade of S-allele erosion now documented at three levels: spatial isolation, population-level allele diversity, and individual reproductive fitness.
 
-**Spatial isolation (Section 4c).** Spatial connectivity analysis of 39 locations across 19 EOs confirms that the observed genetic partitioning reflects a landscape in which natural gene flow between EOs is effectively absent. Twenty-six of 39 locations (67%) have no neighbour within the 500 m pollinator dispersal limit; ≈84% of geographic groups occupy less than 1 ha; and no between-EO pollinator connections exist anywhere in the dataset. Five independent bottleneck lineages are identified by hierarchical clustering of the 32 group centroids (silhouette score = 0.73), consistent with independent founding events across the species range. Each EO has evolved its S-allele pool in isolation, making inter-EO allele transfers the only mechanism available to redistribute diversity lost independently in each lineage.
+**Spatial isolation ([Section 1](#1-bottleneck-lineages-the-spatial-drift-framework)).** Spatial connectivity analysis of 39 locations across 19 EOs confirms that the observed genetic partitioning reflects a landscape in which natural gene flow between EOs is effectively absent. Twenty-six of 39 locations (67%) have no neighbour within the 500 m pollinator dispersal limit; ≈84% of geographic groups occupy less than 1 ha; and no between-EO pollinator connections exist anywhere in the dataset. Five independent bottleneck lineages are identified by hierarchical clustering of the 32 group centroids (silhouette score = 0.73), consistent with independent founding events across the species range. Each EO has evolved its S-allele pool in isolation, making inter-EO allele transfers the only mechanism available to redistribute diversity lost independently in each lineage.
 
 **Tipping Point 1 — Health of the SI System ([Figures 4b](#figure-4b), [9](#figure-9)).** With 272 individuals sampled across 26 population localities (five major EOs plus 21 additional small sites), only 54 of an estimated 69 species-level S-allele bins (MM estimate) have been observed. Each EO retains a small, largely private subset of the species SI repertoire (9–32% of the species optimum), allele frequencies are highly skewed from the equal distribution expected under balancing selection (χ² *p* < 10⁻⁷ at every level), and frequency evenness (Ne/N) ranges from only 0.42 to 0.66 — meaning fewer than half of even the observed alleles are effectively contributing to SI function. Allele sets are almost entirely non-overlapping across EOs — only 2 alleles are shared across all five. All five EOs are flagged **CRITICAL** for TP1. EO70 is the most allele-depauperate (6 bins, 9% of optimum; evenness = 0.47); EO27 retains the most (22 bins, 32% of optimum) and the largest set of private alleles (n = 12). Critically, the allele erosion analysis ([Figure 4b](#figure-4b)) confirms that these deficits are not sampling artefacts: between 45% (EO27) and 90% (EO70) of the species-level S-allele pool has been irreversibly lost from each EO through genetic drift. The predicted-undetected component is small (1–16 alleles per EO), meaning further sampling cannot close the gap — the missing alleles are genuinely absent from these populations.
 
-**Tipping Point 2 — Reproductive Fitness ([Figures 12](#figure-12)–[13](#figure-13)).** Beyond allele counts, the *distribution of alleles across individuals* has degraded severely. The Genotypic Fitness Score (GFS) — the proportion of heterozygous gametes a tetraploid individual produces — reveals that all five EOs are CRITICAL: mean GFS ranges from 0.18 to 0.32 (well below the AABB benchmark of 0.667), and 53–69% of individuals per EO are AAAA (producing zero heterozygous gametes). Fewer than half of individuals in any EO carry more than one distinct SRK allele and can therefore support reproductive effort through compatible crosses ([Figure 13](#figure-13)): the proportion of supporting individuals (GFS > 0) ranges from only 31% in EO76 to 47% in EO67. No ABCD individual exists in the dataset. Only 13 individuals across the entire species carry an AABC genotype (GFS = 0.833) — distributed across EO67, EO27, EO70, and EO25 (none in EO76) — making them the highest-priority seed parents for near-term managed crossing.
+**Tipping Point 2 — Reproductive Fitness ([Figures 12](#figure-12), [13a](#figure-13a), [13b](#figure-13b)).** Beyond allele counts, the *distribution of alleles across individuals* has degraded severely. The Genotypic Fitness Score (GFS) — the proportion of heterozygous gametes a tetraploid individual produces — reveals that all five EOs are CRITICAL: mean GFS ranges from 0.18 to 0.32 (well below the AABB benchmark of 0.667), and 53–69% of individuals per EO are AAAA (producing zero heterozygous gametes). Fewer than half of individuals in any EO carry more than one distinct SRK allele and can therefore support reproductive effort through compatible crosses ([Figure 13a](#figure-13a)): the proportion of supporting individuals (GFS > 0) ranges from only 31% in EO76 to 47% in EO67. No ABCD individual exists in the dataset. Only 13 individuals across the entire species carry an AABC genotype (GFS = 0.833) — distributed across EO67, EO27, EO70, and EO25 (none in EO76) — making them the highest-priority seed parents for near-term managed crossing.
 
 Critically, these two tipping points interact: even if allele richness were restored through inter-EO transfers (TP1 intervention), the benefit would be limited if the incoming alleles are absorbed into AAAA or AAAB individuals. Effective restoration therefore requires simultaneously targeting allele richness (inter-EO transfers of rare alleles) and genotype quality (crosses designed to produce AABB, AABC, and ultimately ABCD offspring).
 
