@@ -598,68 +598,83 @@ Rscript SRK_TP1_tipping_point.R
 ```
 
 **Inputs:**
-- `SRK_population_genetic_summary.tsv` — from Step 14
+- `SRK_population_genetic_summary.tsv` — from Step 14 (EO-level)
+- `SRK_population_genetic_summary_BL.tsv` — from Step 14 (BL aggregates)
 - `SRK_species_richness_estimates.tsv` — from Step 15
 
-**Key metrics per EO:**
+**Two analysis levels overlaid on the same scatter:**
+- **EO** — circles, one per EO with N ≥ 5 individuals, colored by parent BL (Set1 palette, matching Steps 14–16 and the LEPA_EO_spatial_clustering project)
+- **BL** — triangles, one per bottleneck lineage (BL1–BL5), colored by BL
+
+**Key metrics per group:**
 - `prop_optimum` = N_alleles / MM_estimate — proportion of the species-level S-allele pool retained, using the Michaelis-Menten asymptote as the species optimum.
-- `evenness` = Ne / N_alleles — frequency evenness index. Ne (effective allele number) = 1/Σpᵢ², where pᵢ is the frequency of allele i; it answers *how many equally frequent alleles would produce the same level of diversity as observed*. When all alleles are at equal frequency (NFDS ideal), Ne = N and the ratio = 1.0. Genetic drift pushes the ratio downward by creating dominant alleles and marginalising rare ones. An EO with evenness = 0.50, for example, has allele frequencies so uneven that only half the observed alleles are effectively contributing to SI function — the remainder are present in such low copy numbers that they are rarely expressed in crosses and are at elevated risk of loss through drift.
+- `evenness` = Ne / N_alleles — frequency evenness index. Ne (effective allele number) = 1/Σpᵢ², where pᵢ is the frequency of allele i; it answers *how many equally frequent alleles would produce the same level of diversity as observed*. When all alleles are at equal frequency (NFDS ideal), Ne = N and the ratio = 1.0. Genetic drift pushes the ratio downward by creating dominant alleles and marginalising rare ones. An EO/BL with evenness = 0.50, for example, has allele frequencies so uneven that only half the observed alleles are effectively contributing to SI function — the remainder are present in such low copy numbers that they are rarely expressed in crosses and are at elevated risk of loss through drift.
 
 **TP1 thresholds (adjustable at top of script):**
 
 | Parameter | Default | Criterion |
 |-----------|---------|-----------|
-| `TP1_PROP_OPTIMUM` | 0.50 | EO retains < 50% of species optimum |
+| `TP1_PROP_OPTIMUM` | 0.50 | group retains < 50% of species optimum |
 | `TP1_EVENNESS` | 0.80 | Ne/N_alleles below 0.80 |
+| `EO_MIN_N` | 5 | minimum sample size to plot an EO point (BLs are always plotted) |
 
-EOs breaching both criteria are flagged **CRITICAL**; those breaching either one are flagged **AT RISK**; the remainder are **OK**.
+Groups breaching both criteria are flagged **CRITICAL**; those breaching either one are flagged **AT RISK**; the remainder are **OK**.
 
 **Outputs:**
-- `SRK_TP1_summary.tsv` — per-EO N_alleles, prop_optimum, evenness, and TP1 status
-- `SRK_TP1_tipping_point.png` — scatter plot positioning each EO by richness retained (x) and frequency evenness (y), with colour-coded zone polygons for all three categories (OK, AT RISK, CRITICAL) and threshold lines
-- `SRK_TP1_tipping_point_blank.png` — same plot without data points, for presentation use
+- `SRK_TP1_summary.tsv` — per-EO TP1 status with new `BL` column; rows arranged by parent BL → prop_optimum
+- `SRK_TP1_summary_BL.tsv` — **NEW**, per-BL TP1 status (5 rows)
+- `figures/SRK_TP1_tipping_point.png` — combined EO + BL scatter
+- `SRK_TP1_tipping_point.pdf` — same as PNG, root-level (backwards compat)
+- `figures/SRK_TP1_tipping_point_blank.png` — empty zones for presentations
+
+**Headline result (current dataset, 2026-05-07):** every BL and 5 of 6 EOs are CRITICAL. Only EO18 (N = 5) escapes CRITICAL, due to small-N evenness inflation. BL4 has the highest prop_optimum (0.45) but the lowest evenness (0.33) — the diversity reservoir of the species is CRITICAL through frequency skew rather than richness loss.
+
+**Backwards-compatibility note (2026-05-07):** the old `EO_MAP` lookup that mapped raw `Pop` values (`"27"` → `"EO27"`) was removed. Step 14 now writes `Population` already populated with the canonical EO label, so the script reads it directly.
 
 ---
 
-### Step 18 — Allele Composition Comparison Across Element Occurrences
+### Step 18 — Allele Composition Comparison
 
 **Script:** `SRK_allele_sharing_EOs.py`
 
 **Command:**
 ```bash
-# Default: reads from current directory, compares EOs 25 27 67 70 76
-python SRK_allele_sharing_EOs.py
-
-# Custom paths / EO selection
-python SRK_allele_sharing_EOs.py \
-    --genotypes SRK_individual_allele_genotypes.tsv \
-    --metadata sampling_metadata.csv \
-    --pops 25 27 67 70 76 \
-    --min-samples 5 \
-    --outdir figures/
+python3 SRK_allele_sharing_EOs.py
 ```
 
 **Inputs:**
 - `SRK_individual_allele_genotypes.tsv` — from Step 11
-- `sampling_metadata.csv` — must contain `Pop` and `Ingroup` columns
+- `SRK_individual_BL_assignments.tsv` — from Step 13 (provides EO and BL labels)
+
+**Two analysis levels in parallel:**
+- **EO** — UpSet + sharing heatmap for EOs with N ≥ 5 individuals, sorted by parent BL
+- **BL** — UpSet + sharing heatmap for the 5 bottleneck lineages (no minimum N)
+
+EO bars and dots are colored by parent BL using the locked Set1 palette (Steps 14–17). BL bars are colored by their own BL color.
 
 **Key parameters:**
 
 | Parameter | Default | Notes |
 |-----------|---------|-------|
-| `--pops` | `25 27 67 70 76` | EO IDs to compare (space-separated; matched as strings) |
-| `--min-samples` | `5` | Minimum individuals per EO |
-| `--outdir` | `.` | Output directory |
+| `--genotypes` | `SRK_individual_allele_genotypes.tsv` | Allele count matrix |
+| `--bl-assignments` | `SRK_individual_BL_assignments.tsv` | Bridge table from Step 13 |
+| `--min-samples` | `5` | Minimum individuals per EO; BLs always included |
+| `--pdf-dir` | `.` | Output directory for PDFs |
+| `--png-dir` | `figures` | Output directory for PNGs |
 
 **Key analysis:**
-- For each non-empty intersection of EO sets, counts alleles exclusive to exactly that combination
-- UpSet plot sorted by intersection size; private alleles colour-coded per EO
-- Pairwise heatmap shows raw shared-allele counts for every EO pair (diagonal = EO allele richness)
+- For each non-empty intersection of group sets, counts alleles exclusive to exactly that combination
+- UpSet plot sorted by intersection size
+- Pairwise heatmap shows raw shared-allele counts for every group pair (diagonal = group allele richness)
 - No additional dependencies beyond the `polyploid-model` environment (pandas, numpy, matplotlib)
 
-**Outputs:**
-- `SRK_allele_upset_EOs.pdf` — UpSet plot of all allele set intersections
-- `SRK_allele_sharing_heatmap_EOs.pdf` — pairwise sharing heatmap
+**Outputs (PDFs at root, PNGs in `figures/`):**
+- `SRK_allele_upset_EOs.{pdf,png}` — EO UpSet (sorted by parent BL, dots colored by parent BL)
+- `SRK_allele_sharing_heatmap_EOs.{pdf,png}` — pairwise EO heatmap
+- `SRK_allele_upset_BLs.{pdf,png}` — **NEW**, BL-level UpSet
+- `SRK_allele_sharing_heatmap_BLs.{pdf,png}` — **NEW**, 5×5 BL heatmap
+
+**Headline result (current dataset, 2026-05-07):** 33 of 54 alleles (61%) are private to a single BL; only Allele_050 and Allele_057 are shared across all 5 BLs. The near-disjoint BL allele sets are the **direct test of independent bottlenecks** — a single shared species-level bottleneck would predict overlapping losses, not the observed lineage-private alleles. BL4 holds 14 private alleles (45% of its 31-allele complement), confirming its role as the species' diversity reservoir.
 
 ---
 

@@ -118,27 +118,47 @@ The allele richness deficits documented above are not sampling artefacts — the
 
 Even in EO27 — the least affected occurrence — an estimated 31 of the 69 species-level S-allele bins (45%) have been permanently lost from the local gene pool. In EO70, the most severely eroded occurrence, approximately 62 of 69 alleles (90%) are gone. The predicted-undetected component is uniformly small (1–16 alleles), confirming that further sampling within these EOs will not close the deficit: the missing alleles are not hidden by insufficient effort — they no longer exist in these populations. Genetic drift has dismantled the SI system at its source, and inter-EO allele transfers are the only viable pathway to restoration.
 
-**Allele set composition and sharing ([Figures 5](#figure-5)–[6](#figure-6)):**
+**Allele set composition and sharing ([Figures 5](#figure-5)–[6](#figure-6); BL view in [Figures 5a](#figure-5a)–[6a](#figure-6a)):**
 
 <a name="figure-5"></a>
 
-![Figure 5: SRK allele upset plot — EO overlap](figures/SRK_allele_upset_EOs.png)
+![Figure 5: S-allele sharing among Element Occurrences (UpSet plot). EO bars and dots are colored by parent BL using the Set1 palette (BL2 blue, BL3 green, BL4 purple, BL5 orange — matching the LEPA_EO_spatial_clustering project). Multi-EO intersections are shown in grey.](figures/SRK_allele_upset_EOs.png)
 
 <a name="figure-6"></a>
 
-![Figure 6: SRK allele sharing heatmap — EOs](figures/SRK_allele_sharing_heatmap_EOs.png)
+![Figure 6: Pairwise S-allele sharing heatmap between Element Occurrences. Diagonal cells are total allele richness per EO; off-diagonal cells are shared-allele counts.](figures/SRK_allele_sharing_heatmap_EOs.png)
 
 S-allele sets are largely private to each Element Occurrence. Only **2 alleles — Allele_050 and Allele_057 — are shared across all five EOs**, and these are precisely the alleles with the highest copy counts species-wide, consistent with the severe frequency skew documented below. The remaining alleles are partitioned among EO subsets or are exclusive to a single EO:
 
-| Element Occurrence | Private alleles (exclusive to this EO) |
-|--------------------|:---:|
-| EO27 | 12 |
-| EO76 |  8 |
-| EO67 |  7 |
-| EO25 |  5 |
-| EO70 |  2 |
+| Element Occurrence | Parent BL | Private alleles (exclusive to this EO) |
+|--------------------|:---:|:---:|
+| EO27 | BL4 | 10 |
+| EO76 | BL3 |  8 |
+| EO67 | BL4 |  6 |
+| EO25 | BL5 |  4 |
+| EO70 | BL2 |  2 |
 
-EO27 holds the largest private allele set (12 alleles), reinforcing its status as the most allele-rich and irreplaceable contributor to the species SI repertoire. EO70, despite being the most depauperate EO, still retains 2 alleles found nowhere else. In pairwise comparisons, EO25 and EO27 share the most alleles (3), while EO70 shares only 2 alleles with any other EO (the two universally shared alleles) — underscoring its compositional isolation and the importance of inter-EO crosses for redistributing allele diversity to this occurrence.
+EO27 (BL4) holds the largest private allele set (10 alleles), reinforcing its status as the most allele-rich and irreplaceable contributor to the species SI repertoire. EO70 (BL2), despite being the most depauperate EO, still retains 2 alleles found nowhere else.
+
+**Independent bottleneck signature at the BL level ([Figures 5a](#figure-5a)–[6a](#figure-6a)).** Aggregating the same allele sets across each of the five bottleneck lineages provides the direct test of *whether bottlenecks were independent*. If all five lineages had derived from a single shared species-level bottleneck, we would expect overlapping losses — every BL missing roughly the same alleles. Instead, the BL UpSet and pairwise heatmap reveal the opposite pattern:
+
+| Bottleneck lineage | N alleles observed | Private alleles | % private |
+|---|---:|---:|---:|
+| BL1 |  4 |  0 |  0% |
+| BL2 |  8 |  2 | 25% |
+| BL3 | 16 | 11 | 69% |
+| BL4 | 31 | **14** | **45%** |
+| BL5 | 18 |  6 | 33% |
+
+**33 of 54 alleles (61%) are present in only one BL.** Pairwise BL allele sharing (Figure 6a) is highest between BL4 and BL5 (12 alleles), suggestive of limited historical contact between these two lineages, but otherwise BLs share between 2 and 6 alleles in each pairwise comparison — a near-disjoint partitioning that can only arise from independent demographic histories. The two alleles shared across all five BLs (Allele_050, Allele_057) likely represent the original species-wide pool that survived in every lineage by virtue of high ancestral frequency. The remaining 52 alleles either sit in private compartments per BL or are shared among at most two or three lineages, providing strong empirical support for the C3 hypothesis Stage 1 — five **independent** bottleneck-and-drift trajectories shaped the contemporary species allele pool.
+
+<a name="figure-5a"></a>
+
+![Figure 5a: S-allele sharing among Bottleneck Lineages (UpSet plot). Single-BL bars are colored by BL using the locked Set1 palette (BL1 red, BL2 blue, BL3 green, BL4 purple, BL5 orange); multi-BL intersections are grey. The first three bars (private alleles in BL4, BL3, BL5) account for the bulk of the species' allele diversity and are absent from every other lineage.](figures/SRK_allele_upset_BLs.png)
+
+<a name="figure-6a"></a>
+
+![Figure 6a: Pairwise S-allele sharing heatmap between Bottleneck Lineages. Diagonal cells are total allele richness per BL (BL4 = 31, BL5 = 18, BL3 = 16, BL2 = 8, BL1 = 4); off-diagonal cells are shared-allele counts. The highest off-diagonal value (BL4 ↔ BL5 = 12) hints at limited historical contact between these two lineages.](figures/SRK_allele_sharing_heatmap_BLs.png)
 
 **Allele frequency imbalance ([Figure 7](#figure-7)):**
 
@@ -191,11 +211,11 @@ TP1 assesses the **health of the self-incompatibility system** — the degree to
 
 A population with all alleles present and evenly distributed maximises compatible mating pairs and SI system health. TP1 identifies where both dimensions have degraded beyond the point at which within-population crossing alone can restore SI function. A population is flagged **CRITICAL** when both criteria are breached (< 50% of species optimum and Ne/N < 0.80), **AT RISK** when only one is breached, and **OK** when neither is.
 
-> **Note (BL stratification):** The TP1 plot below is currently shown at the EO level. The BL-level analyses presented in Section 2 (richness; [Figure 3a](#figure-3a)) and Section 4c (independent bottleneck lineages) provide the evolutionary frame for interpreting these EO-level positions: every EO inherits the demographic history of its parent BL, and all four medium/large EOs flagged CRITICAL belong to BLs that have themselves lost ≥68% of the species pool to drift. A revised TP1 figure with EO points colored by parent BL is in preparation as part of the broader Phase 3 BL re-frame.
-
 <a name="figure-9"></a>
 
-![Figure 9: TP1 tipping point — health of the SI system](figures/SRK_TP1_tipping_point.png)
+![Figure 9: TP1 tipping point — health of the SI system. Six EOs (circles) and 5 BL aggregates (triangles) plotted on the same scatter, both colored by parent BL using the locked Set1 palette (matching the sibling LEPA_EO_spatial_clustering project). All five BLs and five of six EOs fall in the CRITICAL zone (lower-left, both prop_optimum < 0.50 AND evenness < 0.80). EO18 (n = 5) escapes CRITICAL only because its small sample size inflates the evenness ratio; its richness deficit is among the most severe. Notably, BL4 — the species' diversity reservoir at 45% of optimum — is CRITICAL through the evenness axis (0.33), demonstrating that drift is operating along two independent dimensions even where allele richness is best preserved.](figures/SRK_TP1_tipping_point.png)
+
+**Headline.** Under the BL re-frame, TP1 reveals that **fragmentation has imposed a uniform CRITICAL status across all five bottleneck lineages**. No lineage has escaped collapse: BL1 and BL2 are CRITICAL through richness loss (≥86% of the species pool absent); BL3, BL4 and BL5 are CRITICAL through frequency skew (Ne/N ≤ 0.58). The two axes capture different signatures of drift, but every BL fails on at least one — and most fail on both. This is the single most consequential finding of Phase 3: contemporary recovery requires inter-BL allele transfers because **no lineage retains a balanced allele pool that within-lineage crossing alone could draw upon**.
 
 | EO | N alleles | % of species optimum | Evenness (Ne/N) | TP1 status |
 |----|:---:|:---:|:---:|:---:|

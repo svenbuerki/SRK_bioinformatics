@@ -4,6 +4,17 @@
 
 This repository contains a comprehensive bioinformatics pipeline for analyzing S-receptor kinase (SRK) haplotype diversity in self-incompatible plant species using Oxford Nanopore long-read sequencing. The pipeline is specifically designed for threatened plant species research, enabling assessment of self-incompatibility system integrity in populations where genetic diversity loss may compromise reproductive success.
 
+## Related Repositories
+
+This pipeline integrates with a sibling project that provides the spatial framework for S-allele interpretation:
+
+| Repository | Role |
+|------------|------|
+| **[`svenbuerki/LEPA_EO_spatial_clustering`](https://github.com/svenbuerki/LEPA_EO_spatial_clustering)** | Quantifies habitat fragmentation across the species range using germplasm collection events and a 500 m pollinator-dispersal threshold; identifies five **independent bottleneck lineages (BL1–BL5)** by Ward's D2 hierarchical clustering of geographic-group centroids. Produces `EO_group_BL_summary.csv`, the cross-reference key consumed by Step 13 of this pipeline. |
+| **`svenbuerki/SRK_bioinformatics`** (this repo) | Reconstructs S-allele genotypes from Nanopore amplicons and stratifies all Phase 3/4 analyses by the BL framework defined above. |
+
+The two repositories share a locked **RColorBrewer Set1 BL color palette** (BL1 red, BL2 blue, BL3 green, BL4 purple, BL5 orange) so figures are visually consistent across both projects: the dendrogram and BL drift panel in the spatial-clustering repo, and the BL accumulation curves, drift erosion bars, TP1 scatter, and UpSet plots here.
+
 ## Authors
 
 **Sven Buerki, Ph.D.** (he/him)\
@@ -255,12 +266,25 @@ For a concise step-by-step protocol (scripts, inputs, outputs, key parameters), 
 -   `SRK_chisq_species_population.tsv` - χ² test statistics at three levels (Species, EO, BL); new `BL` column; rows ordered Species → EOs (sorted by BL) → BLs
 -   `SRK_chisq_species_population_frequency_plots.pdf` - 12 pages (1 species + 6 EOs sorted by BL + 5 BLs); EO/BL pages colored by parent BL palette
 
-#### Steps 17–21 (other Phase 3 outputs)
+#### Step 17 — TP1 tipping point
 
--   `SRK_TP1_summary.tsv` - Per-EO allele richness, frequency evenness, and TP1 status (Step 17)
--   `SRK_TP1_tipping_point.pdf` - TP1 diagnostic scatter plot (richness retained × frequency evenness) (Step 17)
--   `SRK_allele_upset_EOs.pdf` - UpSet plot of all pairwise and higher-order allele set intersections across Element Occurrences (Step 18)
--   `SRK_allele_sharing_heatmap_EOs.pdf` - Pairwise allele sharing heatmap between Element Occurrences (Step 18)
+-   `SRK_TP1_summary.tsv` - Per-EO TP1 status with new `BL` column; rows arranged by parent BL → prop_optimum
+-   `SRK_TP1_summary_BL.tsv` - **NEW**. BL-level TP1 status (5 rows)
+-   `SRK_TP1_tipping_point.pdf` - Combined TP1 scatter (root, backwards-compatible)
+-   `figures/SRK_TP1_tipping_point.png` - Same scatter; **EOs as circles, BLs as triangles, both colored by parent BL** using the locked Set1 palette. Headline result: every BL and 5 of 6 EOs are CRITICAL.
+-   `figures/SRK_TP1_tipping_point_blank.png` - Empty zone polygons for presentations
+
+#### Step 18 — Allele composition / sharing
+
+-   `SRK_allele_upset_EOs.{pdf,png}` - EO UpSet (sorted by parent BL; bars/dots colored by parent BL)
+-   `SRK_allele_sharing_heatmap_EOs.{pdf,png}` - Pairwise allele sharing heatmap between EOs
+-   `SRK_allele_upset_BLs.{pdf,png}` - **NEW**. BL-level UpSet — the direct test of independent bottlenecks
+-   `SRK_allele_sharing_heatmap_BLs.{pdf,png}` - **NEW**. 5×5 BL pairwise sharing heatmap (BL4↔BL5 share 12 alleles, the highest off-diagonal value)
+
+PNGs land in `figures/`; PDFs in the project root. **Headline finding:** 33 of 54 alleles (61%) are private to a single BL; only Allele_050 and Allele_057 are shared across all 5 BLs.
+
+#### Steps 19–21 (other Phase 3 outputs)
+
 -   `SRK_individual_GFS.tsv` - Per-individual Genotypic Fitness Score, genotype class (AAAA/AAAB/AABB/AABC/ABCD), and EO assignment (Step 19)
 -   `SRK_EO_GFS_summary.tsv` - EO-level mean GFS, genotype class proportions, and Tipping Point 2 status (CRITICAL / AT RISK / OK) (Step 20)
 -   `SRK_GFS_plots.pdf` - Four diagnostic plots: stacked composition bars, individual GFS jitter with mean, TP2 tipping point map, and absolute count bars (Steps 19–20)
