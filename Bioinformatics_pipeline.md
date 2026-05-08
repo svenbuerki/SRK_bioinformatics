@@ -689,10 +689,10 @@ Rscript SRK_individual_GFS.R
 
 **Inputs:**
 
-| File | Description |
-|------|-------------|
-| `SRK_individual_zygosity.tsv` | Per-individual tetraploid genotype pattern from Step 12 (`AAAA`/`AAAB`/`AABB`/`AABC`/`ABCD`) |
-| `sampling_metadata.csv` | Must contain `SampleID`, `Pop`, and `Ingroup` columns |
+| File | From step | Description |
+|------|-----------|-------------|
+| `SRK_individual_zygosity.tsv` | Step 12 | Per-individual tetraploid genotype pattern (`AAAA`/`AAAB`/`AABB`/`AABC`/`ABCD`) |
+| `SRK_individual_BL_assignments.tsv` | Step 13 | EO and BL assignments (262 BL-assigned ingroup individuals) |
 
 **Key analysis:**
 
@@ -708,11 +708,14 @@ Computes the **Genotypic Fitness Score** — the proportion of heterozygous dipl
 
 This metric differentiates genotype classes that zygosity analysis treats as equivalent (e.g., AABB = 0.667 vs AAAB = 0.500).
 
+**BL-stratified design:** EO and BL summaries are computed in parallel using the Step 13 bridge. EOs are sorted by parent BL throughout (Set1 palette, matches `LEPA_EO_spatial_clustering`); BL aggregates pool all BL-assigned individuals.
+
 **Key parameters (top of script):**
 
 | Parameter | Default | Notes |
 |-----------|---------|-------|
-| `EO_MAP` | 5-EO lookup | Maps sub-population codes to EO identifiers; extend for new sub-populations |
+| `EO_MIN_N` | `5` | Minimum sample size for an EO to appear in plots; BLs always plotted |
+| `BL_PALETTE` | Set1 | `BL1=#E41A1C`, `BL2=#377EB8`, `BL3=#4DAF4A`, `BL4=#984EA3`, `BL5=#FF7F00` |
 | `TP2_MEAN_GFS` | `0.667` | Adjustable threshold for mean GFS (used in Step 20) |
 | `TP2_PROP_AAAA` | `0.30` | Adjustable threshold for proportion AAAA (used in Step 20) |
 
@@ -720,41 +723,47 @@ This metric differentiates genotype classes that zygosity analysis treats as equ
 
 | File | Content |
 |------|---------|
-| `SRK_individual_GFS.tsv` | Per-individual GFS, genotype class, EO, and method |
+| `SRK_individual_GFS.tsv` | Per-individual GFS, genotype class, EO, **BL, Drift_index**, and method |
 
 ---
 
 ### Step 20 — TP2 Tipping Point Analysis
 
-> Requires `SRK_individual_GFS.tsv` from Step 19. Performed by the same script (`SRK_individual_GFS.R`); TP2 flags are computed after per-individual GFS values are aggregated to the EO level.
+> Requires `SRK_individual_GFS.tsv` from Step 19. Performed by the same script (`SRK_individual_GFS.R`); TP2 flags are computed at both the EO level and the BL level.
 
 **Script:** `SRK_individual_GFS.R` (same run as Step 19)
 
 **Key analysis:**
 
-Places individual-level GFS in interaction with population-level proportion of AAAA genotypes to evaluate whether an EO's allele distribution has degraded beyond the reach of managed crossing. EO-level summaries are evaluated against two thresholds:
+Places individual-level GFS in interaction with the proportion of AAAA genotypes to evaluate whether allele distributions have degraded beyond the reach of managed crossing. Summaries are evaluated against two thresholds at both EO and BL levels:
 
 | Threshold | Default | Criterion |
 |-----------|---------|-----------|
 | `TP2_MEAN_GFS` | 0.667 | Mean GFS below AABB level |
 | `TP2_PROP_AAAA` | 0.30 | >30% AAAA individuals |
 
-EOs breaching both thresholds simultaneously are flagged **CRITICAL**; those breaching either one are flagged **AT RISK**; the remainder are **OK**.
+Groups breaching both thresholds simultaneously are flagged **CRITICAL**; those breaching either one are flagged **AT RISK**; the remainder are **OK**. The TP2 figure plots EOs as circles and BLs as triangles on the same axes, both coloured by parent BL using the locked Set1 palette.
+
+**Headline:** all 5 BLs are CRITICAL on TP2 (BL3 worst at mean GFS = 0.196, prop AAAA = 0.662); 5 of 6 plotted EOs are CRITICAL (EO67 AT RISK only).
 
 **Outputs:**
 
 | File | Content |
 |------|---------|
-| `SRK_EO_GFS_summary.tsv` | EO-level GFS statistics, class proportions, TP2 status |
-| `SRK_GFS_plots.pdf` | Four diagnostic plots: stacked bars (proportional + count), individual jitter, TP2 tipping point map |
-| `SRK_GFS_plots_p3_TP2_tipping_point.png` | Standalone TP2 tipping point map with colour-coded zone polygons for all three categories (OK, AT RISK, CRITICAL) |
-| `SRK_GFS_plots_p3_TP2_tipping_point_blank.png` | Same plot without data points, for presentation use |
+| `SRK_EO_GFS_summary.tsv` | EO-level GFS statistics, class proportions, TP2 status, **BL column** |
+| `SRK_BL_GFS_summary.tsv` | **NEW** — BL-level GFS statistics, class proportions, TP2 status |
+| `SRK_GFS_plots.pdf` | Multi-page PDF: composition (proportional + counts), jitter, TP2 scatter — EOs sorted by parent BL with BL-coloured x-axis labels |
+| `figures/SRK_GFS_plots_p1_composition_proportional.png` | Stacked-proportional bar (EOs sorted by BL) |
+| `figures/SRK_GFS_plots_p2_individual_jitter.png` | Per-individual GFS jitter with EO means |
+| `figures/SRK_GFS_plots_p3_TP2_tipping_point.png` | TP2 scatter — EOs (circles) + BLs (triangles), both Set1-coloured |
+| `figures/SRK_GFS_plots_p3_TP2_tipping_point_blank.png` | Same plot without data points, for presentation use |
+| `figures/SRK_GFS_plots_p4_composition_counts.png` | Stacked-count bar (EOs sorted by BL) |
 
 ---
 
-### Step 21 — Reproductive Effort Support per Element Occurrence
+### Step 21 — Reproductive Effort Support per Element Occurrence and Bottleneck Lineage
 
-> Requires `SRK_individual_GFS.tsv` from Step 19.
+> Requires `SRK_individual_GFS.tsv` from Step 19 (now carries the BL column from the Step 13 bridge).
 
 **Script:** `SRK_GFS_reproductive_effort.R`
 
@@ -767,30 +776,39 @@ Rscript SRK_GFS_reproductive_effort.R
 
 | File | From step | Description |
 |------|-----------|-------------|
-| `SRK_individual_GFS.tsv` | Step 19 | Per-individual GFS scores and genotype classes |
-| `SRK_individual_zygosity.tsv` | Step 12 | Per-individual allele composition (`Allele_composition` field used to identify the allele carried by AAAA individuals) |
+| `SRK_individual_GFS.tsv` | Step 19 | Per-individual GFS scores, genotype classes, **EO + BL + Drift_index** |
+| `SRK_individual_zygosity.tsv` | Step 12 | Per-individual allele composition used to identify the single allele carried by AAAA individuals |
 
 **Key analysis:**
 
-Visualises, for each of the five focus EOs, the proportion of individuals at each GFS tier as a horizontal proportional bar chart. In a self-incompatible plant, an individual's value as a breeding partner depends not only on which key/lock types it carries, but also on the number of distinct alleles present across its genome copies. Individuals with more key/lock types can participate in more compatible crosses, making them especially valuable in a managed breeding program. The figure makes this explicit by distinguishing the fraction of each population that can contribute allelic diversity to gametes (GFS > 0) from those that cannot (AAAA, GFS = 0), and annotates each EO with the proportion of supporting individuals and mean GFS.
+Visualises, for each focus EO and each BL, the proportion of individuals at each GFS tier as a horizontal proportional bar chart. In a self-incompatible plant, an individual's value as a breeding partner depends on the number of distinct alleles present across its genome copies — individuals with more key/lock types can participate in more compatible crosses. The figures distinguish individuals that can contribute allelic diversity to gametes (GFS > 0) from those that cannot (AAAA, GFS = 0), and annotate each row with proportion supporting, count, and mean GFS.
 
-EOs are ordered by mean GFS (ascending); the TP2 AAAA threshold (30%) is marked as a dashed vertical line. Annotations to the right of each bar show: proportion supporting (%), count (n / N), and mean GFS.
+**BL-stratified design:** EOs are sorted by parent BL then by mean GFS within BL; y-axis labels are coloured by parent BL (Set1 palette). The BL panel pools all BL-assigned individuals into 5 lineage rows, sorted by mean GFS. The TP2 AAAA threshold (30%) is marked on both panels.
+
+**AAAA allele identity panels:** unpack the AAAA bar by showing which alleles each AAAA individual carries. *Pan-BL* alleles are present in AAAA individuals across every BL; *pan-EO* alleles are present in AAAA individuals in ≥80% of focus EOs (relaxed threshold accommodates EO18, the smallest focus EO with only 4 AAAA individuals carrying a different drift signature). Allele_050 and Allele_057 (W-group 1, HV-identical, likely the same SI specificity) appear as pan-BL across all 5 BLs and pan-EO in 5 of 6 focus EOs — confirming that independent bottlenecks have all converged on the same fixed SI specificity.
+
+**Headline:** BL3 has the lowest reproductive effort support (34%, mean GFS = 0.196); BL2 has the highest W-group 1 saturation among AAAA individuals (69%); EO18 is the only focus EO without W-group 1 alleles in its AAAA pool (4 AAAA individuals, 4 distinct non-W-group-1 alleles).
 
 **Key parameters (top of script):**
 
 | Parameter | Default | Notes |
 |-----------|---------|-------|
-| `EO_FOCUS` | 5-EO vector | Element Occurrences to include |
+| `EO_MIN_N` | `5` | Minimum sample size for an EO to appear in plots (matches Steps 17/19) |
+| `BL_PALETTE` | Set1 | `BL1=#E41A1C`, `BL2=#377EB8`, `BL3=#4DAF4A`, `BL4=#984EA3`, `BL5=#FF7F00` |
 | `TP2_PROP_AAAA` | `0.30` | Threshold line position (matches TP2 threshold from Step 20) |
+| `PAN_EO_FRAC` | `0.80` | Allele must appear in AAAA individuals in ≥80% of focus EOs to be flagged pan-EO |
 
 **Outputs:**
 
 | File | Content |
 |------|---------|
-| `SRK_GFS_reproductive_effort.pdf` | Horizontal proportional bar chart — GFS tier composition per EO with reproductive effort annotations |
-| `SRK_GFS_reproductive_effort.png` | Same figure as PNG at 200 dpi |
-| `SRK_GFS_AAAA_allele_composition.pdf` | Stacked bar chart — allele identity of AAAA individuals per EO; pan-EO alleles highlighted (orange = Allele_050, blue = Allele_057); annotated with AAAA count and pan-EO percentage |
-| `SRK_GFS_AAAA_allele_composition.png` | Same figure as PNG at 200 dpi |
+| `SRK_GFS_reproductive_effort.pdf` | 2-page PDF: EO panel + BL panel — GFS tier composition with reproductive effort annotations |
+| `SRK_GFS_AAAA_allele_composition.pdf` | 2-page PDF: EO panel + BL panel — allele identity of AAAA individuals; W-group 1 alleles (Allele_050, Allele_057) highlighted |
+| `SRK_BL_reproductive_effort_summary.tsv` | **NEW** — BL-level reproductive effort summary (n, n_supporting, prop_supporting, prop_AAAA, mean_GFS) |
+| `figures/SRK_GFS_reproductive_effort_EO.png` | EO-level proportional bar (PNG) |
+| `figures/SRK_GFS_reproductive_effort_BL.png` | **NEW** — BL-level proportional bar (PNG) |
+| `figures/SRK_GFS_AAAA_allele_composition_EO.png` | EO-level AAAA allele identity (PNG) |
+| `figures/SRK_GFS_AAAA_allele_composition_BL.png` | **NEW** — BL-level AAAA allele identity (PNG) |
 
 ---
 

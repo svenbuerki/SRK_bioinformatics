@@ -199,6 +199,9 @@ python SRK_allele_sharing_EOs.py
 
 # Steps 19–20: Individual Genotypic Fitness Score (Step 19) and TP2 tipping point analysis (Step 20)
 Rscript SRK_individual_GFS.R
+
+# Step 21: Reproductive effort support per EO and BL (with AAAA allele identity panels)
+Rscript SRK_GFS_reproductive_effort.R
 ```
 
 5.  **Phase 4 — Testing S-allele Hypotheses (Steps 22–23):**
@@ -283,11 +286,21 @@ For a concise step-by-step protocol (scripts, inputs, outputs, key parameters), 
 
 PNGs land in `figures/`; PDFs in the project root. **Headline finding:** 33 of 54 alleles (61%) are private to a single BL; only Allele_050 and Allele_057 are shared across all 5 BLs.
 
-#### Steps 19–21 (other Phase 3 outputs)
+#### Steps 19–20 — Individual GFS + TP2 tipping point
 
--   `SRK_individual_GFS.tsv` - Per-individual Genotypic Fitness Score, genotype class (AAAA/AAAB/AABB/AABC/ABCD), and EO assignment (Step 19)
--   `SRK_EO_GFS_summary.tsv` - EO-level mean GFS, genotype class proportions, and Tipping Point 2 status (CRITICAL / AT RISK / OK) (Step 20)
--   `SRK_GFS_plots.pdf` - Four diagnostic plots: stacked composition bars, individual GFS jitter with mean, TP2 tipping point map, and absolute count bars (Steps 19–20)
+-   `SRK_individual_GFS.tsv` - Per-individual Genotypic Fitness Score, genotype class (AAAA/AAAB/AABB/AABC/ABCD), EO, **BL, Drift_index** (Step 19)
+-   `SRK_EO_GFS_summary.tsv` - EO-level mean GFS, genotype class proportions, TP2 status, **BL column** (Step 20)
+-   `SRK_BL_GFS_summary.tsv` - **NEW**. BL-level mean GFS, class proportions, TP2 status (5 rows; all CRITICAL)
+-   `SRK_GFS_plots.pdf` - Multi-page PDF: composition (proportional + counts), per-individual jitter, TP2 scatter — EOs sorted by parent BL with BL-coloured x-axis labels (Steps 19–20)
+-   `figures/SRK_GFS_plots_p3_TP2_tipping_point.png` - TP2 scatter; **EOs as circles, BLs as triangles, both Set1-coloured by parent BL**. All 5 BLs and 5/6 plotted EOs CRITICAL (EO67 only AT RISK)
+
+#### Step 21 — Reproductive effort support
+
+-   `SRK_GFS_reproductive_effort.pdf` - 2-page PDF: EO panel + BL panel — GFS tier composition with reproductive effort annotations
+-   `SRK_GFS_AAAA_allele_composition.pdf` - 2-page PDF: EO panel + BL panel — allele identity of AAAA individuals; W-group 1 alleles highlighted
+-   `SRK_BL_reproductive_effort_summary.tsv` - **NEW**. BL-level reproductive support summary
+-   `figures/SRK_GFS_reproductive_effort_{EO,BL}.png` - Per-EO and per-BL proportional bars
+-   `figures/SRK_GFS_AAAA_allele_composition_{EO,BL}.png` - Per-EO and per-BL AAAA allele identity. **Headline:** Allele_050 + Allele_057 are pan-BL across all 5 BLs and pan-EO in 5/6 focus EOs — confirms shared W-group 1 fixation despite independent bottlenecks
 
 ### Phase 4 Outputs (Testing S-allele Hypotheses)
 

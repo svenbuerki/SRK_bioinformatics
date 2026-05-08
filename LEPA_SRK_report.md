@@ -262,43 +262,66 @@ A population breaching both simultaneously is flagged **CRITICAL**; one criterio
 
 <a name="figure-10"></a>
 
-![Figure 10: GFS genotype composition — proportional](figures/SRK_GFS_plots_p1_composition_proportional.png)
+![Figure 10: GFS genotype composition — proportional. EOs sorted by parent BL with BL-coloured x-axis labels (Set1 palette, matches LEPA_EO_spatial_clustering).](figures/SRK_GFS_plots_p1_composition_proportional.png)
 
 <a name="figure-11"></a>
 
-![Figure 11: GFS individual scores — jitter plot](figures/SRK_GFS_plots_p2_individual_jitter.png)
+![Figure 11: GFS individual scores — jitter plot. EOs sorted by parent BL with BL-coloured x-axis labels.](figures/SRK_GFS_plots_p2_individual_jitter.png)
 
 <a name="figure-12"></a>
 
-![Figure 12: TP2 tipping point — mean GFS vs proportion AAAA](figures/SRK_GFS_plots_p3_TP2_tipping_point.png)
+![Figure 12: TP2 tipping point — mean GFS vs proportion AAAA. EOs as circles, BLs as triangles, all coloured by parent BL.](figures/SRK_GFS_plots_p3_TP2_tipping_point.png)
 
-| EO | N | mean GFS | % AAAA | % AAAB | % AABB | % AABC | TP2 status |
-|----|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| EO76 | 62 | 0.177 | 69% | 16% | 15% |  0% | **CRITICAL** |
-| EO27 | 42 | 0.222 | 64% | 17% | 12% |  7% | **CRITICAL** |
-| EO70 | 48 | 0.250 | 60% | 13% | 23% |  4% | **CRITICAL** |
-| EO25 | 53 | 0.283 | 53% | 21% | 25% |  2% | **CRITICAL** |
-| EO67 | 36 | 0.319 | 53% | 11% | 22% | 14% | **CRITICAL** |
+**EO-level results** (sorted by parent BL):
 
-All five EOs are CRITICAL. No EO approaches a mean GFS consistent with a functioning SI system. **EO67 is the least degraded**, with the highest mean GFS (0.319) and the highest proportion of AABC individuals (14%). A total of **13 AABC individuals** are present across the species — distributed across EO67 (~5), EO27 (3), EO70 (2), and EO25 (1), with none in EO76 — producing 5/6 heterozygous gametes and making them the highest-priority seed parents in the species.
+| EO | BL | N | mean GFS | % AAAA | % AAAB | % AABB | % AABC | TP2 status |
+|----|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| EO70 | BL2 | 48 | 0.250 | 60% | 13% | 23% |  4% | **CRITICAL** |
+| EO76 | BL3 | 62 | 0.177 | 69% | 16% | 15% |  0% | **CRITICAL** |
+| EO27 | BL4 | 42 | 0.222 | 64% | 17% | 12% |  7% | **CRITICAL** |
+| EO67 | BL4 | 36 | 0.319 | 53% | 11% | 22% | 14% | AT RISK |
+| EO18 | BL5 |  5 | 0.167 | 80% |  0% |  0% | 20% | **CRITICAL** |
+| EO25 | BL5 | 53 | 0.283 | 53% | 21% | 25% |  2% | **CRITICAL** |
 
-**Proportion of individuals supporting reproductive effort ([Figure 13](#figure-13)):**
+**BL-level results** (sorted by mean GFS, worst at top):
 
-<a name="figure-13"></a>
+| BL | N | mean GFS | % AAAA | TP2 status |
+|----|:---:|:---:|:---:|:---:|
+| BL3 | 68 | 0.196 | 66% | **CRITICAL** |
+| BL2 | 51 | 0.235 | 63% | **CRITICAL** |
+| BL4 | 78 | 0.267 | 59% | **CRITICAL** |
+| BL5 | 60 | 0.272 | 55% | **CRITICAL** |
+| BL1 |  5 | 0.367 | 40% | **CRITICAL** |
 
-![Figure 13: Proportion of individuals supporting reproductive effort per EO](figures/SRK_GFS_reproductive_effort.png)
+All 5 BLs are CRITICAL on TP2; 5 of 6 plotted EOs are CRITICAL (EO67 is AT RISK, breaching only the AAAA threshold). The lineage-level pattern is robust: even when 262 BL-assigned individuals are pooled into independent bottleneck lineages, every lineage exceeds 30% AAAA and falls well below the AABB-benchmark mean GFS of 0.667. **EO67 is the least degraded** EO with the highest mean GFS (0.319) and the highest proportion of AABC individuals (14%). A total of **13 AABC individuals** are present across the species — distributed across EO67 (~5), EO27 (3), EO70 (2), and EO25 (1), with none in EO76 — producing 5/6 heterozygous gametes and making them the highest-priority seed parents in the species.
 
-Fewer than half of individuals in any EO carry more than one distinct SRK allele and can therefore contribute allelic diversity to compatible crosses. The proportion of "supporting" individuals (GFS > 0) ranges from 31% in EO76 to 47% in EO67, with mean GFS values uniformly well below the AABB benchmark (0.667). All five EOs breach the TP2 AAAA threshold: the red (AAAA) segment extends well past the 30% dashed line in every case, reaching 53–69% of each population. EO76 is the most degraded (only 31% supporting; mean GFS = 0.177); EO67 is least degraded (47% supporting; mean GFS = 0.319) and has the highest proportion of AABC individuals.
+**Proportion of individuals supporting reproductive effort ([Figure 13a](#figure-13a)–[13b](#figure-13b)):**
 
-**Allele identity of AAAA individuals ([Figure 13b](#figure-13b)):**
+<a name="figure-13a"></a>
+
+![Figure 13a: Reproductive effort support per EO (sorted by parent BL, BL-coloured y-axis labels)](figures/SRK_GFS_reproductive_effort_EO.png)
 
 <a name="figure-13b"></a>
 
-![Figure 13b: Allele identity of AAAA individuals per EO. Orange = Allele_050; blue = Allele_057 (both present in AAAA individuals across all five EOs and both members of W-group 1). Grey = all other alleles. Annotation shows total AAAA count and the percentage carrying a pan-EO allele. EOs ordered by mean GFS ascending, matching Figure 13.](figures/SRK_GFS_AAAA_allele_composition.png)
+![Figure 13b: Reproductive effort support per Bottleneck Lineage (sorted by mean GFS)](figures/SRK_GFS_reproductive_effort_BL.png)
 
-Figure 13 shows that AAAA individuals are numerically dominant in every EO; Figure 13b reveals that this dominance is itself dominated by just two alleles. Allele_050 and Allele_057 together account for 29–76% of AAAA individuals per EO — they are present as AAAA homozygotes in every population surveyed. The concentration is most extreme in EO70, where 22 of 29 AAAA individuals (76%) carry one of these two alleles; the remaining 7 carry Allele_054, which is also a member of W-group 1 (Section 6). If the W-group 1 synonymy hypothesis is confirmed by crossing — i.e., if Allele_050, Allele_057, and Allele_054 all share the same SI recognition specificity — then **all 29 AAAA individuals in EO70 effectively carry the same functional lock**. This would mean that intra-EO crosses among EO70's AAAA individuals are universally incompatible with each other regardless of which specific allele each carries, and that the useful AAAA pool for breeding within EO70 is functionally zero.
+Fewer than half of individuals in any EO or BL carry more than one distinct SRK allele and can therefore contribute allelic diversity to compatible crosses. At the EO level, the proportion of "supporting" individuals (GFS > 0) ranges from 20% in EO18 (n=5) to 47% in EO67 and EO25, with mean GFS values uniformly well below the AABB benchmark (0.667). At the BL level, BL3 is the most degraded (34% support, mean GFS = 0.196), while BL1 has the highest support (60%) but with very small sample size (n=5). All five BLs and 5 of 6 plotted EOs breach the TP2 AAAA threshold: the red (AAAA) segment extends well past the 30% dashed line in every case.
 
-This finding reframes the AAAA burden in conservation terms. It is not simply that 60% of individuals are homozygous — it is that a large fraction of that 60% carries the same one or two SI specificities across every EO. The effective number of distinct SI locks present in the AAAA fraction is far smaller than the count of AAAA individuals would suggest. Cross-EO breeding involving Allele_050 and Allele_057 individuals from different populations does not resolve the compatibility problem if those individuals share the same lock; only the introduction of genuinely distinct alleles (B, C, D copies from heterozygous individuals) will. This makes the 13 AABC individuals — and the allele diversity they exclusively carry — even more critical than the raw genotype counts imply.
+**Allele identity of AAAA individuals ([Figure 13c](#figure-13c)–[13d](#figure-13d)):**
+
+<a name="figure-13c"></a>
+
+![Figure 13c: Allele identity of AAAA individuals per EO. Orange = Allele_050, blue = Allele_057 (both pan-EO across 5 of 6 focus EOs and both members of W-group 1). Grey = all other alleles.](figures/SRK_GFS_AAAA_allele_composition_EO.png)
+
+<a name="figure-13d"></a>
+
+![Figure 13d: Allele identity of AAAA individuals per Bottleneck Lineage. Allele_050 and Allele_057 are pan-BL across all 5 BLs — confirms shared W-group 1 fixation despite independent bottlenecks.](figures/SRK_GFS_AAAA_allele_composition_BL.png)
+
+Figures 13a–b show that AAAA individuals are numerically dominant in every EO and every BL; Figures 13c–d reveal that this dominance is itself dominated by just two alleles. Allele_050 and Allele_057 together account for 29–76% of AAAA individuals per EO and 24–69% per BL. They are present as AAAA homozygotes in **every BL** (pan-BL, 5/5) and in **5 of 6 focus EOs** (pan-EO at the ≥80% threshold; the only exception is EO18, the smallest focus EO with just 4 AAAA individuals carrying four different non-W-group-1 alleles).
+
+The concentration is most extreme in EO70, where 22 of 29 AAAA individuals (76%) carry one of these two alleles; the remaining 7 carry Allele_054, which is also a member of W-group 1 (Section 6). If the W-group 1 synonymy hypothesis is confirmed by crossing — i.e., if Allele_050, Allele_057, and Allele_054 all share the same SI recognition specificity — then **all 29 AAAA individuals in EO70 effectively carry the same functional lock**. The BL panel pushes this finding further: pan-BL Allele_050/057 across **all five independent bottleneck lineages** confirms that drift has converged on the same fixed SI specificity in every lineage — a powerful test of the independent-bottleneck hypothesis.
+
+This finding reframes the AAAA burden in conservation terms. It is not simply that 60% of individuals are homozygous — it is that a large fraction of that 60% carries the same one or two SI specificities across every EO and every BL. The effective number of distinct SI locks present in the AAAA fraction is far smaller than the count of AAAA individuals would suggest. Cross-EO or cross-BL breeding involving Allele_050 and Allele_057 individuals does not resolve the compatibility problem if those individuals share the same lock; only the introduction of genuinely distinct alleles (B, C, D copies from heterozygous individuals) will. This makes the 13 AABC individuals — and the allele diversity they exclusively carry — even more critical than the raw genotype counts imply.
 
 **Seed production priority within each EO** (top-ranked individuals by GFS):
 
