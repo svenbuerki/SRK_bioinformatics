@@ -37,7 +37,7 @@ Boise, Idaho, USA
 
 ## Pipeline Workflow
 
-The pipeline consists of **22 main steps organized into four phases**, progressing from within-library sequence assembly to cross-library integration, population genetic analyses, and experimental validation of S-allele hypotheses through controlled crosses.
+The pipeline consists of **23 main steps organized into four phases**, progressing from within-library sequence assembly to cross-library integration, population genetic analyses, and experimental validation of S-allele hypotheses through controlled crosses.
 
 ## Phase 1: SRK Amplicon Sequence Assembly
 
@@ -61,19 +61,20 @@ The pipeline consists of **22 main steps organized into four phases**, progressi
 
 ## Phase 3: Data Analyses
 
-13. **Population Genetics Statistics** – Estimation of population-level diversity metrics, including heterozygosity, mean alleles per individual, total allele counts, and effective allele numbers. Allele frequencies are based on copy counts summed across individuals (from the count matrix), giving a proper tetraploid frequency estimate.
-14. **Allele Accumulation Curves** – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators. Outputs an empirical species optimum used as a baseline in steps 15 and 16.
-15. **Allele Frequency Analysis** – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under NFDS. The estimated species allele richness from step 14 is used as the optimum, quantifying how many alleles each population is missing relative to the species pool.
-16. **TP1 Tipping Point Analysis** – Diagnostic scatter plot synthesising Steps 13–15, positioning each EO by the proportion of the species optimum retained (x axis) and by allele frequency evenness (Ne/N, y axis). EOs breaching both thresholds (< 50% of optimum; Ne/N < 0.80) are flagged CRITICAL.
-17. **Allele Composition Comparison Across Element Occurrences** – UpSet plot and pairwise sharing heatmap quantifying how S-allele sets partition across Element Occurrences, identifying private alleles and alleles shared across all populations. Requires only standard Python dependencies (pandas, numpy, matplotlib).
-18. **Individual Genotypic Fitness Score (GFS)** – Per-individual metric quantifying the proportion of heterozygous diploid gametes a tetraploid can produce. Differentiates dosage-imbalanced genotypes (AABB vs AAAB) invisible to zygosity analysis alone. Outputs per-individual GFS values and ranked seed parent lists per EO.
-19. **TP2 Tipping Point Analysis** – EO-level assessment placing mean GFS and proportion of AAAA individuals in interaction. EOs breaching both thresholds simultaneously (mean GFS < 0.667; proportion AAAA > 30%) are flagged CRITICAL, AT RISK, or OK.
-20. **Reproductive Effort Support per Element Occurrence** – Horizontal proportional bar chart showing the fraction of individuals at each GFS tier per EO.
+13. **Element Occurrence and Bottleneck Lineage Integration** – Bridges the SRK individual-level dataset to the spatial framework defined in the sibling project [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering). For each post-QC individual, joins EO label, geographic group, bottleneck lineage (BL1–BL5), and drift index from `EO_group_BL_summary.csv`. Produces `SRK_individual_BL_assignments.tsv`, the join key used by all subsequent Phase 3 steps to add BL stratification (EO sorted within BL for management; BL aggregated for inferential power on small localities).
+14. **Population Genetics Statistics** – Estimation of population-level diversity metrics, including heterozygosity, mean alleles per individual, total allele counts, and effective allele numbers. Allele frequencies are based on copy counts summed across individuals (from the count matrix), giving a proper tetraploid frequency estimate.
+15. **Allele Accumulation Curves** – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators. Outputs an empirical species optimum used as a baseline in steps 16 and 17.
+16. **Allele Frequency Analysis** – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under NFDS. The estimated species allele richness from step 15 is used as the optimum, quantifying how many alleles each population is missing relative to the species pool.
+17. **TP1 Tipping Point Analysis** – Diagnostic scatter plot synthesising Steps 14–16, positioning each EO by the proportion of the species optimum retained (x axis) and by allele frequency evenness (Ne/N, y axis). EOs breaching both thresholds (< 50% of optimum; Ne/N < 0.80) are flagged CRITICAL.
+18. **Allele Composition Comparison Across Element Occurrences** – UpSet plot and pairwise sharing heatmap quantifying how S-allele sets partition across Element Occurrences, identifying private alleles and alleles shared across all populations. Requires only standard Python dependencies (pandas, numpy, matplotlib).
+19. **Individual Genotypic Fitness Score (GFS)** – Per-individual metric quantifying the proportion of heterozygous diploid gametes a tetraploid can produce. Differentiates dosage-imbalanced genotypes (AABB vs AAAB) invisible to zygosity analysis alone. Outputs per-individual GFS values and ranked seed parent lists per EO.
+20. **TP2 Tipping Point Analysis** – EO-level assessment placing mean GFS and proportion of AAAA individuals in interaction. EOs breaching both thresholds simultaneously (mean GFS < 0.667; proportion AAAA > 30%) are flagged CRITICAL, AT RISK, or OK.
+21. **Reproductive Effort Support per Element Occurrence** – Horizontal proportional bar chart showing the fraction of individuals at each GFS tier per EO.
 
 ## Phase 4: Testing S-allele Hypotheses
 
-21. **HV-Based Allele Hypothesis Testing and Crossing Design** – Moving-window variability scan of the S-domain alignment identifies hypervariable (HV) positions where alleles actually diverge. Pairwise distances restricted to those HV positions are used for UPGMA clustering, which automatically detects the Class I / Class II phylogenetic split. Within the majority class, three cross categories are assigned by HV distance: W (HV-identical alleles, d = 0 — expected incompatible), N (small HV difference, d < threshold — synonymy test), and P_within (substantial within-class HV divergence — expected compatible). Between-class crosses are labelled P_cross (guaranteed compatible positive controls). An allele similarity heatmap and cross design summary figure are also produced.
-22. **Cross Result Analysis** – Reads completed crossing records and tests whether the W / N / P category predicts seed yield, validating the sequence-based allele definitions against experimental cross-compatibility data. Activated by setting `CROSS_TSV` in the script once crossing data are available.
+22. **HV-Based Allele Hypothesis Testing and Crossing Design** – Moving-window variability scan of the S-domain alignment identifies hypervariable (HV) positions where alleles actually diverge. Pairwise distances restricted to those HV positions are used for UPGMA clustering, which automatically detects the Class I / Class II phylogenetic split. Within the majority class, three cross categories are assigned by HV distance: W (HV-identical alleles, d = 0 — expected incompatible), N (small HV difference, d < threshold — synonymy test), and P_within (substantial within-class HV divergence — expected compatible). Between-class crosses are labelled P_cross (guaranteed compatible positive controls). An allele similarity heatmap and cross design summary figure are also produced.
+23. **Cross Result Analysis** – Reads completed crossing records and tests whether the W / N / P category predicts seed yield, validating the sequence-based allele definitions against experimental cross-compatibility data. Activated by setting `CROSS_TSV` in the script once crossing data are available.
 
 ## Requirements
 
@@ -100,10 +101,10 @@ pip install biopython pandas numpy
 ``` r
 install.packages(c("dplyr", "ggplot2", "readr", "tidyr", "forcats", "scales", "bookdown"))
 
-# Optional — required for iNEXT richness estimation in step 14:
+# Optional — required for iNEXT richness estimation in step 15:
 install.packages("iNEXT")
 
-# Optional — required for labelled scatter plot in step 17:
+# Optional — required for labelled scatter plot in step 18:
 install.packages("ggrepel")
 ```
 
@@ -163,36 +164,39 @@ Rscript scripts/11_srk_allele_genotyping.R
 Rscript scripts/12_zygosity_analysis.R
 ```
 
-4.  **Phase 3 — Data Analyses (Steps 13–20):**
+4.  **Phase 3 — Data Analyses (Steps 13–21):**
 
 ``` bash
-# Step 13: Population genetics statistics
+# Step 13: EO + bottleneck lineage integration (run first — produces the join key for all downstream steps)
+python3 SRK_BL_integration.py
+
+# Step 14: Population genetics statistics
 Rscript SRK_population_genetic_summary.R
 
-# Step 14: Allele accumulation curves and richness estimation
-# (must run before steps 15 and 16)
+# Step 15: Allele accumulation curves and richness estimation
+# (must run before steps 16 and 17)
 Rscript SRK_allele_accumulation_analysis.R
 
-# Step 15: Allele frequency analysis (reads SRK_species_richness_estimates.tsv)
+# Step 16: Allele frequency analysis (reads SRK_species_richness_estimates.tsv)
 Rscript SRK_chisq_species_population.R
 
-# Step 16: TP1 tipping point analysis (reads Steps 13 and 14 outputs)
+# Step 17: TP1 tipping point analysis (reads Steps 14 and 15 outputs)
 Rscript SRK_TP1_tipping_point.R
 
-# Step 17: Allele composition comparison across Element Occurrences
+# Step 18: Allele composition comparison across Element Occurrences
 python SRK_allele_sharing_EOs.py
 
-# Steps 18–19: Individual Genotypic Fitness Score (Step 18) and TP2 tipping point analysis (Step 19)
+# Steps 19–20: Individual Genotypic Fitness Score (Step 19) and TP2 tipping point analysis (Step 20)
 Rscript SRK_individual_GFS.R
 ```
 
-5.  **Phase 4 — Testing S-allele Hypotheses (Steps 21–22):**
+5.  **Phase 4 — Testing S-allele Hypotheses (Steps 22–23):**
 
 ``` bash
-# Step 21: HV-based allele hypothesis testing and crossing design
+# Step 22: HV-based allele hypothesis testing and crossing design
 python srk_allele_hypotheses.py
 
-# Step 22: Cross result analysis
+# Step 23: Cross result analysis
 # Set CROSS_TSV = "<your_cross_results_file>" in the script, then re-run:
 python srk_allele_hypotheses.py
 ```
@@ -225,28 +229,53 @@ For a concise step-by-step protocol (scripts, inputs, outputs, key parameters), 
 
 ### Population Genetic Outputs (Phase 3)
 
--   `SRK_allele_accumulation_curves.pdf` - Species- and population-level accumulation curves with estimated asymptotes
--   `SRK_allele_accumulation_stats.tsv` - Curve statistics including MM, Chao1, and iNEXT richness estimates per level
--   `SRK_species_richness_estimates.tsv` - Consensus species allele richness estimate (input to step 15)
--   `SRK_chisq_species_population.tsv` - χ² test statistics at species and population levels
--   `SRK_chisq_species_population_frequency_plots.pdf` - Allele frequency plots showing observed distribution, NFDS expectation, and missing alleles relative to estimated optimum
--   `SRK_allele_upset_EOs.pdf` - UpSet plot of all pairwise and higher-order allele set intersections across Element Occurrences
--   `SRK_allele_sharing_heatmap_EOs.pdf` - Pairwise allele sharing heatmap between Element Occurrences
--   `SRK_individual_GFS.tsv` - Per-individual Genotypic Fitness Score, genotype class (AAAA/AAAB/AABB/AABC/ABCD), and EO assignment (Step 18)
--   `SRK_EO_GFS_summary.tsv` - EO-level mean GFS, genotype class proportions, and Tipping Point 2 status (CRITICAL / AT RISK / OK) (Step 19)
--   `SRK_GFS_plots.pdf` - Four diagnostic plots: stacked composition bars, individual GFS jitter with mean, TP2 tipping point map, and absolute count bars (Steps 18–19)
+#### Step 13 — EO + Bottleneck Lineage integration
+
+-   `SRK_individual_BL_assignments.tsv` - Per-individual EO, Group, BL (BL1–BL5), Drift_index, BL_status (Assigned / Inferred / Unassigned). Join key consumed by every Phase 3/4 R script that adds a BL stratification.
+
+#### Step 14 — Population genetics
+
+-   `SRK_population_genetic_summary.tsv` - EO-level summary with `BL` and `Drift_index` columns; rows sorted by `BL → EO`
+-   `SRK_population_genetic_summary_BL.tsv` - **NEW**. BL-level aggregate (5 rows) with `N_EOs`, `Mean_drift`, plus per-group metrics
+-   `SRK_population_genetic_summary.pdf` - 2-page PDF: page 1 EO bars sorted by BL with Dark2 BL color palette; page 2 BL aggregate bars
+
+#### Step 15 — Allele accumulation
+
+-   `SRK_allele_accumulation_curves.pdf` - Species + per-EO + per-BL pages with MM/Chao1/iNEXT asymptote reference lines
+-   `figures/SRK_allele_accumulation_species.png` - Standalone species curve (54 alleles observed in 272 ingroup individuals; MM = 69, Chao1 = 73)
+-   `figures/SRK_allele_accumulation_combined.png` - All qualifying EO curves on shared axes, **colored by parent BL**
+-   `figures/SRK_allele_accumulation_BL_combined.png` - **NEW**. The 5 BL aggregate curves on shared axes
+-   `figures/SRK_allele_accumulation_drift_erosion.png` - EO stacked bars sorted by BL with BL color strip on the x-axis baseline
+-   `figures/SRK_allele_accumulation_BL_drift_erosion.png` - **NEW**. BL aggregate stacked bars (BL4 = 32% lost; BL1/BL2 ≥ 86% lost)
+-   `SRK_allele_accumulation_stats.tsv` - Per-level curve statistics (Species + 6 EOs + 5 BLs), MM/Chao1/iNEXT estimates, sampling adequacy targets
+-   `SRK_species_richness_estimates.tsv` - Consensus species allele richness estimate (input to Step 16). Computed from all 272 ingroup individuals.
+
+#### Step 16 — Allele frequency χ²
+
+-   `SRK_chisq_species_population.tsv` - χ² test statistics at three levels (Species, EO, BL); new `BL` column; rows ordered Species → EOs (sorted by BL) → BLs
+-   `SRK_chisq_species_population_frequency_plots.pdf` - 12 pages (1 species + 6 EOs sorted by BL + 5 BLs); EO/BL pages colored by parent BL palette
+
+#### Steps 17–21 (other Phase 3 outputs)
+
+-   `SRK_TP1_summary.tsv` - Per-EO allele richness, frequency evenness, and TP1 status (Step 17)
+-   `SRK_TP1_tipping_point.pdf` - TP1 diagnostic scatter plot (richness retained × frequency evenness) (Step 17)
+-   `SRK_allele_upset_EOs.pdf` - UpSet plot of all pairwise and higher-order allele set intersections across Element Occurrences (Step 18)
+-   `SRK_allele_sharing_heatmap_EOs.pdf` - Pairwise allele sharing heatmap between Element Occurrences (Step 18)
+-   `SRK_individual_GFS.tsv` - Per-individual Genotypic Fitness Score, genotype class (AAAA/AAAB/AABB/AABC/ABCD), and EO assignment (Step 19)
+-   `SRK_EO_GFS_summary.tsv` - EO-level mean GFS, genotype class proportions, and Tipping Point 2 status (CRITICAL / AT RISK / OK) (Step 20)
+-   `SRK_GFS_plots.pdf` - Four diagnostic plots: stacked composition bars, individual GFS jitter with mean, TP2 tipping point map, and absolute count bars (Steps 19–20)
 
 ### Phase 4 Outputs (Testing S-allele Hypotheses)
 
--   `SRK_variability_landscape.pdf` / `figures/SRK_variability_landscape.png` - Per-column S-domain variability profile with HV regions shaded (Step 21)
--   `SRK_HV_allele_distances.tsv` - 63×63 pairwise distance matrix computed on 75 HV positions (Step 21)
--   `SRK_functional_allele_groups.tsv` - Allele bin → phylogenetic class assignment, AAAA count, cross power (Step 21)
--   `SRK_synonymy_candidates.tsv` - All within-class allele pairs with HV distance and testability flag (Step 21)
--   `SRK_allele_similarity_heatmap.pdf` / `figures/SRK_allele_similarity_heatmap.png` - 63×63 HV similarity heatmap ordered by UPGMA with class strips (Step 21)
--   `SRK_AAAA_cross_design_HV.tsv` - All AAAA × AAAA pairs ranked by category (W / N / P_within / P_cross) with HV distance and expected outcome (Step 21)
--   `SRK_cross_design_summary.pdf` / `figures/SRK_cross_design_summary.png` - Three-panel figure: HV distance distribution, cross category schematic, N-cross interpretation (Step 21)
--   `SRK_HV_cluster_figure.pdf` / `figures/SRK_HV_cluster_figure.png` - UPGMA dendrogram (HV distances) coloured by class + AAAA availability bar chart (Step 21)
--   `SRK_cross_result_analysis_HV.pdf` - Seed yield distributions and success rates by cross category, with Kruskal-Wallis and Mann-Whitney U tests (Step 22; requires cross data)
+-   `SRK_variability_landscape.pdf` / `figures/SRK_variability_landscape.png` - Per-column S-domain variability profile with HV regions shaded (Step 22)
+-   `SRK_HV_allele_distances.tsv` - 63×63 pairwise distance matrix computed on 75 HV positions (Step 22)
+-   `SRK_functional_allele_groups.tsv` - Allele bin → phylogenetic class assignment, AAAA count, cross power (Step 22)
+-   `SRK_synonymy_candidates.tsv` - All within-class allele pairs with HV distance and testability flag (Step 22)
+-   `SRK_allele_similarity_heatmap.pdf` / `figures/SRK_allele_similarity_heatmap.png` - 63×63 HV similarity heatmap ordered by UPGMA with class strips (Step 22)
+-   `SRK_AAAA_cross_design_HV.tsv` - All AAAA × AAAA pairs ranked by category (W / N / P_within / P_cross) with HV distance and expected outcome (Step 22)
+-   `SRK_cross_design_summary.pdf` / `figures/SRK_cross_design_summary.png` - Three-panel figure: HV distance distribution, cross category schematic, N-cross interpretation (Step 22)
+-   `SRK_HV_cluster_figure.pdf` / `figures/SRK_HV_cluster_figure.png` - UPGMA dendrogram (HV distances) coloured by class + AAAA availability bar chart (Step 22)
+-   `SRK_cross_result_analysis_HV.pdf` - Seed yield distributions and success rates by cross category, with Kruskal-Wallis and Mann-Whitney U tests (Step 23; requires cross data)
 
 ### Quality Control Reports
 

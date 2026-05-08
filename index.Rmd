@@ -42,7 +42,7 @@ Key innovations include multi-replicate assembly strategies for maximizing allel
 
 # Pipeline Overview
 
-The pipeline consists of **22 main steps organized into four phases**, progressing from within-library sequence assembly to cross-library integration, population genetic analyses, and experimental validation of S-allele hypotheses through controlled crosses.
+The pipeline consists of **23 main steps organized into four phases**, progressing from within-library sequence assembly to cross-library integration, population genetic analyses, and experimental validation of S-allele hypotheses through controlled crosses.
 
 ## [Phase 1: SRK amplicon sequence assembly](#phase1)
 
@@ -67,19 +67,20 @@ The pipeline consists of **22 main steps organized into four phases**, progressi
 
 ## [Phase 3: Data Analyses](#phase3)
 
-13. [Population Genetics Statistics](#popgenetics) – Estimation of population-level diversity metrics, including heterozygosity, mean alleles per individual, total allele counts, and effective allele numbers.
-14. [Allele Accumulation Curves](#alleleaccum) – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators.
-15. [Allele Frequency Analysis](#allelefrqanalysis) – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under negative frequency-dependent selection. The estimated species allele richness (from step 14) is used as the NFDS optimum baseline.
-16. [TP1 Tipping Point Analysis](#TP1) – **Health of the SI system**: diagnostic scatter plot asking (x) how many different alleles a population has retained and (y) how evenly those alleles are distributed across individuals; with CRITICAL zone shading and TP1 status flags.
-17. [Allele Composition Comparison Across Element Occurrences](#allelesharing) – UpSet plot and pairwise sharing heatmap quantifying how S-allele sets overlap and partition across Element Occurrences, identifying private alleles and alleles shared by all populations.
-18. [Individual Genotypic Fitness Score](#GFS) – Per-individual GFS quantifying the proportion of heterozygous diploid gametes a tetraploid individual can produce, differentiating dosage-imbalanced genotypes (e.g. AABB vs AAAB) invisible to simple zygosity classification.
-19. [TP2 Tipping Point Analysis](#TP2) – **Reproductive Fitness**: EO-level tipping point assessment asking (x) what fraction of individuals are reproductive dead-ends (prop_AAAA) and (y) how much reproductive capacity the average individual still has (mean GFS); EOs breaching both thresholds simultaneously are flagged CRITICAL.
-20. [Reproductive Effort Support per Element Occurrence](#reproeffort) – Horizontal proportional bar chart showing the fraction of individuals at each GFS tier per EO, quantifying the proportion of the population capable of contributing allelic diversity to compatible crosses.
+13. [Element Occurrence and Bottleneck Lineage Integration](#BLintegration) – Bridges the SRK individual-level dataset to the spatial framework defined in the sibling project [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering). For each post-QC individual, joins EO label, geographic group, bottleneck lineage (BL1–BL5), and drift index from `EO_group_BL_summary.csv`. Produces `SRK_individual_BL_assignments.tsv`, the join key used by all subsequent Phase 3 steps to add BL stratification (EO sorted within BL for management; BL aggregated for inferential power on small localities).
+14. [Population Genetics Statistics](#popgenetics) – Estimation of population-level diversity metrics, including heterozygosity, mean alleles per individual, total allele counts, and effective allele numbers.
+15. [Allele Accumulation Curves](#alleleaccum) – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators.
+16. [Allele Frequency Analysis](#allelefrqanalysis) – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under negative frequency-dependent selection. The estimated species allele richness (from step 15) is used as the NFDS optimum baseline.
+17. [TP1 Tipping Point Analysis](#TP1) – **Health of the SI system**: diagnostic scatter plot asking (x) how many different alleles a population has retained and (y) how evenly those alleles are distributed across individuals; with CRITICAL zone shading and TP1 status flags.
+18. [Allele Composition Comparison Across Element Occurrences](#allelesharing) – UpSet plot and pairwise sharing heatmap quantifying how S-allele sets overlap and partition across Element Occurrences, identifying private alleles and alleles shared by all populations.
+19. [Individual Genotypic Fitness Score](#GFS) – Per-individual GFS quantifying the proportion of heterozygous diploid gametes a tetraploid individual can produce, differentiating dosage-imbalanced genotypes (e.g. AABB vs AAAB) invisible to simple zygosity classification.
+20. [TP2 Tipping Point Analysis](#TP2) – **Reproductive Fitness**: EO-level tipping point assessment asking (x) what fraction of individuals are reproductive dead-ends (prop_AAAA) and (y) how much reproductive capacity the average individual still has (mean GFS); EOs breaching both thresholds simultaneously are flagged CRITICAL.
+21. [Reproductive Effort Support per Element Occurrence](#reproeffort) – Horizontal proportional bar chart showing the fraction of individuals at each GFS tier per EO, quantifying the proportion of the population capable of contributing allelic diversity to compatible crosses.
 
 ## [Phase 4: Testing S-allele Hypotheses](#phase4)
 
-21. [Hypervariable-Position Allele Hypothesis Testing and Crossing Design](#alleleclusters) – Moving-window scan to identify 75 hypervariable positions in the S-domain; UPGMA auto-threshold clustering detects Class I / Class II phylogenetic split; generates a prioritised crossing plan for 164 AAAA individuals with four categories: W (HV-identical), N (synonymy test), P_within (within-class positive control), P_cross (between-class positive control).
-22. [Cross Result Analysis](#crossresults) – Statistical comparison of seed yield across W / N / P_within / P_cross cross categories to test whether HV-based allele bin boundaries predict functional recognition specificity.
+22. [Hypervariable-Position Allele Hypothesis Testing and Crossing Design](#alleleclusters) – Moving-window scan to identify 75 hypervariable positions in the S-domain; UPGMA auto-threshold clustering detects Class I / Class II phylogenetic split; generates a prioritised crossing plan for 164 AAAA individuals with four categories: W (HV-identical), N (synonymy test), P_within (within-class positive control), P_cross (between-class positive control).
+23. [Cross Result Analysis](#crossresults) – Statistical comparison of seed yield across W / N / P_within / P_cross cross categories to test whether HV-based allele bin boundaries predict functional recognition specificity.
 
 ---
 
@@ -4460,20 +4461,85 @@ cat("SRK_zygosity_distribution.pdf\n")
 
 ## Scientific Approach {#phase3-approach}
 
-Phase 3 addresses a single overarching conservation question: **what is the impact of genetic drift on reproductive success?** In plant species with sporophytic self-incompatibility (SI), reproduction requires that pollen and pistil carry different SRK alleles. Under negative frequency-dependent selection (NFDS), all S-alleles are maintained at approximately equal frequencies, maximising the proportion of compatible mating pairs and sustaining seed production across a population. In small or isolated populations, genetic drift counteracts NFDS — stochastically eliminating rare alleles, skewing frequencies away from the equal-frequency expectation, and degrading individual genotype quality — with direct consequences for reproductive success. Three sequential questions structure the analyses.
+Phase 3 addresses a single overarching conservation question: **what is the impact of genetic drift on reproductive success?** In plant species with sporophytic self-incompatibility (SI), reproduction requires that pollen and pistil carry different SRK alleles. Under negative frequency-dependent selection (NFDS), all S-alleles are maintained at approximately equal frequencies, maximising the proportion of compatible mating pairs and sustaining seed production across a population. In small or isolated populations, genetic drift counteracts NFDS — stochastically eliminating rare alleles, skewing frequencies away from the equal-frequency expectation, and degrading individual genotype quality — with direct consequences for reproductive success.
+
+Before any of these dynamics can be tested at the right evolutionary scale, individuals must be assigned to the demographic units that share — and have shared — a gene-flow history. Element Occurrences (EOs) are the unit of management, but they are nested within larger evolutionary units: groups of EOs that descend from a common ancestral colonisation event and have evolved independently since fragmentation severed connectivity between them. These independent demographic units are termed **bottleneck lineages (BL1–BL5)** and are derived in the sibling spatial-clustering project [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering) from a 500 m pollinator-dispersal threshold, hull-to-hull connectivity analysis, and Ward's D2 hierarchical clustering of group centroids (silhouette-optimal k = 5). Phase 3 therefore opens with [Step 13 — Element Occurrence and Bottleneck Lineage Integration](#BLintegration), which joins each individual to its EO, geographic group, BL, and drift index. All subsequent steps stratify in parallel by **EO sorted within BL** (the management view) and by **BL** (the evolutionary view), the latter recovering the small-locality samples that EO-level statistics cannot use. Comparing diversity, richness, and composition across BLs provides a direct test of whether *independent* demographic bottlenecks have shaped S-allele diversity in the species.
+
+Three sequential questions then structure the analyses.
 
 **Q1 — What is the S-allele richness of the species?**
-The species-level allele pool approximates the NFDS richness equilibrium: the total number of functionally distinct S-alleles that selection is capable of maintaining across the species. This is estimated from allele accumulation curves and asymptotic richness estimators (Michaelis-Menten, Chao1, iNEXT) applied to the full dataset ([Step 14](#alleleaccum)), and serves as the reference optimum against which population-level deficits are measured. Population genetic parameters — allele richness, effective allele number, heterozygosity, and mean alleles per individual — are characterised per EO ([Step 13](#popgenetics)) to provide the empirical foundation for downstream comparisons.
+The species-level allele pool approximates the NFDS richness equilibrium: the total number of functionally distinct S-alleles that selection is capable of maintaining across the species. This is estimated from allele accumulation curves and asymptotic richness estimators (Michaelis-Menten, Chao1, iNEXT) applied to the full dataset ([Step 15](#alleleaccum)), and serves as the reference optimum against which population-level deficits are measured. Population genetic parameters — allele richness, effective allele number, heterozygosity, and mean alleles per individual — are characterised per EO ([Step 14](#popgenetics)) to provide the empirical foundation for downstream comparisons.
 
 **Q2 — How did genetic drift impact populations' S-allele diversity?**
-Genetic drift reduces allele richness and skews remaining frequencies away from the equal-frequency NFDS expectation. **Tipping Point 1 (TP1)** marks the threshold at which allele loss is so severe that inter-population allele transfers are required to restore the SI system. Two criteria are evaluated per EO: the proportion of the species optimum retained (allele richness deficit), and the frequency evenness of those alleles — the ratio of effective allele number to observed allele count (Ne/N) — as a measure of departure from NFDS equal-frequency expectations. These are assessed through allele accumulation ([Step 14](#alleleaccum)), frequency analysis ([Step 15](#allelefrqanalysis)), TP1 synthesis ([Step 16](#TP1)), and allele composition comparison across EOs ([Step 17](#allelesharing)). EOs breaching both thresholds (< 50% of optimum and Ne/N < 0.80) are flagged **CRITICAL**.
+Genetic drift reduces allele richness and skews remaining frequencies away from the equal-frequency NFDS expectation. **Tipping Point 1 (TP1)** marks the threshold at which allele loss is so severe that inter-population allele transfers are required to restore the SI system. Two criteria are evaluated per EO: the proportion of the species optimum retained (allele richness deficit), and the frequency evenness of those alleles — the ratio of effective allele number to observed allele count (Ne/N) — as a measure of departure from NFDS equal-frequency expectations. These are assessed through allele accumulation ([Step 15](#alleleaccum)), frequency analysis ([Step 16](#allelefrqanalysis)), TP1 synthesis ([Step 17](#TP1)), and allele composition comparison across EOs ([Step 18](#allelesharing)). EOs breaching both thresholds (< 50% of optimum and Ne/N < 0.80) are flagged **CRITICAL**.
 
 Note that "genetic drift" here encompasses two conceptually distinct processes: (1) a discrete historical **bottleneck** — a sudden reduction in population size that causes rapid simultaneous loss of allele richness; and (2) **ongoing drift** in small populations — the continuous stochastic erosion of allele frequency evenness as dominant alleles accumulate. The two TP1 axes are designed to capture these separately: low prop_optimum reflects richness loss consistent with a bottleneck or founder event; low Ne/N reflects frequency distortion consistent with ongoing drift. EOs deficient on both axes simultaneously — as observed across all five LEPA EOs — are most consistent with a historical bottleneck followed by prolonged ongoing drift. The SRK locus is under balancing selection (NFDS) and cannot be used directly with standard neutral-marker bottleneck tests; formally partitioning the two processes requires genome-wide neutral marker data and demographic modelling (e.g., SMC++, PSMC).
 
 **Q3 — How did genetic drift impact the reproductive fitness of individuals within populations?**
-Even where some allele diversity persists, drift causes allele copy-count imbalances at the individual level that directly reduce reproductive output. In a tetraploid, the proportion of compatible diploid gametes an individual produces — the Genotypic Fitness Score (GFS) — depends not only on which alleles are present but on their dosage balance across the four allele copies. An AABB individual (balanced 2+2) produces heterozygous gametes in 4 of 6 combinations (GFS = 0.667), whereas an AAAB individual (unbalanced 3+1) produces only 3 of 6 (GFS = 0.500), despite both carrying two distinct alleles. In self-incompatible plants, an individual's value as a breeding partner depends not only on which key/lock types it carries, but also on the number of distinct alleles present across its genome copies. Individuals with more key/lock types can participate in more compatible crosses, making them especially valuable in a managed breeding program. **Tipping Point 2 (TP2)** marks the threshold at which this individual-level degradation is so advanced that within-population crosses alone cannot restore reproductive fitness. Two criteria are evaluated per EO: mean GFS below the AABB benchmark (< 0.667) and the proportion of AAAA individuals — which produce no heterozygous gametes — exceeding 30%. These are assessed through individual GFS computation ([Step 18](#GFS)), TP2 synthesis ([Step 19](#TP2)), and the reproductive effort visualisation ([Step 20](#reproeffort)). EOs breaching both criteria are flagged **CRITICAL**.
+Even where some allele diversity persists, drift causes allele copy-count imbalances at the individual level that directly reduce reproductive output. In a tetraploid, the proportion of compatible diploid gametes an individual produces — the Genotypic Fitness Score (GFS) — depends not only on which alleles are present but on their dosage balance across the four allele copies. An AABB individual (balanced 2+2) produces heterozygous gametes in 4 of 6 combinations (GFS = 0.667), whereas an AAAB individual (unbalanced 3+1) produces only 3 of 6 (GFS = 0.500), despite both carrying two distinct alleles. In self-incompatible plants, an individual's value as a breeding partner depends not only on which key/lock types it carries, but also on the number of distinct alleles present across its genome copies. Individuals with more key/lock types can participate in more compatible crosses, making them especially valuable in a managed breeding program. **Tipping Point 2 (TP2)** marks the threshold at which this individual-level degradation is so advanced that within-population crosses alone cannot restore reproductive fitness. Two criteria are evaluated per EO: mean GFS below the AABB benchmark (< 0.667) and the proportion of AAAA individuals — which produce no heterozygous gametes — exceeding 30%. These are assessed through individual GFS computation ([Step 19](#GFS)), TP2 synthesis ([Step 20](#TP2)), and the reproductive effort visualisation ([Step 21](#reproeffort)). EOs breaching both criteria are flagged **CRITICAL**.
 
 Together, these three questions trace the consequences of demographic decline from the species-level allele pool, through population-level richness erosion and frequency skew, to individual-level reproductive fitness — providing a quantitative framework for prioritising conservation interventions.
+
+---
+
+## Element Occurrence and Bottleneck Lineage Integration {#BLintegration}
+
+### Overview
+
+This step bridges the SRK individual-level dataset to the spatial framework defined in the sibling project [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering). For each post-QC individual, the script resolves a complete sampling lineage record: which Element Occurrence (EO) the sample was collected from, which connected geographic group(s) that EO occupies, which independent bottleneck lineage (BL1–BL5) the group belongs to, and the relative drift index of its habitat patch. The output table is the join key used by every subsequent Phase 3 step to add the BL stratification.
+
+### Scientific Rationale
+
+The five **bottleneck lineages (BL1–BL5)** are the minimum number of geographic regions that must be sampled to capture the full landscape-wide allele pool. They are derived from Ward's D2 hierarchical clustering of geographic-group centroids in the spatial-clustering project (silhouette-optimal k = 5), and represent sets of EOs close enough in space to have plausibly been part of the same ancestral metapopulation before habitat fragmentation severed inter-group connectivity. Each BL is therefore a *demographically independent* unit in which S-allele erosion has proceeded without buffering from gene flow.
+
+Without a BL assignment for every individual, downstream analyses can only stratify by EO, which (a) misses the larger evolutionary structure — EOs are nested within BLs, and (b) is forced to discard the small localities (n = 1–3 each) for which EO-level statistics are unreliable. By aggregating those small localities into their parent BL, this step rescues those individuals for analysis at the lineage scale while keeping the EO label available for management-level reporting.
+
+Comparing allele richness, frequency evenness, and allele composition *across BLs* provides a direct test of the hypothesis that **independent bottlenecks** have shaped S-allele diversity. If bottlenecks are truly independent, allele losses should be largely non-overlapping between lineages — each BL missing a different subset of the species pool. If, instead, all BLs are missing the same alleles, a single shared species-level bottleneck is the more parsimonious explanation.
+
+### Pipeline Steps
+
+> Requires `sampling_metadata.csv`, `SRK_individual_zygosity.tsv` (canonical post-QC list, output of [Step 12](#zygosity)), and `EO_group_BL_summary.csv` from the sibling project. Run once at the start of Phase 3 — every downstream step joins on `Individual` against the output table.
+
+**Script:** `SRK_BL_integration.py`
+
+**Command:**
+```bash
+python3 SRK_BL_integration.py
+```
+
+**Inputs:**
+- `sampling_metadata.csv` — raw sample registry (filtered to `Ingroup == 1`).
+- `SRK_individual_zygosity.tsv` — canonical post-QC individual list. Used to filter the sampling registry to the individuals that completed Phase 2.
+- `EO_group_BL_summary.csv` — authoritative `EO → Group → BL → Drift_index` mapping, produced by `LEPA_EO_spatial_clustering/EO_spatial_clustering.R`. Path is auto-resolved at `../../LEPA_EO_spatial_clustering/data/EO_group_BL_summary.csv` relative to the pipeline directory.
+
+**Outputs:**
+- `SRK_individual_BL_assignments.tsv` — one row per post-QC individual with columns `Individual`, `Pop`, `EO`, `Group`, `BL`, `Drift_index`, `BL_status`.
+- A console summary showing per-BL individual counts, the EO breakdown within each BL, and a list of any unresolved `Pop` codes.
+
+The `BL_status` column flags each row as one of:
+
+| Status | Meaning |
+|--------|---------|
+| `Assigned` | Clean numeric `Pop` matched to a known EO in the BL summary (e.g. `Pop=27 → EO27`). |
+| `Inferred` | Resolved by hyphen-prefix splitting (`Pop=26-3 → EO26`) or by a manual `POP_TO_EO_OVERRIDE` entry (`Pop=15 → EO18`). |
+| `Unassigned` | Germplasm sub-code that does not match any EO in the BL summary; user must extend the override dictionary at the top of the script after cross-referencing the spatial-clustering source CSV. |
+
+### Key Implementation Notes
+
+- `Pop` values that are pure numeric (e.g. `27`, `118`) are matched to the canonical EO label (`EO27`, `EO118`) only if that EO is present in the BL summary; otherwise they are flagged Unassigned (preventing the script from inventing fake EO codes for unrelated germplasm IDs such as `Pop=405` or `Pop=709`).
+- Compound codes such as `26-3` or `24-14` are auto-resolved by splitting on `-` and matching the prefix to a known EO.
+- The `POP_TO_EO_OVERRIDE` dictionary at the top of the script records manual mappings for irregular codes; extend it as germplasm sub-codes are cross-referenced against `Peggy_EOs_Germplasm_w_lat_long_from_Events_30Apr2026.csv` (the restricted input to the spatial-clustering project).
+- All TSV/CSV inputs are read with `encoding="utf-8-sig"` to strip Excel-prepended BOM characters that otherwise corrupt the first column name.
+
+### Output Files
+
+| File | Content |
+|------|---------|
+| `SRK_individual_BL_assignments.tsv` | One row per post-QC individual: `Individual`, `Pop`, `EO`, `Group`, `BL`, `Drift_index`, `BL_status`. Columns `EO` and `Drift_index` are blank for `Unassigned` rows. |
+
+### Conservation Implication
+
+Stratifying every Phase 3 analysis by both EO (sorted within BL) and BL (aggregated across all individuals in each lineage) is the operational expression of the [Compatibility Collapse Cascade (C3)](#cascade) framework: EO-level outputs identify the management units that must be intervened on; BL-level outputs identify whether the cascade has progressed independently in each evolutionary lineage and which alleles each lineage retains. Combined, the two views tell the user *which* populations to cross *with* which other populations to maximise inter-lineage allele transfers.
 
 ---
 
@@ -4563,26 +4629,39 @@ Metadata describing each sampled individual, including:
 
 #### Output Files
 
-The analysis generates two output files.
+As of 2026-05-07 the script consumes `SRK_individual_BL_assignments.tsv` (Step 13) and produces results at **two levels in parallel**: per Element Occurrence (EO) sorted within parent Bottleneck Lineage (BL), and per BL aggregated. Three output files are produced.
 
-##### Population summary statistics
+##### EO-level summary
 
 ```
 SRK_population_genetic_summary.tsv
 ```
 
-This table summarizes key statistics for each population:
+One row per EO, sorted by `BL → EO`. Adds `BL`, `Drift_index`, and `Top_alleles` columns. The `Population` column is preserved (now populated with the canonical EO label, e.g. `EO27`) for backwards compatibility with TP1 (Step 17).
 
-| Population | N_individuals | N_alleles | Effective_alleles_Ne | Prop_heterozygous | Prop_homozygous | Mean_alleles |
-| ---------- | ------------- | --------- | -------------------- | ----------------- | --------------- | ------------ |
+| BL  | EO    | Drift_index | N_individuals | N_alleles | Effective_alleles_Ne | Prop_heterozygous |
+| --- | ----- | ----------- | ------------- | --------- | -------------------- | ----------------- |
+| BL2 | EO70  | 0.999       | 48            | 6         | 2.838                | 0.396             |
+| BL3 | EO76  | 0.638       | 62            | 13        | 5.881                | 0.306             |
+| BL4 | EO27  | 0.675       | 42            | 22        | 9.169                | 0.357             |
+| BL4 | EO67  | 1.000       | 36            | 13        | 6.929                | 0.472             |
+| BL5 | EO25  | 0.978       | 53            | 14        | 9.246                | 0.472             |
 
-Example results:
+##### BL-level aggregate summary (NEW)
 
-| Population | N_individuals | N_alleles | Effective_alleles_Ne | Prop_heterozygous | Prop_homozygous | Mean_alleles |
-| ---------- | ------------- | --------- | -------------------- | ----------------- | --------------- | ------------ |
-| 25         | 32            | 12        | 5.853                | 0.438             | 0.562           | 1.438        |
-| 67         | 32            | 12        | 5.404                | 0.438             | 0.562           | 1.531        |
-| 76         | 25            | 9         | 4.930                | 0.480             | 0.520           | 1.480        |
+```
+SRK_population_genetic_summary_BL.tsv
+```
+
+One row per BL (5 rows). Each BL aggregates all individuals across its constituent EOs — including the small localities that EO-level statistics cannot use. Columns include `BL`, `N_EOs`, `Mean_drift`, `N_individuals`, `N_alleles`, `Effective_alleles_Ne`, `Prop_heterozygous`, and `Top_alleles`.
+
+| BL  | N_EOs | N_individuals | N_alleles | Effective_alleles_Ne | Prop_heterozygous |
+| --- | ----- | ------------- | --------- | -------------------- | ----------------- |
+| BL1 | 4     | 5             | 4         | 2.814                | 0.600             |
+| BL2 | 2     | 51            | 8         | 3.003                | 0.373             |
+| BL3 | 4     | 68            | 16        | 6.624                | 0.338             |
+| BL4 | 2     | 78            | 31        | 10.148               | 0.410             |
+| BL5 | 4     | 60            | 18        | 10.513               | 0.450             |
 
 ##### Summary plots
 
@@ -4590,14 +4669,17 @@ Example results:
 SRK_population_genetic_summary.pdf
 ```
 
-This PDF file contains four visual summaries:
+Two-page PDF, four panels per page (Effective allele diversity, Heterozygosity, Allele richness, Sample size). **Page 1**: EO bars sorted by parent BL with bars colored by BL using the locked Set1 palette (legend in panel 1). **Page 2**: BL aggregate bars colored by BL.
 
-1. Effective number of alleles per population
-2. Population heterozygosity
-3. Allele richness
-4. Sample size per population
+The Set1 BL palette established here is reused by Steps 15–21 and matches the sibling LEPA_EO_spatial_clustering project:
 
-These plots facilitate visual comparison among populations and help identify potential signatures of **drift-driven allele loss**.
+| BL  | Hex       | Color  |
+|-----|-----------|--------|
+| BL1 | `#E41A1C` | red    |
+| BL2 | `#377EB8` | blue   |
+| BL3 | `#4DAF4A` | green  |
+| BL4 | `#984EA3` | purple |
+| BL5 | `#FF7F00` | orange |
 
 #### Computational Workflow
 
@@ -5074,24 +5156,37 @@ These plots allow visual evaluation of **diversity saturation patterns** and com
 
 ### Output Files
 
+> As of 2026-05-07 the script reads `SRK_individual_BL_assignments.tsv` and applies a **split-filter design**: the species-level curve uses ALL 272 ingroup individuals (so the species pool baseline is inclusive), while EO and BL curves use only the 262 BL-assigned individuals. The species pool stays at 54 observed / MM=69 / Chao1=73; without the split it would shrink to 50 / MM=63.
+
 #### Primary Outputs
 
 **SRK_allele_accumulation_curves.pdf**
 
-Contains:
+Contains, on separate pages:
 
-* Species-level allele accumulation curve
-* Individual curves for each sufficiently sampled population
+* Species-level accumulation curve (all 272 ingroup individuals)
+* One page per EO with N ≥ 5 (sorted by parent BL)
+* One page per BL (all 5 BLs, regardless of N)
+
+Each page also overlays MM, Chao1, and (optional) iNEXT asymptote reference lines.
+
+**Standalone PNGs (in `figures/`)**
+
+* `figures/SRK_allele_accumulation_species.png` — species curve with MM/Chao1 asymptotes (y-axis extended to accommodate the asymptotes).
+* `figures/SRK_allele_accumulation_combined.png` — all qualifying EO curves on shared axes, **colored by parent BL** (Set1 palette). End-of-curve labels show `EOXX (observed/MM)`. Legend grouped by BL.
+* `figures/SRK_allele_accumulation_BL_combined.png` — **NEW**. The 5 BL aggregate curves on shared axes; the headline visual test of "are independent bottleneck lineages approaching saturation independently?" Headline finding: BL4 climbs to 31 alleles toward MM=47 while BL2 plateaus at 8 alleles (MM=10).
+* `figures/SRK_allele_accumulation_drift_erosion.png` — stacked bars per EO (observed / predicted-undetected / lost-to-drift), with EOs sorted by parent BL and a thin BL color strip along the x-axis baseline grouping EOs visually.
+* `figures/SRK_allele_accumulation_BL_drift_erosion.png` — **NEW**. Same decomposition aggregated to the BL level. Headline finding: BL4 has lost only 32% of the species pool; BL1 (~90%) and BL2 (~86%) have collapsed.
 
 **SRK_allele_accumulation_stats.tsv**
 
-Tabulated statistics extracted from each curve, including richness estimates for each level.
+Tabulated statistics extracted from each curve. Now contains rows for `Species`, then 6 EO rows (sorted by parent BL), then 5 BL rows.
 
 | Column | Description |
 | --- | --- |
-| `Level` | Species or Population |
-| `Population` | Population identifier (or "All" for species) |
-| `N_individuals` | Number of individuals analyzed |
+| `Level` | `Species`, `EO`, or `BL` |
+| `Population` | Group identifier (`All`, `EO27`, `BL2`, ...) |
+| `N_individuals` | Number of individuals in the analysis (272 for Species; 262-subset for EO/BL) |
 | `N_alleles` | Observed alleles |
 | `Initial_slope` | Mean allele gain per individual in early sampling |
 | `Tail_slope` | Mean allele gain per individual in late sampling |
@@ -5105,15 +5200,19 @@ Tabulated statistics extracted from each curve, including richness estimates for
 | `N_more_95pct_MM` | Additional individuals needed to reach 95% of the MM asymptote |
 | `N_more_99pct_MM` | Additional individuals needed to reach 99% of the MM asymptote |
 
-Example output:
+Example (current dataset, 2026-05-07):
 
-| Level | Population | N_ind | N_alleles | MM_est | N_more_next | N_more_80% | N_more_90% | N_more_95% | N_more_99% |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Species | All | 152 | 43 | 59 | 28 | 94 | 400 | 1013 | 5915 |
-| Population | 25 | 32 | 12 | 17 | 5 | 14 | 70 | 183 | 1086 |
-| Population | 27 | 30 | 15 | 25 | 6 | 50 | 149 | 348 | 1935 |
-| Population | 67 | 32 | 12 | 16 | 14 | 10 | 63 | 168 | 1006 |
-| Population | 76 | 25 | 9 | 12 | 10 | 3 | 37 | 105 | 649 |
+| Level   | Population | N_ind | N_alleles | MM | Chao1 |
+|---------|------------|-------|-----------|-------|-------|
+| Species | All        | 272   | 54        | 69    | 73    |
+| EO      | EO70       | 48    | 6         | 7     | 8     |
+| EO      | EO27       | 42    | 22        | 38    | 26    |
+| EO      | EO25       | 53    | 14        | 17    | 15    |
+| BL      | BL1        | 5     | 4         | 7     | 5     |
+| BL      | BL2        | 51    | 8         | 10    | 11    |
+| BL      | BL3        | 68    | 16        | 19    | 29    |
+| BL      | BL4        | 78    | 31        | 47    | 40    |
+| BL      | BL5        | 60    | 18        | 22    | 21    |
 
 **SRK_species_richness_estimates.tsv**
 
@@ -5199,20 +5298,25 @@ Rscript SRK_allele_accumulation_analysis.R
 
 #### Input files
 
-* `SRK_individual_allele_genotypes.tsv`
+* `SRK_individual_allele_genotypes.tsv` — from Step 11
 * `sampling_metadata.csv`
+* `SRK_individual_BL_assignments.tsv` — **from Step 13**
 
 Filtering criteria:
 
-* Exclude outgroups (`Ingroup == 0`)
+* Species level: keep all ingroup individuals (`Ingroup == 1`) — 272 in the current dataset
+* EO and BL levels: restrict to BL-assigned individuals (`BL_status` ∈ {`Assigned`, `Inferred`}) — 262 in the current dataset
 * Match individuals using `SampleID`
-* Retain populations with **≥ 5 individuals**
+* EO-level curves: retain EOs with **≥ 5 individuals**; BLs always included regardless of N
 
 #### Output files
 
-* `SRK_allele_accumulation_curves.pdf`
-* `SRK_allele_accumulation_combined.png` — single-panel combined plot showing all EO accumulation curves on the same axes; end-of-curve labels show observed allele count and MM-predicted total (e.g. `EO27 (15/26)`); legend entries include `obs=` and `MM=` values
-* `SRK_allele_accumulation_drift_erosion.png` — stacked bar chart decomposing the allele deficit per EO into observed alleles, alleles predicted-undetected (EO MM − observed), and alleles lost to genetic drift (species MM − EO MM); quantifies the irreversible erosion of SI diversity driven by drift (60–89% of the 65-allele species optimum lost per EO)
+* `SRK_allele_accumulation_curves.pdf` — species + per-EO + per-BL pages
+* `figures/SRK_allele_accumulation_species.png`
+* `figures/SRK_allele_accumulation_combined.png` — EO curves colored by parent BL
+* `figures/SRK_allele_accumulation_BL_combined.png` — BL aggregate curves
+* `figures/SRK_allele_accumulation_drift_erosion.png` — EO stacked bars sorted by BL with BL color strip
+* `figures/SRK_allele_accumulation_BL_drift_erosion.png` — BL aggregate stacked bars
 * `SRK_allele_accumulation_stats.tsv`
 * `SRK_species_richness_estimates.tsv`
 
@@ -5358,35 +5462,45 @@ These visualizations allow rapid inspection of:
 
 ### Output Files
 
+> As of 2026-05-07 the script reads `SRK_individual_BL_assignments.tsv` (Step 13) and tests at three levels with the same split-filter design as Step 15 (species = 272 ingroup; EO/BL = 262 BL-assigned).
+
 #### Statistical Results
 
 `SRK_chisq_species_population.tsv`
 
-This table summarizes the χ² test statistics at the species and population levels.
+This table summarizes the χ² test statistics at three analysis levels: species, EO (sorted by parent BL), and BL.
 
-| Column          | Description                            |
-| --------------- | -------------------------------------- |
-| `N_individuals` | Number of individuals analyzed         |
-| `N_alleles`     | Number of SRK alleles detected         |
-| `X2`            | Chi-square statistic                   |
-| `df`            | Degrees of freedom                     |
-| `p_value`       | Significance level                     |
-| `Level`         | Analysis level (Species or Population) |
-| `Population`    | Population identifier                  |
+| Column          | Description                                         |
+| --------------- | --------------------------------------------------- |
+| `N_individuals` | Number of individuals analyzed                      |
+| `N_alleles`     | Number of SRK alleles detected                      |
+| `X2`            | Chi-square statistic                                |
+| `df`            | Degrees of freedom                                  |
+| `p_value`       | Significance level                                  |
+| `Level`         | `Species`, `EO`, or `BL`                            |
+| `Population`    | Group identifier (`All`, `EO27`, `BL2`, ...)        |
+| `BL`            | Parent BL for EO rows; the BL itself for BL rows; `NA` for the species row |
 
-Example output:
+Example output (current dataset, 2026-05-07):
 
-| N_individuals | N_alleles | X2     | df | p_value  | Level      | Population |
-| ------------- | --------- | ------ | -- | -------- | ---------- | ---------- |
-| 97            | 73        | 619.34 | 72 | 5.37e-88 | Species    | All        |
-| 30            | 24        | 321.72 | 23 | 1.82e-54 | Population | 25         |
-| 26            | 21        | 153.11 | 20 | 1.59e-22 | Population | 76         |
+| N_individuals | N_alleles | X2      | df | p_value  | Level   | Population | BL  |
+| ------------- | --------- | ------- | -- | -------- | ------- | ---------- | --- |
+| 272           | 54        | 2438.84 | 53 | ~0       | Species | All        | NA  |
+| 48            | 6         | 113.65  | 5  | 6.9e-23  | EO      | EO70       | BL2 |
+| 62            | 13        | 151.33  | 12 | 3.0e-26  | EO      | EO76       | BL3 |
+| 42            | 22        | 111.95  | 21 | 2.1e-14  | EO      | EO27       | BL4 |
+| 53            | 14        | 60.68   | 13 | 4.0e-08  | EO      | EO25       | BL5 |
+| 5             | 4         | 4.64    | 3  | 0.20     | BL      | BL1        | BL1 |
+| 51            | 8         | 174.70  | 7  | 2.6e-34  | BL      | BL2        | BL2 |
+| 78            | 31        | 324.66  | 30 | 3.5e-51  | BL      | BL4        | BL4 |
+
+All medium and large groups (N ≥ 36) reject the uniform-frequency null at p < 1e-7 — confirming that drift has skewed allele frequencies away from the NFDS equilibrium at every analysis level. Only EO18 and BL1 (both N = 5) fail to reach significance, which is a power limitation rather than a finding of evenness.
 
 #### Frequency Plots
 
 `SRK_chisq_species_population_frequency_plots.pdf`
 
-The PDF file contains **allele frequency plots for each analysis level**, allowing visual comparison between observed allele distributions and NFDS expectations.
+12 pages: 1 species + 6 EOs (sorted by parent BL) + 5 BLs. **Each EO and BL page is colored by its parent BL** using the locked Set1 palette (Step 14), so the BL identity is visually obvious without reading the legend. The species page uses neutral grey.
 
 ### Biological Interpretation
 
@@ -5480,7 +5594,7 @@ cat("Allele bins:", length(allele_cols), "\n")
 
 ## TP1 Tipping Point Analysis {#TP1}
 
-> Requires outputs from Steps 13 and 14. Run after both have completed.
+> Requires outputs from Steps 14 and 15. Run after both have completed.
 
 **Script:** `SRK_TP1_tipping_point.R`
 
@@ -5490,8 +5604,8 @@ Rscript SRK_TP1_tipping_point.R
 ```
 
 **Inputs:**
-- `SRK_population_genetic_summary.tsv` — from Step 13
-- `SRK_species_richness_estimates.tsv` — from Step 14
+- `SRK_population_genetic_summary.tsv` — from Step 14
+- `SRK_species_richness_estimates.tsv` — from Step 15
 
 ### What TP1 measures — health of the SI system
 
@@ -5510,7 +5624,7 @@ Together, the two axes diagnose whether SI system health has degraded beyond the
 
 The two metrics capture different aspects of demographic history. `prop_optimum` (allele richness relative to the species optimum) is the primary footprint of a **historical bottleneck or founder event**: the rapid, simultaneous elimination of rare alleles when population size collapsed. `evenness` (Ne/N) reflects **ongoing drift** in small populations: the progressive skewing of surviving allele frequencies as dominant alleles accumulate across generations. An EO that experienced only a historical bottleneck — with no subsequent drift — would show low richness but moderate evenness (founders carry whatever they carried, at roughly similar initial frequencies). An EO experiencing only ongoing drift without a prior bottleneck would retain more alleles but show declining evenness over time.
 
-EOs that score poorly on **both** axes simultaneously — as observed across all five LEPA EOs — are most consistent with a historical bottleneck (which reduced richness) followed by prolonged ongoing drift (which subsequently eroded evenness). The allele composition analysis ([Step 17](#allelesharing)) adds a further signal: if all EOs were founded from a single shared bottlenecked pool, they would be missing the same alleles. Predominantly private allele sets across EOs instead point to independent drift in isolated populations. Note that the SRK locus, being under balancing selection, cannot be used with standard neutral-marker bottleneck tests (e.g., BOTTLENECK software, M-ratio); formally distinguishing the two processes requires genome-wide neutral marker data and demographic modelling.
+EOs that score poorly on **both** axes simultaneously — as observed across all five LEPA EOs — are most consistent with a historical bottleneck (which reduced richness) followed by prolonged ongoing drift (which subsequently eroded evenness). The allele composition analysis ([Step 18](#allelesharing)) adds a further signal: if all EOs were founded from a single shared bottlenecked pool, they would be missing the same alleles. Predominantly private allele sets across EOs instead point to independent drift in isolated populations. Note that the SRK locus, being under balancing selection, cannot be used with standard neutral-marker bottleneck tests (e.g., BOTTLENECK software, M-ratio); formally distinguishing the two processes requires genome-wide neutral marker data and demographic modelling.
 
 **TP1 thresholds (adjustable at top of script):**
 
@@ -5532,7 +5646,7 @@ EOs breaching both criteria are flagged **CRITICAL**; those breaching either one
 
 ### Overview
 
-This step quantifies how S-allele sets are partitioned and shared across Element Occurrences (EOs). While allele accumulation curves (Step 14) and frequency analyses (Step 15) characterise diversity within and relative to the species optimum, this analysis asks a complementary question: **which alleles are exclusive to a single EO, which are shared between subsets, and which are ubiquitous?** The answer directly informs cross-population breeding decisions — EOs that share few alleles are the most important exchange partners for increasing allele richness in the focal population.
+This step quantifies how S-allele sets are partitioned and shared across Element Occurrences (EOs). While allele accumulation curves (Step 15) and frequency analyses (Step 16) characterise diversity within and relative to the species optimum, this analysis asks a complementary question: **which alleles are exclusive to a single EO, which are shared between subsets, and which are ubiquitous?** The answer directly informs cross-population breeding decisions — EOs that share few alleles are the most important exchange partners for increasing allele richness in the focal population.
 
 Two complementary visualisations are produced:
 
@@ -5671,11 +5785,11 @@ Rscript SRK_individual_GFS.R
 
 ## TP2 Tipping Point Analysis {#TP2}
 
-> Requires `SRK_individual_GFS.tsv` from [Step 18](#GFS). Run after Step 18 has completed.
+> Requires `SRK_individual_GFS.tsv` from [Step 19](#GFS). Run after Step 19 has completed.
 
 ### Overview
 
-The TP2 Tipping Point Analysis assesses **reproductive fitness** at the population level — the degree to which individuals within an EO can actually participate in compatible crosses and contribute allelic diversity to the next generation. While [Step 18](#GFS) characterises each individual's gametic diversity potential, this step synthesises those scores at the EO level and combines them with AAAA prevalence into a single diagnostic framework. Two complementary questions define the two axes:
+The TP2 Tipping Point Analysis assesses **reproductive fitness** at the population level — the degree to which individuals within an EO can actually participate in compatible crosses and contribute allelic diversity to the next generation. While [Step 19](#GFS) characterises each individual's gametic diversity potential, this step synthesises those scores at the EO level and combines them with AAAA prevalence into a single diagnostic framework. Two complementary questions define the two axes:
 
 - **What fraction of individuals are reproductive dead-ends?** (x-axis: `prop_AAAA`) — An AAAA individual cannot contribute to any compatible cross regardless of its mate, making it a complete loss to the breeding pool. As this fraction grows, the effective breeding population shrinks accordingly.
 - **How much reproductive capacity does the average individual still have?** (y-axis: `mean GFS`) — Even individuals that are not dead-ends vary in how much allelic diversity they can contribute per cross. When the population mean falls below the AABB benchmark (GFS = 0.667), even the functional breeders are producing predominantly homotypic gametes.
@@ -5695,7 +5809,7 @@ An EO is flagged **CRITICAL** when both thresholds are breached simultaneously; 
 
 ### Bioinformatics
 
-The TP2 analysis is performed by the same script as [Step 18](#GFS) (`SRK_individual_GFS.R`). The EO-level summary and TP2 status flags are computed after per-individual GFS values are aggregated.
+The TP2 analysis is performed by the same script as [Step 19](#GFS) (`SRK_individual_GFS.R`). The EO-level summary and TP2 status flags are computed after per-individual GFS values are aggregated.
 
 #### Output Files
 
@@ -5722,7 +5836,7 @@ The TP2 analysis is performed by the same script as [Step 18](#GFS) (`SRK_indivi
 
 ## Reproductive Effort Support per Element Occurrence {#reproeffort}
 
-> Requires `SRK_individual_GFS.tsv` from [Step 18](#GFS). Run after Step 18 has completed.
+> Requires `SRK_individual_GFS.tsv` from [Step 19](#GFS). Run after Step 19 has completed.
 
 ### Overview
 
@@ -5748,7 +5862,7 @@ Rscript SRK_GFS_reproductive_effort.R
 
 | File | Description |
 |------|-------------|
-| `SRK_individual_GFS.tsv` | Per-individual GFS scores and genotype classes (output of Step 18) |
+| `SRK_individual_GFS.tsv` | Per-individual GFS scores and genotype classes (output of Step 19) |
 | `SRK_individual_zygosity.tsv` | Per-individual allele composition including `Allele_composition` field (output of Step 12) |
 
 #### Key Parameters (top of script)
@@ -5756,7 +5870,7 @@ Rscript SRK_GFS_reproductive_effort.R
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `EO_FOCUS` | 5-EO vector | Element Occurrences to include |
-| `TP2_PROP_AAAA` | 0.30 | Threshold line position; matches TP2 threshold from Step 19 |
+| `TP2_PROP_AAAA` | 0.30 | Threshold line position; matches TP2 threshold from Step 20 |
 
 #### Output Files
 
@@ -5778,7 +5892,7 @@ Rscript SRK_GFS_reproductive_effort.R
 * **Conservation triage**: the proportion of supporting individuals per EO directly quantifies how much of the population is functional for managed crossing
 * **Seed parent pool size**: the annotated n / N count identifies how many individuals are candidates for inclusion in a crossing programme
 * **Cross-EO comparison**: ordering by mean GFS highlights which EOs are most degraded and therefore highest priority for allele importation combined with GFS-targeted crossing
-* **AAAA allele identity**: the companion figure reveals that most AAAA homozygosity is concentrated in two alleles (Allele_050 and Allele_057) present across all EOs — both members of W-group 1 (see Step 21) and therefore likely the same SI specificity; this substantially reduces the effective number of distinct locks in the AAAA fraction
+* **AAAA allele identity**: the companion figure reveals that most AAAA homozygosity is concentrated in two alleles (Allele_050 and Allele_057) present across all EOs — both members of W-group 1 (see Step 22) and therefore likely the same SI specificity; this substantially reduces the effective number of distinct locks in the AAAA fraction
 * **Communication**: both figures are designed for presentation to conservation managers, translating GFS and allele identity into intuitive breeding-pool diagnostics
 ---
 
@@ -5802,7 +5916,7 @@ The central question is: **do alleles that are closely related in sequence share
 
 **Why AAAA individuals?** Individuals homozygous for a single allele across all four genome copies (AAAA genotype; 60% of all sampled plants, n = 164) are the ideal cross parents for this experiment. Their pollen carries a single SCR identity — the allele assignment is unambiguous, and cross outcomes can be interpreted without accounting for pollen genotype distributions. Crosses between two AAAA plants are therefore the cleanest test of allele-level recognition specificity available in a tetraploid system.
 
-**Two-step analysis:** [Step 21](#alleleclusters) identifies hypervariable positions in the S-domain, detects phylogenetic classes by UPGMA clustering, and generates the prioritised crossing plan with four categories. [Step 22](#crossresults) reads completed cross records and tests whether the W / N / P_within / P_cross category predicts seed yield, providing the statistical confirmation needed to validate or refine the sequence-based allele definitions.
+**Two-step analysis:** [Step 22](#alleleclusters) identifies hypervariable positions in the S-domain, detects phylogenetic classes by UPGMA clustering, and generates the prioritised crossing plan with four categories. [Step 23](#crossresults) reads completed cross records and tests whether the W / N / P_within / P_cross category predicts seed yield, providing the statistical confirmation needed to validate or refine the sequence-based allele definitions.
 
 ---
 
@@ -5851,7 +5965,7 @@ python srk_allele_hypotheses.py
 | `WITHIN_CLASS_THRESHOLD` | 0.04 | HV distance boundary between N and P_within categories |
 | `N_GROUPS` | None | Override auto-detected class count (None = use largest-gap auto-threshold) |
 | `DISTANCE_THRESHOLD` | None | Override auto-detected UPGMA cut height (None = auto) |
-| `CROSS_TSV` | None | Set to cross results filename to activate Part 2 (Step 22) |
+| `CROSS_TSV` | None | Set to cross results filename to activate Part 2 (Step 23) |
 
 #### Input Files
 
@@ -5933,11 +6047,11 @@ Allele bin availability: 20 bins with ≥ 2 AAAA individuals (full design), 14 b
 
 ## Cross Result Analysis {#crossresults}
 
-> Requires `SRK_functional_allele_groups.tsv` and `SRK_AAAA_cross_design_HV.tsv` from [Step 21](#alleleclusters), plus a completed cross results file. Run after crossing experiments have been conducted and seed yields recorded.
+> Requires `SRK_functional_allele_groups.tsv` and `SRK_AAAA_cross_design_HV.tsv` from [Step 22](#alleleclusters), plus a completed cross results file. Run after crossing experiments have been conducted and seed yields recorded.
 
 ### Overview
 
-This step reads completed cross records — a file with one row per cross, containing the mother and father plant IDs and a seed yield column — and assigns each cross to a W, N, P_within, or P_cross category using the HV-based class structure from Step 21. It then tests whether category predicts seed yield using Kruskal-Wallis and pairwise Mann-Whitney U tests, and produces a figure showing seed yield distributions and success rates per category.
+This step reads completed cross records — a file with one row per cross, containing the mother and father plant IDs and a seed yield column — and assigns each cross to a W, N, P_within, or P_cross category using the HV-based class structure from Step 22. It then tests whether category predicts seed yield using Kruskal-Wallis and pairwise Mann-Whitney U tests, and produces a figure showing seed yield distributions and success rates per category.
 
 **To activate this step**, set `CROSS_TSV` in the settings section of `srk_allele_hypotheses.py` to the filename of the completed cross records file, then re-run the script.
 
@@ -5954,8 +6068,8 @@ The statistical test is a direct evaluation of the allele bin definitions using 
 
 | File | Description |
 |------|-------------|
-| `SRK_functional_allele_groups.tsv` | Allele class assignments from Step 21 |
-| `SRK_AAAA_cross_design_HV.tsv` | Pairwise cross design with W / N / P_within / P_cross categories from Step 21 |
+| `SRK_functional_allele_groups.tsv` | Allele class assignments from Step 22 |
+| `SRK_AAAA_cross_design_HV.tsv` | Pairwise cross design with W / N / P_within / P_cross categories from Step 22 |
 | Cross results file | One row per cross; must contain `Mother`, `Father`, and a seed count column |
 
 #### Output Files

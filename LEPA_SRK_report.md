@@ -46,6 +46,28 @@ We targeted the S-domain of the SRK protein — the functional "lock" in the loc
 
 The **MM estimate of 69 alleles** is adopted as the species optimum — the allele richness expected under balancing selection at evolutionary equilibrium, used here as the reference baseline against which population deficits are measured. An additional **49 individuals** would need to be sampled to discover the next new allele, and reaching 80% of the MM estimate would require sampling approximately **55 more individuals**, underscoring that the species SI repertoire remains substantially under-characterised.
 
+**Allele richness across bottleneck lineages.** When the same individuals are partitioned into the five independent bottleneck lineages (BL1–BL5; see Section 4c) defined by the spatial-connectivity analysis, S-allele richness varies dramatically across lineages despite comparable sampling effort ([Figure 3a](#figure-3a)).
+
+| BL  | N EOs | N individuals | N alleles observed | MM estimate | % of species pool lost to drift |
+|-----|------:|--------------:|-------------------:|------------:|--------------------------------:|
+| BL1 | 4     | 5             | 4                  | 7           | 90%                             |
+| BL2 | 2     | 51            | 8                  | 10          | 86%                             |
+| BL3 | 4     | 68            | 16                 | 19          | 72%                             |
+| BL4 | 2     | 78            | **31**             | **47**      | **32%**                         |
+| BL5 | 4     | 60            | 18                 | 22          | 68%                             |
+
+**The headline finding is that BL4 acts as the diversity reservoir of the species** — its 78 individuals retain 31 of the 54 observed alleles (57%), and its lineage-level MM asymptote (47) approaches the species pool (69), so further sampling within BL4 would still discover many additional alleles. The four other BLs have each collapsed to a fraction of their lineage-level potential: BL1 and BL2 have lost 86–90% of the species pool to drift, BL3 and BL5 ~70%. This pattern can only arise if **the bottlenecks operating in each lineage have proceeded independently**: a single shared species-level bottleneck would predict comparable richness loss across BLs, not the >2-fold gradient we observe.
+
+<a name="figure-3a"></a>
+
+![Figure 3a: S-allele accumulation curves per bottleneck lineage. Each curve is colored by parent BL (Set1 palette: BL1 red, BL2 blue, BL3 green, BL4 purple, BL5 orange — matching the sibling LEPA_EO_spatial_clustering project). Species MM=69 shown as a dashed grey reference line; BL-specific MM estimates as dashed colored lines per curve.](figures/SRK_allele_accumulation_BL_combined.png)
+
+<a name="figure-3b"></a>
+
+![Figure 3b: S-allele erosion per bottleneck lineage decomposed into observed alleles (dark blue), predicted-undetected alleles within the lineage (light blue, BL MM − observed), and alleles lost to genetic drift (red, species MM − BL MM). The BL color strip below the bars matches the lineage palette used elsewhere in the report.](figures/SRK_allele_accumulation_BL_drift_erosion.png)
+
+**Frequency-distribution test of NFDS.** A χ² goodness-of-fit test of allele copy-count frequencies against the equal-frequency expectation under negative frequency-dependent selection (NFDS) confirms that **drift has skewed allele frequencies away from the NFDS equilibrium at every analysis level**: at the species level (χ² = 2438.84, df = 53, p ≈ 0), in every medium and large EO (all N ≥ 36 reject at p < 1e-7), and in every BL with statistical power (BL2: χ² = 175, p < 1e-33; BL3: χ² = 202, p < 1e-34; BL4: χ² = 325, p < 1e-50; BL5: χ² = 95, p < 1e-12). Notably **BL4 has the largest test statistic of any group despite holding the most alleles** — its diversity is undermined by within-lineage frequency skew, demonstrating that S-allele erosion can proceed via two complementary axes (loss of richness and frequency distortion of remaining alleles) and that even the diversity reservoir is not exempt from active drift. Only BL1 and EO18 (both N = 5) failed to reject the uniform-frequency null, a power limitation rather than a finding of evenness.
+
 ---
 
 ### 3. Implications for Seed Production
@@ -168,6 +190,8 @@ TP1 assesses the **health of the self-incompatibility system** — the degree to
 - **How evenly are the remaining alleles distributed across individuals?** (y-axis: `Ne / N_alleles` — the ratio of effective to observed allele number. The effective allele number Ne = 1/Σpᵢ² answers *how many equally frequent alleles would produce the same level of diversity as observed*. A ratio of 1.0 means perfect evenness — the balancing selection ideal in which every allele contributes equally to compatible crosses; drift and dominance push it downward as a few alleles monopolise copy numbers and rare alleles are marginalised.)
 
 A population with all alleles present and evenly distributed maximises compatible mating pairs and SI system health. TP1 identifies where both dimensions have degraded beyond the point at which within-population crossing alone can restore SI function. A population is flagged **CRITICAL** when both criteria are breached (< 50% of species optimum and Ne/N < 0.80), **AT RISK** when only one is breached, and **OK** when neither is.
+
+> **Note (BL stratification):** The TP1 plot below is currently shown at the EO level. The BL-level analyses presented in Section 2 (richness; [Figure 3a](#figure-3a)) and Section 4c (independent bottleneck lineages) provide the evolutionary frame for interpreting these EO-level positions: every EO inherits the demographic history of its parent BL, and all four medium/large EOs flagged CRITICAL belong to BLs that have themselves lost ≥68% of the species pool to drift. A revised TP1 figure with EO points colored by parent BL is in preparation as part of the broader Phase 3 BL re-frame.
 
 <a name="figure-9"></a>
 
