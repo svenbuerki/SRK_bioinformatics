@@ -11,7 +11,7 @@
 
 <meta name="author" content="Sven Buerki - Boise State University" />
 
-<meta name="date" content="2026-05-07" />
+<meta name="date" content="2026-05-08" />
 
 <title>SRK Bioinformatics</title>
 
@@ -1469,7 +1469,7 @@ border-radius: 0px;
 <h1 class="title toc-ignore">SRK Bioinformatics</h1>
 <h3 class="subtitle">Nanopore-Based SRK Haplotype Reconstruction and Population Analysis Pipeline</h3>
 <h4 class="author">Sven Buerki - Boise State University</h4>
-<h4 class="date">2026-05-07</h4>
+<h4 class="date">2026-05-08</h4>
 
 </div>
 
@@ -8444,7 +8444,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 <li><p><strong>P_cross — between-class control</strong> (different phylogenetic classes): pollen and pistil carry alleles from Class I and Class II respectively. These crosses are guaranteed to succeed — between-class compatibility is maximally divergent. They anchor the upper end of the seed yield scale.</p></li>
 </ul>
 <p><strong>Why AAAA individuals?</strong> Individuals homozygous for a single allele across all four genome copies (AAAA genotype; 60% of all sampled plants, n = 164) are the ideal cross parents for this experiment. Their pollen carries a single SCR identity — the allele assignment is unambiguous, and cross outcomes can be interpreted without accounting for pollen genotype distributions. Crosses between two AAAA plants are therefore the cleanest test of allele-level recognition specificity available in a tetraploid system.</p>
-<p><strong>Two-step analysis:</strong> <a href="#alleleclusters">Step 22</a> identifies hypervariable positions in the S-domain, detects phylogenetic classes by UPGMA clustering, and generates the prioritised crossing plan with four categories. <a href="#crossresults">Step 23</a> reads completed cross records and tests whether the W / N / P_within / P_cross category predicts seed yield, providing the statistical confirmation needed to validate or refine the sequence-based allele definitions.</p>
+<p><strong>Two-step analysis:</strong> <a href="#alleleclusters">Step 22</a> is itself split into two scripts. <strong>Step 22a</strong> (<code>srk_variability_landscape.py</code>) builds a multi-species alignment of LEPA + <em>Brassica rapa</em>/<em>B. oleracea</em> + <em>Arabidopsis lyrata</em>/<em>A. halleri</em> SRK alleles, applies an identical sliding-window Shannon-entropy scan to each species, and tests whether LEPA HV regions co-locate with Brassica/Arabidopsis HV regions more than expected by chance (permutation test). The validated LEPA HV columns are written to <code>SRK_LEPA_HV_positions.tsv</code>. <strong>Step 22b</strong> (<code>srk_allele_hypotheses.py</code>) reads those canonical HV columns, computes HV-only pairwise distances, detects phylogenetic classes by UPGMA, generates the prioritised crossing plan, and constructs the synonymy network. <a href="#crossresults">Step 23</a> reads completed cross records and tests whether the W / N / P_within / P_cross category predicts seed yield.</p>
 <hr />
 </div>
 <div id="alleleclusters" class="section level2" number="7.2">
@@ -8454,30 +8454,43 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 </blockquote>
 <div id="overview-19" class="section level3" number="7.2.1">
 <h3><span class="header-section-number">7.2.1</span> Overview</h3>
-<p>This step implements a three-stage analysis to translate the sequence-based allele bins into a structured crossing experiment:</p>
-<ol style="list-style-type: decimal">
-<li><p><strong>Hypervariable (HV) position identification</strong> — A moving-window scan of per-column variability across the S-domain alignment identifies the positions that actually discriminate alleles. Distances computed on these HV positions are biologically meaningful for recognition specificity, unlike full-domain distances which are dominated by conserved structural residues.</p></li>
-<li><p><strong>Phylogenetic class detection</strong> — UPGMA clustering of HV-only pairwise distances automatically detects the natural class structure. The largest gap in the merge-height sequence defines the cut point, splitting the 63 allele bins into Class I (62 alleles) and Class II (1 allele, Allele_061) — corresponding to the known phylogenetic lineages in <em>Brassica</em> SRK.</p></li>
-<li><p><strong>Cross design</strong> — All pairwise AAAA × AAAA combinations are categorised using HV distance and class membership into four categories (W, N, P_within, P_cross) and ranked to produce a practical crossing plan.</p></li>
-</ol>
+<p>Step 22 is split into two scripts:</p>
+<ul>
+<li><p><strong>Step 22a — Cross-Brassicaceae Variability Landscape</strong> (<code>srk_variability_landscape.py</code>): builds a combined alignment of the 63 LEPA representative SRK alleles + 22 <em>Brassica rapa</em>/<em>B. oleracea</em> SRK references + 10 <em>Arabidopsis lyrata</em>/<em>A. halleri</em> SRK references, applies an identical sliding-window <strong>Shannon-entropy</strong> scan to each species, calls per-species HV regions at <code>mean + 1×SD</code> of the smoothed profile, and runs a 10 000-permutation test of pairwise HV-region overlap (LEPA↔︎Brassica, LEPA↔︎Arabidopsis, Brassica↔︎Arabidopsis). The 12 SCR9-contact residues from Ma et al. 2016 (<em>B. rapa</em> eSRK9-SCR9 crystal structure, PDB 5GYY) are mapped to LEPA alignment columns and overlaid as independent structural validation. The 73 LEPA HV columns identified by this analysis are written to <code>SRK_LEPA_HV_positions.tsv</code> as the <strong>canonical input</strong> for downstream analyses.</p></li>
+<li><p><strong>Step 22b — Allele Hypothesis Testing and Crossing Design</strong> (<code>srk_allele_hypotheses.py</code>): reads <code>SRK_LEPA_HV_positions.tsv</code> (overrides any internal HV scan), computes HV-only pairwise distances on those columns, detects phylogenetic classes by UPGMA clustering, builds the synonymy network (W-only HV-identical groups + N-connectivity bridges), and generates the prioritised W / N / P_within / P_cross crossing plan.</p></li>
+</ul>
 <p>The 164 AAAA individuals (60% of 272 sampled plants) are the ideal cross parents: their pollen carries a single unambiguous SCR identity, making cross outcomes directly interpretable.</p>
 </div>
 <div id="biological-rationale-2" class="section level3" number="7.2.2">
 <h3><span class="header-section-number">7.2.2</span> Biological Rationale</h3>
-<p><strong>Why focus on hypervariable positions?</strong> Full S-domain p-distances are dominated by conserved structural positions shared across all alleles, producing a bimodal distance distribution in which most allele pairs collapse to near-zero distances and only the Class I / Class II split creates a large gap. The 75 HV positions (concentrated in seven regions of the S-domain: alignment positions 149–151, 187–199, 236–253, 271, 276–290, 360–363, and 365–385) correspond to the known HV1 and HV2 loops responsible for SCR ligand recognition. Distances computed on these positions alone resolve the fine-scale allele structure that is biologically relevant for SI specificity.</p>
-<p><strong>Why auto-detect classes?</strong> The largest gap in UPGMA merge heights objectively identifies the phylogenetically meaningful cut point without arbitrary parameter tuning. In the current dataset this threshold is 0.5045, correctly separating the well-known Class I and Class II <em>Brassica</em> SRK lineages. Class II alleles are guaranteed to be compatible with all Class I alleles — providing unambiguous P_cross controls at the maximum possible HV distance.</p>
-<p><strong>Four-tier cross design:</strong> The WITHIN_CLASS_THRESHOLD (default 0.04, approximately the median within-class HV distance) divides within-class pairs into three tiers. The N tier — small but non-zero HV differences — is the scientific core: an incompatible N cross means the two allele bins share recognition specificity (merge them); a compatible N cross confirms the small HV difference is functionally real (keep bins separate). In the current AAAA-only dataset, 6,273 N pairs are available for testing — the largest tier and the highest priority for the crossing experiment.</p>
+<p><strong>Why detect HV positions cross-species?</strong> A single-species sliding-window scan tells us <em>where</em> in LEPA’s alignment the allele bins differ — but it cannot tell us whether those positions correspond to the conserved SI-specificity surface known from <em>Brassica</em> and <em>Arabidopsis</em>, or to Lepidium-specific variability that may not even contact SCR. By applying the <em>same</em> detection method to LEPA, Brassica, and Arabidopsis SRK alleles separately, we can both (i) confirm that LEPA HV regions co-locate with the known Brassicaceae-conserved HV regions, and (ii) flag any LEPA-specific HV signal that may represent novel specificity sites.</p>
+<p><strong>Why Shannon entropy as the primary metric?</strong> Shannon entropy is the standard information-theoretic measure of column diversity in protein alignments and is comparable across species with very different per-column residue compositions. The pipeline also computes Wu-Kabat variability (<span class="math inline">\(V = N \cdot k / n_\text{max}\)</span>) as a sanity check; in the current dataset Brassica HV calls are 88% concordant and Arabidopsis 75% concordant under both metrics, while LEPA’s lower 45% concordance reflects its tighter allele bins (most LEPA columns have low diversity, so Wu-Kabat’s denominator behaves differently than entropy).</p>
+<p><strong>Why this validation matters.</strong> In the current dataset, all three pairwise HV-overlap permutation tests are highly significant (LEPA↔︎Brassica obs = 17 cols, p = 0.0005; LEPA↔︎Arabidopsis 22 cols, p = 0.0024; Brassica↔︎Arabidopsis 43 cols, p &lt; 0.0001). All 11 of the 12 mappable Ma 2016 SCR9-contact residues fall within LEPA HV regions — independent structural confirmation that the entropy scan is detecting the SI-specificity surface. LEPA additionally has a unique HV peak at columns 358–388 that is absent from Brassica/Arabidopsis — a candidate Lepidium-specific specificity site flagged for future investigation.</p>
+<p><strong>Phylogenetic class detection</strong> — UPGMA clustering of the resulting 63 × 63 HV-only pairwise distances automatically detects the natural class structure: the largest gap in the merge-height sequence defines the cut point, splitting the 63 allele bins into Class I (62 alleles) and Class II (1 allele, Allele_061) — corresponding to the known phylogenetic lineages in <em>Brassica</em> SRK. Class II alleles are guaranteed to be compatible with all Class I alleles, providing unambiguous P_cross controls at the maximum possible HV distance.</p>
+<p><strong>Four-tier cross design:</strong> the WITHIN_CLASS_THRESHOLD (default 0.04, approximately the median within-class HV distance) divides within-class pairs into three tiers. The N tier — small but non-zero HV differences — is the scientific core: an incompatible N cross means the two allele bins share recognition specificity (merge them); a compatible N cross confirms the small HV difference is functionally real (keep bins separate). In the current dataset, 6 365 N pairs are available for testing — the largest tier and the highest priority for the crossing experiment.</p>
 </div>
 <div id="bioinformatics-18" class="section level3" number="7.2.3">
 <h3><span class="header-section-number">7.2.3</span> Bioinformatics</h3>
 <ul>
-<li>Script: <code>srk_allele_hypotheses.py</code></li>
-<li>Environment: Python 3 with numpy, pandas, matplotlib, scipy, biopython</li>
+<li>Scripts: <code>srk_variability_landscape.py</code> (Step 22a), <code>srk_allele_hypotheses.py</code> (Step 22b)</li>
+<li>Helper scripts (one-time setup): <code>srk_fetch_reference_alleles.py</code>, <code>srk_brassica_hv_mapping.py</code></li>
+<li>Environment: Python 3 with numpy, pandas, matplotlib, scipy, biopython, plus <code>mafft</code> on PATH</li>
 <li>Execution (run from project root):</li>
 </ul>
-<pre class="bash"><code>python srk_allele_hypotheses.py</code></pre>
-<div id="key-parameters-top-of-script-2" class="section level4" number="7.2.3.1">
-<h4><span class="header-section-number">7.2.3.1</span> Key Parameters (top of script)</h4>
+<pre class="bash"><code># One-time setup (fetch references + add Brassica reference for Ma 2016 markers)
+python3 srk_fetch_reference_alleles.py
+mafft --add all_reference_SRKs_dedup.fasta SRK_protein_allele_representatives_padded.fasta \
+      &gt; SRK_combined_alignment.fasta
+python3 srk_brassica_hv_mapping.py
+
+# Step 22a — variability landscape (re-run when LEPA representatives change)
+python3 srk_variability_landscape.py
+
+# Step 22b — allele hypothesis testing and crossing design
+python3 srk_allele_hypotheses.py</code></pre>
+<div id="key-parameters-1" class="section level4" number="7.2.3.1">
+<h4><span class="header-section-number">7.2.3.1</span> Key Parameters</h4>
+<p><strong>Step 22a — <code>srk_variability_landscape.py</code>:</strong></p>
 <table style="width:100%;">
 <colgroup>
 <col width="33%" />
@@ -8500,37 +8513,69 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 <tr class="even">
 <td><code>WINDOW_SIZE</code></td>
 <td>20</td>
-<td>Moving-window size (aa) for variability scan</td>
+<td>Sliding-window width for entropy smoothing</td>
 </tr>
 <tr class="odd">
 <td><code>PEAK_SD_FACTOR</code></td>
 <td>1.0</td>
-<td>Positions above mean + PEAK_SD_FACTOR × SD of smoothed profile are classified as HV</td>
+<td>Threshold = mean + k × SD of smoothed Shannon entropy</td>
 </tr>
 <tr class="even">
-<td><code>MIN_HV_POSITIONS</code></td>
-<td>10</td>
-<td>Minimum HV positions required; script aborts if fewer detected</td>
+<td><code>MIN_HV_RUN</code></td>
+<td>3</td>
+<td>Minimum consecutive HV columns to call a region (drops singletons)</td>
+</tr>
+<tr class="odd">
+<td><code>PERM_N</code></td>
+<td>10 000</td>
+<td>Number of permutations for HV-overlap significance test</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Step 22b — <code>srk_allele_hypotheses.py</code>:</strong></p>
+<table style="width:100%;">
+<colgroup>
+<col width="33%" />
+<col width="27%" />
+<col width="39%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>DOMAIN_REGION</code></td>
+<td>(31, 430)</td>
+<td>S-domain alignment columns; must match Step 10</td>
+</tr>
+<tr class="even">
+<td><code>LEPA_HV_POSITIONS_FILE</code></td>
+<td><code>SRK_LEPA_HV_positions.tsv</code></td>
+<td>Canonical HV columns from Step 22a (overrides legacy internal scan)</td>
 </tr>
 <tr class="odd">
 <td><code>WITHIN_CLASS_THRESHOLD</code></td>
 <td>0.04</td>
-<td>HV distance boundary between N and P_within categories</td>
+<td>HV distance boundary between N and P_within</td>
 </tr>
 <tr class="even">
 <td><code>N_GROUPS</code></td>
 <td>None</td>
-<td>Override auto-detected class count (None = use largest-gap auto-threshold)</td>
+<td>Override auto-detected class count</td>
 </tr>
 <tr class="odd">
 <td><code>DISTANCE_THRESHOLD</code></td>
 <td>None</td>
-<td>Override auto-detected UPGMA cut height (None = auto)</td>
+<td>Override auto-detected UPGMA cut height</td>
 </tr>
 <tr class="even">
 <td><code>CROSS_TSV</code></td>
 <td>None</td>
-<td>Set to cross results filename to activate Part 2 (Step 23)</td>
+<td>Set to cross results filename to activate Step 23</td>
 </tr>
 </tbody>
 </table>
@@ -8539,33 +8584,54 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 <h4><span class="header-section-number">7.2.3.2</span> Input Files</h4>
 <table>
 <colgroup>
-<col width="31%" />
-<col width="68%" />
+<col width="24%" />
+<col width="24%" />
+<col width="52%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th>File</th>
+<th>From</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
+<td><code>SRK_combined_alignment.fasta</code></td>
+<td>mafft –add</td>
+<td>LEPA + Brassica + Arabidopsis SRK references (input to Step 22a)</td>
+</tr>
+<tr class="even">
+<td><code>SRK_brassica_hv_mapping.tsv</code></td>
+<td>helper script</td>
+<td>Ma 2016 SCR9-contact residues → LEPA columns (input to Step 22a)</td>
+</tr>
+<tr class="odd">
 <td><code>SRK_protein_allele_representatives.fasta</code></td>
-<td>One representative sequence per allele bin (output of Step 10)</td>
+<td><a href="#SRKalleledist">Step 10</a></td>
+<td>LEPA aligned representatives (input to Step 22b)</td>
 </tr>
 <tr class="even">
 <td><code>SRK_individual_zygosity.tsv</code></td>
-<td>Per-individual tetraploid genotype pattern (output of Step 12)</td>
+<td><a href="#zygosity">Step 12</a></td>
+<td>Per-individual tetraploid genotype pattern (input to Step 22b)</td>
 </tr>
 <tr class="odd">
-<td><code>SRK_individual_metadata.tsv</code></td>
-<td>Individual metadata including EO and ingroup flag (output of Step 11)</td>
+<td><code>SRK_individual_allele_table.tsv</code></td>
+<td><a href="#SRKfunctionalprotgenotype">Step 11</a></td>
+<td>Individual → allele table (input to Step 22b)</td>
+</tr>
+<tr class="even">
+<td><code>SRK_LEPA_HV_positions.tsv</code></td>
+<td>Step 22a</td>
+<td>Canonical HV columns (input to Step 22b)</td>
 </tr>
 </tbody>
 </table>
 </div>
 <div id="output-files-20" class="section level4" number="7.2.3.3">
 <h4><span class="header-section-number">7.2.3.3</span> Output Files</h4>
+<p><strong>Step 22a outputs:</strong></p>
 <table>
 <colgroup>
 <col width="40%" />
@@ -8579,54 +8645,81 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>SRK_variability_landscape.pdf</code></td>
-<td>Per-column mean pairwise distance and smoothed profile; shaded HV regions above detection threshold</td>
+<td><code>SRK_variability_landscape.pdf</code> / <code>figures/SRK_variability_landscape.png</code></td>
+<td>Multi-panel: per-species smoothed Shannon entropy + per-species HV tracks + Ma 2016 SCR9-contact residues</td>
 </tr>
 <tr class="even">
-<td><code>SRK_HV_allele_distances.tsv</code></td>
-<td>Pairwise HV-only p-distances for all 63 allele bin pairs</td>
+<td><code>SRK_HV_regions_per_species.tsv</code></td>
+<td>LEPA / Brassica / Arabidopsis HV runs (start–end, length, threshold)</td>
 </tr>
 <tr class="odd">
-<td><code>SRK_allele_similarity_heatmap.pdf</code></td>
-<td>63 × 63 HV similarity matrix ordered by UPGMA; colour scaled to within-class range</td>
+<td><code>SRK_LEPA_HV_positions.tsv</code></td>
+<td><strong>73 canonical LEPA HV columns</strong> (consumed by Step 22b)</td>
 </tr>
 <tr class="even">
+<td><code>SRK_HV_overlap_permutation.tsv</code></td>
+<td>Pairwise HV-overlap permutation tests (3 pairs, p-values, null mean ± SD)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Step 22b outputs:</strong></p>
+<table>
+<colgroup>
+<col width="40%" />
+<col width="60%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SRK_HV_allele_distances.tsv</code></td>
+<td>Pairwise HV-only p-distances for all 63 allele bin pairs (computed on the 73 canonical HV cols)</td>
+</tr>
+<tr class="even">
+<td><code>SRK_allele_similarity_heatmap.pdf</code></td>
+<td>63 × 63 HV similarity matrix ordered by UPGMA</td>
+</tr>
+<tr class="odd">
 <td><code>SRK_functional_allele_groups.tsv</code></td>
 <td>One row per allele bin: class assignment, AAAA count, cross power</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>SRK_synonymy_candidates.tsv</code></td>
 <td>All within-class allele pairs with HV distance &gt; 0, ranked by distance, with testability flag</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code>SRK_AAAA_cross_design_HV.tsv</code></td>
 <td>All AAAA × AAAA pairs ranked by category (W, N, P_within, P_cross) with HV distances and expected outcomes</td>
 </tr>
-<tr class="odd">
-<td><code>SRK_cross_design_summary.pdf</code></td>
-<td>Three-panel figure: HV distance distribution by category; cross design schematic; N-cross interpretation decision tree</td>
-</tr>
 <tr class="even">
+<td><code>SRK_cross_design_summary.pdf</code></td>
+<td>Three-panel figure: HV distance distribution; cross design schematic; N-cross interpretation decision tree</td>
+</tr>
+<tr class="odd">
 <td><code>SRK_HV_cluster_figure.pdf</code></td>
 <td>UPGMA dendrogram of allele bins coloured by class; AAAA individual count per bin</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>SRK_synonymy_network_W.pdf</code></td>
-<td>Two-panel figure: HV-identical W-groups (left, individual alleles, node size ∝ individuals observed); isolated alleles with no HV-identical partner (right)</td>
+<td>HV-identical W-groups (individual alleles, node size ∝ individuals observed); isolated alleles with no HV-identical partner</td>
+</tr>
+<tr class="odd">
+<td><code>SRK_synonymy_network_N.pdf</code></td>
+<td>Condensed super-node graph showing N-connectivity between W-groups</td>
 </tr>
 <tr class="even">
-<td><code>SRK_synonymy_network_N.pdf</code></td>
-<td>Condensed super-node graph showing N-connectivity between W-groups; each node = one W-group or isolated allele; edges = N-bridges; node size ∝ individuals observed; edge width ∝ log(N-bridge count)</td>
-</tr>
-<tr class="odd">
 <td><code>SRK_synonymy_groups.csv</code></td>
-<td>Per-allele synonymy group membership table — see column descriptions below</td>
+<td>Per-allele synonymy group membership table</td>
 </tr>
 </tbody>
 </table>
 </div>
-<div id="key-output-statistics-current-dataset-272-individuals-63-allele-bins-164-aaaa" class="section level4" number="7.2.3.4">
-<h4><span class="header-section-number">7.2.3.4</span> Key Output Statistics (current dataset: 272 individuals, 63 allele bins, 164 AAAA)</h4>
+<div id="key-output-statistics-current-dataset-272-individuals-63-allele-bins-164-aaaa-73-canonical-hv-cols" class="section level4" number="7.2.3.4">
+<h4><span class="header-section-number">7.2.3.4</span> Key Output Statistics (current dataset: 272 individuals, 63 allele bins, 164 AAAA, 73 canonical HV cols)</h4>
 <table>
 <colgroup>
 <col width="39%" />
@@ -8646,19 +8739,19 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 <tr class="odd">
 <td>W</td>
 <td>HV-identical (d = 0)</td>
-<td align="center">5,766</td>
+<td align="center">5 663</td>
 <td>Negative control — confirms allele identity</td>
 </tr>
 <tr class="even">
 <td>N</td>
 <td>0 &lt; d &lt; 0.04, same class</td>
-<td align="center">6,273</td>
+<td align="center">6 365</td>
 <td><strong>Synonymy test</strong> — highest scientific priority</td>
 </tr>
 <tr class="odd">
 <td>P_within</td>
 <td>d ≥ 0.04, same class</td>
-<td align="center">1,327</td>
+<td align="center">1 338</td>
 <td>Within-class positive control</td>
 </tr>
 <tr class="even">
@@ -8669,7 +8762,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 </tr>
 </tbody>
 </table>
-<p>Allele bin availability: 20 bins with ≥ 2 AAAA individuals (full design), 14 bins with 1 AAAA (partner only), 29 bins with no AAAA (require AAAB/AABB). Synonymy candidates: 1,891 within-class pairs; 561 testable with available AAAA individuals.</p>
+<p>Allele bin availability: 20 bins with ≥ 2 AAAA individuals (full design), 14 bins with 1 AAAA (partner only), 29 bins with no AAAA (require AAAB/AABB). Synonymy candidates: 1 891 within-class pairs; 561 testable with available AAAA individuals. Synonymy network collapses 63 alleles into <strong>9 W-groups + 23 isolated singletons = 32 effective bins</strong> (40 of 63 alleles fall into W-groups, 23 are HV-unique).</p>
 </div>
 <div id="output-file-descriptions" class="section level4" number="7.2.3.5">
 <h4><span class="header-section-number">7.2.3.5</span> Output File Descriptions</h4>

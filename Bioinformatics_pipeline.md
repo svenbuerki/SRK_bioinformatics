@@ -820,11 +820,64 @@ Visualises, for each focus EO and each BL, the proportion of individuals at each
 
 ### Step 22 — HV-Based Allele Hypothesis Testing and Crossing Design
 
+> Step 22 is now a **two-script workflow**. First, the variability landscape is built from a multi-species alignment (LEPA + Brassica + Arabidopsis SRK alleles) and HV columns are detected by Shannon entropy with a permutation-tested cross-Brassicaceae overlap. The validated LEPA HV columns are then consumed by the allele-hypothesis testing script (HV-distance matrix → UPGMA classes → cross design → synonymy network).
+
+#### Step 22a — Cross-Brassicaceae S-domain Variability Landscape
+
+**Scripts:**
+- `srk_fetch_reference_alleles.py` — one-time NCBI fetch of *Brassica rapa*, *B. oleracea*, *Arabidopsis lyrata*, and *A. halleri* SRK reference proteins (≈22 + 10 sequences after S-haplotype dedup).
+- `srk_brassica_hv_mapping.py` — maps the 12 SCR9-contact residues from Ma et al. 2016 (PDB 5GYY, *B. rapa* eSRK9) to LEPA alignment coordinates via `mafft --add`.
+- `srk_variability_landscape.py` — primary script: combined alignment + per-species Shannon entropy + per-species HV-region calls + permutation tests + figure.
+
+**Commands:**
+```bash
+# One-time reference acquisition + alignment (skip if already done)
+python3 srk_fetch_reference_alleles.py
+mafft --add all_reference_SRKs_dedup.fasta SRK_protein_allele_representatives_padded.fasta \
+      > SRK_combined_alignment.fasta
+python3 srk_brassica_hv_mapping.py
+
+# Variability landscape (re-run whenever LEPA representatives change)
+python3 srk_variability_landscape.py
+```
+
+**Inputs:**
+
+| File | From | Description |
+|------|------|-------------|
+| `SRK_combined_alignment.fasta` | mafft --add | LEPA representatives + Brassica + Arabidopsis SRK references |
+| `SRK_brassica_hv_mapping.tsv` | `srk_brassica_hv_mapping.py` | Ma 2016 SCR9-contact residues mapped to LEPA columns |
+
+**Key parameters (top of `srk_variability_landscape.py`):**
+
+| Parameter | Default | Notes |
+|-----------|---------|-------|
+| `DOMAIN_REGION` | `(31, 430)` | S-domain columns (must match Step 10) |
+| `WINDOW_SIZE` | `20` | Sliding-window width for smoothing |
+| `PEAK_SD_FACTOR` | `1.0` | HV threshold = mean + k × SD on smoothed Shannon entropy |
+| `MIN_HV_RUN` | `3` | Minimum consecutive HV columns to call a region (drops singletons) |
+| `PERM_N` | `10000` | Permutations for HV-overlap significance test |
+
+**Outputs:**
+
+| File | Content |
+|------|---------|
+| `SRK_variability_landscape.pdf` / `figures/SRK_variability_landscape.png` | Multi-panel: per-species smoothed Shannon entropy; per-species HV-region tracks; Ma 2016 SCR9-contact residue markers |
+| `SRK_HV_regions_per_species.tsv` | LEPA / Brassica / Arabidopsis HV runs (start–end, length, threshold) |
+| `SRK_LEPA_HV_positions.tsv` | **Canonical LEPA HV columns** (one row per column, 1-based alignment coordinate). Consumed by Step 22b. |
+| `SRK_HV_overlap_permutation.tsv` | Pairwise HV-overlap permutation tests (LEPA↔Brassica, LEPA↔Arabidopsis, Brassica↔Arabidopsis) |
+
+**Headline:** All three pairwise HV overlaps are highly significant (LEPA↔Brassica obs=17 cols, p=0.0005; LEPA↔Arabidopsis 22 cols, p=0.0024; Brassica↔Arabidopsis 43 cols, p<0.0001). All 11 of the 12 mappable Ma 2016 SCR9-contact residues fall within the cross-species shared HV regions — independent structural validation that the variability scan is detecting the SI-specificity surface. LEPA additionally has a unique HV peak at LEPA cols 358–388 not present in Brassica/Arabidopsis (candidate Lepidium-specific specificity site). Wu-Kabat sanity check: Jaccard with Shannon-entropy HV cols = 0.45 (LEPA), 0.88 (Brassica), 0.75 (Arabidopsis) — strong concordance under both metrics.
+
+---
+
+#### Step 22b — Allele Hypothesis Testing and Crossing Design
+
 **Script:** `srk_allele_hypotheses.py`
 
 **Command:**
 ```bash
-python srk_allele_hypotheses.py
+python3 srk_allele_hypotheses.py
 ```
 
 **Inputs:**
@@ -834,18 +887,23 @@ python srk_allele_hypotheses.py
 | `SRK_protein_allele_representatives.fasta` | Step 10a | One representative sequence per allele bin (pre-aligned) |
 | `SRK_individual_zygosity.tsv` | Step 12 | Per-individual tetraploid genotype pattern |
 | `SRK_individual_allele_table.tsv` | Step 11 | Individual → allele → copy count table |
+| `SRK_LEPA_HV_positions.tsv` | Step 22a | **Canonical HV columns (overrides internal scan when present)** |
+| `SRK_brassica_hv_mapping.tsv` | `srk_brassica_hv_mapping.py` | Ma 2016 markers for the variability-landscape page (optional) |
 
 **Key parameters (edit at top of script):**
 
 | Parameter | Default | Notes |
 |-----------|---------|-------|
 | `DOMAIN_REGION` | `(31, 430)` | S-domain columns; must match Step 10 |
-| `WINDOW_SIZE` | `20` | Sliding window width (aa) for smoothing the variability profile |
-| `PEAK_SD_FACTOR` | `1.0` | Positions above mean + k×SD of the smoothed profile are flagged HV; lower to include more HV positions |
-| `WITHIN_CLASS_THRESHOLD` | `0.04` | HV p-distance boundary between N (synonymy test) and P_within (compatible) within a class |
+| `WINDOW_SIZE` | `20` | Sliding-window width for the legacy internal scan (used only as fallback) |
+| `PEAK_SD_FACTOR` | `1.0` | Threshold for the legacy internal scan |
+| `WITHIN_CLASS_THRESHOLD` | `0.04` | HV p-distance boundary between N (synonymy test) and P_within (compatible) |
 | `N_GROUPS` | `None` | Override auto class detection with a fixed number of groups |
 | `DISTANCE_THRESHOLD` | `None` | Override auto class detection with a fixed HV distance cutoff |
 | `CROSS_TSV` | `None` | Set to cross results filename to activate Step 23 |
+| `LEPA_HV_POSITIONS_FILE` | `SRK_LEPA_HV_positions.tsv` | When this file exists, its HV columns OVERRIDE the internal sliding-window scan |
+
+> **HV-column source of truth:** Parts 2–5 (HV-distance matrix, UPGMA, cross design, synonymy network) operate on the columns listed in `SRK_LEPA_HV_positions.tsv`. The internal sliding-window scan in Part 1 still runs (and produces the legacy figure) but its HV calls are *overridden* whenever the canonical file exists. This guarantees that every downstream test uses the cross-Brassicaceae-validated HV columns from Step 22a.
 
 > **Auto class detection:** by default the script cuts the UPGMA tree at the largest gap in merge heights, which automatically identifies the Class I / Class II phylogenetic split. Inspect `SRK_HV_cluster_figure.pdf` and the printed gap table to verify the cut is biologically sensible before adjusting `WITHIN_CLASS_THRESHOLD`.
 
@@ -853,31 +911,32 @@ python srk_allele_hypotheses.py
 
 | Part | Description |
 |------|-------------|
-| 1 | Moving-window per-column variability scan → identify HV positions |
+| 1 | Sanity-check internal variability scan (overridden by `SRK_LEPA_HV_positions.tsv` if present) |
 | 2 | HV-only pairwise distances + UPGMA clustering → phylogenetic class split |
 | 2b | Allele similarity heatmap (colour scale spans within-class range) |
 | 3 | Functional group table, synonymy candidates, AAAA cross design matrix |
 | 3b | Cross design summary figure (distance distribution, category schematic, N-cross interpretation) |
 | 3c | Synonymy network: W-only groups figure + N-connectivity condensed figure; per-allele synonymy group CSV |
 | 4 | UPGMA dendrogram + AAAA availability bar chart |
-| 5 | Cross result analysis (activated when `CROSS_TSV` is set) |
+| 5 | Cross result analysis (activated when `CROSS_TSV` is set; → Step 23) |
 
 **Outputs:**
 
 | File | Content |
 |------|---------|
-| `SRK_variability_landscape.pdf` | Per-column and smoothed S-domain variability profile; HV regions shaded |
-| `SRK_HV_allele_distances.tsv` | Pairwise HV-only distance matrix (alleles × alleles) |
-| `SRK_allele_similarity_heatmap.pdf` | 63×63 HV similarity heatmap ordered by UPGMA; colour scale spans within-class range |
+| `SRK_HV_allele_distances.tsv` | Pairwise HV-only distance matrix (alleles × alleles) computed on the canonical HV columns |
+| `SRK_allele_similarity_heatmap.pdf` | HV similarity heatmap ordered by UPGMA; colour scale spans within-class range |
 | `SRK_functional_allele_groups.tsv` | Allele bin → class assignment, AAAA count, cross power (full / singleton / none) |
 | `SRK_synonymy_candidates.tsv` | All within-class allele pairs with HV distance, cross tier, and testability flag |
-| `SRK_AAAA_cross_design_HV.tsv` | All AAAA × AAAA pairs ranked W → N → P_within → P_cross, with HV distance and expected outcome |
-| `SRK_cross_design_summary.pdf` | Three-panel figure: HV distance distribution, cross category schematic, N-cross interpretation logic |
-| `SRK_HV_cluster_figure.pdf` | UPGMA dendrogram (HV distances) coloured by class + AAAA availability bar chart |
-| `SRK_synonymy_network_W.pdf` | Two-panel figure: HV-identical W-groups (left, individual alleles); isolated alleles with no HV-identical partner (right) |
-| `SRK_synonymy_network_N.pdf` | Condensed super-node graph: each node = one W-group or isolated allele; edges = N-bridges between groups; node size ∝ individuals observed |
-| `SRK_synonymy_groups.csv` | Per-allele synonymy group membership: group ID, group size, observed individual count (all genotypes), AAAA count, group total observed |
+| `SRK_AAAA_cross_design_HV.tsv` | AAAA × AAAA pairs ranked W → N → P_within → P_cross, with HV distance and expected outcome |
+| `SRK_cross_design_summary.pdf` | Three-panel figure: HV distance distribution, cross category schematic, N-cross interpretation |
+| `SRK_HV_cluster_figure.pdf` | UPGMA dendrogram coloured by class + AAAA availability bar chart |
+| `SRK_synonymy_network_W.pdf` | HV-identical W-groups + isolated singletons |
+| `SRK_synonymy_network_N.pdf` | Condensed super-node graph (W-groups + N-bridge edges; node size ∝ individuals) |
+| `SRK_synonymy_groups.csv` | Per-allele W-group membership and counts |
 | `figures/*.png` | PNG copies of all figures at 200 dpi |
+
+**Headline (current dataset, 73 canonical HV columns):** UPGMA splits 63 alleles into 2 functional groups (FG01 = 62 alleles, FG02 = Allele_061 outlier). Synonymy network: **9 W-groups + 23 isolated singletons → 32 effective bins** (down from 63), driven by W-group 1 (13 HV-identical alleles incl. Allele_050 + Allele_057 = the pan-BL fixed S-specificity). 5663 W pairs, 6365 N pairs (synonymy tests), 1338 P_within pairs in the cross-design matrix.
 
 **Cross categories:**
 

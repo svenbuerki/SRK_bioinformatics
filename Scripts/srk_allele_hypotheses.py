@@ -64,6 +64,22 @@ ZYGO_TSV     = "SRK_individual_zygosity.tsv"
 ALLELE_TABLE = "SRK_individual_allele_table.tsv"
 CROSS_TSV    = None   # set to cross results TSV to activate Part 4
 
+# Brassica HV-region annotation (Ma et al. 2016, Cell Research; PDB 5GYY).
+# If the mapping TSV exists, the variability landscape figure is annotated
+# with the 12 SCR9-contact residues (in LEPA alignment coordinates) and a
+# minimum-spanning band per Brassica HV region. Generate the TSV with
+# `python3 srk_brassica_hv_mapping.py` after a one-time mafft --add of
+# brassica_rapa_SRK9.fasta to the LEPA representative alignment.
+BRASSICA_HV_TSV = "SRK_brassica_hv_mapping.tsv"
+
+# Canonical LEPA HV columns produced by srk_variability_landscape.py
+# (Shannon-entropy based, validated by cross-Brassicaceae comparison).
+# When this file exists, it OVERRIDES the internal sliding-window scan in
+# Part 1 — Parts 2-5 (HV-distance matrix, UPGMA classes, cross design,
+# synonymy network) then operate on the same HV columns that were
+# statistically validated against Brassica and Arabidopsis.
+LEPA_HV_POSITIONS_FILE = "SRK_LEPA_HV_positions.tsv"
+
 # S-domain region (1-based, inclusive) — must match Step 10
 DOMAIN_REGION = (31, 430)
 
@@ -163,50 +179,157 @@ if len(hv_positions) < MIN_HV_POSITIONS:
     print(f"Consider lowering PEAK_SD_FACTOR (currently {PEAK_SD_FACTOR}).")
 
 # Summarise HV positions as consecutive runs (1-based alignment coords)
-hv_runs = []
-if len(hv_positions) > 0:
-    run_start = hv_positions[0]
-    prev = hv_positions[0]
-    for p in hv_positions[1:]:
+def _runs_from_positions(positions_0based, start_0):
+    runs = []
+    if len(positions_0based) == 0:
+        return runs
+    run_start = positions_0based[0]
+    prev = positions_0based[0]
+    for p in positions_0based[1:]:
         if p > prev + 1:
-            hv_runs.append((int(run_start + start_0 + 1), int(prev + start_0 + 1)))
+            runs.append((int(run_start + start_0 + 1),
+                         int(prev + start_0 + 1)))
             run_start = p
         prev = p
-    hv_runs.append((int(run_start + start_0 + 1), int(prev + start_0 + 1)))
+    runs.append((int(run_start + start_0 + 1),
+                 int(prev + start_0 + 1)))
+    return runs
 
-    print("\nHV regions (1-based alignment positions):")
+
+# ── Override: use canonical HV positions from srk_variability_landscape.py ──
+# When SRK_LEPA_HV_positions.tsv exists, the HV columns identified by the
+# Shannon-entropy three-species analysis OVERRIDE the internal sliding-window
+# results. This guarantees that the HV-distance matrix, UPGMA clustering,
+# cross design, and synonymy network all operate on the same HV columns
+# that were validated cross-Brassicaceae.
+if os.path.exists(LEPA_HV_POSITIONS_FILE):
+    print(f"\nLoading canonical LEPA HV columns from "
+          f"{LEPA_HV_POSITIONS_FILE} (overrides internal sliding-window scan)")
+    df_hv = pd.read_csv(LEPA_HV_POSITIONS_FILE, sep="\t")
+    file_hv_cols = sorted(int(c) for c in df_hv["LEPA_aln_col_1based"])
+    # Convert 1-based LEPA alignment columns → 0-based S-domain indices
+    hv_positions_overridden = np.array(
+        [c - 1 - start_0 for c in file_hv_cols
+         if start_0 + 1 <= c <= end_0])
+    n_dropped = len(file_hv_cols) - len(hv_positions_overridden)
+    if n_dropped:
+        print(f"  Dropped {n_dropped} HV columns falling outside the "
+              f"current S-domain ({DOMAIN_REGION[0]}-{DOMAIN_REGION[1]})")
+    n_internal = len(hv_positions)
+    hv_positions = hv_positions_overridden
+    overlap_internal = len(set(hv_positions_overridden.tolist()) &
+                           set(np.where(hv_mask)[0].tolist()))
+    print(f"  Internal scan: {n_internal} HV cols  "
+          f"|  Override: {len(hv_positions)} HV cols  "
+          f"|  Internal∩Override: {overlap_internal} cols")
+
+hv_runs = _runs_from_positions(hv_positions, start_0)
+if hv_runs:
+    print("\nHV regions used downstream (1-based alignment positions):")
     for r in hv_runs:
         width = r[1] - r[0] + 1
         print(f"  {r[0]}–{r[1]}  ({width} aa)")
 
 # ── Variability landscape figure ─────────────────────────────────────────────
-
-print(f"\nWriting variability landscape to {OUT_VARIABILITY} ...")
+#
+# Skip when the canonical cross-Brassicaceae figure is in use. srk_variability_landscape.py
+# writes the same path with the richer three-species figure; we don't want this
+# legacy single-species plot to overwrite it.
+if os.path.exists(LEPA_HV_POSITIONS_FILE):
+    print(f"\nSkipping legacy variability-landscape figure "
+          f"(canonical figure already produced by srk_variability_landscape.py)")
+    skip_variability_figure = True
+else:
+    skip_variability_figure = False
+    print(f"\nWriting variability landscape to {OUT_VARIABILITY} ...")
 
 positions = np.arange(sd_len) + start_0 + 1   # 1-based
 
-fig, ax = plt.subplots(figsize=(16, 4))
-ax.fill_between(positions, col_var, alpha=0.2, color="steelblue",
-                label="Per-column mean distance")
-ax.plot(positions, col_var_smooth, color="steelblue", linewidth=1.2,
-        label=f"Smoothed (window = {WINDOW_SIZE} aa)")
-ax.axhline(hv_threshold, color="crimson", linestyle="--", linewidth=1.0,
-           label=f"HV threshold (mean + {PEAK_SD_FACTOR}×SD = {hv_threshold:.3f})")
-for r in hv_runs:
-    ax.axvspan(r[0], r[1], alpha=0.12, color="crimson", zorder=0)
-ax.set_xlabel("Alignment position (aa, 1-based)", fontsize=11)
-ax.set_ylabel("Mean pairwise distance", fontsize=11)
-ax.set_title(
-    f"S-domain variability landscape — {len(hv_positions)} HV positions identified",
-    fontsize=12)
-ax.legend(fontsize=9, loc="upper right")
-ax.set_xlim(positions[0], positions[-1])
-plt.tight_layout()
-plt.savefig(OUT_VARIABILITY, format="pdf", dpi=150, bbox_inches="tight")
-plt.savefig(os.path.join("figures", OUT_VARIABILITY.replace(".pdf", ".png")),
-            format="png", dpi=200, bbox_inches="tight")
-plt.close()
-print(f"Saved {OUT_VARIABILITY}")
+# Optional Brassica HV-region annotation (Ma et al. 2016)
+br_contacts   = []     # list of dicts: {residue, aa, hv, lepa_col}
+br_hv_spans   = {}     # hv → (min_col, max_col) in LEPA alignment coordinates
+HV_BAND_COLOURS = {"hvI": "#1b9e77", "hvII": "#d95f02", "hvIII": "#7570b3"}
+if os.path.exists(BRASSICA_HV_TSV):
+    print(f"Loading Brassica HV annotation from {BRASSICA_HV_TSV} ...")
+    br_df = pd.read_csv(BRASSICA_HV_TSV, sep="\t")
+    for _, row in br_df.iterrows():
+        col = row["LEPA_aln_col"]
+        # Skip residues mapped to Brassica-insertion columns (no LEPA equivalent)
+        if str(col).startswith("NA"):
+            continue
+        col_int = int(col)
+        if start_0 + 1 <= col_int <= end_0:
+            br_contacts.append({
+                "residue": int(row["Brassica_residue"]),
+                "aa":      row["Brassica_aa"],
+                "hv":      row["HV_region"],
+                "col":     col_int,
+            })
+    for c in br_contacts:
+        lo, hi = br_hv_spans.get(c["hv"], (c["col"], c["col"]))
+        br_hv_spans[c["hv"]] = (min(lo, c["col"]), max(hi, c["col"]))
+    print(f"  Loaded {len(br_contacts)} Brassica contact residues; "
+          f"HV spans (LEPA cols): " +
+          ", ".join(f"{hv} {lo}-{hi}" for hv, (lo, hi) in br_hv_spans.items()))
+else:
+    print(f"  (no {BRASSICA_HV_TSV} found — skipping Brassica annotation)")
+
+if not skip_variability_figure:
+    fig, ax = plt.subplots(figsize=(16, 4.4))
+    ax.fill_between(positions, col_var, alpha=0.2, color="steelblue",
+                    label="Per-column mean distance (LEPA)")
+    ax.plot(positions, col_var_smooth, color="steelblue", linewidth=1.2,
+            label=f"Smoothed (window = {WINDOW_SIZE} aa)")
+    ax.axhline(hv_threshold, color="crimson", linestyle="--", linewidth=1.0,
+               label=f"LEPA HV threshold (mean + {PEAK_SD_FACTOR}×SD = {hv_threshold:.3f})")
+    for r in hv_runs:
+        ax.axvspan(r[0], r[1], alpha=0.12, color="crimson", zorder=0,
+                   label=("LEPA HV regions" if r is hv_runs[0] else None))
+
+    # Brassica HV bands (min-max LEPA column per HV) + contact residue markers
+    y_top = ax.get_ylim()[1]
+    if br_hv_spans:
+        for hv, (lo, hi) in br_hv_spans.items():
+            ax.axvspan(lo, hi, ymin=0.0, ymax=0.06,
+                       color=HV_BAND_COLOURS[hv], alpha=0.55, zorder=2)
+            ax.text((lo + hi) / 2, y_top * 0.97, hv,
+                    ha="center", va="top", fontsize=9,
+                    color=HV_BAND_COLOURS[hv], fontweight="bold")
+        for c in br_contacts:
+            ax.plot(c["col"], 0.0, marker="^",
+                    color=HV_BAND_COLOURS[c["hv"]],
+                    markersize=7, markeredgecolor="black",
+                    markeredgewidth=0.4, zorder=4, clip_on=False)
+            ax.text(c["col"], -0.018,
+                    f"{c['aa']}{c['residue']}",
+                    ha="center", va="top", fontsize=6.5,
+                    color=HV_BAND_COLOURS[c["hv"]], rotation=90, zorder=4)
+
+    ax.set_xlabel("LEPA alignment position (aa, 1-based)", fontsize=11)
+    ax.set_ylabel("Mean pairwise distance", fontsize=11)
+    title = f"S-domain variability landscape — {len(hv_positions)} HV positions identified in LEPA"
+    if br_contacts:
+        title += "; triangles = Brassica rapa SRK9 SCR9-contact residues (Ma et al. 2016)"
+    ax.set_title(title, fontsize=12)
+    ax.legend(fontsize=8, loc="upper right", ncol=1)
+    ax.set_xlim(positions[0], positions[-1])
+    plt.tight_layout()
+    plt.savefig(OUT_VARIABILITY, format="pdf", dpi=150, bbox_inches="tight")
+    plt.savefig(os.path.join("figures", OUT_VARIABILITY.replace(".pdf", ".png")),
+                format="png", dpi=200, bbox_inches="tight")
+    plt.close()
+    print(f"Saved {OUT_VARIABILITY}")
+
+# Quantitative LEPA-vs-Brassica HV overlap report
+if br_hv_spans:
+    print("\n-- LEPA HV vs Brassica HV overlap --")
+    lepa_hv_cols = set(int(p) for p in (hv_positions + start_0 + 1))
+    for hv, (lo, hi) in br_hv_spans.items():
+        br_cols = set(range(lo, hi + 1))
+        overlap = lepa_hv_cols & br_cols
+        print(f"  {hv} (LEPA cols {lo}-{hi}, {len(br_cols)} cols): "
+              f"{len(overlap)} cols overlap LEPA HV positions "
+              f"({100*len(overlap)/len(br_cols):.0f}%)")
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PART 2 — HV-only distance matrix and UPGMA functional group clustering

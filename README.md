@@ -84,7 +84,7 @@ The pipeline consists of **23 main steps organized into four phases**, progressi
 
 ## Phase 4: Testing S-allele Hypotheses
 
-22. **HV-Based Allele Hypothesis Testing and Crossing Design** – Moving-window variability scan of the S-domain alignment identifies hypervariable (HV) positions where alleles actually diverge. Pairwise distances restricted to those HV positions are used for UPGMA clustering, which automatically detects the Class I / Class II phylogenetic split. Within the majority class, three cross categories are assigned by HV distance: W (HV-identical alleles, d = 0 — expected incompatible), N (small HV difference, d < threshold — synonymy test), and P_within (substantial within-class HV divergence — expected compatible). Between-class crosses are labelled P_cross (guaranteed compatible positive controls). An allele similarity heatmap and cross design summary figure are also produced.
+22. **HV-Based Allele Hypothesis Testing and Crossing Design** – Two-script workflow. **Step 22a** (`srk_variability_landscape.py`): combined alignment of LEPA + *Brassica rapa*/*B. oleracea* + *Arabidopsis lyrata*/*A. halleri* SRK alleles; identical sliding-window Shannon-entropy scan applied to each species; per-species HV regions called at mean + 1×SD, validated by 10 000-permutation overlap test (LEPA↔Brassica p = 0.0005, LEPA↔Arabidopsis p = 0.0024); 12 SCR9-contact residues from Ma et al. 2016 (PDB 5GYY) overlaid as structural validation; canonical 73 LEPA HV columns written to `SRK_LEPA_HV_positions.tsv`. **Step 22b** (`srk_allele_hypotheses.py`): reads the canonical HV columns, computes HV-only pairwise distances, UPGMA-clusters into Class I / Class II, builds the synonymy network (W-only HV-identical groups + N-bridges), and generates the W / N / P_within / P_cross cross design.
 23. **Cross Result Analysis** – Reads completed crossing records and tests whether the W / N / P category predicts seed yield, validating the sequence-based allele definitions against experimental cross-compatibility data. Activated by setting `CROSS_TSV` in the script once crossing data are available.
 
 ## Requirements
@@ -207,8 +207,17 @@ Rscript SRK_GFS_reproductive_effort.R
 5.  **Phase 4 — Testing S-allele Hypotheses (Steps 22–23):**
 
 ``` bash
-# Step 22: HV-based allele hypothesis testing and crossing design
-python srk_allele_hypotheses.py
+# Step 22a: cross-Brassicaceae variability landscape (Shannon entropy + permutation test)
+# One-time setup (only needed once or after LEPA representatives change):
+python3 srk_fetch_reference_alleles.py
+mafft --add all_reference_SRKs_dedup.fasta SRK_protein_allele_representatives_padded.fasta \
+      > SRK_combined_alignment.fasta
+python3 srk_brassica_hv_mapping.py
+# Then re-run Step 22a whenever LEPA representatives change:
+python3 srk_variability_landscape.py
+
+# Step 22b: HV-based allele hypothesis testing and crossing design
+python3 srk_allele_hypotheses.py
 
 # Step 23: Cross result analysis
 # Set CROSS_TSV = "<your_cross_results_file>" in the script, then re-run:
@@ -304,14 +313,20 @@ PNGs land in `figures/`; PDFs in the project root. **Headline finding:** 33 of 5
 
 ### Phase 4 Outputs (Testing S-allele Hypotheses)
 
--   `SRK_variability_landscape.pdf` / `figures/SRK_variability_landscape.png` - Per-column S-domain variability profile with HV regions shaded (Step 22)
--   `SRK_HV_allele_distances.tsv` - 63×63 pairwise distance matrix computed on 75 HV positions (Step 22)
--   `SRK_functional_allele_groups.tsv` - Allele bin → phylogenetic class assignment, AAAA count, cross power (Step 22)
--   `SRK_synonymy_candidates.tsv` - All within-class allele pairs with HV distance and testability flag (Step 22)
--   `SRK_allele_similarity_heatmap.pdf` / `figures/SRK_allele_similarity_heatmap.png` - 63×63 HV similarity heatmap ordered by UPGMA with class strips (Step 22)
--   `SRK_AAAA_cross_design_HV.tsv` - All AAAA × AAAA pairs ranked by category (W / N / P_within / P_cross) with HV distance and expected outcome (Step 22)
--   `SRK_cross_design_summary.pdf` / `figures/SRK_cross_design_summary.png` - Three-panel figure: HV distance distribution, cross category schematic, N-cross interpretation (Step 22)
--   `SRK_HV_cluster_figure.pdf` / `figures/SRK_HV_cluster_figure.png` - UPGMA dendrogram (HV distances) coloured by class + AAAA availability bar chart (Step 22)
+-   `SRK_variability_landscape.pdf` / `figures/SRK_variability_landscape.png` - **Multi-panel cross-Brassicaceae figure**: per-species smoothed Shannon entropy (LEPA + Brassica + Arabidopsis), per-species HV-region tracks, and Ma 2016 SCR9-contact residue markers (Step 22a)
+-   `SRK_HV_regions_per_species.tsv` - LEPA / Brassica / Arabidopsis HV runs (start–end, length, threshold) (Step 22a)
+-   `SRK_LEPA_HV_positions.tsv` - **73 canonical LEPA HV columns** (consumed by Step 22b) (Step 22a)
+-   `SRK_HV_overlap_permutation.tsv` - Three pairwise HV-overlap permutation tests (10 000 perms; all three pairs significant) (Step 22a)
+-   `SRK_brassica_hv_mapping.tsv` - 12 Ma 2016 SCR9-contact residues mapped to LEPA columns (helper output)
+-   `SRK_HV_allele_distances.tsv` - 63×63 pairwise distance matrix computed on the 73 canonical HV columns (Step 22b)
+-   `SRK_functional_allele_groups.tsv` - Allele bin → phylogenetic class assignment, AAAA count, cross power (Step 22b)
+-   `SRK_synonymy_candidates.tsv` - All within-class allele pairs with HV distance and testability flag (Step 22b)
+-   `SRK_synonymy_groups.csv` - Per-allele synonymy group membership (9 W-groups + 23 isolated → 32 effective bins) (Step 22b)
+-   `SRK_allele_similarity_heatmap.pdf` / `figures/SRK_allele_similarity_heatmap.png` - 63×63 HV similarity heatmap ordered by UPGMA with class strips (Step 22b)
+-   `SRK_AAAA_cross_design_HV.tsv` - All AAAA × AAAA pairs ranked by category (W / N / P_within / P_cross) with HV distance and expected outcome (Step 22b)
+-   `SRK_cross_design_summary.pdf` / `figures/SRK_cross_design_summary.png` - Three-panel figure: HV distance distribution, cross category schematic, N-cross interpretation (Step 22b)
+-   `SRK_HV_cluster_figure.pdf` / `figures/SRK_HV_cluster_figure.png` - UPGMA dendrogram (HV distances) coloured by class + AAAA availability bar chart (Step 22b)
+-   `SRK_synonymy_network_W.{pdf,png}` / `SRK_synonymy_network_N.{pdf,png}` - Synonymy network: 9 HV-identical W-groups + N-connectivity condensed graph (Step 22b)
 -   `SRK_cross_result_analysis_HV.pdf` - Seed yield distributions and success rates by cross category, with Kruskal-Wallis and Mann-Whitney U tests (Step 23; requires cross data)
 
 ### Quality Control Reports
