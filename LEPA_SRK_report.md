@@ -1,5 +1,23 @@
 # SRK-Based Assessment of Self-Incompatibility in *LEPA*
 
+## Executive Summary
+
+**The conservation question.** *Lepidium papilliferum* (LEPA) is a self-incompatible (SI) tetraploid plant restricted to fragmented sagebrush slickspots in the Snake River Plain (Idaho). This report uses an SRK haplotype dataset of **272 individuals across 19 Element Occurrences** to ask one integrated question: *what is the impact of genetic drift on reproductive success?* The answer is structured in five subordinate questions, each with a defensible biological headline.
+
+**Q1 — Spatial structure.** Ward's D2 clustering of 32 geographic groups under a 500 m pollinator-connectivity threshold partitions the species into **five independent bottleneck lineages (BL1–BL5)** with **no between-EO pollinator connections anywhere** in the dataset (silhouette = 0.73; sibling repository [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering)). Every EO is a closed demographic unit; the BL framework supplies the inferential strata used throughout this report.
+
+**Q2 — Species S-allele richness.** 54 distinct S-alleles are observed; Michaelis-Menten estimates the species pool at 69. Per-BL richness varies dramatically: **BL4 retains 31 alleles (57% — the diversity reservoir)** while BL1 and BL2 have lost 86–90% of the species pool. **33 of 54 alleles (61%) are private to a single BL** and only Allele_050 and Allele_057 are shared across all five lineages — direct empirical evidence of **multiple independent founder events**, not a single shared bottleneck.
+
+**Q3 — SI-system health (Tipping Point 1).** All five BLs and 5 of 6 plotted EOs are flagged **CRITICAL** (allele richness < 50% of optimum AND frequency evenness Ne/N < 0.80). Even BL4 is CRITICAL through the evenness axis (Ne/N = 0.33). No lineage retains a balanced allele pool — restoration requires inter-BL allele transfers; within-lineage breeding alone cannot rebuild the SI system.
+
+**Q4 — Individual reproductive fitness (Tipping Point 2).** All five BLs are CRITICAL on TP2 (mean Genotypic Fitness Score < 0.667 AND > 30% AAAA). BL3 is worst (mean GFS = 0.196, 66% AAAA). Only **13 AABC individuals** species-wide carry the heterozygous-gamete potential (GFS = 0.833) needed for high-yield managed crossing — they are the immediate seed-parent priority. Allele_050 and Allele_057 are pan-BL fixed in AAAA individuals across every lineage — convergent drift onto the same SI specificity despite independent bottlenecks.
+
+**Q5 — Mechanism (Compatibility Collapse Cascade).** A five-stage cascade — bottleneck → balancing-selection breakdown → mate limitation → AAAA accumulation → polyploid SI breakdown — explains how fragmentation produces 60% reproductive dead-ends within a structurally intact SI system. Each stage identifies a specific intervention point for informed breeding.
+
+**Action items.** (1) Cross all 13 AABC seed parents this season; (2) prioritise inter-BL allele transfers (BL4 → other BLs) over within-EO breeding; (3) experimentally test Synonymy group 1 synonymy (13 HV-identical alleles, 103 AAAA individuals) — if confirmed, the 63 sequence bins collapse to **32 functional specificities**.
+
+---
+
 ### Background
 
 Self-incompatibility (SI) in *LEPA* is controlled by the S-locus, where the extracellular S-domain of the S-receptor kinase (SRK) protein acts as the female determinant of pollen rejection. Each individual carries up to four allele copies (tetraploid), and compatible mating requires that pollen and pistil carry different SRK alleles. Throughout this report, each functionally distinct SRK protein variant is referred to as an **S-allele**, and the tetraploid combination of S-alleles an individual carries is its **genotype** (e.g., AAAA, AABB, AABC). Under balancing selection — specifically, negative frequency-dependent selection (NFDS) — all S-alleles are maintained at approximately equal frequencies, maximising the proportion of compatible mating pairs. In small or isolated populations, however, genetic drift counteracts balancing selection — reducing allele richness, skewing allele frequencies, and degrading individual genotype quality — with direct consequences for reproductive success.
@@ -358,7 +376,7 @@ A population breaching both simultaneously is flagged **CRITICAL**; one criterio
 
 **EO-level results** (sorted by parent BL):
 
-| EO | BL | N | mean GFS | % AAAA | % AAAB | % AABB | % AABC | TP2 status |
+| EO | BL | Synonymy_test | mean GFS | % AAAA | % AAAB | % AABB | % AABC | TP2 status |
 |----|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | EO70 | BL2 | 48 | 0.250 | 60% | 13% | 23% |  4% | **CRITICAL** |
 | EO76 | BL3 | 62 | 0.177 | 69% | 16% | 15% |  0% | **CRITICAL** |
@@ -369,7 +387,7 @@ A population breaching both simultaneously is flagged **CRITICAL**; one criterio
 
 **BL-level results** (sorted by mean GFS, worst at top):
 
-| BL | N | mean GFS | % AAAA | TP2 status |
+| BL | Synonymy_test | mean GFS | % AAAA | TP2 status |
 |----|:---:|:---:|:---:|:---:|
 | BL3 | 68 | 0.196 | 66% | **CRITICAL** |
 | BL2 | 51 | 0.235 | 63% | **CRITICAL** |
@@ -395,15 +413,15 @@ Fewer than half of individuals in any EO or BL carry more than one distinct SRK 
 
 <a name="figure-13c"></a>
 
-![Figure 13c: Allele identity of AAAA individuals per EO. Orange = Allele_050, blue = Allele_057 (both pan-EO across 5 of 6 focus EOs and both members of W-group 1). Grey = all other alleles.](figures/SRK_GFS_AAAA_allele_composition_EO.png)
+![Figure 13c: Allele identity of AAAA individuals per EO. Orange = Allele_050, blue = Allele_057 (both pan-EO across 5 of 6 focus EOs and both members of Synonymy group 1). Grey = all other alleles.](figures/SRK_GFS_AAAA_allele_composition_EO.png)
 
 <a name="figure-13d"></a>
 
-![Figure 13d: Allele identity of AAAA individuals per Bottleneck Lineage. Allele_050 and Allele_057 are pan-BL across all 5 BLs — confirms shared W-group 1 fixation despite independent bottlenecks.](figures/SRK_GFS_AAAA_allele_composition_BL.png)
+![Figure 13d: Allele identity of AAAA individuals per Bottleneck Lineage. Allele_050 and Allele_057 are pan-BL across all 5 BLs — confirms shared Synonymy group 1 fixation despite independent bottlenecks.](figures/SRK_GFS_AAAA_allele_composition_BL.png)
 
-Figures 13a–b show that AAAA individuals are numerically dominant in every EO and every BL; Figures 13c–d reveal that this dominance is itself dominated by just two alleles. Allele_050 and Allele_057 together account for 29–76% of AAAA individuals per EO and 24–69% per BL. They are present as AAAA homozygotes in **every BL** (pan-BL, 5/5) and in **5 of 6 focus EOs** (pan-EO at the ≥80% threshold; the only exception is EO18, the smallest focus EO with just 4 AAAA individuals carrying four different non-W-group-1 alleles).
+Figures 13a–b show that AAAA individuals are numerically dominant in every EO and every BL; Figures 13c–d reveal that this dominance is itself dominated by just two alleles. Allele_050 and Allele_057 together account for 29–76% of AAAA individuals per EO and 24–69% per BL. They are present as AAAA homozygotes in **every BL** (pan-BL, 5/5) and in **5 of 6 focus EOs** (pan-EO at the ≥80% threshold; the only exception is EO18, the smallest focus EO with just 4 AAAA individuals carrying four different non-Synonymy-group-1 alleles).
 
-The concentration is most extreme in EO70, where 22 of 29 AAAA individuals (76%) carry one of these two alleles; the remaining 7 carry Allele_054, which is also a member of W-group 1 (Section 6). If the W-group 1 synonymy hypothesis is confirmed by crossing — i.e., if Allele_050, Allele_057, and Allele_054 all share the same SI recognition specificity — then **all 29 AAAA individuals in EO70 effectively carry the same functional lock**. The BL panel pushes this finding further: pan-BL Allele_050/057 across **all five independent bottleneck lineages** confirms that drift has converged on the same fixed SI specificity in every lineage — a powerful test of the independent-bottleneck hypothesis.
+The concentration is most extreme in EO70, where 22 of 29 AAAA individuals (76%) carry one of these two alleles; the remaining 7 carry Allele_054, which is also a member of Synonymy group 1 (Section 6). If the Synonymy group 1 synonymy hypothesis is confirmed by crossing — i.e., if Allele_050, Allele_057, and Allele_054 all share the same SI recognition specificity — then **all 29 AAAA individuals in EO70 effectively carry the same functional lock**. The BL panel pushes this finding further: pan-BL Allele_050/057 across **all five independent bottleneck lineages** confirms that drift has converged on the same fixed SI specificity in every lineage — a powerful test of the independent-bottleneck hypothesis.
 
 This finding reframes the AAAA burden in conservation terms. It is not simply that 60% of individuals are homozygous — it is that a large fraction of that 60% carries the same one or two SI specificities across every EO and every BL. The effective number of distinct SI locks present in the AAAA fraction is far smaller than the count of AAAA individuals would suggest. Cross-EO or cross-BL breeding involving Allele_050 and Allele_057 individuals does not resolve the compatibility problem if those individuals share the same lock; only the introduction of genuinely distinct alleles (B, C, D copies from heterozygous individuals) will. This makes the 13 AABC individuals — and the allele diversity they exclusively carry — even more critical than the raw genotype counts imply.
 
@@ -540,20 +558,30 @@ The allele bins defined in Section 1 are sequence-based hypotheses — each bin 
 
 The cross-species comparison is statistically rigorous (10 000-permutation overlap test): LEPA ↔ Brassica HV regions overlap 17 columns (null mean 8.2, p = 0.0005); LEPA ↔ Arabidopsis 22 columns (null 13.0, p = 0.0024); Brassica ↔ Arabidopsis 43 columns (null 8.0, p < 0.0001) — all three pairs co-locate far more than chance. As independent structural validation, all 11 of the 12 mappable SCR9-contact residues from the *B. rapa* eSRK9–SCR9 crystal structure (Ma et al. 2016, PDB 5GYY) fall within these shared HV regions when mapped to LEPA alignment coordinates — direct evidence that the entropy scan is detecting the SI-specificity surface itself. LEPA additionally has a unique HV peak at columns 358–388 not seen in Brassica or Arabidopsis — a candidate **Lepidium-specific specificity site** flagged for follow-up. A Wu-Kabat sanity check (alternative variability metric) is highly concordant with the entropy calls (Brassica Jaccard = 0.88, Arabidopsis 0.75; LEPA's lower 0.45 reflects the tighter LEPA allele bins and is unsurprising under that metric).
 
+**Mechanism: why is LEPA's per-column entropy so much lower than Brassica's?** A striking feature of the variability landscape ([Figure 15a](#figure-15a)) is that LEPA's smoothed Shannon entropy is roughly an order of magnitude lower than Brassica's (median 0.118 vs 0.700 bits) despite LEPA having more HV columns (73 vs 45). Two diagnostic tests, both reading only existing pipeline outputs, partition the explanation:
+
+*Test 1 — Synonymy group sequence redundancy ([Figure 15f](#figure-15f)).* When the 63 LEPA representative alleles are collapsed to 32 effective specificities (one allele per Synonymy group + 23 isolated alleles, picking the AAAA-richest representative per synonymy group), median entropy rises from 0.118 to 0.201 bits — a 70% increase. But the gap with Brassica (0.700 bits) is only ~12% closed, so Synonymy group redundancy contributes but is not the dominant mechanism. HV-column count is robust to this collapse (73 → 59 cols, a 19% drop), confirming the HV-region *locations* are not redundancy artefacts.
+
+*Test 2 — Per-Bottleneck-Lineage decomposition with cross-genera comparison ([Figure 15g](#figure-15g)).* For every LEPA HV column we asked: (i) within LEPA, do the 5 BLs share the same dominant residue among AAAA individuals? and (ii) does that LEPA-consensus residue match the dominant residue at the same alignment column in Brassica and Arabidopsis? The result is unambiguous: **all 5 BLs share the same dominant residue at 73/73 HV columns (100% within-LEPA concordance)**, with per-BL Shannon entropy near zero (0.000–0.042 bits). But that LEPA-consensus residue matches the Brassica dominant residue at only 16/73 columns (22%), the Arabidopsis dominant at 15/73 (21%), and **both Brassica AND Arabidopsis at only 12/73 (16%)**. The remaining **54/73 columns (74%) are LEPA-specific** — the LEPA-consensus residue differs from the dominant residue in both Brassica AND Arabidopsis.
+
+**Interpretation: drift on a shared LEPA ancestral pool, NOT pan-Brassicaceae selection convergence.** If selection across genera were the primary driver, we would expect LEPA, Brassica, and Arabidopsis to share dominant residues at most HV columns (the residues would be functionally fixed across 25+ My of Brassicaceae evolution). We instead see the opposite — the dominant residue within LEPA is independent of the dominant residue in either reference genus at 74% of HV columns, with intra-Brassicaceae conservation restricted to only 16% of positions. The within-LEPA 100% concordance reflects the simpler probabilistic outcome that drift fixes the most-common ancestral allele in every bottlenecked lineage — and Synonymy group 1 (Allele_050 + Allele_057 + 11 HV-identical relatives, 103 of 158 BL-assigned AAAA individuals) was already at high enough ancestral frequency that drift fixed it independently in every BL. The 16% of HV columns where LEPA, Brassica, and Arabidopsis all share the same dominant residue mark the truly deeply conserved SI-recognition positions under genus-spanning selection. The remaining 84% are positions where each genus's S-allele pool has been shaped by its own demographic history — for LEPA, that history is dominated by drift-driven fixation of a small ancestral allele family across all five independent bottleneck lineages.
+
+This finding closes the loop with the Section 5 BL stratification: the pan-BL fixation of Synonymy group 1 documented by the per-BL accumulation curves, allele sharing UpSet (Figure 5a), and TP2 reproductive-effort analyses ([Figure 13d](#figure-13d)) is precisely the same signal recovered here at the residue level. Drift acting independently in each BL on a shared ancestral allele pool produces the appearance of cross-BL convergence at the residue level (every BL fixes the most-common ancestral allele) without invoking pan-Brassicaceae selection.
+
 **Phylogenetic class detection.** Pairwise distances recomputed on the 73 canonical HV positions reveal a strongly bimodal structure: 126 allele pairs are HV-identical (distance = 0), while all remaining within-class pairs fall below 0.087, and one allele (Allele_061) is separated by a distance of ~0.96 from all others. UPGMA clustering automatically detects this gap as the natural cut point, splitting the 63 allele bins into two groups corresponding to the known Class I (62 alleles) and Class II (1 allele) phylogenetic lineages. This class split is visible as a distinct off-diagonal block in the allele similarity heatmap ([Figure 15b](#figure-15b)).
 
 **Cross categories.** Within the majority class, four cross categories are assigned by HV distance:
 
 | Category | HV distance | Definition | Expected outcome |
 |----------|-------------|------------|-----------------|
-| W | d = 0 | HV-identical alleles | No seeds — incompatibility predicted by sequence identity |
-| N | 0 < d < 0.04 | Small HV differences, same class | Unknown — synonymy test: does this substitution change specificity? |
-| P_within | d ≥ 0.04, same class | Substantial within-class HV divergence | Seeds expected — within-class positive control |
-| P_cross | different class | Between phylogenetic classes (Class I × Class II) | Seeds expected — guaranteed compatible |
+| Incompatible | d = 0 | HV-identical alleles | No seeds — incompatibility predicted by sequence identity |
+| Synonymy_test | 0 < d < 0.04 | Small HV differences, same class | Unknown — synonymy test: does this substitution change specificity? |
+| Compatible_within | d ≥ 0.04, same class | Substantial within-class HV divergence | Seeds expected — within-class positive control |
+| Compatible_cross | different class | Between phylogenetic classes (Class I × Class II) | Seeds expected — guaranteed compatible |
 
-The N category is the core of the hypothesis test. An incompatible N cross means the two allele bins share SI specificity and should be merged (synonymous alleles). A compatible N cross confirms that the small HV difference is functionally real and the bin boundary is correct. The cross design logic is summarised in Figure 15c.
+The N category is the core of the hypothesis test. An incompatible Synonymy_test cross means the two allele bins share SI specificity and should be merged (synonymous alleles). A compatible Synonymy_test cross confirms that the small HV difference is functionally real and the bin boundary is correct. The cross design logic is summarised in Figure 15c.
 
-**Allele similarity heatmap and clustering.** The 63×63 HV similarity matrix, ordered by UPGMA and with colour scaled to the within-class range, is shown in Figure 15b. The large Class I block (upper left) shows the W/N/P_within gradient from bright green (HV-identical) through yellow-orange (small HV differences) to red (most divergent within-class pairs). The single Class II allele (lower right) appears as a saturated dark block, confirming it is maximally distinct from Class I.
+**Allele similarity heatmap and clustering.** The 63×63 HV similarity matrix, ordered by UPGMA and with colour scaled to the within-class range, is shown in Figure 15b. The large Class I block (upper left) shows the Incompatible/Synonymy_test/Compatible_within gradient from bright green (HV-identical) through yellow-orange (small HV differences) to red (most divergent within-class pairs). The single Class II allele (lower right) appears as a saturated dark block, confirming it is maximally distinct from Class I.
 
 <a name="figure-15a"></a>
 
@@ -565,23 +593,88 @@ The N category is the core of the hypothesis test. An incompatible N cross means
 
 <a name="figure-15c"></a>
 
-![Figure 15c: Cross design framework. Left: distribution of within-class HV pairwise distances coloured by W / N / P_within category. Centre: schematic of the four cross categories across allele bins and classes. Right: decision tree for interpreting N-cross outcomes — incompatibility confirms synonymy (merge bins); compatibility confirms the bin boundary is real.](figures/SRK_cross_design_summary.png)
+![Figure 15c: Cross design framework. Left: distribution of within-class HV pairwise distances coloured by W / N / Compatible_within category. Centre: schematic of the four cross categories across allele bins and classes. Right: decision tree for interpreting Synonymy_test cross outcomes — incompatibility confirms synonymy (merge bins); compatibility confirms the bin boundary is real.](figures/SRK_cross_design_summary.png)
 
-**Crossing power.** Of the 63 allele bins, 20 have two or more AAAA individuals (full three-tier design), 14 have a single AAAA individual (cross partner only), and 29 have no AAAA representatives (require AAAB or AABB parents). The 13 366 pairwise AAAA combinations decompose into 5 663 W pairs (HV-identical, expected incompatible), 6 365 N pairs (synonymy tests), 1 338 P_within pairs (within-class positive controls), and 0 P_cross pairs in the current AAAA-only dataset (Class II has no AAAA individuals — between-class crosses require AAAB parents). A complete ranked crossing plan is available in `SRK_AAAA_cross_design_HV.tsv` and a full list of synonymy candidate pairs with testability flags is in `SRK_synonymy_candidates.tsv` (1 891 within-class pairs; 561 testable with currently available AAAA individuals).
+**Crossing power.** Of the 63 allele bins, 20 have two or more AAAA individuals (full three-tier design), 14 have a single AAAA individual (cross partner only), and 29 have no AAAA representatives (require AAAB or AABB parents). The 13 366 pairwise AAAA combinations decompose into 5 663 Incompatible pairs (HV-identical, expected incompatible), 6 365 Synonymy_test pairs (synonymy tests), 1 338 Compatible_within pairs (within-class positive controls), and 0 Compatible_cross pairs in the current AAAA-only dataset (Class II has no AAAA individuals — between-class crosses require AAAB parents). A complete ranked crossing plan is available in `SRK_AAAA_cross_design_HV.tsv` and a full list of synonymy candidate pairs with testability flags is in `SRK_synonymy_candidates.tsv` (1 891 within-class pairs; 561 testable with currently available AAAA individuals).
 
-**Synonymy group structure.** The 126 HV-identical allele pairs (d = 0) form **nine tight synonymy groups within Class I**, ranging from 2 to 13 alleles per group ([Figure 15d](#figure-15d)). These nine W-groups account for 40 of the 62 Class I alleles; the remaining 22 Class I alleles and the single Class II allele (Allele_061) are isolated — they share no HV-identical partner among the sampled bins. If HV identity reliably predicts shared recognition specificity, this would collapse the 63 sequence-defined bins to **32 functional groups**: 9 W-groups plus 23 isolated alleles (full group assignments in `SRK_synonymy_groups.csv`). The largest W-group (W-group 1) comprises **13 alleles observed in 103 AAAA individuals** — including Allele_050 and Allele_057, the two pan-BL fixed alleles documented in [Section 5b](#5b-individual-genotypic-fitness-score-gfs-and-tipping-point-2-tp2--reproductive-fitness) — making it the most prevalent specificity in the dataset and therefore the highest priority for synonymy confirmation by crossing.
+**Synonymy group structure.** The 126 HV-identical allele pairs (d = 0) form **nine tight synonymy groups within Class I**, ranging from 2 to 13 alleles per group ([Figure 15d](#figure-15d)). These nine synonymy groups account for 40 of the 62 Class I alleles; the remaining 22 Class I alleles and the single Class II allele (Allele_061) are isolated — they share no HV-identical partner among the sampled bins. If HV identity reliably predicts shared recognition specificity, this would collapse the 63 sequence-defined bins to **32 functional groups**: 9 synonymy groups plus 23 isolated alleles (full group assignments in `SRK_synonymy_groups.csv`). The largest Synonymy group (Synonymy group 1) comprises **13 alleles observed in 103 AAAA individuals** — including Allele_050 and Allele_057, the two pan-BL fixed alleles documented in [Section 5b](#5b-individual-genotypic-fitness-score-gfs-and-tipping-point-2-tp2--reproductive-fitness) — making it the most prevalent specificity in the dataset and therefore the highest priority for synonymy confirmation by crossing.
 
-The connectivity structure among groups through N-connections (small but non-zero HV differences, 0 < d < 0.04) is visualised in a condensed super-node graph ([Figure 15e](#figure-15e)), where each node represents a W-group or isolated allele, and edges indicate the presence of at least one N-cross candidate bridging the two groups. Node size is proportional to the number of individuals observed carrying any member allele. The graph reveals that most W-groups and isolated alleles are reachable from one another through chains of N-edges, collapsing into two large N-connected components (58 alleles + 4 alleles; one allele isolated). This chaining reflects the continuous nature of HV variation within Class I and confirms that N-crosses will provide extensive coverage of the allele network — but also underlines that W-group membership (HV identity, d = 0) is the conservative and biologically robust criterion for synonymy prediction, while N-edges represent hypotheses that require experimental confirmation.
+The connectivity structure among groups through N-connections (small but non-zero HV differences, 0 < d < 0.04) is visualised in a condensed super-node graph ([Figure 15e](#figure-15e)), where each node represents a Synonymy group or isolated allele, and edges indicate the presence of at least one Synonymy_test cross candidate bridging the two groups. Node size is proportional to the number of individuals observed carrying any member allele. The graph reveals that most synonymy groups and isolated alleles are reachable from one another through chains of synonymy-test edges, collapsing into two large N-connected components (58 alleles + 4 alleles; one allele isolated). This chaining reflects the continuous nature of HV variation within Class I and confirms that Synonymy_test crosses will provide extensive coverage of the allele network — but also underlines that Synonymy group membership (HV identity, d = 0) is the conservative and biologically robust criterion for synonymy prediction, while synonymy-test edges represent hypotheses that require experimental confirmation.
 
 <a name="figure-15d"></a>
 
-![Figure 15d: Allele synonymy network — HV-identical W-groups. Left panel: the nine synonymy groups (coloured nodes connected by red W-edges) and 23 isolated alleles (grey nodes, right panel). Node size is proportional to the number of individuals observed carrying each allele. Labels show allele ID and observation count. Together the nine W-groups contain 40 of the 63 alleles; if confirmed synonymous by crossing, these reduce to **32 functional specificities** (9 W-groups + 23 isolated) from 63 sequence bins. W-group 1 (13 alleles, 103 AAAA individuals) is the priority synonymy target.](figures/SRK_synonymy_network_W.png)
+![Figure 15d: Allele synonymy network — HV-identical synonymy groups. Left panel: the nine synonymy groups (coloured nodes connected by red synonymy-group edges) and 23 isolated alleles (grey nodes, right panel). Node size is proportional to the number of individuals observed carrying each allele. Labels show allele ID and observation count. Together the nine synonymy groups contain 40 of the 63 alleles; if confirmed synonymous by crossing, these reduce to **32 functional specificities** (9 synonymy groups + 23 isolated) from 63 sequence bins. Synonymy group 1 (13 alleles, 103 AAAA individuals) is the priority synonymy target.](figures/SRK_synonymy_network_groups.png)
 
 <a name="figure-15e"></a>
 
-![Figure 15e: Allele synonymy network — N-connectivity between W-groups (condensed). Each node represents one W-group or isolated allele; edges indicate that at least one N-cross candidate (0 < d < 0.04) bridges the two groups. Node colour matches W-group identity in Figure 15d; node size is proportional to individuals observed; edge width is proportional to the log of the number of N-bridges between groups. The graph shows that N-connections chain most W-groups and isolated alleles into three large components, confirming broad coverage of the allele network by the N-cross experiment.](figures/SRK_synonymy_network_N.png)
+![Figure 15e: Allele synonymy network — N-connectivity between synonymy groups (condensed). Each node represents one Synonymy group or isolated allele; edges indicate that at least one Synonymy_test cross candidate (0 < d < 0.04) bridges the two groups. Node colour matches Synonymy group identity in Figure 15d; node size is proportional to individuals observed; edge width is proportional to the log of the number of synonymy-test bridges between groups. The graph shows that N-connections chain most synonymy groups and isolated alleles into three large components, confirming broad coverage of the allele network by the Synonymy_test cross experiment.](figures/SRK_synonymy_network_tests.png)
 
-**Scope and next steps.** The AAAA-only crossing design covers the full Class I allele set but cannot provide P_cross positive controls without AAAB individuals carrying Allele_061. Extending the design to AAAB parents would additionally allow testing of the 29 bins currently lacking AAAA representatives, and would provide the between-class compatibility controls needed to anchor the upper end of the seed yield scale. Priority W-group crosses — particularly within W-group 1 — should be scheduled first, as incompatible outcomes will immediately consolidate the largest block of allele bins and most accurately reflect the true functional allele count available for conservation breeding.
+<a name="figure-15f"></a>
+
+![Figure 15f: Synonymy group sequence redundancy diagnostic. Side-by-side smoothed Shannon-entropy profiles for LEPA full (63 alleles, blue), LEPA collapsed (32 sequences = 9 Synonymy group representatives + 23 isolated alleles, purple), Brassica (red, n = 22), and Arabidopsis (green, n = 10). Collapsing Synonymy group redundancy raises LEPA median entropy from 0.118 to 0.201 bits (+70%) but closes only ~12% of the gap with Brassica (0.700 bits) — confirming that Synonymy group sequence redundancy contributes to LEPA's low entropy but is not the dominant mechanism.](figures/SRK_variability_landscape_wgroup_collapsed.png)
+
+<a name="figure-15g"></a>
+
+![Figure 15g: Per-BL entropy decomposition with cross-genera dominant-residue comparison at LEPA HV columns (AAAA individuals only, n = 158 BL-assigned). Top: heatmap of Shannon entropy at each HV column for each of the five BLs (Set1 palette); per-BL mean entropy is given in the y-axis labels (0.000–0.042 bits, indicating each BL has fixed a single dominant residue at almost every HV column). Bottom: dominant-residue heatmap with all five BLs plus Brassica and Arabidopsis reference rows; cells coloured by amino-acid identity, with frequency-weighted opacity and labels for clear majorities. The five LEPA BL rows are visually identical (100% within-LEPA concordance) — every BL has fixed the same dominant residue at every HV column, with that residue typically representing the Synonymy group 1 / Allele_050+057 family. Brassica and Arabidopsis rows show different colour patterns at most positions: only 16/73 cols (22%) match Brassica's dominant residue and only 12/73 cols (16%) match both Brassica AND Arabidopsis. **74% (54/73) of LEPA HV columns are LEPA-specific** at the dominant-residue level — confirming that LEPA HV residue identities reflect drift on a shared LEPA ancestral pool rather than pan-Brassicaceae selection convergence.](figures/SRK_perBL_entropy_figure.png)
+
+### 7a. Hypothesis-testing cross plan — rationale and results
+
+The bioinformatics so far have produced *predictions* about which sequence bins represent which functional SI specificities. Translating these predictions into an actionable crossing protocol requires answering, for every candidate cross, two independent questions:
+
+1. **What does the sequence say?** — i.e., the predicted compatibility category (Incompatible, Synonymy_test, Compatible_within, or Compatible_cross), derived from HV distance and phylogenetic Class. This information is fully encoded in the cross-design table (`SRK_AAAA_cross_design_HV.tsv`) and the synonymy-group membership (`SRK_synonymy_groups.csv`) produced by the upstream Step 22 pipeline.
+2. **Is the cross interpretable given the parents' genotypes?** — i.e., does the maternal–paternal genotype combination produce an unambiguous specificity test? AAAA × AAAA crosses are clean; heterozygous donors (AAAB / AABB / AABC / ABCD) require explicit accounting for polyploid pollen segregation (e.g., AAAB → 50 % AA + 50 % AB pollen; AABB → 17 % AA + 67 % AB + 17 % BB) and demand paired AAAA-baseline controls.
+
+These two axes combine into a phased experimental design with five nested hypotheses. Each hypothesis level addresses a sharper question than the previous one and depends on the previous level passing:
+
+| Level | Question being tested | Required maternal genotype | Required paternal genotype | Allele constraint |
+|---|---|---|---|---|
+| **H0** | Does the SI rejection system actually work? | AAAA | AAAA | both alleles in the **same** synonymy group |
+| **H1a** | What seed yield is expected for compatible crosses *within* Class I? | AAAA | AAAA | alleles in **different** synonymy groups, no Synonymy_test edge (HV distance ≥ 0.04) |
+| **H1b** | What seed yield is expected for the maximally-compatible *between-Class* control? | AAAA Class I | heterozygous (AAAB / AABB / AABC) carrier of a Class II allele (Allele_061) | mother allele ≠ father's other Class I alleles |
+| **H2** | Do bins separated by *small* HV differences correspond to distinct functional specificities? | AAAA | AAAA | alleles in **different** synonymy groups with a Synonymy_test edge (0 < HV < 0.04, same Class) |
+| **H3** | Do the 29 bins lacking AAAA representatives behave according to the same compatibility hierarchy? | AAAA carrier of an allele M known to be Compatible_within with the father's main allele | heterozygous carrier of the **hidden** allele | M ≠ father's main allele AND M ≠ hidden allele; cross paired with an AAAA × AAAA control to measure the AA-pollen baseline |
+
+**Provenance — every cross in the plan is fully traceable.** Every row in the H0 / H1a / H1b / H2 / H3 cross-plan TSVs links back to:
+(i) a specific HV-distance value computed on the **73 canonical HV columns** validated cross-Brassicaceae (Step 22a; permutation tests p ≤ 0.0024 against Brassica and Arabidopsis HV regions);
+(ii) a Class assignment from UPGMA clustering of those distances (Step 22b);
+(iii) a synonymy-group membership from the W-only (HV-identical) graph components (Step 22b Part 3c);
+(iv) per-individual genotype and allele copy counts from the authoritative `Allele_composition` strings in `SRK_individual_zygosity.tsv` (Step 12); and
+(v) BL membership from the spatial-clustering bridge (Step 13). The full provenance table — including the assumptions on which the framework rests — is in `Bioinformatics_pipeline.md` (Step 22e).
+
+**Cross plan results for the current dataset:**
+
+| Hypothesis | Question | Crosses | Replicates each | Total attempts |
+|---|---|---:|---:|---:|
+| H0 | Does SI rejection work? | 21 | 9 | 189 |
+| H1a | Within-Class compatible baseline | 10 | 9 | 90 |
+| H1b | Between-Class compatible baseline | **1** | 9 | **9** |
+| H2 | Synonymy bin boundaries | 32 | 15 | 480 |
+| H3 | Hidden bins (heterozygous donor + paired control) | 37 (= 20 main + 17 paired) | 15 | 555 |
+| **Total** | | **101** | — | **1 323** |
+
+**Sample-size constraints (interpretation):**
+
+- **H1b is sample-limited to 1 cross** because Allele_061 (the only Class II allele in the dataset) is carried by a single individual: Library008_barcode08, an AABB heterozygote (Allele_050 + Allele_061). The AABB pollen segregates 17 % AA + 67 % AB + 17 % BB, so 84 % of the pollen carries the Class II specificity directly — making this *one* cross informative despite the small replicate count. Adding additional Allele_061 carriers would expand H1b. This is a sampling artefact, not a methodological limit.
+- **H3 covers 20 of the 29 hidden bins** with paired controls. The remaining 9 hidden bins lack AAAA mothers carrying a Compatible_within partner allele (the constraint required to keep the AA-pollen baseline interpretable); they are deferred until additional individuals are genotyped.
+- **H0 and H2 are biased toward Synonymy group 1** (13 alleles, 103 AAAA individuals — abundant material). This is biologically appropriate: Synonymy group 1 is the priority synonymy hypothesis to validate first, since confirming its synonymy collapses the largest block of allele bins (40 % of all AAAA individuals carry a Synonymy group 1 allele).
+
+**What this cross plan delivers:**
+
+After all five hypothesis levels are tested, the outcomes feed back into a **validated functional S-allele table** that supersedes the sequence-only allele bin definitions:
+- H0 outcomes confirm or refute the SI system's basic functionality.
+- H1a + H1b outcomes calibrate the seed-yield scale (low end = 0; H1a-baseline = within-Class compatible yield; H1b-baseline = between-Class maximum yield).
+- H2 outcomes decide which synonymy groups should be **merged** (same SI specificity) or **kept separate** (distinct specificities). In the most extreme case where every Synonymy_test cross is incompatible, the 63 sequence bins collapse to **32 functional specificities** (9 synonymy groups + 23 isolated alleles); in the most extreme case where every Synonymy_test cross is compatible, the 63 bins remain distinct.
+- H3 outcomes classify each of the 20 testable hidden alleles as compatible / incompatible with at least one major Class I specificity, extending the validated S-allele table to coverage of bins that cannot be tested by AAAA × AAAA crosses alone.
+
+The validated functional S-allele table is the input to the operational seed-orchard design (downstream of this report). Its construction is the **core deliverable of Phase 4** and provides the empirical foundation for evidence-based informed breeding in *L. papilliferum*.
+
+<a name="figure-15h"></a>
+
+![Figure 15h: Step 22e hypothesis-testing cross plan summary. Left: cross counts per hypothesis level (101 unique crosses, 1 323 cross attempts total at the recommended replicate counts). Right: decision tree per phase outcome, showing how each hypothesis's result updates the validated functional S-allele table. The plan is constrained by the genotype distribution in the current dataset — H1b is limited to 1 cross because Allele_061 has only one heterozygous carrier; H3 covers 20 of 29 hidden bins because the remaining 9 lack AAAA mothers with a Compatible_within partner allele.](figures/SRK_cross_plan_summary.png)
+
+---
+
+**Scope and next steps.** The hypothesis-testing cross plan above (Step 22e) provides a fully traceable experimental protocol for validating the bioinformatics-predicted S-allele bins. Its current 101-cross design is constrained by the genotype distribution in the 272-individual dataset — most importantly the single Class II carrier and the 9 hidden bins that lack AAAA mothers with compatible partners. Expanding the dataset (e.g., screening additional germplasm holdings or supplementing with field collections from BL1, the lineage with only 5 BL-assigned individuals) would directly relax these constraints. Priority Synonymy group crosses — particularly within Synonymy group 1 — should be scheduled first, as incompatible outcomes will immediately consolidate the largest block of allele bins and most accurately reflect the true functional allele count available for conservation breeding.
 
 ---
 
@@ -600,7 +693,7 @@ To evaluate how different managed crossing strategies could restore allele frequ
 
 **Within-EO results (allele frequency variance reduction vs random mating):**
 
-| EO | N | Allele bins | Initial χ² | Year 1 Pres. | Year 1 Demo. | Year 5 Pres. | Year 5 Demo. | Allele loss (rand. yr5) | Allele loss (pres. yr5) |
+| EO | Synonymy_test | Allele bins | Initial χ² | Year 1 Pres. | Year 1 Demo. | Year 5 Pres. | Year 5 Demo. | Allele loss (rand. yr5) | Allele loss (pres. yr5) |
 |----|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | EO25 | 32 | 11 | 1.53 | 88% | 91% | 77% | 91% | 0.8 | 0.0 |
 | EO27 | 29 | 15 | 1.36 | 79% | 80% | 81% | 95% | 3.3 | 0.0 |

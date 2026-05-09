@@ -4,16 +4,32 @@ subtitle: "Nanopore-Based SRK Haplotype Reconstruction and Population Analysis P
 author: "Sven Buerki - Boise State University"
 date: "`r Sys.Date()`"
 output:
-  bookdown::html_document2: 
+  bookdown::html_document2:
     toc: TRUE
     toc_float: TRUE
     self_contained: TRUE
 link-citations: yes
 fontsize: 12pt
 urlcolor: blue
-editor_options: 
-  markdown: 
+editor_options:
+  markdown:
     wrap: sentence
+---
+
+# Pipeline at a Glance
+
+This pipeline reconstructs S-receptor kinase (SRK) haplotypes from Nanopore amplicon sequencing of polyploid plants and turns them into population-genetic and crossing-design data products usable for conservation breeding. It comprises **23 steps in 4 phases**.
+
+**Phase 1 — Assembly and haplotype phasing** (Steps 1–9). Per-individual amplicon assembly with multi-replicate Canu, polyploid-aware variant calling (`whatshap polyphase`), read-backed phasing, MAFFT-based multiple sequence alignment, exon-level reference projection, gap backfilling, frame-correct DNA → protein translation, and abundance-based filtering of authentic SRK proteins from technical artefacts. Output: a per-individual functional-protein table.
+
+**Phase 2 — Allele definition and genotyping** (Steps 10–12). Distance-based clustering of validated proteins into S-allele bins ([Step 10](#SRKalleledist)), per-individual allele copy-count genotyping ([Step 11](#SRKfunctionalprotgenotype)), and tetraploid zygosity classification into `AAAA`/`AAAB`/`AABB`/`AABC`/`ABCD` genotypes ([Step 12](#zygosity)). The current dataset comprises 272 ingroup individuals across 19 *Lepidium papilliferum* Element Occurrences resolved into 54 S-allele bins.
+
+**Phase 3 — Population genetics under a bottleneck-lineage framework** (Steps 13–21). [Step 13](#BLintegration) imports five independent bottleneck lineages (BL1–BL5) from the sibling repository [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering) — derived by Ward's D2 hierarchical clustering of 32 geographic-group centroids under a 500 m pollinator-connectivity threshold — and writes a per-individual BL assignment table consumed by every downstream analysis. Steps 14–21 then compute population-genetic statistics, allele-accumulation curves with Michaelis-Menten and Chao1 estimators, χ² goodness-of-fit against the NFDS equal-frequency expectation, the TP1 tipping-point diagnostic (allele richness × frequency evenness), allele composition / sharing (UpSet + heatmap), per-individual Genotypic Fitness Score, the TP2 tipping-point diagnostic (mean GFS × proportion AAAA), and reproductive-effort summaries — every output stratified in parallel by EO (management unit, sorted by parent BL) and by BL (inferential unit, aggregated for power). The locked Set1 colour palette (BL1 red, BL2 blue, BL3 green, BL4 purple, BL5 orange) is used consistently with the sibling spatial-clustering repository.
+
+**Phase 4 — Hypothesis testing and crossing design** (Steps 22–23). [Step 22a](#alleleclusters) (`srk_variability_landscape.py`) runs an identical sliding-window Shannon-entropy scan on a combined alignment of LEPA + 22 *Brassica* + 10 *Arabidopsis* SRK alleles to detect hypervariable (HV) columns per species, validates LEPA HV regions against Brassica/Arabidopsis with a 10 000-permutation overlap test, and overlays the 12 SCR9-contact residues from Ma et al. 2016 (PDB 5GYY) for structural validation. Step 22b (`srk_allele_hypotheses.py`) consumes the canonical HV columns to compute HV-only pairwise distances, UPGMA-detect Class I / Class II, build the synonymy network (synonymy groups (HV-identical) + Synonymy_test bridges), and rank the AAAA × AAAA cross matrix into Incompatible / Synonymy_test / Compatible_within / Compatible_cross categories. Two optional diagnostics — **Step 22c** (`srk_wgroup_collapse_test.py`, tests how much Synonymy group redundancy contributes to LEPA's low Shannon entropy) and **Step 22d** (`srk_perBL_entropy_test.py`, decomposes LEPA HV-column residue diversity per Bottleneck Lineage and compares to Brassica + Arabidopsis to distinguish drift from selection convergence) — flesh out the biological mechanism. **Step 22e** (`srk_cross_plan.py`) translates the cross categorisation into a phased experimental protocol (H0 / H1a / H1b / H2 / H3) with explicit AAAA / AAAB / AABB genotype requirements and paired controls for heterozygous-donor tests; every cross row is traceable to a sequence-based category (HV distance + Class from Step 22b) plus a genotype-based feasibility filter (`Allele_composition` from Step 12). [Step 23](#crossresults) reads completed cross records and tests the predictions.
+
+**Software stack and conventions.** Python 3 (BioPython, NumPy, pandas, SciPy, matplotlib, networkx); R (ggplot2, tidyverse, vegan, iNEXT, UpSetR, ComplexUpset); MAFFT, Canu, WhatsHap. By convention, PDFs are written to the project root and PNGs to `figures/`. Every Phase 3 / Phase 4 script reads `SRK_individual_BL_assignments.tsv` from Step 13 to add BL stratification to its outputs without breaking EO-level views.
+
 ---
 
 # GitHub Repository
@@ -79,8 +95,8 @@ The pipeline consists of **23 main steps organized into four phases**, progressi
 
 ## [Phase 4: Testing S-allele Hypotheses](#phase4)
 
-22. [Hypervariable-Position Allele Hypothesis Testing and Crossing Design](#alleleclusters) – Moving-window scan to identify 75 hypervariable positions in the S-domain; UPGMA auto-threshold clustering detects Class I / Class II phylogenetic split; generates a prioritised crossing plan for 164 AAAA individuals with four categories: W (HV-identical), N (synonymy test), P_within (within-class positive control), P_cross (between-class positive control).
-23. [Cross Result Analysis](#crossresults) – Statistical comparison of seed yield across W / N / P_within / P_cross cross categories to test whether HV-based allele bin boundaries predict functional recognition specificity.
+22. [Hypervariable-Position Allele Hypothesis Testing and Crossing Design](#alleleclusters) – Cross-Brassicaceae sliding-window Shannon-entropy scan identifies 73 canonical HV columns (validated by 10 000-permutation test against Brassica + Arabidopsis HV regions and structural overlap with Ma 2016 SCR9-contact residues); UPGMA auto-threshold clustering detects the Class I / Class II phylogenetic split; generates a sequence-based cross design for AAAA × AAAA pairs with four categories (Incompatible, Synonymy_test, Compatible_within, Compatible_cross). Optional diagnostics 22c (Synonymy group collapse test) and 22d (per-BL entropy decomposition) test alternative mechanisms underlying LEPA's low entropy. **Step 22e** ([Hypothesis-Testing Cross Plan](#crossplan)) translates the sequence-based categories into a phased experimental protocol with explicit AAAA / AAAB / AABB genotype constraints (H0 SI validation, H1a within-Class baseline, H1b between-Class baseline, H2 synonymy bin boundaries, H3 hidden bins via heterozygous donors + paired controls).
+23. [Cross Result Analysis](#crossresults) – Statistical comparison of seed yield across Incompatible / Synonymy_test / Compatible_within / Compatible_cross cross categories to test whether HV-based allele bin boundaries predict functional recognition specificity.
 
 ---
 
@@ -5898,7 +5914,7 @@ Rscript SRK_GFS_reproductive_effort.R
 
 **BL-stratified design.** EOs are sorted by parent BL then by mean GFS within BL; y-axis labels are coloured by parent BL (Set1 palette). The BL panel pools all BL-assigned individuals into 5 lineage rows, sorted by mean GFS. The TP2 AAAA threshold (30%) is marked on both panels.
 
-**Pan-group AAAA alleles.** *Pan-BL* alleles are present in AAAA individuals across every BL; *pan-EO* alleles are present in AAAA individuals in ≥80% of focus EOs (relaxed threshold accommodates EO18, the smallest focus EO with only 4 AAAA individuals carrying a different drift signature). Allele_050 and Allele_057 (W-group 1, HV-identical, likely the same SI specificity) appear as pan-BL across all 5 BLs and pan-EO in 5 of 6 focus EOs — confirming that independent bottlenecks have all converged on the same fixed SI specificity.
+**Pan-group AAAA alleles.** *Pan-BL* alleles are present in AAAA individuals across every BL; *pan-EO* alleles are present in AAAA individuals in ≥80% of focus EOs (relaxed threshold accommodates EO18, the smallest focus EO with only 4 AAAA individuals carrying a different drift signature). Allele_050 and Allele_057 (Synonymy group 1, HV-identical, likely the same SI specificity) appear as pan-BL across all 5 BLs and pan-EO in 5 of 6 focus EOs — confirming that independent bottlenecks have all converged on the same fixed SI specificity.
 
 #### Key Parameters (top of script)
 
@@ -5914,7 +5930,7 @@ Rscript SRK_GFS_reproductive_effort.R
 | File | Content |
 |------|---------|
 | `SRK_GFS_reproductive_effort.pdf` | 2-page PDF: EO panel + BL panel — GFS tier composition with reproductive effort annotations |
-| `SRK_GFS_AAAA_allele_composition.pdf` | 2-page PDF: EO panel + BL panel — allele identity of AAAA individuals; W-group 1 alleles highlighted |
+| `SRK_GFS_AAAA_allele_composition.pdf` | 2-page PDF: EO panel + BL panel — allele identity of AAAA individuals; Synonymy group 1 alleles highlighted |
 | `SRK_BL_reproductive_effort_summary.tsv` | **NEW** — BL-level reproductive effort summary (n, n_supporting, prop_supporting, prop_AAAA, mean_GFS) |
 | `figures/SRK_GFS_reproductive_effort_EO.png` | EO-level proportional bar (PNG) |
 | `figures/SRK_GFS_reproductive_effort_BL.png` | **NEW** — BL-level proportional bar (PNG) |
@@ -5927,16 +5943,16 @@ Rscript SRK_GFS_reproductive_effort.R
 
 **`SRK_GFS_reproductive_effort` (page 2, BL panel):** Same layout for the 5 BLs (sorted by mean GFS, worst at top). All 262 BL-assigned individuals are aggregated into their respective BL rows; y-axis labels are coloured by BL.
 
-**`SRK_GFS_AAAA_allele_composition` (page 1, EO panel):** Companion figure unpacking the AAAA bar from the EO reproductive effort figure. Each bar shows how many AAAA individuals in that EO carry each allele. Pan-EO W-group 1 alleles (Allele_050, Allele_057; orange and blue) are highlighted; all remaining alleles are shown as a single grey "Other alleles" segment. Annotations show total AAAA count and percentage carrying a W-group 1 allele.
+**`SRK_GFS_AAAA_allele_composition` (page 1, EO panel):** Companion figure unpacking the AAAA bar from the EO reproductive effort figure. Each bar shows how many AAAA individuals in that EO carry each allele. Pan-EO Synonymy group 1 alleles (Allele_050, Allele_057; orange and blue) are highlighted; all remaining alleles are shown as a single grey "Other alleles" segment. Annotations show total AAAA count and percentage carrying a Synonymy group 1 allele.
 
-**`SRK_GFS_AAAA_allele_composition` (page 2, BL panel):** Same composition shown across the 5 BLs. Allele_050 and Allele_057 are pan-BL (5/5 BLs) — confirms shared W-group 1 fixation despite independent bottlenecks. BL2 reaches 69% W-group 1 saturation; BL5 is the lowest at 24%.
+**`SRK_GFS_AAAA_allele_composition` (page 2, BL panel):** Same composition shown across the 5 BLs. Allele_050 and Allele_057 are pan-BL (5/5 BLs) — confirms shared Synonymy group 1 fixation despite independent bottlenecks. BL2 reaches 69% Synonymy group 1 saturation; BL5 is the lowest at 24%.
 
 ### Scientific Applications
 
 * **Conservation triage**: per-EO and per-BL proportions of supporting individuals quantify how much of each unit is functional for managed crossing.
 * **Seed parent pool size**: the annotated n / N count identifies candidate individuals for inclusion in a crossing programme.
 * **Cross-EO comparison within BL**: BL-grouped EO ordering highlights drift heterogeneity within each BL — e.g., EO67 (47% support, BL4) is much less degraded than EO27 (36%, same BL).
-* **Independent-bottleneck test**: pan-BL Allele_050/057 confirms that drift across all five lineages has settled on the same W-group 1 specificity; the only EO without W-group 1 in its AAAA pool (EO18) is also the smallest, suggesting sample size rather than a divergent drift trajectory.
+* **Independent-bottleneck test**: pan-BL Allele_050/057 confirms that drift across all five lineages has settled on the same Synonymy group 1 specificity; the only EO without Synonymy group 1 in its AAAA pool (EO18) is also the smallest, suggesting sample size rather than a divergent drift trajectory.
 * **Communication**: both figures are designed for presentation to conservation managers, translating GFS and allele identity into intuitive breeding-pool diagnostics.
 ---
 
@@ -5950,17 +5966,17 @@ The central question is: **do alleles that are closely related in sequence share
 
 **The experimental logic rests on four cross categories:**
 
-- **W — HV-identical** (same allele bin, HV distance = 0): pollen and pistil carry the same SRK allele at all hypervariable positions. Under a functional SI system, these crosses should fail — the pistil recognises the pollen as self and rejects it. These are negative controls. Any seed set observed in W crosses is direct evidence of SI breakdown, consistent with Stage 5 of the Compatibility Collapse Cascade.
+- **W — HV-identical** (same allele bin, HV distance = 0): pollen and pistil carry the same SRK allele at all hypervariable positions. Under a functional SI system, these crosses should fail — the pistil recognises the pollen as self and rejects it. These are negative controls. Any seed set observed in Incompatible crosses is direct evidence of SI breakdown, consistent with Stage 5 of the Compatibility Collapse Cascade.
 
 - **N — near-synonymy test** (different allele bins, HV distance > 0 and < 0.04, same phylogenetic class): pollen and pistil carry alleles that differ at a small number of hypervariable positions. These crosses are the core of the hypothesis test — seed failure would indicate the allele bins are functionally synonymous (merge them); seed set would confirm the small HV difference is functionally real (keep bins separate).
 
-- **P_within — within-class positive control** (HV distance ≥ 0.04, same phylogenetic class): pollen and pistil carry alleles that are substantially divergent within the same class. These crosses are expected to succeed and serve as within-class positive controls.
+- **Compatible_within — within-class positive control** (HV distance ≥ 0.04, same phylogenetic class): pollen and pistil carry alleles that are substantially divergent within the same class. These crosses are expected to succeed and serve as within-class positive controls.
 
-- **P_cross — between-class control** (different phylogenetic classes): pollen and pistil carry alleles from Class I and Class II respectively. These crosses are guaranteed to succeed — between-class compatibility is maximally divergent. They anchor the upper end of the seed yield scale.
+- **Compatible_cross — between-class control** (different phylogenetic classes): pollen and pistil carry alleles from Class I and Class II respectively. These crosses are guaranteed to succeed — between-class compatibility is maximally divergent. They anchor the upper end of the seed yield scale.
 
 **Why AAAA individuals?** Individuals homozygous for a single allele across all four genome copies (AAAA genotype; 60% of all sampled plants, n = 164) are the ideal cross parents for this experiment. Their pollen carries a single SCR identity — the allele assignment is unambiguous, and cross outcomes can be interpreted without accounting for pollen genotype distributions. Crosses between two AAAA plants are therefore the cleanest test of allele-level recognition specificity available in a tetraploid system.
 
-**Two-step analysis:** [Step 22](#alleleclusters) is itself split into two scripts. **Step 22a** (`srk_variability_landscape.py`) builds a multi-species alignment of LEPA + *Brassica rapa*/*B. oleracea* + *Arabidopsis lyrata*/*A. halleri* SRK alleles, applies an identical sliding-window Shannon-entropy scan to each species, and tests whether LEPA HV regions co-locate with Brassica/Arabidopsis HV regions more than expected by chance (permutation test). The validated LEPA HV columns are written to `SRK_LEPA_HV_positions.tsv`. **Step 22b** (`srk_allele_hypotheses.py`) reads those canonical HV columns, computes HV-only pairwise distances, detects phylogenetic classes by UPGMA, generates the prioritised crossing plan, and constructs the synonymy network. [Step 23](#crossresults) reads completed cross records and tests whether the W / N / P_within / P_cross category predicts seed yield.
+**Two-step analysis:** [Step 22](#alleleclusters) is itself split into two scripts. **Step 22a** (`srk_variability_landscape.py`) builds a multi-species alignment of LEPA + *Brassica rapa*/*B. oleracea* + *Arabidopsis lyrata*/*A. halleri* SRK alleles, applies an identical sliding-window Shannon-entropy scan to each species, and tests whether LEPA HV regions co-locate with Brassica/Arabidopsis HV regions more than expected by chance (permutation test). The validated LEPA HV columns are written to `SRK_LEPA_HV_positions.tsv`. **Step 22b** (`srk_allele_hypotheses.py`) reads those canonical HV columns, computes HV-only pairwise distances, detects phylogenetic classes by UPGMA, generates the prioritised crossing plan, and constructs the synonymy network. [Step 23](#crossresults) reads completed cross records and tests whether the Incompatible / Synonymy_test / Compatible_within / Compatible_cross category predicts seed yield.
 
 ---
 
@@ -5974,7 +5990,7 @@ Step 22 is split into two scripts:
 
 - **Step 22a — Cross-Brassicaceae Variability Landscape** (`srk_variability_landscape.py`): builds a combined alignment of the 63 LEPA representative SRK alleles + 22 *Brassica rapa*/*B. oleracea* SRK references + 10 *Arabidopsis lyrata*/*A. halleri* SRK references, applies an identical sliding-window **Shannon-entropy** scan to each species, calls per-species HV regions at `mean + 1×SD` of the smoothed profile, and runs a 10 000-permutation test of pairwise HV-region overlap (LEPA↔Brassica, LEPA↔Arabidopsis, Brassica↔Arabidopsis). The 12 SCR9-contact residues from Ma et al. 2016 (*B. rapa* eSRK9-SCR9 crystal structure, PDB 5GYY) are mapped to LEPA alignment columns and overlaid as independent structural validation. The 73 LEPA HV columns identified by this analysis are written to `SRK_LEPA_HV_positions.tsv` as the **canonical input** for downstream analyses.
 
-- **Step 22b — Allele Hypothesis Testing and Crossing Design** (`srk_allele_hypotheses.py`): reads `SRK_LEPA_HV_positions.tsv` (overrides any internal HV scan), computes HV-only pairwise distances on those columns, detects phylogenetic classes by UPGMA clustering, builds the synonymy network (W-only HV-identical groups + N-connectivity bridges), and generates the prioritised W / N / P_within / P_cross crossing plan.
+- **Step 22b — Allele Hypothesis Testing and Crossing Design** (`srk_allele_hypotheses.py`): reads `SRK_LEPA_HV_positions.tsv` (overrides any internal HV scan), computes HV-only pairwise distances on those columns, detects phylogenetic classes by UPGMA clustering, builds the synonymy network (synonymy-group HV-identical groups + N-connectivity bridges), and generates the prioritised W / N / Compatible_within / Compatible_cross crossing plan.
 
 The 164 AAAA individuals (60% of 272 sampled plants) are the ideal cross parents: their pollen carries a single unambiguous SCR identity, making cross outcomes directly interpretable.
 
@@ -5986,9 +6002,9 @@ The 164 AAAA individuals (60% of 272 sampled plants) are the ideal cross parents
 
 **Why this validation matters.** In the current dataset, all three pairwise HV-overlap permutation tests are highly significant (LEPA↔Brassica obs = 17 cols, p = 0.0005; LEPA↔Arabidopsis 22 cols, p = 0.0024; Brassica↔Arabidopsis 43 cols, p < 0.0001). All 11 of the 12 mappable Ma 2016 SCR9-contact residues fall within LEPA HV regions — independent structural confirmation that the entropy scan is detecting the SI-specificity surface. LEPA additionally has a unique HV peak at columns 358–388 that is absent from Brassica/Arabidopsis — a candidate Lepidium-specific specificity site flagged for future investigation.
 
-**Phylogenetic class detection** — UPGMA clustering of the resulting 63 × 63 HV-only pairwise distances automatically detects the natural class structure: the largest gap in the merge-height sequence defines the cut point, splitting the 63 allele bins into Class I (62 alleles) and Class II (1 allele, Allele_061) — corresponding to the known phylogenetic lineages in *Brassica* SRK. Class II alleles are guaranteed to be compatible with all Class I alleles, providing unambiguous P_cross controls at the maximum possible HV distance.
+**Phylogenetic class detection** — UPGMA clustering of the resulting 63 × 63 HV-only pairwise distances automatically detects the natural class structure: the largest gap in the merge-height sequence defines the cut point, splitting the 63 allele bins into Class I (62 alleles) and Class II (1 allele, Allele_061) — corresponding to the known phylogenetic lineages in *Brassica* SRK. Class II alleles are guaranteed to be compatible with all Class I alleles, providing unambiguous Compatible_cross controls at the maximum possible HV distance.
 
-**Four-tier cross design:** the WITHIN_CLASS_THRESHOLD (default 0.04, approximately the median within-class HV distance) divides within-class pairs into three tiers. The N tier — small but non-zero HV differences — is the scientific core: an incompatible N cross means the two allele bins share recognition specificity (merge them); a compatible N cross confirms the small HV difference is functionally real (keep bins separate). In the current dataset, 6 365 N pairs are available for testing — the largest tier and the highest priority for the crossing experiment.
+**Four-tier cross design:** the WITHIN_CLASS_THRESHOLD (default 0.04, approximately the median within-class HV distance) divides within-class pairs into three tiers. The N tier — small but non-zero HV differences — is the scientific core: an incompatible Synonymy_test cross means the two allele bins share recognition specificity (merge them); a compatible Synonymy_test cross confirms the small HV difference is functionally real (keep bins separate). In the current dataset, 6 365 Synonymy_test pairs are available for testing — the largest tier and the highest priority for the crossing experiment.
 
 ### Bioinformatics
 
@@ -6029,7 +6045,7 @@ python3 srk_allele_hypotheses.py
 |-----------|---------|-------------|
 | `DOMAIN_REGION` | (31, 430) | S-domain alignment columns; must match Step 10 |
 | `LEPA_HV_POSITIONS_FILE` | `SRK_LEPA_HV_positions.tsv` | Canonical HV columns from Step 22a (overrides legacy internal scan) |
-| `WITHIN_CLASS_THRESHOLD` | 0.04 | HV distance boundary between N and P_within |
+| `WITHIN_CLASS_THRESHOLD` | 0.04 | HV distance boundary between Synonymy_test and Compatible_within |
 | `N_GROUPS` | None | Override auto-detected class count |
 | `DISTANCE_THRESHOLD` | None | Override auto-detected UPGMA cut height |
 | `CROSS_TSV` | None | Set to cross results filename to activate Step 23 |
@@ -6064,23 +6080,23 @@ python3 srk_allele_hypotheses.py
 | `SRK_allele_similarity_heatmap.pdf` | 63 × 63 HV similarity matrix ordered by UPGMA |
 | `SRK_functional_allele_groups.tsv` | One row per allele bin: class assignment, AAAA count, cross power |
 | `SRK_synonymy_candidates.tsv` | All within-class allele pairs with HV distance > 0, ranked by distance, with testability flag |
-| `SRK_AAAA_cross_design_HV.tsv` | All AAAA × AAAA pairs ranked by category (W, N, P_within, P_cross) with HV distances and expected outcomes |
-| `SRK_cross_design_summary.pdf` | Three-panel figure: HV distance distribution; cross design schematic; N-cross interpretation decision tree |
+| `SRK_AAAA_cross_design_HV.tsv` | All AAAA × AAAA pairs ranked by category (Incompatible, Synonymy_test, Compatible_within, Compatible_cross) with HV distances and expected outcomes |
+| `SRK_cross_design_summary.pdf` | Three-panel figure: HV distance distribution; cross design schematic; Synonymy_test cross interpretation decision tree |
 | `SRK_HV_cluster_figure.pdf` | UPGMA dendrogram of allele bins coloured by class; AAAA individual count per bin |
-| `SRK_synonymy_network_W.pdf` | HV-identical W-groups (individual alleles, node size ∝ individuals observed); isolated alleles with no HV-identical partner |
-| `SRK_synonymy_network_N.pdf` | Condensed super-node graph showing N-connectivity between W-groups |
+| `SRK_synonymy_network_groups.pdf` | HV-identical synonymy groups (individual alleles, node size ∝ individuals observed); isolated alleles with no HV-identical partner |
+| `SRK_synonymy_network_tests.pdf` | Condensed super-node graph showing N-connectivity between synonymy groups |
 | `SRK_synonymy_groups.csv` | Per-allele synonymy group membership table |
 
 #### Key Output Statistics (current dataset: 272 individuals, 63 allele bins, 164 AAAA, 73 canonical HV cols)
 
 | Cross category | Definition | Pair count | Priority |
 |----------------|-----------|:---:|---------|
-| W | HV-identical (d = 0) | 5 663 | Negative control — confirms allele identity |
-| N | 0 < d < 0.04, same class | 6 365 | **Synonymy test** — highest scientific priority |
-| P_within | d ≥ 0.04, same class | 1 338 | Within-class positive control |
-| P_cross | Different class | 0 (AAAA only) | Between-class control — requires AAAB parents |
+| Incompatible | HV-identical (d = 0) | 5 663 | Negative control — confirms allele identity |
+| Synonymy_test | 0 < d < 0.04, same class | 6 365 | **Synonymy test** — highest scientific priority |
+| Compatible_within | d ≥ 0.04, same class | 1 338 | Within-class positive control |
+| Compatible_cross | Different class | 0 (AAAA only) | Between-class control — requires AAAB parents |
 
-Allele bin availability: 20 bins with ≥ 2 AAAA individuals (full design), 14 bins with 1 AAAA (partner only), 29 bins with no AAAA (require AAAB/AABB). Synonymy candidates: 1 891 within-class pairs; 561 testable with available AAAA individuals. Synonymy network collapses 63 alleles into **9 W-groups + 23 isolated singletons = 32 effective bins** (40 of 63 alleles fall into W-groups, 23 are HV-unique).
+Allele bin availability: 20 bins with ≥ 2 AAAA individuals (full design), 14 bins with 1 AAAA (partner only), 29 bins with no AAAA (require AAAB/AABB). Synonymy candidates: 1 891 within-class pairs; 561 testable with available AAAA individuals. Synonymy network collapses 63 alleles into **9 synonymy groups + 23 isolated singletons = 32 effective bins** (40 of 63 alleles fall into synonymy groups, 23 are HV-unique).
 
 #### Output File Descriptions
 
@@ -6101,7 +6117,7 @@ Allele bin availability: 20 bins with ≥ 2 AAAA individuals (full design), 14 b
 | `Mother_allele` / `Father_allele` | Allele bin carried by each plant |
 | `Mother_class` / `Father_class` | Phylogenetic class of each allele |
 | `HV_distance` | Pairwise HV-only p-distance between the two alleles |
-| `Category` | **W**, **N**, **P_within**, or **P_cross** — key column for cross prioritisation |
+| `Category` | **Incompatible**, **Synonymy_test**, **Compatible_within**, or **Compatible_cross** — key column for cross prioritisation |
 | `Expected` | Plain-language prediction for seed yield |
 
 **`SRK_synonymy_groups.csv`**
@@ -6109,7 +6125,7 @@ Allele bin availability: 20 bins with ≥ 2 AAAA individuals (full design), 14 b
 | Column | Description |
 |--------|-------------|
 | `Allele` | Allele bin name |
-| `Synonymy_group` | `W-group 1` through `W-group 9` for HV-identical clusters; `Isolated` for alleles with no HV-identical partner |
+| `Synonymy_group` | `Synonymy group 1` through `Synonymy group 9` for HV-identical clusters; `Isolated` for alleles with no HV-identical partner |
 | `Group_size` | Number of allele bins in this synonymy group (1 for isolated alleles) |
 | `Obs_count` | Number of individuals (all genotypes) observed carrying this specific allele |
 | `AAAA_count` | Number of AAAA individuals carrying this allele (cross-design availability) |
@@ -6117,11 +6133,160 @@ Allele bin availability: 20 bins with ≥ 2 AAAA individuals (full design), 14 b
 
 ### Scientific Applications
 
-* **Cross prioritisation**: N pairs are the highest scientific priority — incompatibility confirms synonymy (merge bins); compatibility confirms the HV difference changes recognition specificity (retain bins)
-* **Allele bin refinement**: compatible N crosses → bin boundary is real; incompatible N crosses → merge bins into one functional allele
-* **Class validation**: P_cross crosses (requiring AAAB parents with Allele_061) provide maximum-distance compatible controls anchoring the upper end of the seed yield scale
-* **Conservation breeding**: W crosses yielding seeds are direct evidence of SI breakdown — Stage 5 Compatibility Collapse Cascade events — and identify individuals for immediate priority in inter-EO allele rescue crosses
-* **Extending the design**: adding AAAB parents unlocks the 29 allele bins currently without AAAA representatives and provides the P_cross controls absent from the AAAA-only dataset
+* **Cross prioritisation**: Synonymy_test pairs are the highest scientific priority — incompatibility confirms synonymy (merge bins); compatibility confirms the HV difference changes recognition specificity (retain bins)
+* **Allele bin refinement**: compatible Synonymy_test crosses → bin boundary is real; incompatible Synonymy_test crosses → merge bins into one functional allele
+* **Class validation**: Compatible_cross crosses (requiring AAAB parents with Allele_061) provide maximum-distance compatible controls anchoring the upper end of the seed yield scale
+* **Conservation breeding**: Incompatible crosses yielding seeds are direct evidence of SI breakdown — Stage 5 Compatibility Collapse Cascade events — and identify individuals for immediate priority in inter-EO allele rescue crosses
+* **Extending the design**: adding AAAB parents unlocks the 29 allele bins currently without AAAA representatives and provides the Compatible_cross controls absent from the AAAA-only dataset
+
+---
+
+## Hypothesis-Testing Cross Plan (Step 22e) {#crossplan}
+
+> Requires `SRK_AAAA_cross_design_HV.tsv`, `SRK_synonymy_groups.csv`, `SRK_HV_allele_distances.tsv`, and `SRK_functional_allele_groups.tsv` from [Step 22b](#alleleclusters); `SRK_individual_BL_assignments.tsv` from [Step 13](#BLintegration); `SRK_individual_zygosity.tsv` from [Step 12](#zygosity); `SRK_individual_allele_table.tsv` from [Step 11](#SRKfunctionalprotgenotype). Run after Step 22b has completed.
+
+### Overview
+
+Step 22e is the **operational deliverable** of Phase 4: it translates the bioinformatics-predicted compatibility categories (Incompatible / Synonymy_test / Compatible_within / Compatible_cross) into a phased experimental protocol that field biologists can execute. The plan structures crossing experiments around five nested hypotheses (H0–H3) that progressively validate the SI system, calibrate the seed-yield scale, test bin-boundary predictions, and extend coverage to "hidden" bins lacking homozygous representatives. Each cross row in the output TSVs is fully traceable — Step 22e never invents pairings; it only translates upstream pipeline outputs into actionable experimental designs.
+
+### Rationale — why this step is critical
+
+The cross-design table from [Step 22b](#alleleclusters) (`SRK_AAAA_cross_design_HV.tsv`) lists 13 366 candidate AAAA × AAAA pairs categorised by sequence prediction (Incompatible / Synonymy_test / Compatible_within / Compatible_cross). But not every candidate is interpretable: Synonymy_test crosses where one parent is heterozygous would be confounded by polyploid pollen segregation, and 29 of the 63 sequence bins lack any AAAA representative at all. Step 22e enforces the genotype constraints required to produce *clean*, *interpretable* tests of each sequence-based prediction — and packages them into a coherent experimental sequence.
+
+Without Step 22e, two reviewer-facing problems remain:
+
+1. **Interpretability** — without explicit genotype constraints, the predicted compatibility categories cannot be tested unambiguously. Heterozygous-donor crosses produce mixed-specificity pollen (e.g., AAAB → 50 % AA + 50 % AB pollen), so seed yields cannot be attributed to a single specificity unless paired controls are provided.
+2. **Traceability** — every cross in the experimental protocol must be defensible from the underlying bioinformatics. Step 22e generates per-cross provenance (which sequence bin, which HV distance, which Class, which synonymy group, which mother/father genotype, which paired control) so any reviewer can audit any cross row back to a specific upstream output file.
+
+### The two-axis decision framework
+
+Every candidate cross is assigned to a hypothesis level by combining two independent axes of evidence:
+
+**Axis 1 — Sequence-based cross category** (from Step 22a + 22b):
+
+| Evidence | Source script | Source file | Threshold rationale |
+|----------|---------------|-------------|---------------------|
+| Hypervariable (HV) columns identifying the SI-recognition surface | `srk_variability_landscape.py` | `SRK_LEPA_HV_positions.tsv` | Shannon entropy > mean + 1×SD on a 20 aa smoothed profile, with min run of 3 cols. Validated cross-Brassicaceae by 10 000-permutation test (LEPA↔Brassica p = 0.0005, LEPA↔Arabidopsis p = 0.0024) and structural overlap with the 12 SCR9-contact residues from the Ma et al. 2016 *B. rapa* eSRK9–SCR9 crystal structure (PDB 5GYY) |
+| Pairwise HV distance | `srk_allele_hypotheses.py` Part 2 | `SRK_HV_allele_distances.tsv` | p-distance computed only on the 73 canonical HV columns (not the full S-domain) |
+| Phylogenetic class assignment (Class I / Class II) | `srk_allele_hypotheses.py` Part 2 (UPGMA) | `SRK_functional_allele_groups.tsv` | Auto-detected at the largest gap in UPGMA merge heights (current data: 0.087 → 0.96; corresponds to the documented Brassicaceae Class I / Class II split) |
+| Synonymy group membership | `srk_allele_hypotheses.py` Part 3c | `SRK_synonymy_groups.csv` | Connected components of the graph where allele pairs are linked by HV distance = 0 |
+| Cross category per AAAA pair | `srk_allele_hypotheses.py` Part 3 | `SRK_AAAA_cross_design_HV.tsv` | Decision tree: different Class → Compatible_cross; HV = 0 → Incompatible; 0 < HV < 0.04 → Synonymy_test; HV ≥ 0.04 → Compatible_within. The 0.04 threshold ≈ median within-class HV distance |
+
+**Axis 2 — Genotype-based feasibility** (introduced in this step):
+
+| Evidence | Source | File | Why it matters for hypothesis assignment |
+|----------|--------|------|------------------------------------------|
+| Per-individual genotype (AAAA / AAAB / AABB / AABC / ABCD) | [Step 12](#zygosity) | `SRK_individual_zygosity.tsv` (`Genotype` column) | Determines whether the individual carries unambiguous specificity (AAAA only) or requires polyploid pollen-segregation accounting (AAAB and higher) |
+| Per-individual allele composition | [Step 12](#zygosity) | `SRK_individual_zygosity.tsv` (`Allele_composition` column) | Authoritative source for which allele is the major (3-copy) vs minor (1-copy) in heterozygous genotypes. Step 22e reads this string directly, not the per-protein `SRK_individual_allele_table.tsv` |
+| BL membership | [Step 13](#BLintegration) | `SRK_individual_BL_assignments.tsv` | Tiebreaker: between-BL pairings preferred (genetic-diversity benefit) |
+
+**The combination matrix** — every cross row is the result of one cell in this table:
+
+| Cross category (Axis 1) | AAAA × AAAA (clean test) | AAAA × heterozygous (carrier required) |
+|-------------------------|--------------------------|----------------------------------------|
+| Incompatible (HV = 0, same Class) | **H0** | excluded — heterozygous father has ambiguous specificity |
+| Compatible_within (HV ≥ 0.04, same Class) | **H1a** | **H3** (when AAAA mother + heterozygous donor of hidden bin; **requires paired AAAA × AAAA control**) |
+| Compatible_cross (different Class) | impossible — no AAAA in Class II | **H1b** (AAAA Class I × heterozygous Class II carrier) |
+| Synonymy_test (0 < HV < 0.04, same Class) | **H2** | deferred — AAAA × AAAA is cleaner |
+
+### The five hypotheses
+
+| Level | Question | Maternal genotype | Paternal genotype | Allele constraint | Why this combination |
+|-------|----------|-------------------|-------------------|-------------------|----------------------|
+| **H0** | Does SI rejection actually work? | AAAA | AAAA | both alleles in the **same** synonymy group (incl. same allele) | AAAA × AAAA gives unambiguous SI specificity on both sides — pistil expresses one identity, all pollen carries one identity. Any seed set is direct evidence of SI breakdown (Stage 5 Compatibility Collapse Cascade) |
+| **H1a** | What is the within-Class compatible-cross seed-yield baseline? | AAAA | AAAA | alleles in **different** synonymy groups, NO Synonymy_test edge (HV ≥ 0.04, same Class) | Both genotypes unambiguous; predicted compatible. Anchors the upper baseline of seed yield within Class I |
+| **H1b** | What is the between-Class (max) seed-yield baseline? | AAAA Class I | Heterozygous (AAAB / AABB / AABC) carrier of a Class II allele | mother allele ≠ any of father's other Class I alleles | Class II has zero AAAA carriers in the LEPA dataset, so AAAA × AAAA is impossible. Heterozygous father gives mixed pollen but most carries the Class II specificity (AABB → 17 % AA / 67 % AB / 17 % BB; 84 % of pollen carries Class II) |
+| **H2** | Do bins separated by small HV differences correspond to distinct functional specificities? | AAAA | AAAA | alleles in **different** synonymy groups, WITH Synonymy_test edge (0 < HV < 0.04, same Class) | Same genotype rigour as H0. The most informative test in the entire plan: 0 seeds → MERGE the two synonymy groups (synonymous specificities); H1a-baseline yield → bin boundary is functionally real |
+| **H3** | Do the 29 bins lacking AAAA representatives follow the same compatibility hierarchy? | AAAA carrier of an allele M known to be Compatible_within with the father's main allele | Heterozygous (AAAB / AABB) carrier of the **hidden** allele B | M ≠ father's main allele AND M ≠ hidden allele; **requires paired AAAA × AAAA control** | Mother AAAA so pistil specificity is unambiguous; father heterozygous because the hidden bin doesn't exist as AAAA. The paired control measures the AA-pollen baseline so the hidden allele's effect can be isolated |
+
+### Polyploid pollen-segregation accounting
+
+Heterozygous donors (used in H1b and H3) require explicit accounting for tetraploid meiosis because each pollen grain is *diploid* (2 of 4 allele copies). The script's interpretation logic uses the C(4,2) = 6 combination rule:
+
+| Father genotype | Diploid pollen distribution | Implication |
+|-----------------|---------------------------|-------------|
+| AAAA (4×A) | 100 % AA gametes | All pollen carries one specificity (clean test) |
+| AAAB (3×A, 1×B) | 50 % AA + 50 % AB gametes | AB gametes carry both specificities; pistil rejects if either matches |
+| AABB (2×A, 2×B) | 17 % AA + 67 % AB + 17 % BB gametes | Mostly AB pollen — usable for H1b when B is the Class II allele (84 % of pollen carries Class II specificity) |
+| AABC (2×A, 1×B, 1×C) | 17 % AA + 33 % AB + 33 % AC + 17 % BC | Diverse-specificity gametes |
+
+H3 explicitly compares total seed yield in the heterozygous-donor cross to a paired AAAA × AAAA control with the same maternal plant: total ≈ paired-control yield → hidden allele incompatible with mother; total ≈ 2 × paired-control yield → hidden allele compatible (additive yield from AB gametes).
+
+### Assumptions made explicit (for reviewer-facing justification)
+
+1. **The 73 HV columns are the SI-recognition surface.** Justified by cross-Brassicaceae permutation tests (3 pairs all p ≤ 0.0024) and by structural overlap with the Ma 2016 *B. rapa* eSRK9–SCR9 crystal structure.
+2. **HV-only p-distance approximates SI-specificity divergence.** This is the working hypothesis the H2 synonymy tests will *empirically validate or refute* — it is not assumed correct, it is the thing being tested.
+3. **The UPGMA largest-gap cut correctly identifies Class I vs Class II.** Validated by the strongly bimodal HV-distance distribution and by consistency with the documented Brassicaceae class split.
+4. **`WITHIN_CLASS_THRESHOLD = 0.04` separates small from substantial HV differences.** Empirical, derived from the within-class HV-distance distribution. Sensitivity analysis is straightforward (re-run Step 22b with a different value).
+5. **AAAA × AAAA crosses give unambiguous specificity assignment.** Direct consequence of polyploid SI biology: AAAA individuals carry one specificity in pistil and four identical copies in pollen.
+6. **Polyploid pollen segregation follows the C(4,2) = 6 combination rule.** Standard tetraploid meiotic assumption. H1b and H3 cross interpretations explicitly account for the AA / AB / BB pollen distributions per genotype.
+7. **Heterozygous-donor seed yields are interpretable only when paired with AAAA × AAAA baseline controls.** This is *why* H3 includes paired controls — without them, the AAAB-pollen yield is confounded by the AA-pollen baseline.
+
+### Bioinformatics
+
+* Script: `srk_cross_plan.py`
+* Environment: Python 3 with numpy, pandas, matplotlib, scipy, biopython
+* Execution (run from project root, after Step 22b):
+
+```bash
+python3 srk_cross_plan.py
+```
+
+#### Key Parameters (top of script)
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `WITHIN_CLASS_THRESHOLD` | 0.04 | Must match Step 22b |
+| `REPLICATES` | `{H0:9, H1a:9, H1b:9, H2:15, H3:15}` | Recommended replicates per cross (3 mothers × 3 flowers for known outcomes; 5 × 3 for uncertain Synonymy_test / hidden-bin tests) |
+| `N_CROSSES` | dict, see script | Per-phase caps (e.g., `H0_within_allele = 5`, `H1a_far = 10`, `H2_per_pair = 1`, `H3_per_bin = 1`) |
+
+#### Input Files
+
+| File | From | Description |
+|------|------|-------------|
+| `SRK_AAAA_cross_design_HV.tsv` | [Step 22b](#alleleclusters) | Pre-computed cross category for all AAAA × AAAA pairs |
+| `SRK_synonymy_groups.csv` | [Step 22b](#alleleclusters) | Synonymy-group membership per allele |
+| `SRK_HV_allele_distances.tsv` | [Step 22b](#alleleclusters) | Full 63 × 63 HV-distance matrix |
+| `SRK_functional_allele_groups.tsv` | [Step 22b](#alleleclusters) | Allele → Class I / Class II |
+| `SRK_individual_BL_assignments.tsv` | [Step 13](#BLintegration) | BL per individual |
+| `SRK_individual_zygosity.tsv` | [Step 12](#zygosity) | `Genotype` and `Allele_composition` per individual |
+| `SRK_individual_allele_table.tsv` | [Step 11](#SRKfunctionalprotgenotype) | Per-protein allele assignments (cross-checked against `Allele_composition`) |
+
+#### Output Files
+
+| File | Content |
+|------|---------|
+| `SRK_cross_plan_H0_SI_validation.tsv` | H0 — per-cross row: Mother / Father IDs, genotypes, alleles, BL pair, predicted Incompatible, replicate count, decision rule |
+| `SRK_cross_plan_H1a_within_class_baseline.tsv` | H1a — within-Class compatible-baseline crosses (max-HV-divergent AAAA × AAAA) |
+| `SRK_cross_plan_H1b_between_class_baseline.tsv` | H1b — between-Class baseline (Compatible_cross via heterozygous Class II carrier) |
+| `SRK_cross_plan_H2_synonymy_tests.tsv` | H2 — one cross per inter-synonymy-group bridge, with merge / keep-separate decision rule |
+| `SRK_cross_plan_H3_hidden_bin_tests.tsv` | H3 — main cross (AAAA mother × heterozygous hidden-bin carrier) + paired control (AAAA × AAAA, same mother + father main allele) |
+| `SRK_cross_plan_summary.tsv` | Phase counts: N crosses, replicates per cross, total attempts, cumulative |
+| `SRK_cross_plan_summary.pdf` / `figures/SRK_cross_plan_summary.png` | Two-panel figure: per-phase cross counts (left) + decision tree per phase outcome (right) |
+
+#### Key Output Statistics (current dataset: 272 individuals, 63 allele bins, 164 AAAA, 9 synonymy groups + 23 isolated)
+
+| Hypothesis | Question | N crosses | Replicates each | Total attempts |
+|------------|----------|----------:|----------------:|---------------:|
+| H0 | Does SI rejection work? | 21 | 9 | 189 |
+| H1a | Within-Class compatible baseline | 10 | 9 | 90 |
+| H1b | Between-Class compatible baseline | **1** | 9 | 9 |
+| H2 | Synonymy bin boundaries | 32 | 15 | 480 |
+| H3 | Hidden bins (heterozygous donor + paired control) | 37 (= 20 main + 17 paired) | 15 | 555 |
+| **Total** | | **101** | — | **1 323** |
+
+**Sample-size constraints in the current dataset.** H1b is sample-limited to 1 cross because Allele_061 (the only Class II allele) has a single carrier in the dataset (Library008_barcode08, AABB Allele_050+Allele_061). H3 covers 20 of the 29 hidden bins; the remaining 9 lack AAAA mothers carrying a Compatible_within partner allele (the constraint required to keep the AA-pollen baseline interpretable). Adding additional Allele_061 carriers and additional AAAA mothers would directly relax both constraints. The carrier-detection logic reads `Allele_composition` strings authoritatively, so the cross plan automatically expands as new individuals are added — re-run Step 22a → 22b → 22e after new genotyping data lands.
+
+### Decision tree per hypothesis outcome
+
+What the cross plan delivers when each phase's experiments return:
+
+- **H0 pass** (≥ 80 % of Incompatible crosses produce 0 seeds) → SI system is functional → proceed to H1–H3. **H0 fail** → SI is broken at the Stage 5 polyploid breakdown level → revise interpretation framework before scheduling H1–H3.
+- **H1a + H1b** outcomes calibrate the seed-yield scale (low end = 0 from H0; H1a-baseline = within-Class compatible yield; H1b-baseline = between-Class maximum yield).
+- **H2 outcomes** decide which synonymy groups should be **merged** (0 seeds → same SI specificity) or **kept separate** (yield ≥ H1a baseline → distinct specificities). Most extreme case: every Synonymy_test cross is incompatible → 63 sequence bins collapse to **32 functional specificities** (9 synonymy groups + 23 isolated alleles).
+- **H3 outcomes** classify each of the 20 testable hidden alleles as compatible or incompatible with at least one major Class I specificity, by comparing total seed yield to the paired-control AA-only baseline.
+
+The combined H2 + H3 outcomes produce a **validated functional S-allele table** that supersedes the sequence-only allele bin definitions and serves as the input to operational seed-orchard design (downstream of [Step 23](#crossresults)).
 
 ---
 
@@ -6131,13 +6296,13 @@ Allele bin availability: 20 bins with ≥ 2 AAAA individuals (full design), 14 b
 
 ### Overview
 
-This step reads completed cross records — a file with one row per cross, containing the mother and father plant IDs and a seed yield column — and assigns each cross to a W, N, P_within, or P_cross category using the HV-based class structure from Step 22. It then tests whether category predicts seed yield using Kruskal-Wallis and pairwise Mann-Whitney U tests, and produces a figure showing seed yield distributions and success rates per category.
+This step reads completed cross records — a file with one row per cross, containing the mother and father plant IDs and a seed yield column — and assigns each cross to a Incompatible, Synonymy_test, Compatible_within, or Compatible_cross category using the HV-based class structure from Step 22. It then tests whether category predicts seed yield using Kruskal-Wallis and pairwise Mann-Whitney U tests, and produces a figure showing seed yield distributions and success rates per category.
 
 **To activate this step**, set `CROSS_TSV` in the settings section of `srk_allele_hypotheses.py` to the filename of the completed cross records file, then re-run the script.
 
 ### Biological Rationale
 
-The statistical test is a direct evaluation of the allele bin definitions using HV-distance-based categories. The expected ordering is W < N ≤ P_within < P_cross for seed yield: W crosses are rejected by SI (HV-identical alleles); N crosses test whether small HV differences change recognition specificity; P_within crosses are expected compatible within the same phylogenetic class; P_cross crosses between classes are maximally compatible and set the upper yield reference. A significant Kruskal-Wallis result with this ordering validates the HV-based bin structure. N crosses that fail (yield ≈ W) indicate synonymous allele bins that should be merged; N crosses that succeed confirm the small HV difference is functionally real. W crosses yielding seeds are direct evidence of SI breakdown.
+The statistical test is a direct evaluation of the allele bin definitions using HV-distance-based categories. The expected ordering is Incompatible < Synonymy_test ≤ Compatible_within < Compatible_cross for seed yield: Incompatible crosses are rejected by SI (HV-identical alleles); Synonymy_test crosses test whether small HV differences change recognition specificity; Compatible_within crosses are expected compatible within the same phylogenetic class; Compatible_cross crosses between classes are maximally compatible and set the upper yield reference. A significant Kruskal-Wallis result with this ordering validates the HV-based bin structure. Synonymy_test crosses that fail (yield ≈ W) indicate synonymous allele bins that should be merged; Synonymy_test crosses that succeed confirm the small HV difference is functionally real. Incompatible crosses yielding seeds are direct evidence of SI breakdown.
 
 ### Bioinformatics
 
@@ -6149,25 +6314,25 @@ The statistical test is a direct evaluation of the allele bin definitions using 
 | File | Description |
 |------|-------------|
 | `SRK_functional_allele_groups.tsv` | Allele class assignments from Step 22 |
-| `SRK_AAAA_cross_design_HV.tsv` | Pairwise cross design with W / N / P_within / P_cross categories from Step 22 |
+| `SRK_AAAA_cross_design_HV.tsv` | Pairwise cross design with Incompatible / Synonymy_test / Compatible_within / Compatible_cross categories from Step 22 |
 | Cross results file | One row per cross; must contain `Mother`, `Father`, and a seed count column |
 
 #### Output Files
 
 | File | Content |
 |------|---------|
-| `SRK_cross_result_analysis.pdf` | Box + strip plot of seed yield by category (W / N / P_within / P_cross); bar chart of cross success rate per category |
+| `SRK_cross_result_analysis.pdf` | Box + strip plot of seed yield by category (Incompatible / Synonymy_test / Compatible_within / Compatible_cross); bar chart of cross success rate per category |
 
 #### Statistical Tests
 
 | Test | Purpose |
 |------|---------|
-| Kruskal-Wallis H | Overall test of seed yield differences across W / N / P_within / P_cross |
-| Mann-Whitney U (pairwise) | Post-hoc comparisons: W vs N, W vs P_within, W vs P_cross, N vs P_within, N vs P_cross |
+| Kruskal-Wallis H | Overall test of seed yield differences across Incompatible / Synonymy_test / Compatible_within / Compatible_cross |
+| Mann-Whitney U (pairwise) | Post-hoc comparisons: W vs N, W vs Compatible_within, W vs Compatible_cross, N vs Compatible_within, N vs Compatible_cross |
 
 ### Scientific Applications
 
-* **Allele bin validation**: significant W < P_within difference with N intermediate confirms that the HV-based bin structure maps onto functional recognition specificity
-* **Synonymy detection**: N crosses that fail (yield not significantly different from W) indicate synonymous allele bins — merge them; N crosses that succeed confirm the bin boundary is real
-* **SI breakdown documentation**: W crosses yielding seeds identify individuals where the polyploid competitive interaction mechanism has enabled self-fertilisation — Stage 5 Compatibility Collapse Cascade events
-* **Proposal preliminary data**: even a small initial crossing experiment (n = 20–30 crosses) covering W, N, and P_within categories provides sufficient preliminary evidence to justify the full Objective 2 crossing design in the NSF proposal
+* **Allele bin validation**: significant W < Compatible_within difference with N intermediate confirms that the HV-based bin structure maps onto functional recognition specificity
+* **Synonymy detection**: Synonymy_test crosses that fail (yield not significantly different from W) indicate synonymous allele bins — merge them; Synonymy_test crosses that succeed confirm the bin boundary is real
+* **SI breakdown documentation**: Incompatible crosses yielding seeds identify individuals where the polyploid competitive interaction mechanism has enabled self-fertilisation — Stage 5 Compatibility Collapse Cascade events
+* **Proposal preliminary data**: even a small initial crossing experiment (n = 20–30 crosses) covering W, N, and Compatible_within categories provides sufficient preliminary evidence to justify the full Objective 2 crossing design in the NSF proposal

@@ -84,7 +84,7 @@ The pipeline consists of **23 main steps organized into four phases**, progressi
 
 ## Phase 4: Testing S-allele Hypotheses
 
-22. **HV-Based Allele Hypothesis Testing and Crossing Design** – Two-script workflow. **Step 22a** (`srk_variability_landscape.py`): combined alignment of LEPA + *Brassica rapa*/*B. oleracea* + *Arabidopsis lyrata*/*A. halleri* SRK alleles; identical sliding-window Shannon-entropy scan applied to each species; per-species HV regions called at mean + 1×SD, validated by 10 000-permutation overlap test (LEPA↔Brassica p = 0.0005, LEPA↔Arabidopsis p = 0.0024); 12 SCR9-contact residues from Ma et al. 2016 (PDB 5GYY) overlaid as structural validation; canonical 73 LEPA HV columns written to `SRK_LEPA_HV_positions.tsv`. **Step 22b** (`srk_allele_hypotheses.py`): reads the canonical HV columns, computes HV-only pairwise distances, UPGMA-clusters into Class I / Class II, builds the synonymy network (W-only HV-identical groups + N-bridges), and generates the W / N / P_within / P_cross cross design.
+22. **HV-Based Allele Hypothesis Testing and Crossing Design** – Multi-script workflow. **Step 22a** (`srk_variability_landscape.py`): combined alignment of LEPA + *Brassica rapa*/*B. oleracea* + *Arabidopsis lyrata*/*A. halleri* SRK alleles; identical sliding-window Shannon-entropy scan applied to each species; per-species HV regions called at mean + 1×SD, validated by 10 000-permutation overlap test (LEPA↔Brassica p = 0.0005, LEPA↔Arabidopsis p = 0.0024); 12 SCR9-contact residues from Ma et al. 2016 (PDB 5GYY) overlaid as structural validation; canonical 73 LEPA HV columns written to `SRK_LEPA_HV_positions.tsv`. **Step 22b** (`srk_allele_hypotheses.py`): reads the canonical HV columns, computes HV-only pairwise distances, UPGMA-clusters into Class I / Class II, builds the synonymy network (HV-identical synonymy groups + Synonymy_test bridges), and generates the Incompatible / Synonymy_test / Compatible_within / Compatible_cross cross design. **Steps 22c and 22d** are optional mechanism diagnostics. **Step 22e** (`srk_cross_plan.py`) is the operational deliverable — a phased cross plan testing five nested hypotheses (H0 SI validation; H1a within-Class baseline; H1b between-Class baseline; H2 synonymy bin boundaries; H3 hidden bins via heterozygous donors) with explicit AAAA / AAAB / AABB genotype requirements + paired controls for AAAB-mediated tests. Every cross is traceable to its sequence-based category (HV distance + Class) plus its genotype-based feasibility (`Allele_composition` from Step 12) — see Bioinformatics_pipeline.md for the full provenance and assumption checklist.
 23. **Cross Result Analysis** – Reads completed crossing records and tests whether the W / N / P category predicts seed yield, validating the sequence-based allele definitions against experimental cross-compatibility data. Activated by setting `CROSS_TSV` in the script once crossing data are available.
 
 ## Requirements
@@ -219,6 +219,15 @@ python3 srk_variability_landscape.py
 # Step 22b: HV-based allele hypothesis testing and crossing design
 python3 srk_allele_hypotheses.py
 
+# Step 22c (optional diagnostic): does Synonymy group redundancy explain LEPA's low Shannon entropy?
+python3 srk_wgroup_collapse_test.py
+
+# Step 22d (optional diagnostic): drift vs selection at LEPA HV cols (per-BL entropy + cross-genera dominant residues)
+python3 srk_perBL_entropy_test.py
+
+# Step 22e: hypothesis-testing cross plan generator (H0/H1a/H1b/H2/H3 phased protocol with genotype constraints)
+python3 srk_cross_plan.py
+
 # Step 23: Cross result analysis
 # Set CROSS_TSV = "<your_cross_results_file>" in the script, then re-run:
 python srk_allele_hypotheses.py
@@ -306,10 +315,10 @@ PNGs land in `figures/`; PDFs in the project root. **Headline finding:** 33 of 5
 #### Step 21 — Reproductive effort support
 
 -   `SRK_GFS_reproductive_effort.pdf` - 2-page PDF: EO panel + BL panel — GFS tier composition with reproductive effort annotations
--   `SRK_GFS_AAAA_allele_composition.pdf` - 2-page PDF: EO panel + BL panel — allele identity of AAAA individuals; W-group 1 alleles highlighted
+-   `SRK_GFS_AAAA_allele_composition.pdf` - 2-page PDF: EO panel + BL panel — allele identity of AAAA individuals; Synonymy group 1 alleles highlighted
 -   `SRK_BL_reproductive_effort_summary.tsv` - **NEW**. BL-level reproductive support summary
 -   `figures/SRK_GFS_reproductive_effort_{EO,BL}.png` - Per-EO and per-BL proportional bars
--   `figures/SRK_GFS_AAAA_allele_composition_{EO,BL}.png` - Per-EO and per-BL AAAA allele identity. **Headline:** Allele_050 + Allele_057 are pan-BL across all 5 BLs and pan-EO in 5/6 focus EOs — confirms shared W-group 1 fixation despite independent bottlenecks
+-   `figures/SRK_GFS_AAAA_allele_composition_{EO,BL}.png` - Per-EO and per-BL AAAA allele identity. **Headline:** Allele_050 + Allele_057 are pan-BL across all 5 BLs and pan-EO in 5/6 focus EOs — confirms shared Synonymy group 1 fixation despite independent bottlenecks
 
 ### Phase 4 Outputs (Testing S-allele Hypotheses)
 
@@ -321,12 +330,20 @@ PNGs land in `figures/`; PDFs in the project root. **Headline finding:** 33 of 5
 -   `SRK_HV_allele_distances.tsv` - 63×63 pairwise distance matrix computed on the 73 canonical HV columns (Step 22b)
 -   `SRK_functional_allele_groups.tsv` - Allele bin → phylogenetic class assignment, AAAA count, cross power (Step 22b)
 -   `SRK_synonymy_candidates.tsv` - All within-class allele pairs with HV distance and testability flag (Step 22b)
--   `SRK_synonymy_groups.csv` - Per-allele synonymy group membership (9 W-groups + 23 isolated → 32 effective bins) (Step 22b)
+-   `SRK_synonymy_groups.csv` - Per-allele synonymy group membership (9 synonymy groups + 23 isolated → 32 effective bins) (Step 22b)
 -   `SRK_allele_similarity_heatmap.pdf` / `figures/SRK_allele_similarity_heatmap.png` - 63×63 HV similarity heatmap ordered by UPGMA with class strips (Step 22b)
--   `SRK_AAAA_cross_design_HV.tsv` - All AAAA × AAAA pairs ranked by category (W / N / P_within / P_cross) with HV distance and expected outcome (Step 22b)
--   `SRK_cross_design_summary.pdf` / `figures/SRK_cross_design_summary.png` - Three-panel figure: HV distance distribution, cross category schematic, N-cross interpretation (Step 22b)
+-   `SRK_AAAA_cross_design_HV.tsv` - All AAAA × AAAA pairs ranked by category (Incompatible / Synonymy_test / Compatible_within / Compatible_cross) with HV distance and expected outcome (Step 22b)
+-   `SRK_cross_design_summary.pdf` / `figures/SRK_cross_design_summary.png` - Three-panel figure: HV distance distribution, cross category schematic, Synonymy_test cross interpretation (Step 22b)
 -   `SRK_HV_cluster_figure.pdf` / `figures/SRK_HV_cluster_figure.png` - UPGMA dendrogram (HV distances) coloured by class + AAAA availability bar chart (Step 22b)
--   `SRK_synonymy_network_W.{pdf,png}` / `SRK_synonymy_network_N.{pdf,png}` - Synonymy network: 9 HV-identical W-groups + N-connectivity condensed graph (Step 22b)
+-   `SRK_synonymy_network_groups.{pdf,png}` / `SRK_synonymy_network_tests.{pdf,png}` - Synonymy network: 9 HV-identical synonymy groups + N-connectivity condensed graph (Step 22b)
+-   `SRK_LEPA_synonymy_group_representatives.tsv` - Synonymy group → representative allele mapping (kept vs redundant) (Step 22c)
+-   `SRK_wgroup_collapse_entropy_summary.tsv` - Per-species entropy before/after Synonymy group collapse (Step 22c)
+-   `SRK_variability_landscape_wgroup_collapsed.{pdf,png}` - Side-by-side LEPA full / LEPA collapsed / Brassica / Arabidopsis entropy comparison (Step 22c)
+-   `SRK_perBL_HV_residue_table.tsv` - Per-(HV col × BL) dominant residue + frequency + Shannon entropy among AAAA individuals (Step 22d)
+-   `SRK_perBL_HV_concordance_summary.tsv` / `..._per_hv_col.tsv` - Within-LEPA concordance + cross-genera (Brassica, Arabidopsis) dominant-residue match per HV col (Step 22d)
+-   `SRK_perBL_entropy_figure.{pdf,png}` - Per-BL entropy heatmap + dominant-residue comparison across BL1–BL5 + Brassica + Arabidopsis at LEPA HV cols (Step 22d)
+-   `SRK_cross_plan_H0_SI_validation.tsv` / `..._H1a_within_class_baseline.tsv` / `..._H1b_between_class_baseline.tsv` / `..._H2_synonymy_tests.tsv` / `..._H3_hidden_bin_tests.tsv` - Phased hypothesis-testing cross plan with mother / father IDs, predicted compatibility, replicate counts, and decision rules (Step 22e)
+-   `SRK_cross_plan_summary.tsv` / `SRK_cross_plan_summary.{pdf,png}` - Per-phase cross counts + decision-tree figure (Step 22e)
 -   `SRK_cross_result_analysis_HV.pdf` - Seed yield distributions and success rates by cross category, with Kruskal-Wallis and Mann-Whitney U tests (Step 23; requires cross data)
 
 ### Quality Control Reports
