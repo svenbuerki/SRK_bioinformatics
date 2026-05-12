@@ -11,7 +11,7 @@
 
 <meta name="author" content="Sven Buerki - Boise State University" />
 
-<meta name="date" content="2026-05-11" />
+<meta name="date" content="2026-05-12" />
 
 <title>SRK Bioinformatics</title>
 
@@ -1469,7 +1469,7 @@ border-radius: 0px;
 <h1 class="title toc-ignore">SRK Bioinformatics</h1>
 <h3 class="subtitle">Nanopore-Based SRK Haplotype Reconstruction and Population Analysis Pipeline</h3>
 <h4 class="author">Sven Buerki - Boise State University</h4>
-<h4 class="date">2026-05-11</h4>
+<h4 class="date">2026-05-12</h4>
 
 </div>
 
@@ -1527,6 +1527,7 @@ border-radius: 0px;
 <li><a href="#SRKfunctionalprotgenotype">SRK S-Allele Genotyping Pipeline</a> – Assignment of distance-defined S-allele bins to individuals, producing long-format allele tables (with allele copy counts) and count-based genotype matrices for population genetic analysis.</li>
 <li><a href="#zygosity">SRK Zygosity Analysis Pipeline for Tetraploid Species</a> – Classification of individuals as homozygous or heterozygous and estimation of population-level zygosity statistics in tetraploid species.</li>
 </ol>
+<p><strong>Step 12c — <a href="#sampleaudit">Data Quality Evaluation</a></strong> (end of Phase 2). A formal data-quality gate that asks three sequential questions before Phase 3 begins: (i) is there a library effect impacting interpretation? (<code>test_library_effect.py</code>); (ii) which samples need lab follow-up? (<code>audit_sample_exclusions.py</code> + <code>evaluate_data_quality.py</code> → <strong><code>Tables/SRK_samples_redo.csv</code></strong> with a <code>Lab_action</code> column distinguishing Re-PCR (existing DNA OK, re-amplify) from Re-DNA-extraction (DNA contaminated, re-isolate tissue)); (iii) which samples have non-functional SRK proteins and may have escaped SI? (→ <code>Tables/SRK_SI_escape_candidates.csv</code>). Visualises outcome-category proportions per BL and per focus EO so populations with elevated lab-follow-up or SI-escape rates are obvious at a glance.</p>
 <p><strong>⚠️ In Progress — Step 12b:</strong> <a href="#SRKclasses">SRK Class Assignment and Dominance Prediction Pipeline</a> – Phylogenetic classification of SRK proteins into Class I (dominant) or Class II (recessive) using IQ-TREE3, with per-individual dominance prediction for conservation breeding decisions. <strong>This analysis is under active development and may not function correctly on all datasets.</strong></p>
 </div>
 <div id="phase-3-data-analyses" class="section level2" number="4.3">
@@ -6451,6 +6452,317 @@ cat(&quot;SRK_zygosity_distribution.pdf\n&quot;)</code></pre>
 <hr />
 </div>
 </div>
+<div id="sampleaudit" class="section level2" number="6.6">
+<h2><span class="header-section-number">6.6</span> Step 12c — Data Quality Evaluation (end of Phase 2)</h2>
+<div id="overview-13" class="section level3" number="6.6.1">
+<h3><span class="header-section-number">6.6.1</span> Overview</h3>
+<p>A formal data-quality gate at the end of Phase 2 that runs after Step 12 (zygosity) completes and before Step 13 (BL integration) begins. It asks <strong>three sequential questions</strong> and produces deliverables for both the bioinformatics record and the wet-lab team.</p>
+<ol style="list-style-type: decimal">
+<li><strong>Q1 — Is there a library effect impacting data interpretation?</strong> (<code>test_library_effect.py</code>)</li>
+<li><strong>Q2 — Which samples failed sequencing/assembly and need to be re-sequenced?</strong> (<code>audit_sample_exclusions.py</code> + <code>evaluate_data_quality.py</code> → <code>SRK_resequencing_priorities.csv</code>)</li>
+<li><strong>Q3 — Which samples have non-functional SRK proteins (full to partial) and may have escaped self-incompatibility?</strong> (→ <code>SRK_SI_escape_candidates.csv</code>)</li>
+</ol>
+<p>Three sub-steps execute in sequence:</p>
+<table>
+<colgroup>
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Sub-step</th>
+<th>Script</th>
+<th>Question</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>12c.i</td>
+<td><code>test_library_effect.py</code></td>
+<td>Q1 — Library effect tests</td>
+<td><code>SRK_library_effect_tests.tsv</code>, <code>SRK_library_effect_summary.pdf</code></td>
+</tr>
+<tr class="even">
+<td>12c.ii</td>
+<td><code>audit_sample_exclusions.py</code></td>
+<td>Q2 + Q3 — Per-sample audit</td>
+<td><code>SRK_sample_exclusion_audit.tsv</code></td>
+</tr>
+<tr class="odd">
+<td>12c.iii</td>
+<td><code>evaluate_data_quality.py</code></td>
+<td>Integrate + CSVs + plots</td>
+<td><code>Tables/SRK_data_quality_categories.tsv</code>, <code>Tables/SRK_samples_redo.csv</code>, <code>Tables/SRK_SI_escape_candidates.csv</code>, <code>figures/SRK_data_quality_per_{BL,EO}.png</code></td>
+</tr>
+</tbody>
+</table>
+<p>Even fully non-functional samples (Complete_loss; excluded from the final genotype table) are <em>flagged</em> in the categorisation rather than silently dropped — they carry biologically informative signal about ongoing SI escape.</p>
+</div>
+<div id="q1-library-effect-testing-step-12c.i" class="section level3" number="6.6.2">
+<h3><span class="header-section-number">6.6.2</span> Q1 — Library effect testing (Step 12c.i)</h3>
+<p><code>test_library_effect.py</code> runs four tests:</p>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Test</th>
+<th>Question</th>
+<th>Method</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Does <code>SI_functional_status</code> depend on library globally?</td>
+<td>χ² of Library × {Functional, Partial_translation_failure, Complete_loss}</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Does <code>Dominant_failure_mode</code> depend on library globally?</td>
+<td>χ² of Library × {premature_stop, ambiguous_aa, mixed, other}</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Does AAAA proportion depend on library <em>within an EO</em>?</td>
+<td>Fisher’s exact per EO between Library 009/010 and pooled “other”</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Does Complete_loss proportion depend on library <em>within an EO</em>?</td>
+<td>Fisher’s exact per EO between Library 009/010 and pooled “other”</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Interpretation rule:</strong> a significant Test 2 (failure-mode association) is <em>expected</em> if libraries differ in pipeline processing (e.g., Library 010 should be enriched in <code>premature_stop</code> because Step 7b removes the <code>ambiguous_aa</code> noise upstream). This is a <em>favourable</em> technical signal, not a confound. A significant Test 1 (SI-status association) would be a confound; Tests 3 + 4 are the cleanest test for within-EO bias.</p>
+</div>
+<div id="q2-q3-audit-categorisation-steps-12c.ii-12c.iii" class="section level3" number="6.6.3">
+<h3><span class="header-section-number">6.6.3</span> Q2 + Q3 — Audit + categorisation (Steps 12c.ii + 12c.iii)</h3>
+<p><code>audit_sample_exclusions.py</code> first produces the per-sample audit (see the cascade in its own subsection below for full detail). <code>evaluate_data_quality.py</code> then reads the audit + library-effect outputs and assigns every metadata sample to one of <strong>five mutually exclusive outcome categories</strong>:</p>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Category</th>
+<th>Criterion</th>
+<th>Lab action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Functional</strong></td>
+<td><code>SI_functional_status = Functional</code> (included)</td>
+<td>None — feeds Phase 3</td>
+</tr>
+<tr class="even">
+<td><strong>Partial_translation_failure</strong></td>
+<td><code>SI_functional_status = Partial_translation_failure</code> (included)</td>
+<td>None — included. <strong>NEUTRAL label: this is most likely a technical artefact (chimeric Canu haplotypes inflating the failure denominator), not biological SI loss. The current dataset provides no tangible evidence supporting biological SI loss in this category — make no inference about SI status from this label alone.</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>SI_escape_candidate</strong></td>
+<td><code>SI_functional_status = Complete_loss</code> AND <code>Dominant_failure_mode = premature_stop</code> (excluded)</td>
+<td>Phenotype via controlled selfing test</td>
+</tr>
+<tr class="even">
+<td><strong>Re_PCR</strong></td>
+<td>Stage 3 / Step 4 length / Step 4b BLAST paralog / Step 7b / dropped_abundance_filter / no_functional_proteins with ambiguous_aa or mixed failures</td>
+<td><strong>Re-amplify SRK from the existing DNA stock.</strong> The DNA is fine; the PCR product is the problem (no assembly, fragmented amplicon, paralog amplification, short product, low yield, dirty product translating to X residues)</td>
+</tr>
+<tr class="odd">
+<td><strong>Re_DNA_extraction</strong></td>
+<td>Step 9 too_many_alleles (&gt;4 distinct functional proteins per individual)</td>
+<td><strong>Re-isolate tissue from a single plant + re-extract DNA before any further PCR.</strong> The DNA stock itself is contaminated; re-PCR will preserve the contamination</td>
+</tr>
+</tbody>
+</table>
+<p>(Outgroup samples — <code>Ingroup = 0</code> in metadata — are flagged separately and not shown in the BL/EO plots.)</p>
+<p>The Re_PCR / Re_DNA_extraction split is operationally meaningful: re-PCR is a same-day same-DNA operation, while re-DNA-extraction requires fresh tissue (possibly field collection) before any PCR can happen. Surfacing them as separate CSV deliverables (<code>SRK_re_PCR_priorities.csv</code>, <code>SRK_re_DNA_extraction_priorities.csv</code>) lets the wet-lab team triage and schedule appropriately.</p>
+</div>
+<div id="two-distinct-questions-answered-by-one-audit" class="section level3" number="6.6.4">
+<h3><span class="header-section-number">6.6.4</span> Two distinct questions answered by one audit</h3>
+<ol style="list-style-type: decimal">
+<li><strong>QC question:</strong> which samples need re-sequencing vs which have an intrinsic data-integrity problem (paralogs, contamination) where re-sequencing will not help?</li>
+<li><strong>Biology question:</strong> which samples have successful sequencing but produced <em>no functional SRK proteins</em>? Such samples carry zero rejection capacity at the molecular level and are candidates for ongoing self-compatibility (SC) evolution via loss-of-function (LoF) mutations.</li>
+</ol>
+</div>
+<div id="exclusion-cascade-earliest-stage-wins" class="section level3" number="6.6.5">
+<h3><span class="header-section-number">6.6.5</span> Exclusion cascade (earliest stage wins)</h3>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Stage</th>
+<th>Reason</th>
+<th>Re-sequencing?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Stage 3 — no assembly</strong></td>
+<td>sample in metadata, Canu produced 0 haplotypes</td>
+<td>✓ yes</td>
+</tr>
+<tr class="even">
+<td><strong>Step 4 — length filter</strong></td>
+<td>raw haps exist, 0 passed 3250–4000 bp</td>
+<td>✓ yes</td>
+</tr>
+<tr class="odd">
+<td><strong>Step 4b — BLAST coverage</strong></td>
+<td>all haps dropped at 0.90/95 % (Library 010+)</td>
+<td>✗ no — SRK paralogs / off-targets</td>
+</tr>
+<tr class="even">
+<td><strong>Step 7b — N content</strong></td>
+<td>all haps dropped at max_N = 9 (Library 010+)</td>
+<td>maybe — short Canu contigs</td>
+</tr>
+<tr class="odd">
+<td><strong>Step 9 — no_functional_proteins</strong></td>
+<td>no protein passed translation/validation</td>
+<td>depends on <code>Dominant_failure_mode</code> (see below)</td>
+</tr>
+<tr class="even">
+<td><strong>Step 9 — dropped_abundance_filter</strong></td>
+<td>functional proteins below <code>min_count = 5</code></td>
+<td>maybe — singletons may pass with more reads</td>
+</tr>
+<tr class="odd">
+<td><strong>Step 9 — too_many_alleles</strong></td>
+<td>&gt;4 distinct proteins per individual</td>
+<td>✗ no — likely contamination / mixed sample</td>
+</tr>
+<tr class="even">
+<td><strong>Step 11 — outgroup filter</strong></td>
+<td><code>Ingroup = 0</code> in metadata</td>
+<td>intentional exclusion</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>BL_status = Unassigned</code> flag (10 individuals with germplasm sub-codes) is <strong>not</strong> an exclusion — these samples are in the zygosity matrix; they just cannot be placed in a BL for Phase 3 stratification.</p>
+</div>
+<div id="biological-columns-si_functional_status-dominant_failure_mode" class="section level3" number="6.6.6">
+<h3><span class="header-section-number">6.6.6</span> Biological columns — <code>SI_functional_status</code> + <code>Dominant_failure_mode</code></h3>
+<p>For samples that reached Step 9 translation, the audit categorises the SI functional state:</p>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><code>SI_functional_status</code></th>
+<th>Criterion</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Functional</td>
+<td><code>Functional_rate ≥ 0.5</code></td>
+<td>SI system intact at the molecular level</td>
+</tr>
+<tr class="even">
+<td>Partial_translation_failure</td>
+<td><code>0 &lt; Functional_rate &lt; 0.5</code> (low_functional_rate)</td>
+<td>included in dataset. <strong>NEUTRAL — does NOT imply biological SI loss.</strong> Most likely a technical artefact from chimeric Canu haplotypes (spliced junctions introduce premature stops that inflate the failure denominator). Current data provides no tangible evidence supporting biological SI loss in this category. Make no inference about SI status.</td>
+</tr>
+<tr class="odd">
+<td><strong>Complete_loss</strong></td>
+<td><code>Total_sequences &gt; 0</code> AND <code>Functional_proteins = 0</code></td>
+<td>sequencing successful but no functional protein recovered — <strong>candidate SI-escape signal</strong></td>
+</tr>
+<tr class="even">
+<td>NA</td>
+<td>did not reach Step 9</td>
+<td>excluded earlier in pipeline</td>
+</tr>
+</tbody>
+</table>
+<p><code>Dominant_failure_mode</code> discriminates biological vs technical signal at the Complete_loss tier:</p>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Mode</th>
+<th>Meaning</th>
+<th>Biological signal</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>premature_stop</code></td>
+<td>internal stop codons dominate (≥ 2× the second most common failure)</td>
+<td><strong>real loss-of-function mutations — strong SI breakdown candidate</strong></td>
+</tr>
+<tr class="even">
+<td><code>ambiguous_aa</code></td>
+<td>X residues from N-rich data dominate</td>
+<td><strong>data quality artefact, NOT biological SI escape</strong> (typical of libraries that bypassed Step 7b)</td>
+</tr>
+<tr class="odd">
+<td><code>mixed</code></td>
+<td>second-most-common ≥ 50 % of top</td>
+<td>interpret cautiously</td>
+</tr>
+<tr class="even">
+<td><code>other</code></td>
+<td>different pattern</td>
+<td>rare; investigate manually</td>
+</tr>
+</tbody>
+</table>
+<p>The combination <code>Complete_loss</code> + <code>premature_stop</code> is the strongest molecular candidate for ongoing SC evolution and warrants follow-up phenotyping (controlled selfing tests).</p>
+</div>
+<div id="when-to-run" class="section level3" number="6.6.7">
+<h3><span class="header-section-number">6.6.7</span> When to run</h3>
+<p>After Step 12 completes, every time a new library is added. The audit takes &lt; 1 s and is library-agnostic — it auto-detects which per-library logs (Step 4b, Step 7b, Step 8) are available and adapts accordingly.</p>
+</div>
+<div id="bioinformatics-13" class="section level3" number="6.6.8">
+<h3><span class="header-section-number">6.6.8</span> Bioinformatics</h3>
+<ul>
+<li>Script: <code>audit_sample_exclusions.py</code> (root of <code>Canu_amplicon/</code>)</li>
+<li>Inputs (auto-detected in CWD):
+<ul>
+<li><code>sampling_metadata.csv</code> — ground truth list of expected samples</li>
+<li><code>all_Library*_Phased_haplotypes.fasta</code> — per-library Step 3 raw haplotypes</li>
+<li><code>all_Library*_*_min3250*.fasta</code> — Step 4 length-filtered outputs</li>
+<li><code>all_Library*_*_blastfilt_log.tsv</code> — Step 4b decisions (Library 010+)</li>
+<li><code>all_Library*_*_backfilled_Nfilt_log.tsv</code> — Step 7b decisions (Library 010+)</li>
+<li><code>SRK_individual_status_report.tsv</code> — Step 9 classifications</li>
+<li><code>SRK_individual_BL_assignments.tsv</code> — Step 13 BL status (run after the audit on first iteration; or re-run audit after Step 13 to fill the BL_status column)</li>
+<li><code>SRK_individual_zygosity.tsv</code> — final included individuals</li>
+</ul></li>
+<li>Output: <code>SRK_sample_exclusion_audit.tsv</code> — one row per metadata sample (16 columns covering metadata, per-stage hap counts, Step 9 classification + <code>SI_functional_status</code> + <code>Dominant_failure_mode</code>, BL_status, final status + exclusion stage + reason).</li>
+<li>Stdout summary: cascade totals + SI-status breakdown + explicit list of candidate SI-escape samples for immediate triage.</li>
+</ul>
+</div>
+<div id="headline-finding-lepa-dataset-2026-05-12" class="section level3" number="6.6.9">
+<h3><span class="header-section-number">6.6.9</span> Headline finding (LEPA dataset, 2026-05-12)</h3>
+<p>Of <strong>378 individuals</strong> that reached Step 9 translation, <strong>199 (53 %) are Functional</strong>, <strong>165 (44 %) are Partial_translation_failure</strong>, and <strong>14 (4 %) are Complete_loss</strong>. The 165 Partial_translation_failure individuals are most likely capturing a technical artefact (chimeric Canu haplotypes inflating the failure denominator) rather than biological SI loss; <strong>no biological inference is made from this category</strong>. The biologically defensible signal comes from the 14 Complete_loss individuals: <strong>7 are <code>premature_stop</code>-dominated candidate SI-escape samples</strong>, requiring <em>every</em> observed haplotype to carry a stop, which is hard to explain by chimeras alone. Remarkably, <strong>5 of these 7 cluster in EO76 (BL3)</strong> — the same population that holds 0 AABC seed parents and the highest AAAA fraction. This molecular signal independently corroborates the demographic/genotypic picture and identifies EO76 as the population most likely undergoing active self-compatibility evolution. Follow-up controlled selfing tests are recommended to validate the molecular signal at the phenotype level. Full discussion in <code>LEPA_SRK_report.md</code> Q4.</p>
+<hr />
+</div>
+</div>
 </div>
 <div id="phase3" class="section level1" number="7">
 <h1><span class="header-section-number">7</span> Phase 3: Data Analyses</h1>
@@ -6471,7 +6783,7 @@ Even where some allele diversity persists, drift causes allele copy-count imbala
 </div>
 <div id="BLintegration" class="section level2" number="7.2">
 <h2><span class="header-section-number">7.2</span> Element Occurrence and Bottleneck Lineage Integration</h2>
-<div id="overview-13" class="section level3" number="7.2.1">
+<div id="overview-14" class="section level3" number="7.2.1">
 <h3><span class="header-section-number">7.2.1</span> Overview</h3>
 <p>This step bridges the SRK individual-level dataset to the spatial framework defined in the sibling project <a href="https://github.com/svenbuerki/LEPA_EO_spatial_clustering">LEPA_EO_spatial_clustering</a>. For each post-QC individual, the script resolves a complete sampling lineage record: which Element Occurrence (EO) the sample was collected from, which connected geographic group(s) that EO occupies, which independent bottleneck lineage (BL1–BL5) the group belongs to, and the relative drift index of its habitat patch. The output table is the join key used by every subsequent Phase 3 step to add the BL stratification.</p>
 </div>
@@ -6562,7 +6874,7 @@ Even where some allele diversity persists, drift causes allele copy-count imbala
 </div>
 <div id="popgenetics" class="section level2" number="7.3">
 <h2><span class="header-section-number">7.3</span> Population Genetic Statistics</h2>
-<div id="overview-14" class="section level3" number="7.3.1">
+<div id="overview-15" class="section level3" number="7.3.1">
 <h3><span class="header-section-number">7.3.1</span> Overview</h3>
 <p>This pipeline calculates key population genetic statistics from SRK genotyping data in order to evaluate whether <strong>self-incompatibility allele diversity is maintained by negative frequency-dependent selection (NFDS)</strong> or instead influenced by <strong>genetic drift or demographic bottlenecks</strong>.</p>
 <p>The analysis integrates individual genotype data, inferred zygosity states, and population metadata to produce summary statistics at the population level. These statistics provide insight into the evolutionary dynamics governing the SRK self-incompatibility system.</p>
@@ -6991,7 +7303,7 @@ H = \frac{\text{number of heterozygous individuals}}{\text{total individuals}}
 <p>Comparing these metrics across populations can identify <strong>populations experiencing allele erosion or reduced mating compatibility</strong>.</p>
 </div>
 </div>
-<div id="bioinformatics-13" class="section level3" number="7.3.4">
+<div id="bioinformatics-14" class="section level3" number="7.3.4">
 <h3><span class="header-section-number">7.3.4</span> Bioinformatics</h3>
 <div id="script" class="section level4" number="7.3.4.1">
 <h4><span class="header-section-number">7.3.4.1</span> Script</h4>
@@ -7111,7 +7423,7 @@ cat(&quot;Analysis complete\n&quot;)</code></pre>
 </div>
 <div id="alleleaccum" class="section level2" number="7.4">
 <h2><span class="header-section-number">7.4</span> Allele Accumulation Curves</h2>
-<div id="overview-15" class="section level3" number="7.4.1">
+<div id="overview-16" class="section level3" number="7.4.1">
 <h3><span class="header-section-number">7.4.1</span> Overview</h3>
 <p>Allele accumulation curves quantify how rapidly new alleles are discovered as additional individuals are sampled. In systems under <strong>negative frequency-dependent selection (NFDS)</strong>, such as plant self-incompatibility loci, rare alleles are continuously maintained in populations. This leads to a characteristic accumulation pattern where new alleles continue to appear even after substantial sampling effort.</p>
 <p>In contrast, populations evolving primarily under <strong>genetic drift</strong> show rapid early allele discovery followed by saturation, indicating that most diversity is captured quickly.</p>
@@ -7616,7 +7928,7 @@ Late_fraction &lt; 0.10 → drift-dominated diversity</code></pre>
 </table>
 <p>This framework complements traditional neutrality tests by directly analyzing <strong>allele discovery dynamics</strong>.</p>
 </div>
-<div id="bioinformatics-14" class="section level3" number="7.4.6">
+<div id="bioinformatics-15" class="section level3" number="7.4.6">
 <h3><span class="header-section-number">7.4.6</span> Bioinformatics</h3>
 <ul>
 <li>Script: <code>SRK_allele_accumulation_analysis.R</code></li>
@@ -7685,7 +7997,7 @@ Late_fraction &lt; 0.10 → drift-dominated diversity</code></pre>
 </div>
 <div id="allelefrqanalysis" class="section level2" number="7.5">
 <h2><span class="header-section-number">7.5</span> Allele Frequency Analysis</h2>
-<div id="overview-16" class="section level3" number="7.5.1">
+<div id="overview-17" class="section level3" number="7.5.1">
 <h3><span class="header-section-number">7.5.1</span> Overview</h3>
 <p>While <strong>negative frequency-dependent selection (NFDS)</strong> maintains high allelic diversity at the <strong>SRK self-incompatibility locus</strong>, allele <strong>frequencies may still deviate from equal expectations</strong> due to demographic processes such as genetic drift, population structure, or recent allele turnover.</p>
 <p>This analysis evaluates whether observed <strong>SRK allele frequency distributions deviate from the theoretical NFDS expectation</strong>, where all alleles should occur at approximately equal frequencies.</p>
@@ -7980,7 +8292,7 @@ p_{expected} = \frac{1}{k}
 </ul>
 </div>
 </div>
-<div id="bioinformatics-15" class="section level3" number="7.5.5">
+<div id="bioinformatics-16" class="section level3" number="7.5.5">
 <h3><span class="header-section-number">7.5.5</span> Bioinformatics</h3>
 <ul>
 <li>Script: <code>SRK_chisq_species_population.R</code></li>
@@ -8128,7 +8440,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 </div>
 <div id="allelesharing" class="section level2" number="7.7">
 <h2><span class="header-section-number">7.7</span> Allele Composition Comparison</h2>
-<div id="overview-17" class="section level3" number="7.7.1">
+<div id="overview-18" class="section level3" number="7.7.1">
 <h3><span class="header-section-number">7.7.1</span> Overview</h3>
 <p>This step quantifies how S-allele sets are partitioned and shared across Element Occurrences (EOs). While allele accumulation curves (Step 15) and frequency analyses (Step 16) characterise diversity within and relative to the species optimum, this analysis asks a complementary question: <strong>which alleles are exclusive to a single EO, which are shared between subsets, and which are ubiquitous?</strong> The answer directly informs cross-population breeding decisions — EOs that share few alleles are the most important exchange partners for increasing allele richness in the focal population.</p>
 <p>Two complementary visualisations are produced:</p>
@@ -8149,7 +8461,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 <p><strong>2026-05-07 update:</strong> the script now reads <code>SRK_individual_BL_assignments.tsv</code> (Step 13) instead of raw <code>Pop</code> from sampling metadata, and produces UpSet + heatmap plots at TWO levels in parallel: EO (sorted by parent BL, dots colored by BL) and BL (5 lineages, colored by BL).</p>
 </blockquote>
 </div>
-<div id="bioinformatics-16" class="section level3" number="7.7.3">
+<div id="bioinformatics-17" class="section level3" number="7.7.3">
 <h3><span class="header-section-number">7.7.3</span> Bioinformatics</h3>
 <ul>
 <li>Script: <code>SRK_allele_sharing_EOs.py</code></li>
@@ -8271,7 +8583,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 </div>
 <div id="GFS" class="section level2" number="7.8">
 <h2><span class="header-section-number">7.8</span> Individual Genotypic Fitness Score</h2>
-<div id="overview-18" class="section level3" number="7.8.1">
+<div id="overview-19" class="section level3" number="7.8.1">
 <h3><span class="header-section-number">7.8.1</span> Overview</h3>
 <p>This analysis introduces the <strong>Genotypic Fitness Score (GFS)</strong> — a per-individual metric that quantifies reproductive potential under the tetraploid SI system. GFS is defined as the <strong>proportion of diploid gametes that carry two distinct alleles</strong> (heterozygous gametes), computed directly from allele copy numbers at the SRK locus.</p>
 <p>The key motivation is that two individuals carrying the same <em>number</em> of unique alleles can have very different seed production potential depending on the <em>dosage balance</em> of those alleles. For example:</p>
@@ -8340,7 +8652,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 </tbody>
 </table>
 </div>
-<div id="bioinformatics-17" class="section level3" number="7.8.5">
+<div id="bioinformatics-18" class="section level3" number="7.8.5">
 <h3><span class="header-section-number">7.8.5</span> Bioinformatics</h3>
 <ul>
 <li>Script: <code>SRK_individual_GFS.R</code></li>
@@ -8453,7 +8765,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 <blockquote>
 <p>Requires <code>SRK_individual_GFS.tsv</code> from <a href="#GFS">Step 19</a>. Run after Step 19 has completed.</p>
 </blockquote>
-<div id="overview-19" class="section level3" number="7.9.1">
+<div id="overview-20" class="section level3" number="7.9.1">
 <h3><span class="header-section-number">7.9.1</span> Overview</h3>
 <p>The TP2 Tipping Point Analysis assesses <strong>reproductive fitness</strong> at the population level — the degree to which individuals within an EO can actually participate in compatible crosses and contribute allelic diversity to the next generation. While <a href="#GFS">Step 19</a> characterises each individual’s gametic diversity potential, this step synthesises those scores at the EO level and combines them with AAAA prevalence into a single diagnostic framework. Two complementary questions define the two axes:</p>
 <ul>
@@ -8493,7 +8805,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 </table>
 <p>A group (EO or BL) is flagged <strong>CRITICAL</strong> when both thresholds are breached simultaneously; <strong>AT RISK</strong> when either one is breached; <strong>OK</strong> otherwise.</p>
 </div>
-<div id="bioinformatics-18" class="section level3" number="7.9.3">
+<div id="bioinformatics-19" class="section level3" number="7.9.3">
 <h3><span class="header-section-number">7.9.3</span> Bioinformatics</h3>
 <p>The TP2 analysis is performed by the same script as <a href="#GFS">Step 19</a> (<code>SRK_individual_GFS.R</code>). EO-level and BL-level summaries are computed in parallel; the TP2 figure plots EOs as circles and BLs as triangles on the same axes, both coloured by parent BL using the locked Set1 palette.</p>
 <p><strong>Headline.</strong> All 5 BLs are CRITICAL on TP2 (BL3 worst at mean GFS = 0.196, prop AAAA = 0.662); 5 of 6 plotted EOs (N ≥ 5) are CRITICAL — only EO67 is AT RISK rather than CRITICAL.</p>
@@ -8558,7 +8870,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 <blockquote>
 <p>Requires <code>SRK_individual_GFS.tsv</code> from <a href="#GFS">Step 19</a> (now carries the BL column from the Step 13 bridge).</p>
 </blockquote>
-<div id="overview-20" class="section level3" number="7.10.1">
+<div id="overview-21" class="section level3" number="7.10.1">
 <h3><span class="header-section-number">7.10.1</span> Overview</h3>
 <p>This analysis visualises the proportion of individuals at each GFS tier — first per Element Occurrence (EO), then per Bottleneck Lineage (BL) — making explicit the fraction of each group that actively contributes allelic diversity to compatible crosses. The figure translates the GFS principle into a population-level diagnostic: for each EO and each BL, it shows what fraction of individuals can “support reproductive effort” (GFS &gt; 0 — carrying at least two distinct alleles and producing at least one heterozygous gamete combination) and how those individuals are distributed across GFS tiers.</p>
 </div>
@@ -8567,7 +8879,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 <p>AAAA individuals (GFS = 0) carry a single SRK allele across all four genome copies. All six of their diploid gamete combinations are homozygous for that allele, meaning they contribute no allelic diversity to crosses and cannot drive compatible pairings with any partner carrying the same allele. All other genotype classes (AAAB through ABCD) carry at least two distinct alleles and produce at least 3 of 6 heterozygous gametes — they “support reproductive effort” in the sense that their gametes diversify the allele combinations available to offspring.</p>
 <p>The proportion of supporting individuals per EO and per BL, combined with the GFS tier distribution within that fraction, provides a direct measure of how much reproductive capacity each unit retains. The BL panel adds a test of the independent-bottleneck hypothesis: if drift trajectories were independent, the AAAA-allele identities should differ across BLs.</p>
 </div>
-<div id="bioinformatics-19" class="section level3" number="7.10.3">
+<div id="bioinformatics-20" class="section level3" number="7.10.3">
 <h3><span class="header-section-number">7.10.3</span> Bioinformatics</h3>
 <ul>
 <li>Script: <code>SRK_GFS_reproductive_effort.R</code></li>
@@ -8732,7 +9044,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 <blockquote>
 <p>Requires <code>SRK_protein_allele_representatives.fasta</code> from <a href="#SRKalleledist">Step 10</a>, <code>SRK_individual_zygosity.tsv</code> from <a href="#zygosity">Step 12</a>, and <code>SRK_individual_metadata.tsv</code> from <a href="#SRKfunctionalprotgenotype">Step 11</a>. Run after Steps 10, 11, and 12 have completed.</p>
 </blockquote>
-<div id="overview-21" class="section level3" number="8.2.1">
+<div id="overview-22" class="section level3" number="8.2.1">
 <h3><span class="header-section-number">8.2.1</span> Overview</h3>
 <p>Step 22 is split into two scripts:</p>
 <ul>
@@ -8749,7 +9061,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 <p><strong>Phylogenetic class detection</strong> — UPGMA clustering of the HV-only pairwise distance matrix automatically detects the natural class structure: the largest gap in the merge-height sequence defines the cut point. In the current dataset (2026-05-11), this splits 58 allele bins into <strong>Class I (57 alleles)</strong> and <strong>Class II (1 allele, Allele_055)</strong> — corresponding to the known phylogenetic lineages in <em>Brassica</em> SRK. Class II alleles are guaranteed to be compatible with all Class I alleles, providing unambiguous Compatible_cross controls at the maximum possible HV distance.</p>
 <p><strong>Four-tier cross design:</strong> the WITHIN_CLASS_THRESHOLD (default 0.04, approximately the median within-class HV distance) divides within-class pairs into three tiers. The N tier — small but non-zero HV differences — is the scientific core: an incompatible Synonymy_test cross means the two allele bins share recognition specificity (merge them); a compatible Synonymy_test cross confirms the small HV difference is functionally real (keep bins separate). In the current dataset, 6 365 Synonymy_test pairs are available for testing — the largest tier and the highest priority for the crossing experiment.</p>
 </div>
-<div id="bioinformatics-20" class="section level3" number="8.2.3">
+<div id="bioinformatics-21" class="section level3" number="8.2.3">
 <h3><span class="header-section-number">8.2.3</span> Bioinformatics</h3>
 <ul>
 <li>Scripts: <code>srk_variability_landscape.py</code> (Step 22a), <code>srk_allele_hypotheses.py</code> (Step 22b)</li>
@@ -9183,7 +9495,7 @@ python3 srk_allele_hypotheses.py</code></pre>
 <blockquote>
 <p>Requires <code>SRK_AAAA_cross_design_HV.tsv</code>, <code>SRK_synonymy_groups.csv</code>, <code>SRK_HV_allele_distances.tsv</code>, and <code>SRK_functional_allele_groups.tsv</code> from <a href="#alleleclusters">Step 22b</a>; <code>SRK_individual_BL_assignments.tsv</code> from <a href="#BLintegration">Step 13</a>; <code>SRK_individual_zygosity.tsv</code> from <a href="#zygosity">Step 12</a>; <code>SRK_individual_allele_table.tsv</code> from <a href="#SRKfunctionalprotgenotype">Step 11</a>. Run after Step 22b has completed.</p>
 </blockquote>
-<div id="overview-22" class="section level3" number="8.3.1">
+<div id="overview-23" class="section level3" number="8.3.1">
 <h3><span class="header-section-number">8.3.1</span> Overview</h3>
 <p>Step 22e is the <strong>operational deliverable</strong> of Phase 4: it translates the bioinformatics-predicted compatibility categories (Incompatible / Synonymy_test / Compatible_within / Compatible_cross) into a phased experimental protocol that field biologists can execute. The plan structures crossing experiments around five nested hypotheses (H0–H3) that progressively validate the SI system, calibrate the seed-yield scale, test bin-boundary predictions, and extend coverage to “hidden” bins lacking homozygous representatives. Each cross row in the output TSVs is fully traceable — Step 22e never invents pairings; it only translates upstream pipeline outputs into actionable experimental designs.</p>
 </div>
@@ -9441,7 +9753,7 @@ python3 srk_allele_hypotheses.py</code></pre>
 <li><strong>Heterozygous-donor seed yields are interpretable only when paired with AAAA × AAAA baseline controls.</strong> This is <em>why</em> H3 includes paired controls — without them, the AAAB-pollen yield is confounded by the AA-pollen baseline.</li>
 </ol>
 </div>
-<div id="bioinformatics-21" class="section level3" number="8.3.7">
+<div id="bioinformatics-22" class="section level3" number="8.3.7">
 <h3><span class="header-section-number">8.3.7</span> Bioinformatics</h3>
 <ul>
 <li>Script: <code>srk_cross_plan.py</code></li>
@@ -9667,7 +9979,7 @@ python3 srk_allele_hypotheses.py</code></pre>
 <blockquote>
 <p>Requires <code>SRK_functional_allele_groups.tsv</code> and <code>SRK_AAAA_cross_design_HV.tsv</code> from <a href="#alleleclusters">Step 22</a>, plus a completed cross results file. Run after crossing experiments have been conducted and seed yields recorded.</p>
 </blockquote>
-<div id="overview-23" class="section level3" number="8.4.1">
+<div id="overview-24" class="section level3" number="8.4.1">
 <h3><span class="header-section-number">8.4.1</span> Overview</h3>
 <p>This step reads completed cross records — a file with one row per cross, containing the mother and father plant IDs and a seed yield column — and assigns each cross to a Incompatible, Synonymy_test, Compatible_within, or Compatible_cross category using the HV-based class structure from Step 22. It then tests whether category predicts seed yield using Kruskal-Wallis and pairwise Mann-Whitney U tests, and produces a figure showing seed yield distributions and success rates per category.</p>
 <p><strong>To activate this step</strong>, set <code>CROSS_TSV</code> in the settings section of <code>srk_allele_hypotheses.py</code> to the filename of the completed cross records file, then re-run the script.</p>
@@ -9676,7 +9988,7 @@ python3 srk_allele_hypotheses.py</code></pre>
 <h3><span class="header-section-number">8.4.2</span> Biological Rationale</h3>
 <p>The statistical test is a direct evaluation of the allele bin definitions using HV-distance-based categories. The expected ordering is Incompatible &lt; Synonymy_test ≤ Compatible_within &lt; Compatible_cross for seed yield: Incompatible crosses are rejected by SI (HV-identical alleles); Synonymy_test crosses test whether small HV differences change recognition specificity; Compatible_within crosses are expected compatible within the same phylogenetic class; Compatible_cross crosses between classes are maximally compatible and set the upper yield reference. A significant Kruskal-Wallis result with this ordering validates the HV-based bin structure. Synonymy_test crosses that fail (yield ≈ W) indicate synonymous allele bins that should be merged; Synonymy_test crosses that succeed confirm the small HV difference is functionally real. Incompatible crosses yielding seeds are direct evidence of SI breakdown.</p>
 </div>
-<div id="bioinformatics-22" class="section level3" number="8.4.3">
+<div id="bioinformatics-23" class="section level3" number="8.4.3">
 <h3><span class="header-section-number">8.4.3</span> Bioinformatics</h3>
 <ul>
 <li>Script: <code>srk_allele_hypotheses.py</code> (Part 5, activated by setting <code>CROSS_TSV</code>)</li>

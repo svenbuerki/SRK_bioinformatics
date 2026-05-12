@@ -527,6 +527,69 @@ python srk_phylogenetic_analysis.py
 
 ---
 
+### Step 12c — Data Quality Evaluation (end of Phase 2)
+
+A formal data-quality gate at the end of Phase 2 that answers three sequential questions before downstream population-genetic analyses (Phase 3) begin:
+
+1. **Is there a library effect impacting data interpretation?** (technical bias check)
+2. **Which samples failed sequencing/assembly and need to be re-sequenced?** (lab deliverable)
+3. **Which samples have non-functional SRK proteins (full to partial) and may have escaped self-incompatibility?** (phenotyping deliverable)
+
+Outputs include per-Bottleneck-Lineage and per-EO stacked-bar plots showing the proportion of each outcome category, and two CSVs that can be handed directly to the wet-lab team.
+
+#### Step 12c.i — Library effect tests
+
+**Script:** `test_library_effect.py`
+
+**Tests:**
+- **Test 1 — Library × `SI_functional_status` (global χ²)**: tests whether Functional / Partial_translation_failure / Complete_loss proportions are independent of library.
+- **Test 2 — Library × `Dominant_failure_mode` (global χ²)**: tests whether `premature_stop` / `ambiguous_aa` / `mixed` failure-mode classification is independent of library.
+- **Tests 3 + 4 — Within-EO Library 009 / 010 vs other libraries (Fisher's exact)**: for each focus EO with multi-library sampling, tests whether the focus library's AAAA proportion (Test 3) or Complete_loss proportion (Test 4) differs from the pooled "other libraries" in the same EO.
+
+**Outputs:**
+- `SRK_library_effect_tests.tsv` — chi-square statistics, df, p-values, standardised residuals
+- `SRK_library_effect_summary.pdf` — 4-panel diagnostic (residual heatmaps + within-EO bar plots)
+
+**Interpretation rule:** a *significant* `Library × Dominant_failure_mode` association is expected if libraries differ in pipeline processing — e.g., Library 010 (Step 7b applied) should show enrichment in `premature_stop` (real LoF) and depletion in `mixed`/`ambiguous_aa` (data-quality noise). This is a *favourable* library effect — the cleanest library produces the most biologically interpretable failure pattern. A significant `Library × SI_functional_status` association, by contrast, would indicate that *the rate of biological failure itself depends on library*, which would be a confound. The within-EO tests are the cleanest test for this.
+
+#### Step 12c.ii — Sample exclusion audit
+
+**Script:** `audit_sample_exclusions.py` (documented in detail in *Sample Exclusion Audit* section below).
+
+Produces `SRK_sample_exclusion_audit.tsv` consumed by Step 12c.iii.
+
+#### Step 12c.iii — Integrate into outcome categories, CSV deliverables, and proportion plots
+
+**Script:** `evaluate_data_quality.py`
+
+Reads the audit and library-effect outputs and categorises every metadata sample into one of five outcome categories (mutually exclusive; samples with `Ingroup = 0` are flagged separately as Outgroup and not shown in the plots):
+
+| Outcome category | Criterion | Lab action |
+|------------------|-----------|------------|
+| **Functional** | `SI_functional_status = Functional` (included) | None — sample contributes to all downstream analyses |
+| **Partial_translation_failure** | `SI_functional_status = Partial_translation_failure` (included) | None — sample contributes. **NEUTRAL framing: this is most likely a technical artefact (chimeric Canu haplotypes inflating the failure denominator), not biological SI loss. The current dataset provides no tangible evidence supporting biological SI loss in this category — make no inference about SI status from this label alone.** |
+| **SI_escape_candidate** | `SI_functional_status = Complete_loss` AND `Dominant_failure_mode = premature_stop` (excluded) | Phenotype via controlled selfing test (no-pollen-deposition vs self-pollen vs cross-pollen seed-set comparison) |
+| **Re_PCR** | Stage 3 / Step 4 length / Step 4b BLAST paralog / Step 7b / dropped_abundance_filter / no_functional_proteins with ambiguous_aa or mixed failures | **Re-amplify SRK from the existing DNA stock.** The DNA is fine; the PCR product is the problem (no assembly produced, fragmented amplicon, paralog amplification, short product yielding N-rich Canu contigs, low yield, or dirty product translating to X residues) |
+| **Re_DNA_extraction** | Step 9 too_many_alleles (>4 distinct functional proteins per individual) | **Re-isolate tissue from a single plant + re-extract DNA before any further PCR.** The DNA stock itself is contaminated (mixed sample or barcode bleed-through); re-PCR with the same DNA will preserve the contamination |
+
+**Why the Re_PCR / Re_DNA_extraction split matters operationally.** These are *different* lab tasks with different costs and turnaround times. Re_PCR samples have viable DNA on hand — a same-day operation that just re-amplifies. Re_DNA_extraction samples require fresh tissue (potentially field collection), then DNA extraction, then PCR — a much longer pipeline. Surfacing them as separate CSVs lets the wet-lab team triage and schedule appropriately.
+
+**Step 4b paralog reasoning.** All 24 of the Library 010 paralog samples are routed to Re_PCR because PCR product competition is stochastic — a fresh PCR may amplify the canonical SRK locus rather than the paralog. If the *same* paralog signature persists across re-PCR replicates, that signals a need for primer re-design, which is a different operation than re-PCR; in that case re-classify those samples as `Excluded_paralog` in the audit and exclude from the lab CSV.
+
+**Outputs:**
+
+- `Tables/SRK_data_quality_categories.tsv` — master per-sample categorisation with all upstream diagnostic columns preserved.
+- **`Tables/SRK_samples_redo.csv`** — single merged lab deliverable for samples needing follow-up. First column `Lab_action` discriminates **Re-PCR** (existing DNA OK, re-amplify) from **Re-DNA-extraction** (DNA contaminated, re-isolate tissue). Rows sorted by `Lab_action → EO → Sample_ID` for field-collection grouping. Other columns: `Sample_ID`, `Library`, `Barcode`, `EO`, `EO_normalised`, `BL_inferred`, `n_raw_haps`, `Proteins_in_final_data` (informative for Re-DNA-extraction rows where it shows the contaminated extraction's distinct-protein count), `Exclusion_stage`, `Recommended_action` (stage-specific lab instruction).
+- **`Tables/SRK_SI_escape_candidates.csv`** — phenotyping deliverable: only SI-escape candidates, with the recommended controlled-selfing test instruction.
+- `figures/SRK_data_quality_per_BL.{pdf,png}` — stacked-bar chart showing the proportion of each outcome category for each Bottleneck Lineage (BL1–BL5). X-tick labels include sample count `N`; bars are stacked Functional → Partial_translation_failure → SI_escape_candidate → Re_PCR → Re_DNA_extraction with absolute counts annotated inside each non-trivial slice.
+- `figures/SRK_data_quality_per_EO.{pdf,png}` — same chart for the 6 focus EOs (N ≥ 5). X-tick labels are coloured by parent BL using the locked Set1 palette so each EO is visually placed within its lineage.
+
+**Why this matters operationally:** the per-BL and per-EO proportion plots make it trivial to spot populations where Re-sequence + SI_escape_candidate categories are over-represented — the populations where conservation action is most urgent and where additional lab effort is best invested.
+
+**When to run:** after Step 12 (zygosity) completes, before Step 13 (BL integration). The full pipeline `audit_sample_exclusions.py → test_library_effect.py → evaluate_data_quality.py` takes < 5 s on the current dataset and is library-agnostic — it auto-detects per-library log files and adapts.
+
+---
+
 ## Phase 3: Data Analyses
 
 > All Phase 3 scripts read from the shared outputs of Phase 2. Run from the same working directory.
@@ -1307,6 +1370,87 @@ python srk_allele_hypotheses.py
 | File | Content |
 |------|---------|
 | `SRK_cross_result_analysis_HV.pdf` | Seed yield box/strip plot + success rate bar chart by cross category |
+
+---
+
+## Sample Exclusion Audit (cross-phase QC report)
+
+**Script:** `audit_sample_exclusions.py`
+
+**Purpose:** Trace every barcode in `sampling_metadata.csv` through the SRK pipeline and report, for each sample that did **not** make it to the final genotyped dataset, the **earliest** pipeline stage at which it was lost plus the specific reason. Distinguishes samples that need to be re-sequenced (poor DNA quality, fragmented assembly) from samples that have an intrinsic data-integrity problem (SRK paralogs / off-targets / contamination) where re-sequencing will not help, and from intentional exclusions (outgroup samples).
+
+**Command:**
+```bash
+python3 audit_sample_exclusions.py
+```
+
+**Inputs (auto-detected in CWD):**
+- `sampling_metadata.csv` — ground truth of expected samples
+- `all_Library*_Phased_haplotypes.fasta` — Step 3 outputs (per-library raw haplotypes)
+- `all_Library*_*_min3250*.fasta` — Step 4 length-filtered outputs
+- `all_Library*_*_blastfilt_log.tsv` — Step 4b BLAST decisions per haplotype (Library 010+)
+- `all_Library*_*_backfilled_Nfilt_log.tsv` — Step 7b N-filter decisions per haplotype (Library 010+)
+- `SRK_individual_status_report.tsv` — Step 9 classifications
+- `SRK_individual_BL_assignments.tsv` — Step 13 BL status
+- `SRK_individual_zygosity.tsv` — final included individuals
+
+**Output:** `SRK_sample_exclusion_audit.tsv` — one row per sample with columns:
+
+| Column | Notes |
+|--------|-------|
+| `Sample_ID`, `Library`, `Barcode`, `EO`, `Ingroup` | from metadata |
+| `n_raw_haps` | from Step 3 Phased haplotypes |
+| `n_after_step4` | from Step 4 length-filtered FASTA |
+| `n_after_step4b` | from Step 4b log (blank when library has no log) |
+| `n_after_step7b` | from Step 7b log (blank when library has no log) |
+| `Step9_classification` | from `SRK_individual_status_report.tsv` |
+| `Proteins_in_final_data` | from same |
+| `SI_functional_status` | Functional / Partial_translation_failure / Complete_loss / NA — see biological columns below |
+| `Dominant_failure_mode` | premature_stop / ambiguous_aa / mixed / other — parsed from Step 9 Top_failure_reasons |
+| `BL_status` | Assigned / Inferred / Unassigned |
+| `Final_status` | Included / Excluded |
+| `Exclusion_stage` | earliest stage at which the sample was lost (see cascade below) |
+| `Exclusion_reason` | human-readable explanation + re-sequencing recommendation |
+
+**Biological columns — SI functional status (added 2026-05-12):**
+
+Two columns flag the *molecular* SI functional status of each sample independent of the QC cascade. These surface samples where sequencing was successful but no functional SRK proteins could be recovered — a candidate signal of ongoing self-compatibility evolution.
+
+`SI_functional_status` categorisation (samples that reached Step 9):
+
+| Value | Criterion | Interpretation |
+|---|---|---|
+| `Functional` | `Functional_rate ≥ 0.5` | SI system intact at the molecular level |
+| `Partial_translation_failure` | `0 < Functional_rate < 0.5` (low_functional_rate) | included in dataset, but the label is **NEUTRAL** — does NOT imply biological SI loss. Most likely a technical artefact: Canu *de novo* assembly produces chimeric haplotypes whose spliced junctions introduce premature stops, which inflate the failure denominator without reflecting real biology. Step 9's abundance filter excludes chimeric proteins from the numerator (`Functional_proteins`) but not from `Total_sequences`. The current dataset provides no tangible evidence supporting biological SI loss in this category. **Do not make biological inferences from this label alone.** |
+| `Complete_loss` | `Total_sequences > 0` AND `Functional_proteins == 0` (no_functional_proteins classification) | sequencing succeeded but no functional protein recovered — candidate SI-escape signal |
+| `NA` | did not reach Step 9 (excluded earlier in pipeline) | not applicable |
+
+`Dominant_failure_mode` parses Step 9's `Top_failure_reasons` string (e.g. `"premature_stop(28);ambiguous_aa(12)"`) and returns:
+
+| Value | Meaning | Biological signal |
+|---|---|---|
+| `premature_stop` | internal stop codons dominate (≥ 2× the second most common failure) | **real loss-of-function mutations in SRK — strong SI breakdown candidate** |
+| `ambiguous_aa` | X residues from N-rich data dominate | **data quality artefact, NOT a biological SI escape** (typical of libraries that bypassed Step 7b) |
+| `mixed` | second most common failure ≥ 50 % of the top one | interpret cautiously — both LoF and quality issues contribute |
+| `other` | different failure pattern (e.g., `too_short_protein`) | rare; investigate manually |
+| (blank) | no failure data | sample did not reach Step 9 |
+
+**Stdout summary** prints the `SI_functional_status` breakdown plus an explicit list of candidate SI-escape samples (those with `Complete_loss` + `premature_stop` dominated failures). These are the strongest molecular candidates for ongoing self-compatibility evolution and warrant follow-up phenotyping (controlled selfing tests).
+
+**Cascade (earliest exclusion wins):**
+1. **Stage 3 — no assembly:** sample in metadata but no haplotypes assembled by Canu → re-sequencing recommended.
+2. **Step 4 — length filter:** raw haps exist, 0 passed 3250–4000 bp → re-sequencing recommended (fragmented assembly).
+3. **Step 4b — BLAST coverage filter** (Library 010+): all haps dropped at coverage 0.90 / identity 95 → **NOT a re-sequencing issue** — sample contains SRK paralogs / off-targets; sequencing more reads will not help.
+4. **Step 7b — N-content filter** (Library 010+): all haps dropped at max_N = 9 → re-sequencing *may* help if more reads yield longer 3′ contigs.
+5. **Step 9 — translation / abundance / ploidy filters:**
+    - `no_functional_proteins` — all sequences failed translation/validation → may benefit from re-sequencing.
+    - `dropped_abundance_filter` — functional proteins present but below `min_count = 5` → more sequencing may push singletons over threshold.
+    - `too_many_alleles` — >4 distinct proteins per individual → **NOT a re-sequencing issue** — likely contamination / mixed sample; clean re-extraction needed.
+6. **Step 11 — outgroup filter:** `Ingroup = 0` in metadata → **intentional exclusion** (NOT a quality issue).
+
+**Auxiliary flag:** `BL_status = Unassigned` (10 individuals with germplasm sub-codes) — these are STILL INCLUDED in the zygosity matrix; they just cannot be placed into a BL for Phase 3 BL-stratified analyses.
+
+**When to run:** every time a new library is added, after Step 11 (genotyping) completes. The audit takes < 1 s. Use the output to (i) decide which barcodes to flag for re-sampling at the next field season, (ii) identify systematic failures suggesting a library-prep or assembly issue.
 
 ---
 
