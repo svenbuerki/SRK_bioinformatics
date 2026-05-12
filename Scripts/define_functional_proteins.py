@@ -14,7 +14,12 @@ import re
 # ----------------------------
 # Files
 # ----------------------------
-pattern = "*_exons_backfilled.fasta"
+# Two input naming conventions are accepted:
+#   - Legacy:  *_exons_backfilled.fasta              (libraries pre-Step-7b)
+#   - Current: *_exons_backfilled_Nfilt.fasta        (libraries with Step 7b applied)
+# When both files exist for the same library, the _Nfilt version is used
+# and the legacy file is shadowed (skipped).
+patterns = ("*_exons_backfilled.fasta", "*_exons_backfilled_Nfilt.fasta")
 raw_fasta = "SRK_proteins_raw.fasta"
 aligned_fasta = "SRK_proteins_aligned.fasta"
 final_fasta = "SRK_functional_proteins.fasta"
@@ -135,8 +140,22 @@ print("\nTranslating sequences with enhanced tracking...")
 raw_records = []
 original_to_protein = {}
 
+# Build input file list from both naming conventions, preferring _Nfilt
+# over _backfilled when both exist for the same library.
+nfilt_files = set(glob.glob(patterns[1]))
+backfilled_files = set(glob.glob(patterns[0]))
+shadowed = {f.replace("_Nfilt.fasta", ".fasta") for f in nfilt_files}
+input_files = sorted(
+    (nfilt_files | (backfilled_files - shadowed)) - set(OUTPUT_FILES)
+)
+
+if shadowed & backfilled_files:
+    print("\nLegacy _backfilled.fasta files shadowed by _Nfilt versions (will be skipped):")
+    for f in sorted(shadowed & backfilled_files):
+        print(f"  {f}")
+
 # Exclude known output files in case they accidentally match the input pattern
-for fasta in sorted(set(glob.glob(pattern)) - set(OUTPUT_FILES)):
+for fasta in input_files:
     print(f"Processing {fasta}...")
     
     for record in SeqIO.parse(fasta, "fasta"):

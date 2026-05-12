@@ -39,6 +39,7 @@ Boise, Idaho, USA
 -   **Multi-replicate CANU assembly** optimized for rare haplotype recovery
 -   **Polyploid-aware variant calling** and read-backed phasing with WhatsHap
 -   **Reference-guided sequence orientation** and gap-filling procedures
+-   **Targeted QC filters** addressing two failure modes observed in Library 010 processing: (i) a **reference-similarity (BLAST coverage) filter** that removes SRK paralogs carrying a localised ~500 bp insertion (98–100 % identical to canonical SRK where they align, so identity-based filtering fails); (ii) an **N-content filter** that removes contigs with N-rich termini introduced by Canu *de novo* assembly when Nanopore reads are shorter than the ~3.5 kb amplicon — the upstream cause of spurious gap blocks in downstream AA alignments.
 -   **SRK-specific protein validation** with optional domain analysis
 -   **Abundance-based filtering** to distinguish authentic alleles from technical artifacts
 -   **Tetraploid zygosity analysis** with allele copy-count dosage inference (AAAA, AAAB, AABB, AABC, ABCD) for complex polyploid genetics
@@ -55,16 +56,18 @@ The pipeline consists of **23 main steps organized into four phases**, progressi
 1.  **Prepare Canonical Sequences** – Preparation of reference SRK sequences used for downstream assembly and validation.
 2.  **Nanopore Amplicon Assembly and Phasing Pipeline** – Multi-CANU assembly of Nanopore amplicons followed by haplotype phasing to reconstruct allelic sequences.
 3.  **Haplotype Orientation and Consolidation Pipeline** – Standardization of sequence orientation and consolidation of phased haplotypes.
-4.  **FASTA Sequence Filtering and Reference Integration Pipeline** – Quality filtering of sequences and integration of validated reference alleles.
+4.  **FASTA Sequence Filtering and Reference Integration Pipeline** – Quality filtering of sequences by length (min 3250 bp, max 4000 bp) and integration of validated reference alleles.
+4b. **Reference-Similarity Filter (BLAST + coverage)** – Removes SRK paralogs that pass the length filter but contain a localised ~500 bp insertion. Paralogs are 98–100 % identical to canonical SRK *where they align*, so percent identity does not discriminate — the filter uses BLAST query coverage (≥0.90) against the canonical LEPA SRK reference set. Without this filter, paralogs inflate the Step 5 MAFFT alignment and produce spurious gap blocks downstream.
 5.  **Multiple Sequence Alignment** – Alignment of nucleotide sequences using MAFFT.
 6.  **Exon Extraction from Multiple Sequence Alignments Pipeline** – Extraction of coding regions based on AUGUSTUS gene annotations.
 7.  **MSA Gap Backfilling and Terminus Processing Pipeline** – Reference-guided backfilling of terminal alignment gaps and sequence terminus correction.
+7b. **Ambiguity (N-content) Filter** – Removes contigs with N-rich termini. **Origin of the `N`s:** when Nanopore reads are shorter than the ~3.5 kb SRK amplicon (DNA fragmentation during library prep, partial pore translocation, or end-of-read truncation), Canu *de novo* assembly cannot span the full amplicon and produces contigs shorter than the canonical reference. Step 7 then pads the missing terminus with `N`. Downstream, those `N` codons translate to `X` residues in Step 8 and cause MAFFT to insert spurious gap blocks on the BEA canonical reference rows. Filtering at the DNA stage prevents the cascade.
 8.  **DNA to Amino Acid Translation Pipeline** – Frame-specific translation of nucleotide sequences into proteins. **Note:** This step is optional and may be skipped if protein sequences are not required.
 
 ## Phase 2: Functional Proteins, S Alleles and Genotyping
 
 9.  **SRK Protein Translation, Alignment, and Abundance Filtering Pipeline** – Translation of SRK alleles into proteins, alignment, and filtering based on abundance thresholds to retain functional candidates.
-10. **Distance-Based SRK S-Allele Definition** – Grouping of functional proteins into allele bins using pairwise amino acid p-distance on the S-domain ectodomain, with sensitivity analysis and amino acid variation heatmaps.
+10. **Distance-Based SRK S-Allele Definition** – Grouping of functional proteins into allele bins using pairwise amino acid p-distance on the S-domain ectodomain. Calibration is a separate first step: `find_allele_plateau.py` applies three independent estimators (Kneedle elbow detection, slope-magnitude minimum, longest-persistent-run plateau) to the sensitivity curve and reports a recommended `N_ALLELES` on stdout, which is then set manually in `define_SRK_alleles_from_distance.py` before clustering. Step 10b (`SRK_AA_mutation_heatmap.py`) produces amino acid variation heatmaps for the resulting allele bins.
 11. **SRK S-Allele Genotyping Pipeline** – Assignment of distance-defined S-allele bins to individuals, producing long-format allele tables (with allele copy counts) and count-based genotype matrices. Each cell in the wide matrix records the number of distinct proteins from that individual assigned to that allele bin, capturing dosage information for downstream zygosity inference and allele frequency analysis.
 12. **SRK Zygosity Analysis Pipeline for Tetraploid Species** – Classification of individuals as homozygous or heterozygous using the allele count matrix. Infers tetraploid genotype classes (AAAA, AAAB, AABB, AABC, ABCD) from both the number of distinct allele bins and their copy counts, and outputs an `Allele_composition` string (e.g. `Allele_044(2)+Allele_047(2)`) for direct use in cross planning.
 
@@ -84,7 +87,7 @@ The pipeline consists of **23 main steps organized into four phases**, progressi
 
 ## Phase 4: Testing S-allele Hypotheses
 
-22. **HV-Based Allele Hypothesis Testing and Crossing Design** – Multi-script workflow. **Step 22a** (`srk_variability_landscape.py`): combined alignment of LEPA + *Brassica rapa*/*B. oleracea* + *Arabidopsis lyrata*/*A. halleri* SRK alleles; identical sliding-window Shannon-entropy scan applied to each species; per-species HV regions called at mean + 1×SD, validated by 10 000-permutation overlap test (LEPA↔Brassica p = 0.0005, LEPA↔Arabidopsis p = 0.0024); 12 SCR9-contact residues from Ma et al. 2016 (PDB 5GYY) overlaid as structural validation; canonical 73 LEPA HV columns written to `SRK_LEPA_HV_positions.tsv`. **Step 22b** (`srk_allele_hypotheses.py`): reads the canonical HV columns, computes HV-only pairwise distances, UPGMA-clusters into Class I / Class II, builds the synonymy network (HV-identical synonymy groups + Synonymy_test bridges), and generates the Incompatible / Synonymy_test / Compatible_within / Compatible_cross cross design. **Steps 22c and 22d** are optional mechanism diagnostics. **Step 22e** (`srk_cross_plan.py`) is the operational deliverable — a phased cross plan testing five nested hypotheses (H0 SI validation; H1a within-Class baseline; H1b between-Class baseline; H2 synonymy bin boundaries; H3 hidden bins via heterozygous donors) with explicit AAAA / AAAB / AABB genotype requirements + paired controls for AAAB-mediated tests. Every cross is traceable to its sequence-based category (HV distance + Class) plus its genotype-based feasibility (`Allele_composition` from Step 12) — see Bioinformatics_pipeline.md for the full provenance and assumption checklist.
+22. **HV-Based Allele Hypothesis Testing and Crossing Design** – Multi-script workflow. **Step 22a** (`srk_variability_landscape.py`): combined alignment of LEPA + *Brassica rapa*/*B. oleracea* + *Arabidopsis lyrata*/*A. halleri* SRK alleles; identical sliding-window Shannon-entropy scan applied to each species; per-species HV regions called at mean + 1×SD; anchored structurally by 11 of 12 mappable SCR9-contact residues from Ma et al. 2016 (PDB 5GYY); canonical 66 LEPA HV columns written to `SRK_LEPA_HV_positions.tsv` (in the current post-QC dataset, the cross-genus HV-overlap permutation is no longer significant for LEPA pairs — interpreted as drift-eroded standing variation, with Brassica↔Arabidopsis remaining highly significant). **Step 22b** (`srk_allele_hypotheses.py`): reads the canonical HV columns, computes HV-only pairwise distances, UPGMA-clusters into Class I / Class II, builds the synonymy network (HV-identical synonymy groups + Synonymy_test bridges), and generates the Incompatible / Synonymy_test / Compatible_within / Compatible_cross cross design. **Steps 22c and 22d** are optional mechanism diagnostics. **Step 22e** (`srk_cross_plan.py`) is the operational deliverable — a phased cross plan testing five nested hypotheses (H0 SI validation; H1a within-Class baseline; H1b between-Class baseline; H2 synonymy bin boundaries; H3 hidden bins via heterozygous donors) with explicit AAAA / AAAB / AABB genotype requirements + paired controls for AAAB-mediated tests. Every cross is traceable to its sequence-based category (HV distance + Class) plus its genotype-based feasibility (`Allele_composition` from Step 12) — see Bioinformatics_pipeline.md for the full provenance and assumption checklist.
 23. **Cross Result Analysis** – Reads completed crossing records and tests whether the W / N / P category predicts seed yield, validating the sequence-based allele definitions against experimental cross-compatibility data. Activated by setting `CROSS_TSV` in the script once crossing data are available.
 
 ## Requirements
@@ -162,17 +165,53 @@ project/
 # Step 3: Orientation
 ./scripts/02_haplotype_orientation.sh
 
-# Continue with remaining steps...
+# Step 4: Length filter + canonical reference integration
+./filter_and_add_references.sh
+
+# Step 4b: Reference-similarity filter (BLAST + coverage)
+#   Removes SRK paralogs (~500 bp insertion) that pass length filter
+#   but inflate the MAFFT alignment downstream. New for Library 010+.
+./filter_by_reference_similarity.sh
+
+# Step 5: MAFFT multiple sequence alignment
+mafft --auto --adjustdirection <_blastfilt.fasta>  > <_blastfilt_aligned.fasta>
+
+# Step 6: Exon extraction from MSA
+python extract_exons_with_annotation.py
+
+# Step 7: Backfill terminal gaps from canonical reference
+python backfill_alignment_ends.py
+
+# Step 7b: Ambiguity (N-content) filter
+#   Removes contigs with N-rich termini introduced by Step 7 when
+#   Canu assembly cannot span the full amplicon (short Nanopore reads).
+#   These would translate to X residues in Step 8 and cause spurious
+#   gap blocks on BEA canonical references. New for Library 010+.
+./filter_by_ambiguity.sh
+
+# Step 8 (optional): DNA → AA translation, stop-codon filter, MAFFT
+python translate_filter_align_AA.py
 ```
 
 3.  **Phase 2 — Functional Proteins, S Alleles and Genotyping (Steps 9–12):**
 
 ``` bash
-# Steps 9-12: Protein filtering, allele definition, genotyping, zygosity
-python scripts/09_srk_protein_filtering.py
-Rscript scripts/10_srk_allele_definition.R
-Rscript scripts/11_srk_allele_genotyping.R
-Rscript scripts/12_zygosity_analysis.R
+# Step 9: Protein filtering (define functional proteins from per-library backfilled DNA)
+python define_functional_proteins.py
+
+# Step 10a-pre: Calibrate N_ALLELES (Kneedle elbow on the sensitivity curve)
+#   Re-run whenever the dataset changes. Prints the recommended N_ALLELES on stdout.
+python find_allele_plateau.py
+
+# Step 10a: Allele clustering at calibrated N_ALLELES (manually edit N_ALLELES at top of script)
+python define_SRK_alleles_from_distance.py
+
+# Step 10b: Amino acid variation heatmaps
+python SRK_AA_mutation_heatmap.py
+
+# Steps 11–12: Genotyping and tetraploid zygosity
+python genotype_SRK_from_alleles.py
+python compute_zygosity.py
 ```
 
 4.  **Phase 3 — Data Analyses (Steps 13–21):**
@@ -208,12 +247,14 @@ Rscript SRK_GFS_reproductive_effort.R
 
 ``` bash
 # Step 22a: cross-Brassicaceae variability landscape (Shannon entropy + permutation test)
-# One-time setup (only needed once or after LEPA representatives change):
-python3 srk_fetch_reference_alleles.py
+#
+# Rebuild chain (run every time Step 10a re-runs, e.g. new library, new N_ALLELES):
+python3 srk_fetch_reference_alleles.py            # ONCE per project (re-run only if reference set changes)
+python3 pad_representatives.py                    # pads LEPA reps to uniform length for mafft --add
 mafft --add all_reference_SRKs_dedup.fasta SRK_protein_allele_representatives_padded.fasta \
-      > SRK_combined_alignment.fasta
-python3 srk_brassica_hv_mapping.py
-# Then re-run Step 22a whenever LEPA representatives change:
+      > SRK_combined_alignment.fasta              # rebuilds combined alignment
+python3 srk_brassica_hv_mapping.py                # remaps Ma 2016 SCR9 contacts to new LEPA coordinates
+# Then run the variability landscape:
 python3 srk_variability_landscape.py
 
 # Step 22b: HV-based allele hypothesis testing and crossing design
@@ -274,7 +315,7 @@ For a concise step-by-step protocol (scripts, inputs, outputs, key parameters), 
 #### Step 15 — Allele accumulation
 
 -   `SRK_allele_accumulation_curves.pdf` - Species + per-EO + per-BL pages with MM/Chao1/iNEXT asymptote reference lines
--   `figures/SRK_allele_accumulation_species.png` - Standalone species curve (54 alleles observed in 272 ingroup individuals; MM = 69, Chao1 = 73)
+-   `figures/SRK_allele_accumulation_species.png` - Standalone species curve (current dataset 2026-05-11: 49 alleles observed in 335 ingroup individuals; MM = 59, Chao1 = 61, consensus = 60)
 -   `figures/SRK_allele_accumulation_combined.png` - All qualifying EO curves on shared axes, **colored by parent BL**
 -   `figures/SRK_allele_accumulation_BL_combined.png` - **NEW**. The 5 BL aggregate curves on shared axes
 -   `figures/SRK_allele_accumulation_drift_erosion.png` - EO stacked bars sorted by BL with BL color strip on the x-axis baseline
@@ -302,7 +343,7 @@ For a concise step-by-step protocol (scripts, inputs, outputs, key parameters), 
 -   `SRK_allele_upset_BLs.{pdf,png}` - **NEW**. BL-level UpSet — the direct test of independent bottlenecks
 -   `SRK_allele_sharing_heatmap_BLs.{pdf,png}` - **NEW**. 5×5 BL pairwise sharing heatmap (BL4↔BL5 share 12 alleles, the highest off-diagonal value)
 
-PNGs land in `figures/`; PDFs in the project root. **Headline finding:** 33 of 54 alleles (61%) are private to a single BL; only Allele_050 and Allele_057 are shared across all 5 BLs.
+PNGs land in `figures/`; PDFs in the project root. **Headline finding (2026-05-11 refresh):** 26 of 49 alleles (53 %) are private to a single BL; only Allele_050 and Allele_051 are shared across all 5 BLs.
 
 #### Steps 19–20 — Individual GFS + TP2 tipping point
 
@@ -318,19 +359,19 @@ PNGs land in `figures/`; PDFs in the project root. **Headline finding:** 33 of 5
 -   `SRK_GFS_AAAA_allele_composition.pdf` - 2-page PDF: EO panel + BL panel — allele identity of AAAA individuals; Synonymy group 1 alleles highlighted
 -   `SRK_BL_reproductive_effort_summary.tsv` - **NEW**. BL-level reproductive support summary
 -   `figures/SRK_GFS_reproductive_effort_{EO,BL}.png` - Per-EO and per-BL proportional bars
--   `figures/SRK_GFS_AAAA_allele_composition_{EO,BL}.png` - Per-EO and per-BL AAAA allele identity. **Headline:** Allele_050 + Allele_057 are pan-BL across all 5 BLs and pan-EO in 5/6 focus EOs — confirms shared Synonymy group 1 fixation despite independent bottlenecks
+-   `figures/SRK_GFS_AAAA_allele_composition_{EO,BL}.png` - Per-EO and per-BL AAAA allele identity. **Headline:** Allele_050 + Allele_051 are pan-BL across all 5 BLs and pan-EO in 5/6 focus EOs — confirms shared Synonymy group 1 fixation despite independent bottlenecks
 
 ### Phase 4 Outputs (Testing S-allele Hypotheses)
 
 -   `SRK_variability_landscape.pdf` / `figures/SRK_variability_landscape.png` - **Multi-panel cross-Brassicaceae figure**: per-species smoothed Shannon entropy (LEPA + Brassica + Arabidopsis), per-species HV-region tracks, and Ma 2016 SCR9-contact residue markers (Step 22a)
 -   `SRK_HV_regions_per_species.tsv` - LEPA / Brassica / Arabidopsis HV runs (start–end, length, threshold) (Step 22a)
--   `SRK_LEPA_HV_positions.tsv` - **73 canonical LEPA HV columns** (consumed by Step 22b) (Step 22a)
+-   `SRK_LEPA_HV_positions.tsv` - **66 canonical LEPA HV columns** (consumed by Step 22b) (Step 22a)
 -   `SRK_HV_overlap_permutation.tsv` - Three pairwise HV-overlap permutation tests (10 000 perms; all three pairs significant) (Step 22a)
 -   `SRK_brassica_hv_mapping.tsv` - 12 Ma 2016 SCR9-contact residues mapped to LEPA columns (helper output)
--   `SRK_HV_allele_distances.tsv` - 63×63 pairwise distance matrix computed on the 73 canonical HV columns (Step 22b)
+-   `SRK_HV_allele_distances.tsv` - 58×58 pairwise distance matrix computed on the 66 canonical HV columns (Step 22b)
 -   `SRK_functional_allele_groups.tsv` - Allele bin → phylogenetic class assignment, AAAA count, cross power (Step 22b)
 -   `SRK_synonymy_candidates.tsv` - All within-class allele pairs with HV distance and testability flag (Step 22b)
--   `SRK_synonymy_groups.csv` - Per-allele synonymy group membership (9 synonymy groups + 23 isolated → 32 effective bins) (Step 22b)
+-   `SRK_synonymy_groups.csv` - Per-allele synonymy group membership (8 synonymy groups + 19 isolated → 27 effective bins) (Step 22b)
 -   `SRK_allele_similarity_heatmap.pdf` / `figures/SRK_allele_similarity_heatmap.png` - 63×63 HV similarity heatmap ordered by UPGMA with class strips (Step 22b)
 -   `SRK_AAAA_cross_design_HV.tsv` - All AAAA × AAAA pairs ranked by category (Incompatible / Synonymy_test / Compatible_within / Compatible_cross) with HV distance and expected outcome (Step 22b)
 -   `SRK_cross_design_summary.pdf` / `figures/SRK_cross_design_summary.png` - Three-panel figure: HV distance distribution, cross category schematic, Synonymy_test cross interpretation (Step 22b)
@@ -372,7 +413,7 @@ Key findings from **272 individuals across five Element Occurrences** (EO25, EO2
 - 60% of individuals carry an AAAA genotype (single allele, four copies), flagging a high risk of reduced SI function
 - A further 16% carry an AAAB genotype (GFS = 0.500) — dosage-imbalanced individuals that appear heterozygous but produce fewer diverse gametes than AABB individuals (GFS = 0.667)
 - All five EOs are flagged **CRITICAL** for Tipping Point 2 (mean GFS 0.18–0.32; proportion AAAA 53–69%); EO67 is least degraded; EO76 is most degraded with no AABC individuals
-- S-allele sets are largely private to each EO: only **2 alleles** (Allele_050 and Allele_057) are shared across all five EOs; EO27 holds the most private alleles (12), EO70 the fewest (2)
+- S-allele sets are largely private to each EO: only **2 alleles** (Allele_050 and Allele_051) are shared across all six focus EOs (2026-05-11 refresh); EO27 and EO76 hold the most focus-EO-private alleles (6 each), EO25 and EO70 the fewest (2 each)
 - Managed crossing simulations show 77–95% variance reduction within one generation vs. random mating, with zero allele loss under optimised preservation strategies
 
 ## Citation

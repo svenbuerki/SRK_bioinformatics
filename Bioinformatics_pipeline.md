@@ -151,21 +151,64 @@ Library001/
 
 ---
 
+### Step 4b — Reference-Similarity Filter (BLAST + coverage)
+
+**Script:** `filter_by_reference_similarity.sh`
+
+**Rationale:** Length-based filtering alone does not separate true SRK alleles from SRK paralogs. Library 010 (2026-05-11) revealed a bimodal length distribution: a true SRK cluster (~3300 bp) and a paralog cluster (~3900 bp) carrying a ~500 bp insertion. Both clusters are 98–100% identical where they align, so identity does not discriminate. The discriminator is BLAST **query coverage**: true SRK aligns over ≥90% of query length, paralogs over ≤85% (the inserted region does not align to canonical SRK).
+
+Without this filter, paralogs inflate the Step 5 MSA (Library 010: 5690 bp wide; 40–45% gaps per row) and produce spurious gap blocks in the Step 8 AA alignment.
+
+**Command:**
+```bash
+./filter_by_reference_similarity.sh
+# Prompted inputs:
+#   Length-filtered FASTA (e.g. all_Library010_Phased_haplotypes_filtered_min3250_max4000.fasta)
+#   Canonical SRK reference FASTA (e.g. Canonical_sequences/SRK_canonical_haplotype_sequences_revcomp_ATGfixed.fasta)
+#   Minimum query coverage [default 0.90]
+#   Minimum percent identity [default 95]
+#   BLAST threads [default 4]
+```
+
+**Key parameters:**
+- `min_coverage = 0.90` — paralogs with the ~500 bp insertion bottom out at ~85% coverage; 0.90 cleanly separates them from true SRK alleles (which cluster at 95–100%).
+- `min_identity = 95` — rejects spurious low-identity hits but does not attempt to use identity for paralog discrimination (paralogs are 98–100% identical where they align).
+- Canonical reference IDs are always retained regardless of BLAST result.
+
+**Input:**
+- `all_Library00X_Phased_haplotypes_filtered_min3250_max4000.fasta` — output of Step 4
+- `Canonical_sequences/SRK_canonical_haplotype_sequences_revcomp_ATGfixed.fasta` — 4 LEPA canonical SRK haplotypes (BEA hybrid)
+
+**Output:**
+- `all_Library00X_Phased_haplotypes_filtered_min3250_max4000_blastfilt.fasta` — paralog-purged FASTA, input to Step 5
+- `all_Library00X_Phased_haplotypes_filtered_min3250_max4000_blastfilt_log.tsv` — per-query decision log (`query_id`, `query_length`, `pct_identity`, `coverage`, `decision`)
+
+**Validation (Library 010):**
+| Metric | Before Step 4b | After Step 4b |
+|---|---:|---:|
+| Sequences | 2260 | 1516 (–744 paralog/chimeric) |
+| Step 5 MSA width | 5690 bp | 3735 bp |
+| Per-row gap fraction | 40–45% | <20% |
+
+Runtime: ~3 s on 2260 sequences (4 threads).
+
+---
+
 ### Step 5 — Multiple Sequence Alignment
 
 **Tool:** MAFFT
 
 **Command:**
 ```bash
-mafft --auto --adjustdirection all_Library00X_Phased_haplotypes_filtered_min3250_max4000.fasta \
-  > all_Library00X_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta
+mafft --auto --adjustdirection all_Library00X_Phased_haplotypes_filtered_min3250_max4000_blastfilt.fasta \
+  > all_Library00X_Phased_haplotypes_filtered_min3250_max4000_blastfilt_aligned.fasta
 ```
 
 > Run this command for each library. `--adjustdirection` handles any residual orientation issues.
 
-**Input:** `all_Library00X_Phased_haplotypes_filtered_min3250_max4000.fasta`
+**Input:** `all_Library00X_Phased_haplotypes_filtered_min3250_max4000_blastfilt.fasta` (output of Step 4b)
 
-**Output:** `all_Library00X_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta`
+**Output:** `all_Library00X_Phased_haplotypes_filtered_min3250_max4000_blastfilt_aligned.fasta`
 
 ---
 
@@ -177,7 +220,7 @@ mafft --auto --adjustdirection all_Library00X_Phased_haplotypes_filtered_min3250
 ```bash
 python extract_exons_with_annotation.py
 # Prompted inputs:
-#   MSA FASTA path (e.g. all_Library006_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta)
+#   MSA FASTA path (e.g. all_Library006_Phased_haplotypes_filtered_min3250_max4000_blastfilt_aligned.fasta)
 #   Canonical reference ID (exact header, e.g. SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407)
 #   AUGUSTUS CSV annotation file (full path)
 #   Strand of annotation for canonical reference (+)
@@ -192,7 +235,7 @@ python extract_exons_with_annotation.py
 - Min exon length: `0`
 
 **Output:**
-- `all_Library00X_Phased_haplotypes_filtered_min3250_max4000_aligned_exons.fasta`
+- `all_Library00X_Phased_haplotypes_filtered_min3250_max4000_blastfilt_aligned_exons.fasta`
 
 ---
 
@@ -212,9 +255,51 @@ python backfill_alignment_ends.py
 - `WINDOW = 25` bp backfilled from reference at each terminus (hardcoded)
 - Leading/trailing terminal gaps beyond the backfill window are replaced with `N`
 
-**Input:** `all_Library00X_Phased_haplotypes_filtered_min3250_max4000_aligned_exons.fasta`
+**Input:** `all_Library00X_Phased_haplotypes_filtered_min3250_max4000_blastfilt_aligned_exons.fasta`
 
-**Output:** `all_Library00X_Phased_haplotypes_filtered_min3250_max4000_aligned_exons_backfilled.fasta`
+**Output:** `all_Library00X_Phased_haplotypes_filtered_min3250_max4000_blastfilt_aligned_exons_backfilled.fasta`
+
+---
+
+### Step 7b — Ambiguity (N-content) Filter
+
+**Script:** `filter_by_ambiguity.sh`
+
+**Rationale (causal chain):**
+
+1. **Upstream origin — short Nanopore fragments.** A subset of barcodes in any given library produces Nanopore reads that are shorter than the expected ~3.5 kb SRK amplicon (fragmentation during library prep, partial pore translocation, or end-of-read truncation). When Canu performs *de novo* assembly on these reads, it cannot reconstruct the full amplicon span and instead produces a contig that is shorter than the canonical reference at one (usually the 3′) terminus.
+
+2. **Step 7 backfill writes `N`s.** Step 7 (`backfill_alignment_ends.py`) handles short contigs by **padding the missing terminal positions with `N`** so that all sequences share the same alignment width as the canonical reference. This is correct behaviour at the DNA stage — the `N`s preserve column registry without inventing nucleotides.
+
+3. **Step 8 translates `N` codons to `X`.** Any codon containing `N` translates to the ambiguity character `X`. The 3′ N-block therefore appears as a contiguous block of `X` residues at the C-terminus of the predicted protein.
+
+4. **MAFFT inflates the AA alignment.** When the AA MSA is built, MAFFT cannot match `X` to a defined residue, so it inserts gap columns to accommodate the `X` block. Those gaps appear on the **BEA canonical reference rows** (which have proper residues there), producing the visible trailing-gap artefact.
+
+Filtering at the DNA stage (this step), before translation, removes the affected contigs cleanly and prevents the downstream cascade.
+
+Library 010 (2026-05-11) illustrates the pattern: 128 of 1516 sequences (~8%) carried 10–100+ trailing `N`s, distributed across 5 barcodes with reproducibly short 3′ contigs. The N-count distribution is sharply bimodal (0–9 `N`s vs. 10–100+), enabling a clean threshold cut.
+
+**Command:**
+```bash
+./filter_by_ambiguity.sh
+# Prompted inputs:
+#   FASTA to filter (Step 7 backfilled output)
+#   Max N count per sequence [default 9]
+#   Max N fraction [0-1, default 0.005]
+```
+
+**Key parameters:**
+- `max_N = 9` — Library 010 distribution is sharply bimodal (clean cluster 0–9 N's vs. problematic 10–100+ N's). Threshold of 9 cleanly separates them.
+- `max_N_fraction = 0.005` — secondary safety check (~13 N's for a 2530 bp sequence).
+
+**Input:**
+- `all_Library00X_..._blastfilt_aligned_exons_backfilled.fasta` — output of Step 7
+
+**Output:**
+- `all_Library00X_..._blastfilt_aligned_exons_backfilled_Nfilt.fasta` — N-purged DNA, input to Step 8
+- `all_Library00X_..._blastfilt_aligned_exons_backfilled_Nfilt_log.tsv` — per-query decision log
+
+**Validation (Library 010):** 1516 → 1388 (–128 sequences dropped); resolves the trailing-gap artefact on BEA canonical AA references in Step 8 output. Runtime <1 s.
 
 ---
 
@@ -237,10 +322,10 @@ python translate_filter_align_AA.py
 - Genetic code: standard nuclear (table 1)
 - Only sequences without internal stop codons are retained in the final filtered output
 
-**Input:** `all_Library00X_Phased_haplotypes_filtered_min3250_max4000_aligned_exons_backfilled.fasta`
+**Input:** `all_Library00X_Phased_haplotypes_filtered_min3250_max4000_blastfilt_aligned_exons_backfilled_Nfilt.fasta`
 
 **Key output:**
-- `all_Library00X_Phased_haplotypes_filtered_min3250_max4000_aligned_exons_backfilled_frame1_AA_filtered_aligned.fasta`
+- `all_Library00X_Phased_haplotypes_filtered_min3250_max4000_blastfilt_aligned_exons_backfilled_Nfilt_frame1_AA_filtered_aligned.fasta`
 
 ---
 
@@ -286,9 +371,29 @@ python define_functional_proteins.py
 
 ### Step 10 — Distance-Based SRK S-Allele Definition
 
-**Scripts:** `define_SRK_alleles_from_distance.py` and `SRK_AA_mutation_heatmap.py`
+**Scripts:** `find_allele_plateau.py` (calibration), `define_SRK_alleles_from_distance.py` (clustering), `SRK_AA_mutation_heatmap.py` (variation heatmaps)
 
-> Run Step 10a first so allele assignments are available for Step 10b row ordering.
+> Run Step 10a-pre once per dataset to choose `N_ALLELES`, then Step 10a, then Step 10b.
+
+#### Step 10a-pre — Calibrate `N_ALLELES` (Kneedle elbow detection)
+
+Whenever the input dataset changes (new library, re-run after a filter change), run the calibration utility to mathematically identify the elbow of the sensitivity curve.
+
+**Command:**
+```bash
+python find_allele_plateau.py
+```
+
+**Methods reported (three independent estimators):**
+1. **Kneedle** (max perpendicular distance from the chord connecting curve endpoints) — the canonical "elbow" detection method (Satopaa et al. 2011). This is the recommended estimator and matches the visually-identified plateau in well-behaved curves.
+2. **Slope-magnitude minimum** (smoothed `|dN/dt|`) — finds the flattest region within a constrained allele-count range. May lock onto secondary plateaus lower on the curve.
+3. **Longest persistent run** (contiguous threshold steps where `N` stays within ±3 alleles of a candidate centre) — robust measure of plateau width.
+
+The script also prints a per-threshold table around the Kneedle elbow so the curve shape can be sanity-checked numerically.
+
+**Recommended action:** use the Kneedle value unless the per-threshold table shows it landing on a knife-edge transition rather than a stable level. Inspect `SRK_protein_distance_analysis.pdf` (Step 10a output) for visual confirmation.
+
+**Outputs:** stdout report only — no files written. The chosen value of `N_ALLELES` is then manually entered at the top of `define_SRK_alleles_from_distance.py`.
 
 #### Step 10a — Allele clustering
 
@@ -301,11 +406,11 @@ python define_SRK_alleles_from_distance.py
 | Parameter | Default | Notes |
 |-----------|---------|-------|
 | `INPUT_FASTA` | `SRK_functional_proteins_aligned.fasta` | Aligned proteins from Step 9 |
-| `N_ALLELES` | `63` | Option A: fix number of alleles directly |
-| `DIST_THRESHOLD` | `0.01` (1%) | Option B: fix p-distance cutoff; use sensitivity plot elbow to calibrate |
+| `N_ALLELES` | `58` | Option A: fix number of alleles directly; set from Step 10a-pre Kneedle output |
+| `DIST_THRESHOLD` | `0.01` (1%) | Option B: fix p-distance cutoff; used only when `N_ALLELES = None` |
 | `DOMAIN_REGION` | `(31, 430)` | S-domain columns (1-based); adjust if species-specific annotation available |
 
-> **Calibration:** inspect `SRK_protein_distance_analysis.pdf` sensitivity curve; choose the elbow (typically 1–2% for Nanopore data). Use `N_ALLELES` (Option A) if the elbow is easier to read on the y-axis than on the distance axis. For the current dataset (Libraries 001–009, 308 individuals, 302 functional proteins), the sensitivity curve showed a plateau between 50–100 alleles centred at 63 (implied threshold ≈ 0.005), which was used as `N_ALLELES`.
+> **Calibration history:** for the current dataset (Libraries 001–010, 380 individuals, 376 functional proteins after Step 4b + Step 7b filtering), `find_allele_plateau.py` returned a Kneedle elbow at N = 58 (implied threshold ≈ 0.0055), confirmed visually on the sensitivity curve. Earlier (Libraries 001–009, 302 functional proteins) the value was N ≈ 63 (implied threshold ≈ 0.005). The shift reflects (i) the addition of Library 010 and (ii) the cleaner protein set produced by Steps 4b/7b.
 
 **Outputs:**
 - `SRK_protein_allele_assignments.tsv` — Protein → Allele mapping
@@ -535,7 +640,7 @@ Rscript SRK_allele_accumulation_analysis.R
 - `sampling_metadata.csv` — must contain `SampleID`, `Pop`, `Ingroup` columns
 - `SRK_individual_BL_assignments.tsv` — from Step 13
 
-**Split-filter design.** This is the only step where the sample set differs by analysis level: the **species-level curve and richness estimators use ALL 272 ingroup individuals** (so the species pool baseline includes alleles unique to the 10 individuals whose germplasm sub-codes are not yet resolved to a BL — those alleles still count toward the species pool). The **EO-level and BL-level curves use only the 262 BL-assigned individuals**, where geographic provenance is required. Without the split, the species pool would shrink from 54 observed / MM=69 down to 50 observed / MM=63 — losing four alleles unique to the unresolved samples.
+**Split-filter design.** This is the only step where the sample set differs by analysis level: the **species-level curve and richness estimators use ALL ingroup individuals** (current dataset 2026-05-11: 335 individuals; species pool: 49 observed / MM = 59 / Chao1 = 61 / consensus = 60) so the baseline includes alleles unique to the 10 individuals whose germplasm sub-codes are not yet resolved to a BL — those alleles still count toward the species pool. The **EO-level and BL-level curves use only the BL-assigned individuals** (325 of 335 in current dataset; was 262 of 272 prior to Library 010), where geographic provenance is required.
 
 **Key parameters:**
 - Permutations: 1000 (default)
@@ -674,7 +779,7 @@ EO bars and dots are colored by parent BL using the locked Set1 palette (Steps 1
 - `SRK_allele_upset_BLs.{pdf,png}` — **NEW**, BL-level UpSet
 - `SRK_allele_sharing_heatmap_BLs.{pdf,png}` — **NEW**, 5×5 BL heatmap
 
-**Headline result (current dataset, 2026-05-07):** 33 of 54 alleles (61%) are private to a single BL; only Allele_050 and Allele_057 are shared across all 5 BLs. The near-disjoint BL allele sets are the **direct test of independent bottlenecks** — a single shared species-level bottleneck would predict overlapping losses, not the observed lineage-private alleles. BL4 holds 14 private alleles (45% of its 31-allele complement), confirming its role as the species' diversity reservoir.
+**Headline result (current dataset, 2026-05-11):** 26 of 49 alleles (53 %) are private to a single BL; only Allele_050 and Allele_051 are shared across all 5 BLs. The near-disjoint BL allele sets are the **direct test of independent bottlenecks** — a single shared species-level bottleneck would predict overlapping losses, not the observed lineage-private alleles. BL4 holds 10 private alleles (37 % of its 27-allele complement), confirming its role as the species' diversity reservoir.
 
 ---
 
@@ -785,7 +890,7 @@ Visualises, for each focus EO and each BL, the proportion of individuals at each
 
 **BL-stratified design:** EOs are sorted by parent BL then by mean GFS within BL; y-axis labels are coloured by parent BL (Set1 palette). The BL panel pools all BL-assigned individuals into 5 lineage rows, sorted by mean GFS. The TP2 AAAA threshold (30%) is marked on both panels.
 
-**AAAA allele identity panels:** unpack the AAAA bar by showing which alleles each AAAA individual carries. *Pan-BL* alleles are present in AAAA individuals across every BL; *pan-EO* alleles are present in AAAA individuals in ≥80% of focus EOs (relaxed threshold accommodates EO18, the smallest focus EO with only 4 AAAA individuals carrying a different drift signature). Allele_050 and Allele_057 (Synonymy group 1, HV-identical, likely the same SI specificity) appear as pan-BL across all 5 BLs and pan-EO in 5 of 6 focus EOs — confirming that independent bottlenecks have all converged on the same fixed SI specificity.
+**AAAA allele identity panels:** unpack the AAAA bar by showing which alleles each AAAA individual carries. *Pan-BL* alleles are present in AAAA individuals across every BL; *pan-EO* alleles are present in AAAA individuals in ≥80% of focus EOs (relaxed threshold accommodates EO18, the smallest focus EO with only 4 AAAA individuals carrying a different drift signature). Allele_050 and Allele_051 (Synonymy group 1, HV-identical, likely the same SI specificity) appear as pan-BL across all 5 BLs and pan-EO in 5 of 6 focus EOs — confirming that independent bottlenecks have all converged on the same fixed SI specificity.
 
 **Headline:** BL3 has the lowest reproductive effort support (34%, mean GFS = 0.196); BL2 has the highest Synonymy group 1 saturation among AAAA individuals (69%); EO18 is the only focus EO without Synonymy group 1 alleles in its AAAA pool (4 AAAA individuals, 4 distinct non-Synonymy-group-1 alleles).
 
@@ -803,7 +908,7 @@ Visualises, for each focus EO and each BL, the proportion of individuals at each
 | File | Content |
 |------|---------|
 | `SRK_GFS_reproductive_effort.pdf` | 2-page PDF: EO panel + BL panel — GFS tier composition with reproductive effort annotations |
-| `SRK_GFS_AAAA_allele_composition.pdf` | 2-page PDF: EO panel + BL panel — allele identity of AAAA individuals; Synonymy group 1 alleles (Allele_050, Allele_057) highlighted |
+| `SRK_GFS_AAAA_allele_composition.pdf` | 2-page PDF: EO panel + BL panel — allele identity of AAAA individuals; Synonymy group 1 alleles (Allele_050, Allele_051) highlighted |
 | `SRK_BL_reproductive_effort_summary.tsv` | **NEW** — BL-level reproductive effort summary (n, n_supporting, prop_supporting, prop_AAAA, mean_GFS) |
 | `figures/SRK_GFS_reproductive_effort_EO.png` | EO-level proportional bar (PNG) |
 | `figures/SRK_GFS_reproductive_effort_BL.png` | **NEW** — BL-level proportional bar (PNG) |
@@ -824,22 +929,32 @@ Visualises, for each focus EO and each BL, the proportion of individuals at each
 
 #### Step 22a — Cross-Brassicaceae S-domain Variability Landscape
 
-**Scripts:**
-- `srk_fetch_reference_alleles.py` — one-time NCBI fetch of *Brassica rapa*, *B. oleracea*, *Arabidopsis lyrata*, and *A. halleri* SRK reference proteins (≈22 + 10 sequences after S-haplotype dedup).
-- `srk_brassica_hv_mapping.py` — maps the 12 SCR9-contact residues from Ma et al. 2016 (PDB 5GYY, *B. rapa* eSRK9) to LEPA alignment coordinates via `mafft --add`.
-- `srk_variability_landscape.py` — primary script: combined alignment + per-species Shannon entropy + per-species HV-region calls + permutation tests + figure.
+**Scripts (in execution order):**
+1. `srk_fetch_reference_alleles.py` — one-time NCBI fetch of *Brassica rapa*, *B. oleracea*, *Arabidopsis lyrata*, and *A. halleri* SRK reference proteins (≈22 + 10 sequences after S-haplotype dedup). Output: `all_reference_SRKs_dedup.fasta`. **Re-run only if the reference set changes** (rare).
+2. `pad_representatives.py` — pads `SRK_protein_allele_representatives.fasta` (Step 10a output) to uniform length. Output: `SRK_protein_allele_representatives_padded.fasta`. **Re-run every time Step 10a re-runs** (new library, re-calibrated `N_ALLELES`, or any filter change upstream).
+3. `mafft --add` — builds the combined LEPA + Brassica + Arabidopsis alignment. **Re-run every time pad_representatives runs.**
+4. `srk_brassica_hv_mapping.py` — maps the 12 SCR9-contact residues from Ma et al. 2016 (PDB 5GYY, *B. rapa* eSRK9) to LEPA alignment coordinates. **Re-run every time the combined alignment is rebuilt** (LEPA column coordinates shift when LEPA representatives change).
+5. `srk_variability_landscape.py` — primary Step 22a script: per-species Shannon entropy + per-species HV-region calls + permutation tests + figure.
 
 **Commands:**
 ```bash
-# One-time reference acquisition + alignment (skip if already done)
+# (Once per project, or when reference set changes)
 python3 srk_fetch_reference_alleles.py
+
+# Rebuild the combined alignment whenever Step 10a re-runs:
+python3 pad_representatives.py
 mafft --add all_reference_SRKs_dedup.fasta SRK_protein_allele_representatives_padded.fasta \
       > SRK_combined_alignment.fasta
 python3 srk_brassica_hv_mapping.py
 
-# Variability landscape (re-run whenever LEPA representatives change)
+# Variability landscape
 python3 srk_variability_landscape.py
 ```
+
+**Why the alignment must be rebuilt after every Step 10a re-run:**
+The LEPA allele set defines the *columns* of the combined alignment that downstream Step 22 scripts treat as canonical (HV column indices in `SRK_LEPA_HV_positions.tsv`, SCR9-contact residue mappings in `SRK_brassica_hv_mapping.tsv`). Re-running Step 10a with a different `N_ALLELES` produces a different representative set (different sequences, possibly different lengths after trailing-gap trimming), which means the `mafft --add` profile shifts and column coordinates renumber. Skipping the rebuild would silently mix Step 22 outputs that reference different LEPA coordinate systems — a hard-to-debug failure mode.
+
+**Validation step:** after rebuild, compare the printed HV region spans against the previous run. Substantial shifts (>10 columns) indicate the LEPA representative set has changed enough to invalidate downstream Step 22 outputs computed against the old combined alignment.
 
 **Inputs:**
 
@@ -936,7 +1051,7 @@ python3 srk_allele_hypotheses.py
 | `SRK_synonymy_groups.csv` | Per-allele Synonymy group membership and counts |
 | `figures/*.png` | PNG copies of all figures at 200 dpi |
 
-**Headline (current dataset, 73 canonical HV columns):** UPGMA splits 63 alleles into 2 functional groups (FG01 = 62 alleles, FG02 = Allele_061 outlier). Synonymy network: **9 synonymy groups + 23 isolated singletons → 32 effective bins** (down from 63), driven by Synonymy group 1 (13 HV-identical alleles incl. Allele_050 + Allele_057 = the pan-BL fixed S-specificity). 5663 Incompatible pairs, 6365 Synonymy_test pairs (synonymy tests), 1338 Compatible_within pairs in the cross-design matrix.
+**Headline (current dataset, 2026-05-11, 66 canonical HV columns):** UPGMA splits 58 alleles into 2 functional groups (FG01 = 57 alleles, FG02 = Allele_055 outlier). Synonymy network: **8 synonymy groups + 19 isolated singletons → 27 effective bins** (down from 58), driven by Synonymy group 1 (15 HV-identical alleles incl. Allele_050 + Allele_051 = the pan-BL fixed S-specificity, 134 AAAA individuals). 9700 Incompatible pairs, 10343 Synonymy_test pairs, 2112 Compatible_within pairs in the AAAA × AAAA cross-design matrix (22 155 total).
 
 **Cross categories:**
 
@@ -1031,12 +1146,12 @@ python3 srk_perBL_entropy_test.py
 | `SRK_perBL_entropy_figure.pdf` / `figures/SRK_perBL_entropy_figure.png` | Two-panel: per-BL entropy heatmap (top) + dominant-residue heatmap with Brassica + Arabidopsis comparison rows (bottom) |
 
 **Headline (current dataset):**
-- Within-LEPA: **all 5 BLs share the same dominant residue at 73/73 HV cols (100% concordance)**; per-BL mean entropy = 0.000–0.042 bits.
+- Within-LEPA: **all 5 BLs share the same dominant residue at 66/66 HV cols (100 % concordance)** in the current dataset (2026-05-11); per-BL mean entropy = 0.000–0.042 bits.
 - Cross-genera match: LEPA dominant = Brassica dominant at only **16/73 cols (22%)**; LEPA = Arabidopsis at 15/73 (21%); LEPA = both at **12/73 (16%)**.
 - LEPA-specific (LEPA all-BL concordant + ≠ both Brassica AND Arabidopsis): **54/73 cols (74%)**.
 - **Verdict: drift on a shared LEPA ancestral pool, NOT pan-Brassicaceae selection convergence.** Every BL fixed the same dominant allele family (Synonymy group 1 / Allele_050+057+relatives) because it was the most common ancestral haplotype pre-bottleneck. The dominant residues at 74% of HV cols are LEPA-specific (different from Brassica AND Arabidopsis), ruling out pan-genera selection as the primary driver. Only 16% of HV cols are conserved across all three genera — these represent the deeply conserved SI-recognition surface under selection across Brassicaceae.
 
-**Combined Step 22a + 22c + 22d biological narrative**: LEPA's low Shannon entropy at HV cols (Step 22a) is mostly explained by independent drift in every BL converging on the same ancestral Synonymy group 1 alleles (Step 22d), with Synonymy group sequence redundancy contributing a smaller share (Step 22c). The 73 LEPA HV cols are real (cross-genera permutation p ≤ 0.0024) but their low *intra-LEPA* diversity reflects severe drift-driven pruning of the species' ancestral allele pool, not pan-Brassicaceae selection convergence.
+**Combined Step 22a + 22c + 22d biological narrative**: LEPA's low Shannon entropy at HV cols (Step 22a) is mostly explained by independent drift in every BL converging on the same ancestral Synonymy group 1 alleles (Step 22d), with synonymy-group sequence redundancy contributing a smaller share (Step 22c). The 66 LEPA HV cols are real — anchored structurally by 11 of 12 Ma 2016 SCR9-contact residues — but in the current post-QC dataset (2026-05-11) the cross-genera HV-overlap permutation is no longer significant for LEPA pairs (LEPA ↔ Brassica p = 0.18; LEPA ↔ Arabidopsis p = 0.16); Brassica ↔ Arabidopsis remains highly significant (p < 0.0001). The honest reading: drift has eroded LEPA's HV signal beyond statistical detectability against an unbiased baseline — the same conclusion drawn from the per-BL entropy decomposition.
 
 **Pipeline-order requirement:** Step 22a (HV cols) + Step 13 (BL bridge) → 22d. Optional whether 22b/22c have run.
 
@@ -1073,8 +1188,8 @@ Each cross in the plan is assigned to its hypothesis level by combining two inde
 
 | Evidence | Source script | Source file | Threshold rationale |
 |---|---|---|---|
-| HV columns | `srk_variability_landscape.py` | `SRK_LEPA_HV_positions.tsv` | Shannon entropy > mean + 1×SD on smoothed profile (window = 20 aa); min run = 3 cols. Validated by permutation test against Brassica + Arabidopsis HV regions (LEPA↔Brassica p = 0.0005) and structural overlap with Ma 2016 SCR9-contact residues. |
-| Pairwise HV distance | `srk_allele_hypotheses.py` Part 2 | `SRK_HV_allele_distances.tsv` | p-distance computed only on the 73 canonical HV columns. |
+| HV columns | `srk_variability_landscape.py` | `SRK_LEPA_HV_positions.tsv` | Shannon entropy > mean + 1×SD on smoothed profile (window = 20 aa); min run = 3 cols. Anchored structurally by overlap with Ma 2016 SCR9-contact residues (11 of 12 contacts mapped). In the current cleaner post-QC dataset (2026-05-11), the cross-Brassicaceae HV-overlap permutation is no longer significant for LEPA pairs (LEPA↔Brassica p = 0.18, LEPA↔Arabidopsis p = 0.16); Brassica↔Arabidopsis remains highly significant (p < 0.0001) — interpretation: drift has eroded LEPA's HV signal beyond statistical detectability. |
+| Pairwise HV distance | `srk_allele_hypotheses.py` Part 2 | `SRK_HV_allele_distances.tsv` | p-distance computed only on the 66 canonical HV columns. |
 | Class assignment | `srk_allele_hypotheses.py` Part 2 (UPGMA) | `SRK_functional_allele_groups.tsv` | Auto-detected at the largest gap in UPGMA merge heights (0.087 → 0.96 in current data) — corresponds to the well-documented Brassicaceae Class I / Class II split. |
 | Synonymy group membership | `srk_allele_hypotheses.py` Part 3c | `SRK_synonymy_groups.csv` | Connected components of the graph where allele pairs are linked by HV distance = 0. |
 | Cross category | `srk_allele_hypotheses.py` Part 3 | `SRK_AAAA_cross_design_HV.tsv` | `different Class → Compatible_cross`; `d = 0 → Incompatible`; `0 < d < WITHIN_CLASS_THRESHOLD → Synonymy_test`; `d ≥ WITHIN_CLASS_THRESHOLD → Compatible_within`. Default threshold 0.04 ≈ median within-class HV distance. |
@@ -1098,9 +1213,9 @@ Each cross in the plan is assigned to its hypothesis level by combining two inde
 
 **Assumptions made explicit (for reviewer-facing justification)**
 
-1. **The 73 HV columns are the SI-recognition surface.** Justified by cross-Brassicaceae permutation tests (3 pairs all p ≤ 0.0024) and by structural overlap with the Ma 2016 *B. rapa* eSRK9–SCR9 crystal structure (PDB 5GYY).
+1. **The 66 HV columns are the SI-recognition surface.** Justified by structural overlap with the Ma 2016 *B. rapa* eSRK9–SCR9 crystal structure (PDB 5GYY, 11 of 12 contact residues map within or adjacent to LEPA HV regions). In the current cleaner post-QC dataset (2026-05-11), the cross-Brassicaceae HV-overlap permutation test is no longer significant for LEPA pairs (LEPA ↔ Brassica p = 0.18; LEPA ↔ Arabidopsis p = 0.16) but Brassica ↔ Arabidopsis remains highly significant (p < 0.0001) — the LEPA HV signal is interpreted as drift-eroded standing variation on a shared LEPA ancestral pool (see Step 22d). The structural anchor from Ma 2016 carries the validation.
 2. **HV-only p-distance approximates SI-specificity divergence.** This is the working hypothesis the H2 synonymy tests will *empirically validate or refute* — it is not assumed correct.
-3. **The UPGMA largest-gap cut correctly identifies Class I vs Class II.** Validated by the strongly bimodal HV-distance distribution and consistency with the documented Brassicaceae class split (in current data: Allele_061 ≈ 0.96 from all Class I alleles; intra-Class I ≤ 0.087).
+3. **The UPGMA largest-gap cut correctly identifies Class I vs Class II.** Validated by the strongly bimodal HV-distance distribution and consistency with the documented Brassicaceae class split (current data 2026-05-11: Allele_055 is the single Class II allele, separated from all Class I alleles by a much larger HV distance).
 4. **`WITHIN_CLASS_THRESHOLD = 0.04` separates small from substantial HV differences.** Empirical, derived from the within-class HV-distance distribution. Sensitivity analysis is straightforward (re-run Step 22b with a different value).
 5. **AAAA × AAAA crosses give unambiguous specificity assignment.** Direct consequence of polyploid SI biology: AAAA individuals carry one specificity in pistil and four identical copies in pollen.
 6. **Polyploid pollen segregation follows the C(4,2) = 6 combination rule.** Standard tetraploid meiotic assumption. H1b and H3 cross interpretations explicitly account for the resulting AA / AB / BB pollen distributions per genotype (AAAB → 50/50 AA/AB; AABB → 17/67/17 AA/AB/BB; etc.).

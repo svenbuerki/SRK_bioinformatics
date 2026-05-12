@@ -2,21 +2,21 @@
 
 ## Executive Summary
 
-**The conservation challenge.** *Lepidium papilliferum* (LEPA) is a self-incompatible (SI) tetraploid plant restricted to fragmented populations occupying slickspots in southwestern Idaho (USA) (Buerki et al., 2026). This report uses an SRK haplotype dataset of **272 individuals across 19 Element Occurrences** to ask: *what is the impact of habitat fragmentation and genetic drift on the species' SI system, and how can we design a genetically informed breeding programme to recover reproductive fitness?* The analysis is structured around six questions, each with a defensible biological headline.
+**The conservation challenge.** *Lepidium papilliferum* (LEPA) is a self-incompatible (SI) tetraploid plant restricted to fragmented populations occupying slickspots in southwestern Idaho (USA) (Buerki et al., 2026). This report uses an SRK haplotype dataset of **335 individuals across 19 Element Occurrences** to ask: *what is the impact of habitat fragmentation and genetic drift on the species' SI system, and how can we design a genetically informed breeding programme to recover reproductive fitness?* The analysis is structured around six questions, each with a defensible biological headline.
 
 **Q1 — Habitat fragmentation and bottlenecks.** Spatial-connectivity analysis (sibling repository [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering)) identifies **five independent bottleneck lineages (BL1–BL5)** across the species range with **no between-EO pollinator connections anywhere in the dataset**, establishing the demographic strata used throughout the report.
 
-**Q2 — Species S-allele richness.** 54 distinct S-alleles observed; Michaelis-Menten estimate = 69. Per-BL richness varies dramatically: **BL4 retains 31 alleles (57% — the diversity reservoir)** while BL1 and BL2 have lost 86–90% of the species pool. **33 of 54 alleles (61%) are private to a single BL** — direct empirical evidence of multiple independent founder events, not a single shared bottleneck.
+**Q2 — Species S-allele richness.** 49 distinct S-alleles observed; Michaelis-Menten estimate = 59 (consensus across MM and Chao1 = 60). Per-BL richness varies dramatically: **BL4 retains 27 alleles (55 % — the diversity reservoir)** while BL1 and BL2 retain only 4 and 8 alleles respectively. **26 of 49 alleles (53 %) are private to a single BL** — direct empirical evidence of multiple independent founder events, not a single shared bottleneck.
 
-**Q3 — Drift on populations' diversity (TP1).** All five BLs and 5 of 6 plotted EOs are flagged **CRITICAL** (richness < 50% of optimum AND frequency evenness Ne/N < 0.80). No lineage retains a balanced allele pool — restoration requires inter-BL allele transfers; within-lineage breeding alone cannot rebuild the SI system.
+**Q3 — Drift on populations' diversity (TP1).** All five BLs and all 6 plotted EOs are flagged **CRITICAL** (richness < 50 % of optimum AND frequency evenness Ne/N < 0.80). No lineage retains a balanced allele pool — restoration requires inter-BL allele transfers; within-lineage breeding alone cannot rebuild the SI system.
 
-**Q4 — Drift on individual reproductive fitness (TP2).** All five BLs CRITICAL on TP2 (mean Genotypic Fitness Score < 0.667 AND > 30% AAAA homozygotes). Allele_050 and Allele_057 (Synonymy group 1) are pan-BL fixed in AAAA individuals — **convergent drift onto the same SI specificity despite independent bottlenecks**. **13 AABC individuals** species-wide carry the heterozygous-gamete potential needed for high-yield managed crossing — they are the immediate seed-parent priority.
+**Q4 — Drift on individual reproductive fitness (TP2).** All five BLs CRITICAL on TP2 (mean Genotypic Fitness Score < 0.667 AND > 30 % AAAA homozygotes). Allele_050 and Allele_051 (both members of Synonymy group 1) are pan-BL fixed in AAAA individuals — **convergent drift onto the same SI specificity despite independent bottlenecks**. **15 AABC individuals** species-wide carry the heterozygous-gamete potential needed for high-yield managed crossing — they are the immediate seed-parent priority.
 
-**Q5 — Mechanism: convergent S-allele depletion.** A **five-stage Compatibility Collapse Cascade (C3)** explains how habitat fragmentation produces 60% reproductive dead-ends within a structurally intact SI system. Cross-Brassicaceae per-BL entropy decomposition reveals that the residue identities at LEPA hypervariable (HV) columns are **74% LEPA-specific** (different from Brassica AND Arabidopsis dominant residues), confirming the convergent allele depletion is **drift on a shared LEPA ancestral pool**, not pan-Brassicaceae selection convergence.
+**Q5 — Mechanism: convergent S-allele depletion.** A **five-stage Compatibility Collapse Cascade (C3)** explains how habitat fragmentation produces 60 % reproductive dead-ends within a structurally intact SI system. Cross-Brassicaceae per-BL entropy decomposition reveals that the residue identities at LEPA hypervariable (HV) columns are **73 % LEPA-specific** (different from Brassica AND Arabidopsis dominant residues), confirming the convergent allele depletion is **drift on a shared LEPA ancestral pool**, not pan-Brassicaceae selection convergence.
 
-**Q6 — Cross-based hypothesis testing.** A **101-cross phased experimental plan (1 323 attempts)** validates the bioinformatic predictions. The plan is structured around five nested hypotheses (H0 SI validation; H1a/H1b compatibility baselines; H2 synonymy bin boundaries; H3 hidden bins via heterozygous donors with paired controls). Outcomes feed into a **validated functional S-allele table** that informs operational seed-orchard design.
+**Q6 — Cross-based hypothesis testing.** A **104-cross phased experimental plan (1 368 attempts)** validates the bioinformatic predictions. The plan is structured around five nested hypotheses (H0 SI validation; H1a/H1b compatibility baselines; H2 synonymy bin boundaries; H3 hidden bins via heterozygous donors with paired controls). Outcomes feed into a **validated functional S-allele table** that informs operational seed-orchard design.
 
-**Action items.** (1) Cross all 13 AABC seed parents this season; (2) prioritise inter-BL allele transfers (BL4 → other BLs); (3) experimentally test Synonymy group 1 first (13 HV-identical alleles, 103 AAAA individuals — incompatible outcome would consolidate 40 % of all sequence bins into a single functional specificity).
+**Action items.** (1) Cross all 15 AABC seed parents this season; (2) prioritise inter-BL allele transfers (BL4 → other BLs); (3) experimentally test Synonymy group 1 first (15 HV-identical alleles, 134 AAAA individuals — incompatible outcome would consolidate ~36 % of all sequence bins into a single functional specificity).
 
 ---
 
@@ -59,21 +59,21 @@ The BL × group × EO cross-reference is published as `tables/EO_group_BL_summar
 
 ### Bottleneck-lineage membership and SRK sample sizes
 
-(262 of 272 BL-assigned ingroup individuals; 10 germplasm sub-codes remain Unassigned and contribute only to species-level baselines.)
+(325 of 335 BL-assigned ingroup individuals; 10 germplasm sub-codes remain Unassigned and contribute only to species-level baselines.)
 
-| BL  | N geographic groups | N locations | N EOs | N individuals (SRK) | N alleles observed | % of 54-allele species pool retained |
+| BL  | N geographic groups | N locations | N EOs | N individuals (SRK) | N alleles observed | % of 49-allele species pool retained |
 |-----|--------------------:|------------:|------:|--------------------:|-------------------:|-------------------------------------:|
-| BL1 | 10                  | 12          | 4     | 5                   | 4                  | 7%                                   |
-| BL2 | 2                   | 2           | 2     | 51                  | 8                  | 15%                                  |
-| BL3 | 4                   | 4           | 4     | 68                  | 16                 | 30%                                  |
-| BL4 | 7                   | 8           | 4     | 78                  | **31**             | **57%**                              |
-| BL5 | 9                   | 13          | 5     | 60                  | 18                 | 33%                                  |
+| BL1 | 10                  | 12          | 4     | 5                   | 4                  | 8 %                                  |
+| BL2 | 2                   | 2           | 2     | 59                  | 8                  | 16 %                                 |
+| BL3 | 4                   | 4           | 4     | 80                  | 17                 | 35 %                                 |
+| BL4 | 7                   | 8           | 4     | 89                  | **27**             | **55 %**                             |
+| BL5 | 9                   | 13          | 5     | 92                  | 23                 | 47 %                                 |
 
 ### Key findings
 
 - **Connectivity:** of 741 pairwise location comparisons, only 7 pairs (0.9 %) are connected within the 500 m pollinator dispersal threshold — and **all 7 are within the same EO**. There are *no between-EO pollinator connections anywhere in the dataset* under current conditions: every EO is a closed demographic unit at the pollination scale.
 - **Habitat footprint:** ≈ 84 % of the 32 geographic groups occupy < 1 ha (DI > 0.95), placing the vast majority of locations in the extreme-drift regime. Only EO27 group 11 (19.6 ha, DI = 0.000), EO32 (14.6 ha), and EO18 (8.1 ha as a fully-connected 5-location chain) escape extreme spatial drift.
-- **Five lineages, independent histories:** the BL framework provides three analytical advantages — it rescues 21 small localities (n = 1–3 each) that cannot support EO-level statistics on their own; it allows direct empirical testing of the independent-bottleneck hypothesis (confirmed in Q3 by allele-sharing analyses); and it preserves the full 272-individual species pool for any species-level baseline by stratifying only at the population/lineage level.
+- **Five lineages, independent histories:** the BL framework provides three analytical advantages — it rescues 21 small localities (n = 1–3 each) that cannot support EO-level statistics on their own; it allows direct empirical testing of the independent-bottleneck hypothesis (confirmed in Q3 by allele-sharing analyses); and it preserves the full 335-individual species pool for any species-level baseline by stratifying only at the population/lineage level.
 
 The locked Set1 colour palette (BL1 red `#E41A1C`, BL2 blue `#377EB8`, BL3 green `#4DAF4A`, BL4 purple `#984EA3`, BL5 orange `#FF7F00`) is used consistently across this report and the sibling spatial-clustering repository so that the dendrogram, drift panels, and every BL-stratified figure cross-reference visually.
 
@@ -87,33 +87,33 @@ The species-level S-allele pool approximates the balancing-selection richness eq
 
 ### Method
 
-S-alleles were defined by distance-based clustering of validated SRK protein sequences on the S-domain ectodomain (Step 10 of the bioinformatic pipeline), with a sensitivity-analysis-derived p-distance threshold of 0.005 (0.5 %). Each cluster represents an *S-allele bin* — a sequence-based hypothesis that proteins within the bin share recognition specificity. Allele accumulation curves were fit at species level (all 272 ingroup individuals) and at BL level (262 BL-assigned individuals) using rarefaction with Michaelis-Menten (MM), Chao1, and iNEXT asymptote estimators (Step 15).
+S-alleles were defined by distance-based clustering of validated SRK protein sequences on the S-domain ectodomain (Step 10 of the bioinformatic pipeline), with a Kneedle-detected p-distance threshold of 0.0055 (0.55 %). Each cluster represents an *S-allele bin* — a sequence-based hypothesis that proteins within the bin share recognition specificity. Allele accumulation curves were fit at species level (all 335 ingroup individuals) and at BL level (325 BL-assigned individuals) using rarefaction with Michaelis-Menten (MM), Chao1, and iNEXT asymptote estimators (Step 15).
 
 <a name="figure-3"></a>
 
-![Figure 3: Species-level S-allele accumulation curve. The curve has not yet reached an asymptote, indicating that further sampling would discover additional alleles. The Michaelis-Menten estimate of 69 alleles is adopted as the species optimum.](figures/SRK_allele_accumulation_species.png)
+![Figure 3: Species-level S-allele accumulation curve. The curve has not yet reached an asymptote, indicating that further sampling would discover additional alleles. The Michaelis-Menten estimate of 59 alleles (consensus 60 with Chao1) is adopted as the species optimum.](figures/SRK_allele_accumulation_species.png)
 
 <a name="figure-4"></a>
 
-![Figure 4: S-allele accumulation curves per bottleneck lineage. Each curve is coloured by parent BL (Set1 palette: BL1 red, BL2 blue, BL3 green, BL4 purple, BL5 orange — matching the LEPA_EO_spatial_clustering project). Species MM = 69 shown as a dashed grey reference line; BL-specific MM estimates as dashed coloured lines per curve. BL4 is the diversity reservoir (31 alleles observed, MM = 47); BL1 and BL2 have lost 86–90% of the species pool.](figures/SRK_allele_accumulation_BL_combined.png)
+![Figure 4: S-allele accumulation curves per bottleneck lineage. Each curve is coloured by parent BL (Set1 palette: BL1 red, BL2 blue, BL3 green, BL4 purple, BL5 orange — matching the LEPA_EO_spatial_clustering project). Species MM = 59 shown as a dashed grey reference line; BL-specific MM estimates as dashed coloured lines per curve. BL4 is the diversity reservoir (27 alleles observed, MM = 37); BL1 has retained only 4 of the 49 observed species alleles.](figures/SRK_allele_accumulation_BL_combined.png)
 
 ### Key findings
 
-Across **272 individuals** sampled from 26 population localities, **54 distinct S-allele bins** were identified ([Figure 3](#figure-3)). Three asymptote estimators agree on the upper end:
+Across **335 individuals** sampled from 26 population localities, **49 distinct S-allele bins** were identified ([Figure 3](#figure-3)). Three asymptote estimators agree on the upper end:
 
 | Estimator | Predicted species richness |
 |-----------|---------------------------|
-| Michaelis-Menten (MM) | **69 alleles** |
-| Chao1 | 73 alleles |
-| Consensus (mean of MM + Chao1) | 71 alleles |
+| Michaelis-Menten (MM) | **59 alleles** |
+| Chao1 | 61 alleles |
+| Consensus (mean of MM + Chao1) | 60 alleles |
 
-The MM estimate of 69 alleles is adopted as the species optimum — the allele richness expected under balancing selection at evolutionary equilibrium, used as the reference baseline for Q3 and Q4. An additional ~49 individuals would need to be sampled to discover the next new allele, and reaching 80 % of the MM estimate would require sampling ~55 more individuals. The species SI repertoire remains substantially under-characterised.
+The MM estimate of 59 alleles (consensus 60) is adopted as the species optimum — the allele richness expected under balancing selection at evolutionary equilibrium, used as the reference baseline for Q3 and Q4. An additional ~93 individuals would need to be sampled to discover the next new allele. The species SI repertoire remains substantially under-characterised.
 
 **BL stratification reveals the diversity reservoir.** When the same individuals are partitioned into the five independent bottleneck lineages (Q1), S-allele richness varies dramatically across lineages despite comparable sampling effort ([Figure 4](#figure-4); see Q1 table for sample sizes):
 
-- **BL4 acts as the diversity reservoir of the species** — its 78 individuals retain 31 of the 54 observed alleles (57 %), and its lineage-level MM asymptote (47) approaches the species pool (69). Further sampling within BL4 would still discover many additional alleles.
-- The four other BLs have each collapsed to a fraction of their lineage-level potential: BL1 and BL2 have lost 86–90 % of the species pool to drift; BL3 and BL5 ~70 %.
-- The > 2-fold gradient of richness loss across BLs can only arise if **the bottlenecks operating in each lineage have proceeded independently**: a single shared species-level bottleneck would predict comparable richness loss across BLs.
+- **BL4 acts as the diversity reservoir of the species** — its 89 individuals retain 27 of the 49 observed alleles (55 %), and its lineage-level MM asymptote (37) approaches the species pool (59). Further sampling within BL4 would still discover many additional alleles.
+- The four other BLs have each collapsed to a fraction of their lineage-level potential: BL1 retains 4 alleles (8 %) and BL2 retains 8 (16 %); BL3 and BL5 retain 17 and 23 alleles respectively (35–47 %).
+- The > 5-fold gradient of richness loss across BLs (BL1: 4 alleles → BL4: 27) can only arise if **the bottlenecks operating in each lineage have proceeded independently**: a single shared species-level bottleneck would predict comparable richness loss across BLs.
 
 This independent-bottleneck signature is reinforced by the allele-sharing analyses in Q3.
 
@@ -129,7 +129,7 @@ Tipping Point 1 (TP1) assesses the **health of the self-incompatibility system**
 
 Two complementary axes structure the assessment:
 
-- **How many different alleles has a population retained?** (`prop_optimum` = N_alleles / 69 — the proportion of the species-level SI repertoire still present). A population holding all alleles can offer every individual a large pool of compatible partners; as alleles are lost, compatible pairings become progressively rarer.
+- **How many different alleles has a population retained?** (`prop_optimum` = N_alleles / 59 — the proportion of the species-level SI repertoire still present). A population holding all alleles can offer every individual a large pool of compatible partners; as alleles are lost, compatible pairings become progressively rarer.
 - **How evenly are the remaining alleles distributed across individuals?** (`Ne / N_alleles` — the ratio of effective to observed allele number, where Ne = 1/Σpᵢ². A ratio of 1.0 means perfect evenness — the balancing-selection ideal in which every allele contributes equally to compatible crosses; drift and dominance push it downward.)
 
 A population breaching both axes simultaneously (`prop_optimum < 0.50` AND `Ne/N < 0.80`) is flagged **CRITICAL**; one criterion is **AT RISK**; neither is **OK**. Both EO-level and BL-level results are computed in parallel.
@@ -138,27 +138,27 @@ A complementary χ² goodness-of-fit test against the equal-frequency NFDS expec
 
 ### Key findings
 
-**The raw drift signal — alleles lost per Element Occurrence ([Figure 5](#figure-5)) and per Bottleneck Lineage ([Figure 6](#figure-6)).** Before synthesising both axes into the TP1 diagnostic, it is worth visualising the raw drift signal directly. For each EO and each BL, we partition the deficit relative to the 69-allele species optimum (MM) into two components: alleles predicted to exist in the group but not yet detected (light blue; group-MM minus observed), and alleles **lost to genetic drift** (red; species-MM minus group-MM). The red component dominates catastrophically at both stratification levels.
+**The raw drift signal — alleles lost per Element Occurrence ([Figure 5](#figure-5)) and per Bottleneck Lineage ([Figure 6](#figure-6)).** Before synthesising both axes into the TP1 diagnostic, it is worth visualising the raw drift signal directly. For each EO and each BL, we partition the deficit relative to the 59-allele species optimum (MM) into two components: alleles predicted to exist in the group but not yet detected (light blue; group-MM minus observed), and alleles **lost to genetic drift** (red; species-MM minus group-MM). The red component dominates catastrophically at both stratification levels.
 
 <a name="figure-5"></a>
 
-![Figure 5: S-allele erosion by genetic drift per Element Occurrence. For each EO, the bar height represents the species optimum (69 alleles); segments decompose this into observed alleles (dark blue), predicted-undetected alleles (light blue, group-MM minus observed), and alleles lost to genetic drift (red, species-MM minus group-MM). Between 45% (EO27) and 90% (EO70) of the species-level S-allele pool has been irreversibly lost from each EO. The predicted-undetected component is small (1–16 alleles), confirming that further sampling will not close the gap — the missing alleles are genuinely absent from these populations.](figures/SRK_allele_accumulation_drift_erosion.png)
+![Figure 5: S-allele erosion by genetic drift per Element Occurrence. For each EO, the bar height represents the species optimum (59 alleles); segments decompose this into observed alleles (dark blue), predicted-undetected alleles (light blue, group-MM minus observed), and alleles lost to genetic drift (red, species-MM minus group-MM). Between ~37 % (EO27) and ~88 % (EO70) of the species-level S-allele pool has been irreversibly lost from each EO. The predicted-undetected component is small per EO, confirming that further sampling will not close the gap — the missing alleles are genuinely absent from these populations.](figures/SRK_allele_accumulation_drift_erosion.png)
 
 <a name="figure-6"></a>
 
-![Figure 6: S-allele erosion by genetic drift per Bottleneck Lineage. Same decomposition as Figure 5, aggregated by BL. The BL color strip below the bars matches the lineage palette used elsewhere in the report. BL4 (purple) retains the most alleles (31, 57% of species pool) but still shows substantial drift loss; BL1 and BL2 have lost 86–90% of the species pool to drift.](figures/SRK_allele_accumulation_BL_drift_erosion.png)
+![Figure 6: S-allele erosion by genetic drift per Bottleneck Lineage. Same decomposition as Figure 5, aggregated by BL. The BL color strip below the bars matches the lineage palette used elsewhere in the report. BL4 (purple) retains the most alleles (27, 55 % of species pool) but still shows substantial drift loss; BL1 and BL2 have retained only 4 and 8 alleles respectively.](figures/SRK_allele_accumulation_BL_drift_erosion.png)
 
-**Per-EO drift loss** ranges from 45% (EO27, the least eroded) to 90% (EO70, the most eroded). Even in EO27 — the most allele-rich EO — an estimated 31 of the 69 species-level S-allele bins have been permanently lost from the local gene pool. EO70 has lost ≈ 62 of 69 alleles. **These deficits are not sampling artefacts**: the predicted-undetected component is small (1–16 alleles per EO), confirming that further sampling within these EOs cannot close the gap.
+**Per-EO drift loss** ranges from ~37 % (EO27, the least eroded) to ~88 % (EO70, the most eroded). Even in EO27 — the most allele-rich EO — many of the 59 species-level S-allele bins have been permanently lost from the local gene pool. **These deficits are not sampling artefacts**: the predicted-undetected component is small per EO, confirming that further sampling within these EOs cannot close the gap.
 
-**Per-BL drift loss** ranges from 32% (BL4, the diversity reservoir) to 86–90% (BL1, BL2). Even BL4's lineage-level MM asymptote (47) falls well short of the species pool (69), and BL1/BL2 have collapsed to a small fraction of their lineage-level potential. The > 2-fold gradient of richness loss across BLs is the **independent-bottleneck signature** documented in Q2: a single shared species-level bottleneck would predict comparable richness loss across BLs.
+**Per-BL drift loss** ranges from ~45 % (BL4, the diversity reservoir) to ≥ 84 % (BL1, BL2). Even BL4's lineage-level MM asymptote (37) falls well short of the species pool (59), and BL1/BL2 have collapsed to a small fraction of their lineage-level potential. The > 5-fold gradient of richness loss across BLs (BL1: 4 alleles → BL4: 27) is the **independent-bottleneck signature** documented in Q2: a single shared species-level bottleneck would predict comparable richness loss across BLs.
 
 **Synthesis: the TP1 tipping point ([Figure 7](#figure-7)).** Combining the richness deficit with the frequency-evenness axis produces the TP1 diagnostic: a single scatter that classifies every EO and every BL as CRITICAL / AT RISK / OK based on whether each axis is breached.
 
 <a name="figure-7"></a>
 
-![Figure 7: TP1 tipping point — health of the SI system. Six EOs (circles) and 5 BL aggregates (triangles) plotted on the same scatter, both coloured by parent BL using the locked Set1 palette. All five BLs and five of six EOs fall in the CRITICAL zone (lower-left, both prop_optimum < 0.50 AND evenness < 0.80). EO18 (n = 5) escapes CRITICAL only because its small sample size inflates the evenness ratio; its richness deficit is among the most severe. Notably, BL4 — the species' diversity reservoir at 45% of optimum — is CRITICAL through the evenness axis (0.33), demonstrating that drift is operating along two independent dimensions even where allele richness is best preserved.](figures/SRK_TP1_tipping_point.png)
+![Figure 7: TP1 tipping point — health of the SI system. Six EOs (circles) and 5 BL aggregates (triangles) plotted on the same scatter, both coloured by parent BL using the locked Set1 palette. All five BLs and all six plotted EOs fall in the CRITICAL zone (lower-left, both prop_optimum < 0.50 AND evenness < 0.80). Notably, BL4 — the species' diversity reservoir at 46 % of optimum — is CRITICAL through the evenness axis (0.31), demonstrating that drift is operating along two independent dimensions even where allele richness is best preserved.](figures/SRK_TP1_tipping_point.png)
 
-**All five BLs and 5 of 6 plotted EOs are CRITICAL on TP1** ([Figure 7](#figure-7)). Under the BL re-frame, TP1 reveals that **fragmentation has imposed a uniform CRITICAL status across all five bottleneck lineages**: BL1 and BL2 are CRITICAL through richness loss (≥ 86 % of the species pool absent); BL3, BL4 and BL5 are CRITICAL through frequency skew (Ne/N ≤ 0.58). The two axes capture different signatures of drift, but every BL fails on at least one — and most fail on both.
+**All five BLs and all 6 plotted EOs are CRITICAL on TP1** ([Figure 7](#figure-7)). Under the BL re-frame, TP1 reveals that **fragmentation has imposed a uniform CRITICAL status across all five bottleneck lineages**: BL1 and BL2 are CRITICAL through richness loss (≥ 84 % of the species pool absent); BL3, BL4 and BL5 are CRITICAL through frequency skew (Ne/N ≤ 0.45). The two axes capture different signatures of drift, but every BL fails on at least one — and most fail on both.
 
 **This is the single most consequential finding of the population-genetic analysis: contemporary recovery requires inter-BL allele transfers because no lineage retains a balanced allele pool that within-lineage crossing alone could draw upon.**
 
@@ -166,13 +166,13 @@ A complementary χ² goodness-of-fit test against the equal-frequency NFDS expec
 
 | Bottleneck lineage | N alleles observed | Private alleles | % private |
 |---|---:|---:|---:|
-| BL1 |  4 |  0 |  0% |
-| BL2 |  8 |  2 | 25% |
-| BL3 | 16 | 11 | 69% |
-| BL4 | 31 | **14** | **45%** |
-| BL5 | 18 |  6 | 33% |
+| BL1 |  4 |  0 |  0 % |
+| BL2 |  8 |  2 | 25 % |
+| BL3 | 17 |  8 | 47 % |
+| BL4 | 27 | **10** | **37 %** |
+| BL5 | 23 |  6 | 26 % |
 
-**33 of 54 alleles (61 %) are present in only one BL.** Pairwise BL allele sharing ([Figure 9](#figure-9)) is highest between BL4 and BL5 (12 alleles), suggestive of limited historical contact between these two lineages, but otherwise BLs share between 2 and 6 alleles in each pairwise comparison — a near-disjoint partitioning that can only arise from independent demographic histories. The two alleles shared across all five BLs (Allele_050, Allele_057) likely represent the original species-wide pool that survived in every lineage by virtue of high ancestral frequency. The remaining 52 alleles either sit in private compartments per BL or are shared among at most two or three lineages.
+**26 of 49 alleles (53 %) are present in only one BL.** Pairwise BL allele sharing ([Figure 9](#figure-9)) is highest between BL4 and BL5 (7 alleles), suggestive of limited historical contact between these two lineages, but otherwise BLs share between 1 and 4 alleles in each pairwise comparison — a near-disjoint partitioning that can only arise from independent demographic histories. The two alleles shared across all five BLs (Allele_050, Allele_051 — both members of Synonymy group 1) likely represent the original species-wide pool that survived in every lineage by virtue of high ancestral frequency. The remaining 47 alleles either sit in private compartments per BL or are shared among at most two or three lineages.
 
 <a name="figure-8"></a>
 
@@ -180,9 +180,9 @@ A complementary χ² goodness-of-fit test against the equal-frequency NFDS expec
 
 <a name="figure-9"></a>
 
-![Figure 9: Pairwise S-allele sharing heatmap between Bottleneck Lineages. Diagonal cells are total allele richness per BL (BL4 = 31, BL5 = 18, BL3 = 16, BL2 = 8, BL1 = 4); off-diagonal cells are shared-allele counts. The highest off-diagonal value (BL4 ↔ BL5 = 12) hints at limited historical contact between these two lineages.](figures/SRK_allele_sharing_heatmap_BLs.png)
+![Figure 9: Pairwise S-allele sharing heatmap between Bottleneck Lineages. Diagonal cells are total allele richness per BL (BL4 = 27, BL5 = 23, BL3 = 17, BL2 = 8, BL1 = 4); off-diagonal cells are shared-allele counts. The highest off-diagonal value (BL4 ↔ BL5 = 7) hints at limited historical contact between these two lineages.](figures/SRK_allele_sharing_heatmap_BLs.png)
 
-**Frequency-distribution test of NFDS.** A χ² goodness-of-fit test of allele copy-count frequencies against the equal-frequency NFDS expectation confirms that drift has skewed allele frequencies away from the NFDS equilibrium at every analysis level: at the species level (χ² = 2438.84, df = 53, p ≈ 0), in every medium and large EO (all N ≥ 36 reject at p < 1 × 10⁻⁷), and in every BL with statistical power (BL2: χ² = 175, p < 1 × 10⁻³³; BL3: χ² = 202; BL4: χ² = 325 — the largest test statistic of any group despite holding the most alleles; BL5: χ² = 95). Notably **BL4's diversity is undermined by within-lineage frequency skew**, demonstrating that S-allele erosion can proceed via two complementary axes (loss of richness and frequency distortion of remaining alleles) and that even the diversity reservoir is not exempt from active drift.
+**Frequency-distribution test of NFDS.** A χ² goodness-of-fit test of allele copy-count frequencies against the equal-frequency NFDS expectation confirms that drift has skewed allele frequencies away from the NFDS equilibrium at every analysis level: at the species level (χ² = 2943.39, df = 48, p ≈ 0), in every medium and large EO (all N ≥ 36 reject at p < 1 × 10⁻⁷), and in every BL with statistical power (BL2: χ² = 185, p < 1 × 10⁻³⁶; BL3: χ² = 206; BL4: χ² = 406 — the largest test statistic of any group despite holding the most alleles; BL5: χ² = 253). Notably **BL4's diversity is undermined by within-lineage frequency skew**, demonstrating that S-allele erosion can proceed via two complementary axes (loss of richness and frequency distortion of remaining alleles) and that even the diversity reservoir is not exempt from active drift.
 
 ---
 
@@ -230,40 +230,43 @@ TP2 is breached when (i) `mean GFS < 0.667` (the average individual has less rep
 
 ![Figure 12: TP2 tipping point — mean GFS vs proportion AAAA. EOs as circles, BLs as triangles, all coloured by parent BL using the Set1 palette. All five BLs are CRITICAL (mean GFS < 0.667 AND > 30% AAAA); 5 of 6 plotted EOs are CRITICAL (EO67 is AT RISK, breaching only the AAAA threshold).](figures/SRK_GFS_plots_p3_TP2_tipping_point.png)
 
-**All five BLs are CRITICAL on TP2** ([Figure 12](#figure-12)). The lineage-level pattern is robust: even when 262 BL-assigned individuals are pooled into independent bottleneck lineages, every lineage exceeds 30 % AAAA and falls well below the AABB-benchmark mean GFS of 0.667.
+**All five BLs are CRITICAL on TP2** ([Figure 12](#figure-12)). The lineage-level pattern is robust: even when 325 BL-assigned individuals are pooled into independent bottleneck lineages, every lineage exceeds 30 % AAAA and falls well below the AABB-benchmark mean GFS of 0.667.
 
 | BL | N | mean GFS | % AAAA | TP2 status |
 |----|:---:|:---:|:---:|:---:|
-| BL3 | 68 | 0.196 | 66% | **CRITICAL** |
-| BL2 | 51 | 0.235 | 63% | **CRITICAL** |
-| BL4 | 78 | 0.267 | 59% | **CRITICAL** |
-| BL5 | 60 | 0.272 | 55% | **CRITICAL** |
-| BL1 |  5 | 0.367 | 40% | **CRITICAL** |
+| BL3 | 80 | 0.173 | 70 % | **CRITICAL** |
+| BL2 | 59 | 0.215 | 66 % | **CRITICAL** |
+| BL5 | 92 | 0.245 | 60 % | **CRITICAL** |
+| BL4 | 89 | 0.260 | 60 % | **CRITICAL** |
+| BL1 |  5 | 0.367 | 40 % | **CRITICAL** |
 
-EO-level results show 5 of 6 plotted EOs CRITICAL (EO67 is AT RISK, breaching only the AAAA threshold). **EO67 is the least degraded** EO with the highest mean GFS (0.319) and the highest proportion of AABC individuals (14 %).
+EO-level results show all 6 plotted EOs CRITICAL on TP2. **EO67 is the least degraded** EO with the highest proportion of AABC individuals (8 %).
 
-**The AAAA majority is dominated by just two alleles species-wide — a pan-BL convergent fixation.** Allele_050 and Allele_057 together account for 24–69 % of AAAA individuals per BL ([Figure 13](#figure-13)) and are present as AAAA homozygotes in **every BL** (pan-BL, 5/5). This convergent fixation across five independently-bottlenecked lineages is the single most important biological result of the TP2 analysis — every lineage has independently fixed the same dominant allele family. If the synonymy hypothesis is confirmed by crossing (Q6), then the entire AAAA fraction species-wide represents a small number of effectively-identical functional locks, dramatically reducing the practical breeding pool.
+**The AAAA majority is dominated by just two alleles species-wide — a pan-BL convergent fixation.** Allele_050 and Allele_051 (both members of Synonymy group 1) are present as AAAA homozygotes in **every BL** (pan-BL, 5/5) ([Figure 13](#figure-13)). This convergent fixation across five independently-bottlenecked lineages is the single most important biological result of the TP2 analysis — every lineage has independently fixed the same dominant allele family. If the synonymy hypothesis is confirmed by crossing (Q6), then the entire AAAA fraction species-wide represents a small number of effectively-identical functional locks, dramatically reducing the practical breeding pool.
 
 <a name="figure-13"></a>
 
-![Figure 13: Allele identity of AAAA individuals per Bottleneck Lineage. Allele_050 (orange) and Allele_057 (blue) — both members of Synonymy group 1 (Q6) — are pan-BL across all 5 BLs. The 16% pan-Brassicaceae conserved residues vs the 74% LEPA-specific residues at HV columns confirm this is shared-ancestry drift, not pan-genera selection (Q5).](figures/SRK_GFS_AAAA_allele_composition_BL.png)
+![Figure 13: Allele identity of AAAA individuals per Bottleneck Lineage. Allele_050 and Allele_051 — both members of Synonymy group 1 (Q6) — are pan-BL across all 5 BLs. The 73 % LEPA-specific residues vs only 17 % shared with both Brassica AND Arabidopsis at HV columns confirm this is shared-ancestry drift, not pan-genera selection (Q5).](figures/SRK_GFS_AAAA_allele_composition_BL.png)
 
-**Top seed-parent priorities (13 AABC individuals, GFS = 0.833):**
+**Top seed-parent priorities (15 AABC individuals, GFS = 0.833):**
 
-| EO | Individual | Genotype | GFS |
-|----|-----------|----------|-----|
-| EO67 | Library001_barcode02 | AABC | 0.833 |
-| EO67 | Library006_barcode59 | AABC | 0.833 |
-| EO67 | Library007_barcode82 | AABC | 0.833 |
-| EO70 | Library008_barcode01 | AABC | 0.833 |
-| EO70 | Library008_barcode12 | AABC | 0.833 |
-| EO27 | Library006_barcode37 | AABC | 0.833 |
-| EO27 | Library006_barcode41 | AABC | 0.833 |
-| EO27 | Library009_barcode82 | AABC | 0.833 |
-| EO25 | Library009_barcode62 | AABC | 0.833 |
-| EO76 | Library001_barcode09 | AABB | 0.667 |
-| EO76 | Library001_barcode17 | AABB | 0.667 |
-| EO76 | Library003_barcode66 | AABB | 0.667 |
+| BL | EO | Individual | Genotype | GFS |
+|----|----|-----------|----------|-----|
+| BL2 | EO70 | Library008_barcode01 | AABC | 0.833 |
+| BL2 | EO70 | Library008_barcode12 | AABC | 0.833 |
+| BL3 | EO118 | Library002_barcode43 | AABC | 0.833 |
+| BL4 | EO27 | Library006_barcode37 | AABC | 0.833 |
+| BL4 | EO27 | Library006_barcode41 | AABC | 0.833 |
+| BL4 | EO27 | Library009_barcode82 | AABC | 0.833 |
+| BL4 | EO27 | Library010_barcode75 | AABC | 0.833 |
+| BL4 | EO67 | Library001_barcode02 | AABC | 0.833 |
+| BL4 | EO67 | Library006_barcode59 | AABC | 0.833 |
+| BL4 | EO67 | Library007_barcode82 | AABC | 0.833 |
+| BL4 | EO67 | Library007_barcode83 | AABC | 0.833 |
+| BL5 | EO18 | Library002_barcode51 | AABC | 0.833 |
+| BL5 | EO18 | Library010_barcode28 | AABC | 0.833 |
+| BL5 | EO18 | Library010_barcode38 | AABC | 0.833 |
+| BL5 | EO25 | Library009_barcode62 | AABC | 0.833 |
 
 Full ranked lists per EO are in `SRK_individual_GFS.tsv`; EO-level summaries and TP2 flags in `SRK_EO_GFS_summary.tsv`.
 
@@ -307,21 +310,21 @@ The C3 hypothesis predicts that LEPA's convergent allele depletion reflects inde
 
 The test is decisive ([Figure 15](#figure-15)). For every LEPA HV column, we asked: (i) within LEPA, do the 5 BLs share the same dominant residue among AAAA individuals? and (ii) does that LEPA-consensus residue match the dominant residue at the same alignment column in Brassica and Arabidopsis?
 
-**The answer: 100 % within-LEPA concordance + 74 % LEPA-specific residues.** All 5 BLs share the same dominant residue at 73/73 HV columns (per-BL Shannon entropy near zero, 0.000–0.042 bits) — every BL has fixed the same dominant allele family (Synonymy group 1: Allele_050 + Allele_057 + 11 HV-identical relatives). But that LEPA-consensus residue matches the Brassica dominant residue at only **16/73 columns (22 %)**, the Arabidopsis dominant at 15/73 (21 %), and **both Brassica AND Arabidopsis at only 12/73 (16 %)**. The remaining **54/73 columns (74 %) are LEPA-specific** — the LEPA-consensus residue differs from the dominant residue in both reference genera.
+**The answer: 100 % within-LEPA concordance + 73 % LEPA-specific residues.** All 5 BLs share the same dominant residue at 66/66 HV columns (per-BL Shannon entropy near zero, 0.000–0.042 bits) — every BL has fixed the same dominant allele family (Synonymy group 1: 15 HV-identical alleles including Allele_050 and Allele_051). But that LEPA-consensus residue matches the Brassica dominant residue at only **15/66 columns (23 %)**, the Arabidopsis dominant at 14/66 (21 %), and **both Brassica AND Arabidopsis at only 11/66 (17 %)**. The remaining **48/66 columns (73 %) are LEPA-specific** — the LEPA-consensus residue differs from the dominant residue in both reference genera.
 
 <a name="figure-15"></a>
 
-![Figure 15: Per-BL Shannon entropy decomposition with cross-genera dominant-residue comparison at LEPA HV columns. Top: heatmap of Shannon entropy at each HV column for each of the five BLs (Set1 palette); per-BL mean entropy 0.000–0.042 bits indicates each BL has fixed a single dominant residue at almost every HV column. Bottom: dominant-residue heatmap with all five BLs plus Brassica and Arabidopsis reference rows. The five LEPA BL rows are visually identical (100% within-LEPA concordance) — every BL has fixed the same dominant residue. Brassica and Arabidopsis rows show different colour patterns at most positions: 74% (54/73) of LEPA HV columns are LEPA-specific at the dominant-residue level — confirming drift on a shared LEPA ancestral pool, NOT pan-Brassicaceae selection convergence.](figures/SRK_perBL_entropy_figure.png)
+![Figure 15: Per-BL Shannon entropy decomposition with cross-genera dominant-residue comparison at LEPA HV columns. Top: heatmap of Shannon entropy at each HV column for each of the five BLs (Set1 palette); per-BL mean entropy 0.000–0.042 bits indicates each BL has fixed a single dominant residue at almost every HV column. Bottom: dominant-residue heatmap with all five BLs plus Brassica and Arabidopsis reference rows. The five LEPA BL rows are visually identical (100 % within-LEPA concordance) — every BL has fixed the same dominant residue. Brassica and Arabidopsis rows show different colour patterns at most positions: 73 % (48/66) of LEPA HV columns are LEPA-specific at the dominant-residue level — confirming drift on a shared LEPA ancestral pool, NOT pan-Brassicaceae selection convergence.](figures/SRK_perBL_entropy_figure.png)
 
-**Interpretation.** If selection across genera were the primary driver, LEPA, Brassica, and Arabidopsis would share dominant residues at most HV columns (functionally fixed across 25+ My of Brassicaceae evolution). We observe the opposite — the dominant residue within LEPA is independent of the dominant residue in either reference genus at 74 % of HV columns. The within-LEPA 100 % concordance reflects the simpler probabilistic outcome that drift fixes the most-common ancestral allele in every bottlenecked lineage — and Synonymy group 1 (Allele_050 + Allele_057 + 11 HV-identical relatives, 103 of 158 BL-assigned AAAA individuals) was already at high enough ancestral frequency that drift fixed it independently in every BL.
+**Interpretation.** If selection across genera were the primary driver, LEPA, Brassica, and Arabidopsis would share dominant residues at most HV columns (functionally fixed across 25+ My of Brassicaceae evolution). We observe the opposite — the dominant residue within LEPA is independent of the dominant residue in either reference genus at 73 % of HV columns. The within-LEPA 100 % concordance reflects the simpler probabilistic outcome that drift fixes the most-common ancestral allele in every bottlenecked lineage — and Synonymy group 1 (15 HV-identical alleles including Allele_050 and Allele_051, with 134 of the BL-assigned AAAA individuals) was already at high enough ancestral frequency that drift fixed it independently in every BL.
 
-The 16 % of HV columns where LEPA = Brassica = Arabidopsis dominant residue mark the **truly deeply conserved SI-recognition positions under genus-spanning selection**. The remaining 84 % are positions where each genus's S-allele pool has been shaped by its own demographic history. For LEPA, that history is **drift-driven fixation of a small ancestral allele family across all five independent bottleneck lineages** — the molecular signature of the C3 cascade Stage 1, observed at residue resolution.
+The 17 % of HV columns where LEPA = Brassica = Arabidopsis dominant residue mark the **truly deeply conserved SI-recognition positions under genus-spanning selection**. The remaining 83 % are positions where each genus's S-allele pool has been shaped by its own demographic history. For LEPA, that history is **drift-driven fixation of a small ancestral allele family across all five independent bottleneck lineages** — the molecular signature of the C3 cascade Stage 1, observed at residue resolution.
 
 This finding closes the loop with the BL stratification: the pan-BL fixation of Synonymy group 1 documented by the per-BL accumulation curves (Q2), the allele-sharing UpSet ([Figure 6](#figure-6)), and the TP2 reproductive-effort analyses ([Figure 10](#figure-10)) is precisely the same signal recovered here at the residue level. **Drift acting independently in each BL on a shared ancestral allele pool produces the appearance of cross-BL convergence at the residue level (every BL fixes the most-common ancestral allele) without invoking pan-Brassicaceae selection.**
 
 ### Conservation implication
 
-The mechanism dictates the intervention strategy. Increasing census population size within an EO alone is insufficient to reverse the AAAA trajectory — if the prevailing AAAA frequency exceeds the reproductive dead-end threshold, within-population growth simply produces more AAAA offspring (Stage 3–4 dynamic). **Allele introduction via inter-BL crosses is the primary lever.** Introducing B, C, and D S-alleles from the 13 AABC individuals (Q4) into crosses with AAAA individuals simultaneously restores SI compatibility AND re-engages balancing selection — the mechanism that, once functional, will favour the spread of introduced S-alleles through subsequent generations (reversing Stage 2). The 13 AABC seed parents are therefore the only endogenous genetic resource capable of reversing the C3 cascade.
+The mechanism dictates the intervention strategy. Increasing census population size within an EO alone is insufficient to reverse the AAAA trajectory — if the prevailing AAAA frequency exceeds the reproductive dead-end threshold, within-population growth simply produces more AAAA offspring (Stage 3–4 dynamic). **Allele introduction via inter-BL crosses is the primary lever.** Introducing B, C, and D S-alleles from the 15 AABC individuals (Q4) into crosses with AAAA individuals simultaneously restores SI compatibility AND re-engages balancing selection — the mechanism that, once functional, will favour the spread of introduced S-alleles through subsequent generations (reversing Stage 2). The 15 AABC seed parents are therefore the only endogenous genetic resource capable of reversing the C3 cascade.
 
 ---
 
@@ -329,29 +332,31 @@ The mechanism dictates the intervention strategy. Increasing census population s
 
 ### Why this question matters
 
-The bioinformatics in Q1–Q5 produces *predictions* about which sequence-defined allele bins represent which functional SI specificities, and identifies the diversity reservoir (BL4) and the priority seed parents (13 AABC individuals). To move from prediction to breeding-programme practice, those predictions must be **validated by controlled crosses**. This question lays out the experimental framework, the underlying decision logic, and the resulting cross plan.
+The bioinformatics in Q1–Q5 produces *predictions* about which sequence-defined allele bins represent which functional SI specificities, and identifies the diversity reservoir (BL4) and the priority seed parents (15 AABC individuals). To move from prediction to breeding-programme practice, those predictions must be **validated by controlled crosses**. This question lays out the experimental framework, the underlying decision logic, and the resulting cross plan.
 
 ### Hypervariable position identification — cross-Brassicaceae validation
 
 The cross design rests on a single critical bioinformatic step: identifying which positions in the S-domain alignment actually discriminate alleles for SI specificity. Distances on these hypervariable (HV) positions are biologically meaningful for recognition specificity, unlike full-domain distances which are dominated by conserved structural residues.
 
-The HV positions are detected by an identical sliding-window Shannon-entropy scan applied separately to LEPA, Brassica (22 alleles), and Arabidopsis (10 alleles) SRK alignments, then validated by cross-Brassicaceae permutation testing ([Figure 16](#figure-16)). The LEPA HV set comprises **73 columns in four regions** of the S-domain (alignment cols 187–199, 240–253, 276–290, 358–388). All three pairwise HV-region overlaps are highly significant (10 000-permutation test): LEPA ↔ Brassica obs = 17 cols (null mean 8.2, p = 0.0005); LEPA ↔ Arabidopsis 22 cols (p = 0.0024); Brassica ↔ Arabidopsis 43 cols (p < 0.0001) — far more co-located than expected by chance.
+The HV positions are detected by an identical sliding-window Shannon-entropy scan applied separately to LEPA (58 alleles after QC filtering — see Methods), Brassica (22 alleles), and Arabidopsis (10 alleles) SRK alignments. The LEPA HV set comprises **66 columns across the S-domain** ([Figure 16](#figure-16)). 10 000-permutation testing of pairwise HV-region overlap returns: LEPA ↔ Brassica obs = 10 cols (null mean 7.4, p = 0.18, not significant); LEPA ↔ Arabidopsis 15 cols (p = 0.16, not significant); Brassica ↔ Arabidopsis 43 cols (p < 0.0001, highly significant).
 
-As **independent structural validation**, all 11 of the 12 mappable SCR9-contact residues from the *B. rapa* eSRK9–SCR9 crystal structure (Ma et al. 2016, PDB 5GYY) fall within these shared HV regions when mapped to LEPA alignment coordinates — direct evidence that the entropy scan is detecting the SI-specificity surface itself.
+**The loss of significance for LEPA's cross-genus HV overlap is itself informative.** Earlier analyses of this dataset (when paralog-contaminated sequences were still included) returned highly significant LEPA ↔ Brassica overlap (p ≈ 0.0005). After two new quality-control filters — the **reference-similarity (BLAST coverage) filter** that removes SRK paralogs carrying a localised ~500 bp insertion and the **N-content filter** that removes contigs with N-rich termini from Canu *de novo* assembly of short Nanopore reads — the LEPA SRK protein set drops from 63 to 58 representatives and the cross-genus HV signal is no longer detectable. Brassica and Arabidopsis HV overlap remains highly significant (p < 0.0001), so the test still has power on the genus-spanning conservation signal. The honest interpretation is that **drift on a shared LEPA ancestral pool has eroded LEPA's HV signal beyond the point where it remains distinguishable from random against an unbiased baseline** — consistent with the C3 cascade conclusions (Q5) and the per-BL entropy decomposition ([Figure 15](#figure-15)).
+
+As **independent structural validation**, 11 of the 12 mappable SCR9-contact residues from the *B. rapa* eSRK9–SCR9 crystal structure (Ma et al. 2016, PDB 5GYY) fall within or adjacent to LEPA HV regions when mapped to LEPA alignment coordinates — direct evidence that the entropy scan is detecting the SI-specificity surface itself even after the cross-genus permutation signal has faded.
 
 <a name="figure-16"></a>
 
-![Figure 16: S-domain variability landscape across Brassicaceae. Top panel: smoothed per-column Shannon entropy for LEPA (blue, n = 63 alleles), Brassica (red, n = 22), and Arabidopsis (green, n = 10), each with its own mean + 1 SD threshold (dotted lines). Tracks below mark each species' HV regions detected by identical sliding-window criterion. Bottom track: 11 SCR9-contact residues from the Ma et al. 2016 *B. rapa* eSRK9–SCR9 crystal structure (PDB 5GYY) mapped to LEPA alignment columns. Permutation test: LEPA ↔ Brassica HV overlap = 17 columns (null mean 8.2, p = 0.0005, 10 000 permutations).](figures/SRK_variability_landscape.png)
+![Figure 16: S-domain variability landscape across Brassicaceae. Top panel: smoothed per-column Shannon entropy for LEPA (blue, n = 58 alleles after Step 4b paralog and Step 7b N-content filtering), Brassica (red, n = 22), and Arabidopsis (green, n = 10), each with its own mean + 1 SD threshold (dotted lines). Tracks below mark each species' HV regions detected by identical sliding-window criterion. Bottom track: 11 SCR9-contact residues from the Ma et al. 2016 *B. rapa* eSRK9–SCR9 crystal structure (PDB 5GYY) mapped to LEPA alignment columns. Permutation test: LEPA ↔ Brassica HV overlap = 10 columns (null 7.4, p = 0.18); Brassica ↔ Arabidopsis remains highly significant (p < 0.0001).](figures/SRK_variability_landscape.png)
 
-### Synonymy network — collapsing 63 sequence bins toward functional specificities
+### Synonymy network — collapsing 58 sequence bins toward functional specificities
 
-Pairwise distances recomputed on the 73 canonical HV positions reveal a strongly bimodal structure: 126 allele pairs are HV-identical (distance = 0); all other within-class pairs are below 0.087; and one allele (Allele_061) is separated from all others by a distance of ~0.96. UPGMA clustering automatically detects this gap, splitting the 63 allele bins into Class I (62 alleles) and Class II (1 allele) — corresponding to the documented Brassicaceae phylogenetic split.
+Pairwise distances recomputed on the 66 canonical HV positions reveal a strongly bimodal structure within the main LEPA cluster, plus one allele (Allele_055) separated from the rest by a much larger distance. UPGMA clustering automatically detects this gap, splitting the 58 allele bins into **Class I (57 alleles)** and **Class II (1 allele: Allele_055)** — corresponding to the documented Brassicaceae phylogenetic split.
 
-Within Class I, the 126 HV-identical allele pairs form **nine tight synonymy groups** ranging from 2 to 13 alleles per group ([Figure 17](#figure-17)), accounting for 40 of the 62 Class I alleles. The remaining 22 Class I alleles and the single Class II allele are isolated. **If HV identity reliably predicts shared recognition specificity, the 63 sequence bins collapse to 32 functional specificities** (9 synonymy groups + 23 isolated alleles). The largest synonymy group (Synonymy group 1) comprises **13 alleles observed in 103 AAAA individuals** — including Allele_050 and Allele_057, the two pan-BL fixed alleles documented in Q4 — making it the most prevalent specificity in the dataset and the highest priority for synonymy confirmation by crossing.
+Within Class I, the HV-identical allele pairs form **eight tight synonymy groups** ranging from 2 to 15 alleles per group ([Figure 17](#figure-17)), accounting for 38 of the 57 Class I alleles. The remaining 19 Class I alleles and the single Class II allele are isolated. **If HV identity reliably predicts shared recognition specificity, the 58 sequence bins collapse to 27 functional specificities** (8 synonymy groups + 19 isolated alleles). The largest synonymy group (Synonymy group 1) comprises **15 alleles observed in 134 AAAA individuals** — including Allele_050 and Allele_051, the two pan-BL fixed alleles documented in Q4 — making it the most prevalent specificity in the dataset and the highest priority for synonymy confirmation by crossing.
 
 <a name="figure-17"></a>
 
-![Figure 17: Allele synonymy network — HV-identical synonymy groups. The nine synonymy groups (coloured nodes connected by red HV-identical edges) and 23 isolated alleles (grey nodes) collapse 63 sequence-defined bins into 32 candidate functional specificities, pending experimental confirmation by Synonymy_test crosses. Synonymy group 1 (13 alleles, 103 AAAA individuals) is the highest-priority synonymy target.](figures/SRK_synonymy_network_groups.png)
+![Figure 17: Allele synonymy network — HV-identical synonymy groups. The eight synonymy groups (coloured nodes connected by red HV-identical edges) and 19 isolated alleles (grey nodes) collapse 58 sequence-defined bins into 27 candidate functional specificities, pending experimental confirmation by Synonymy_test crosses. Synonymy group 1 (15 alleles, 134 AAAA individuals) is the highest-priority synonymy target.](figures/SRK_synonymy_network_groups.png)
 
 ### The cross plan — five nested hypotheses with explicit genotype constraints
 
@@ -368,13 +373,13 @@ The five hypotheses, with their genotype requirements:
 |---|---|---|---|---|
 | **H0** | Does SI rejection actually work? | AAAA | AAAA | both alleles in **same** synonymy group |
 | **H1a** | Within-Class compatible baseline | AAAA | AAAA | different synonymy groups, no Synonymy_test edge (HV ≥ 0.04) |
-| **H1b** | Between-Class compatible baseline | AAAA Class I | Heterozygous (AAAB / AABB) carrier of Allele_061 (Class II) | mother allele ≠ father's other Class I alleles |
+| **H1b** | Between-Class compatible baseline | AAAA Class I | Heterozygous (AAAB / AABB) carrier of Allele_055 (Class II) | mother allele ≠ father's other Class I alleles |
 | **H2** | Synonymy bin boundaries | AAAA | AAAA | different synonymy groups, with Synonymy_test edge (0 < HV < 0.04) |
 | **H3** | Hidden bins (no AAAA representative) | AAAA carrier of allele M known Compatible_within with father's main allele | Heterozygous carrier of the **hidden** allele | M ≠ father's main allele AND M ≠ hidden allele; **requires paired AAAA × AAAA control** |
 
 <a name="figure-18"></a>
 
-![Figure 18: Step 22e hypothesis-testing cross plan summary. Left: cross counts per hypothesis level (101 unique crosses, 1 323 cross attempts at the recommended replicate counts). Right: decision tree per phase outcome, showing how each hypothesis's result updates the validated functional S-allele table. The plan is constrained by the genotype distribution in the current 272-individual dataset — H1b is limited to 1 cross because Allele_061 has only one heterozygous carrier; H3 covers 20 of 29 hidden bins because the remaining 9 lack AAAA mothers with a Compatible_within partner allele.](figures/SRK_cross_plan_summary.png)
+![Figure 18: Step 22e hypothesis-testing cross plan summary. Left: cross counts per hypothesis level (104 unique crosses, 1 368 cross attempts at the recommended replicate counts). Right: decision tree per phase outcome, showing how each hypothesis's result updates the validated functional S-allele table. The plan is constrained by the genotype distribution in the current 335-individual dataset — H1b is limited to 1 cross because Allele_055 has only one heterozygous carrier; H3 covers 20 of 29 hidden bins because the remaining 9 lack AAAA mothers with a Compatible_within partner allele.](figures/SRK_cross_plan_summary.png)
 
 ### Cross plan results
 
@@ -385,17 +390,17 @@ The phased structure and cross counts are summarised in [Figure 18](#figure-18).
 | H0 | Does SI rejection work? | 21 | 9 | 189 |
 | H1a | Within-Class compatible baseline | 10 | 9 | 90 |
 | H1b | Between-Class compatible baseline | **1** | 9 | **9** |
-| H2 | Synonymy bin boundaries | 32 | 15 | 480 |
+| H2 | Synonymy bin boundaries | 35 | 15 | 525 |
 | H3 | Hidden bins (heterozygous donor + paired control) | 37 (= 20 main + 17 paired) | 15 | 555 |
-| **Total** | | **101** | — | **1 323** |
+| **Total** | | **104** | — | **1 368** |
 
-**Sample-size constraints.** H1b is sample-limited to 1 cross because Allele_061 has a single carrier in the dataset (Library008_barcode08, AABB Allele_050+Allele_061; AABB pollen segregates 17 % AA + 67 % AB + 17 % BB → 84 % carries the Class II specificity directly). H3 covers 20 of 29 hidden bins; the remaining 9 lack AAAA mothers carrying a Compatible_within partner allele. Adding additional Allele_061 carriers and additional AAAA mothers would directly relax both constraints. The carrier-detection logic reads `Allele_composition` strings authoritatively, so the cross plan automatically expands as new individuals are added — re-run Steps 22a → 22b → 22e after new genotyping data lands.
+**Sample-size constraints.** H1b is sample-limited to 1 cross because Allele_055 has a single carrier in the dataset (Library008_barcode08, AABB Allele_051+Allele_055; AABB pollen segregates 17 % AA + 67 % AB + 17 % BB → 84 % carries the Class II specificity directly). H3 covers 20 of 29 hidden bins; the remaining 9 lack AAAA mothers carrying a Compatible_within partner allele. Adding additional Allele_055 carriers and additional AAAA mothers would directly relax both constraints. The carrier-detection logic reads `Allele_composition` strings authoritatively, so the cross plan automatically expands as new individuals are added — re-run Steps 22a → 22b → 22e after new genotyping data lands.
 
 ### Decision tree → validated functional S-allele table
 
 - **H0 pass** (≥ 80 % of Incompatible crosses produce 0 seeds) → SI is functional → proceed. **H0 fail** → SI broken at the Stage 5 polyploid breakdown level → revise the framework.
 - **H1a + H1b** outcomes calibrate the seed-yield scale.
-- **H2 outcomes** decide which synonymy groups should be **merged** (0 seeds → same SI specificity) or **kept separate** (yield ≥ H1a baseline → distinct specificities). Most extreme case: every Synonymy_test cross is incompatible → 63 bins collapse to **32 functional specificities** (9 synonymy groups + 23 isolated alleles).
+- **H2 outcomes** decide which synonymy groups should be **merged** (0 seeds → same SI specificity) or **kept separate** (yield ≥ H1a baseline → distinct specificities). Most extreme case: every Synonymy_test cross is incompatible → 58 bins collapse to **27 functional specificities** (8 synonymy groups + 19 isolated alleles).
 - **H3 outcomes** classify each of the 20 testable hidden alleles as compatible / incompatible with at least one major Class I specificity, by comparing total seed yield to the paired-control AA-only baseline.
 
 The combined H2 + H3 outcomes produce a **validated functional S-allele table** that supersedes the sequence-only allele bin definitions and serves as the input to operational seed-orchard design.
@@ -406,9 +411,9 @@ The combined H2 + H3 outcomes produce a **validated functional S-allele table** 
 
 The six questions converge on three immediate priorities for the *Lepidium papilliferum* recovery programme:
 
-1. **Cross all 13 AABC individuals this season** (Q4). They are the only endogenous source of GFS = 0.833 gametes and the only individuals that can simultaneously contribute B, C, and D S-alleles to AAAA recipients — directly reversing the C3 Stage 5 trajectory (Q5). EO67 (5 AABC), EO27 (3), and EO70 (2) are the priority maternal sites; EO76 (0 AABC) is the most degraded and the most in need of allele importation.
-2. **Prioritise inter-BL allele transfers, especially BL4 → other BLs** (Q3). BL4 is the species' diversity reservoir (31 of 54 alleles, 14 of which are BL4-private). With no between-EO pollinator connections anywhere in the dataset (Q1), inter-BL crosses are the *only* mechanism for redistributing private alleles. Within-BL or within-EO crossing alone re-segregates the same drift-purged pool and cannot restore the SI system (Q3 TP1 finding).
-3. **Schedule the Step 22e cross plan with Synonymy group 1 as the first H2 priority** (Q6). Synonymy group 1 contains 13 HV-identical alleles spanning 103 AAAA individuals (40 % of all AAAA species-wide). An incompatible Synonymy_test cross would consolidate the largest single block of allele bins into one functional specificity, dramatically clarifying the breeding-pool design. Conversely, a compatible Synonymy_test cross would reveal that even within Synonymy group 1 there is genuine functional diversity worth preserving.
+1. **Cross all 15 AABC individuals this season** (Q4). They are the only endogenous source of GFS = 0.833 gametes and the only individuals that can simultaneously contribute B, C, and D S-alleles to AAAA recipients — directly reversing the C3 Stage 5 trajectory (Q5). EO67 (4 AABC), EO27 (4 AABC), and EO18 (3 AABC, including 2 newly identified in Library 010) are the priority maternal sites; EO76 (0 AABC) is the most degraded and the most in need of allele importation.
+2. **Prioritise inter-BL allele transfers, especially BL4 → other BLs** (Q3). BL4 is the species' diversity reservoir (27 of 49 alleles, 10 of which are BL4-private). With no between-EO pollinator connections anywhere in the dataset (Q1), inter-BL crosses are the *only* mechanism for redistributing private alleles. Within-BL or within-EO crossing alone re-segregates the same drift-purged pool and cannot restore the SI system (Q3 TP1 finding).
+3. **Schedule the Step 22e cross plan with Synonymy group 1 as the first H2 priority** (Q6). Synonymy group 1 contains 15 HV-identical alleles spanning 134 AAAA individuals (~65 % of all AAAA species-wide). An incompatible Synonymy_test cross would consolidate the largest single block of allele bins into one functional specificity, dramatically clarifying the breeding-pool design. Conversely, a compatible Synonymy_test cross would reveal that even within Synonymy group 1 there is genuine functional diversity worth preserving.
 
 The full execution plan is in `SRK_cross_plan_H0_SI_validation.tsv` through `SRK_cross_plan_H3_hidden_bin_tests.tsv` (Step 22e outputs). Outcomes feed back into Step 23 of the bioinformatic pipeline (`SRK_cross_result_analysis_HV.pdf`), which formally tests whether the bioinformatic compatibility predictions match the observed seed yields and produces the **validated functional S-allele table** that anchors operational seed-orchard design.
 

@@ -19,7 +19,7 @@ Compatible_within / Compatible_cross) with observed seed yield.
 |-------|----------|----------|----------|------------|-----|
 | H0 | Does SI rejection work? | AAAA | AAAA | both in SAME synonymy group | Unambiguous specificity both sides; 0 seeds is the prediction |
 | H1a | Within-class compatible baseline | AAAA | AAAA | different synonymy groups, NO Synonymy_test edge (HV >= 0.04) | Distinct specificities, predicted compatible |
-| H1b | Between-class compatible (max yield) | AAAA Class I | AAAB carrier of Allele_061 (Class II) | mother allele != Class I main allele of father | Class II has no AAAA — AAAB father gives 50% AB pollen carrying the Class II specificity directly |
+| H1b | Between-class compatible (max yield) | AAAA Class I | Heterozygous carrier (AAAB/AABB/AABC) of the Class II allele | mother allele != Class I main allele(s) of father | Class II has no AAAA carriers in the current dataset — heterozygous father gives at least 50% pollen carrying the Class II specificity |
 | H2 | Synonymy bin boundaries | AAAA | AAAA | different synonymy groups, WITH Synonymy_test edge (0 < HV < 0.04) | The core synonymy test — outcome decides whether two bins represent one or two specificities |
 | H3 | Hidden bins (no AAAA representative) | AAAA carrier of allele M | AAAB carrier of "hidden" allele B (and main allele A) | M != A AND M != B (so AA pollen is compatible — gives baseline), plus paired control AAAA × AAAA(A only) | 29 bins exist only in heterozygotes; AAAB father gives 50% AA + 50% AB pollen, requires paired baseline cross |
 
@@ -37,7 +37,7 @@ Outputs
 -------
   SRK_cross_plan_H0_SI_validation.tsv               H0 (Incompatible negative controls)
   SRK_cross_plan_H1a_within_class_baseline.tsv      H1a (Compatible_within positive controls)
-  SRK_cross_plan_H1b_between_class_baseline.tsv     H1b (Compatible_cross via AAAB Allele_061)
+  SRK_cross_plan_H1b_between_class_baseline.tsv     H1b (Compatible_cross via heterozygous Class II carrier)
   SRK_cross_plan_H2_synonymy_tests.tsv              H2 (Synonymy_test, one per inter-group bridge)
   SRK_cross_plan_H3_hidden_bin_tests.tsv            H3 (AAAB-mediated tests for the 29 hidden bins)
   SRK_cross_plan_summary.tsv                         per-phase counts + cumulative cross attempts
@@ -101,7 +101,7 @@ N_CROSSES = {
     "H0_within_group":    8,    # different-alleles-same-group in Synonymy group 1
     "H0_other_groups":   12,    # 2 per remaining synonymy group (8 groups)
     "H1a_far":           10,    # max-HV-distance pairs, between groups, no Synonymy_test edge
-    "H1b":                5,    # AAAB Allele_061 × AAAA Class I
+    "H1b":                5,    # heterozygous Class II carrier × AAAA Class I
     "H2_per_pair":        1,    # one cross per synonymy-group-pair Synonymy_test bridge
     "H3_per_bin":         1,    # one cross per "hidden" bin, plus a paired control
 }
@@ -465,20 +465,24 @@ for _, r in h1a_pool.iterrows():
 print(f"  H1a crosses: {len(h1a_rows)}")
 
 # =============================================================================
-# 4. H1b — between-Class compatible (max yield) via AAAB Allele_061
+# 4. H1b — between-Class compatible (max yield) via heterozygous Class II carrier
 # =============================================================================
-print("\nGenerating H1b (between-Class compatible via AAAB Allele_061) ...")
+# Class II is identified as the minority functional group from Step 22b
+# (whichever FG does NOT contain the majority of alleles).
+fg_majority = max(set(allele_to_class.values()), key=lambda c: sum(1 for v in allele_to_class.values() if v == c))
+fg_class2 = next((c for c in set(allele_to_class.values()) if c != fg_majority), "FG02")
+class2_alleles = sorted(a for a, c in allele_to_class.items() if c == fg_class2)
+class2_label = ", ".join(class2_alleles) if class2_alleles else "(none detected)"
+
+print(f"\nGenerating H1b (between-Class compatible via heterozygous Class II carrier — "
+      f"Class II allele(s): {class2_label}) ...")
 h1b_rows: list[dict] = []
 priority = 0
 
-# Class II is whichever FG contains Allele_061
-fg_class2 = allele_to_class.get("Allele_061", "FG02")
-class2_alleles = [a for a, c in allele_to_class.items() if c == fg_class2]
-
 # Find heterozygous carriers of any Class II allele (AAAB/AABB/AABC/ABCD).
-# In the current dataset, Allele_061's only carrier is AABB (Allele_050+061).
-# AABB pollen distribution: 17% AA + 67% AB + 17% BB → 84% of pollen carries
-# the target Class II allele specificity → strong H1b test.
+# The Class II allele typically has no AAAA carriers in LEPA datasets, so we
+# rely on a heterozygous mother (AABB pollen distribution: 17% AA + 67% AB +
+# 17% BB → 84% of pollen carries the target Class II specificity, AAAB: 50%).
 class2_carriers = []
 for c2 in class2_alleles:
     class2_carriers.extend(carriers_of(c2))
@@ -754,7 +758,7 @@ for hyp, rows in phases:
         "Description":     {
             "H0":  "SI validation (Incompatible negative controls)",
             "H1a": "Within-Class compatible baseline (Compatible_within positive)",
-            "H1b": "Between-Class compatible baseline (Compatible_cross via AAAB Allele_061)",
+            "H1b": f"Between-Class compatible baseline (Compatible_cross via heterozygous carrier of Class II allele: {class2_label})",
             "H2":  "Synonymy bin-boundary tests (Synonymy_test)",
             "H3":  "Hidden-bin tests via AAAB donors (29 bins without AAAA)",
         }[hyp],

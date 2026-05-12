@@ -11,7 +11,7 @@
 
 <meta name="author" content="Sven Buerki - Boise State University" />
 
-<meta name="date" content="2026-05-08" />
+<meta name="date" content="2026-05-11" />
 
 <title>SRK Bioinformatics</title>
 
@@ -1469,7 +1469,7 @@ border-radius: 0px;
 <h1 class="title toc-ignore">SRK Bioinformatics</h1>
 <h3 class="subtitle">Nanopore-Based SRK Haplotype Reconstruction and Population Analysis Pipeline</h3>
 <h4 class="author">Sven Buerki - Boise State University</h4>
-<h4 class="date">2026-05-08</h4>
+<h4 class="date">2026-05-11</h4>
 
 </div>
 
@@ -1477,7 +1477,7 @@ border-radius: 0px;
 <div id="pipeline-at-a-glance" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Pipeline at a Glance</h1>
 <p>This pipeline reconstructs S-receptor kinase (SRK) haplotypes from Nanopore amplicon sequencing of polyploid plants and turns them into population-genetic and crossing-design data products usable for conservation breeding. It comprises <strong>23 steps in 4 phases</strong>.</p>
-<p><strong>Phase 1 — Assembly and haplotype phasing</strong> (Steps 1–9). Per-individual amplicon assembly with multi-replicate Canu, polyploid-aware variant calling (<code>whatshap polyphase</code>), read-backed phasing, MAFFT-based multiple sequence alignment, exon-level reference projection, gap backfilling, frame-correct DNA → protein translation, and abundance-based filtering of authentic SRK proteins from technical artefacts. Output: a per-individual functional-protein table.</p>
+<p><strong>Phase 1 — Assembly and haplotype phasing</strong> (Steps 1–9). Per-individual amplicon assembly with multi-replicate Canu, polyploid-aware variant calling (<code>whatshap polyphase</code>), read-backed phasing, MAFFT-based multiple sequence alignment, exon-level reference projection, gap backfilling, frame-correct DNA → protein translation, and abundance-based filtering of authentic SRK proteins from technical artefacts. Output: a per-individual functional-protein table. Two targeted quality-control filters were introduced after Library 010 processing to address data-quality issues invisible to the original length filter: a <strong>reference-similarity (BLAST coverage) filter</strong> (<a href="#refsimfilter">Step 4b</a>) that removes SRK paralogs with a localised ~500 bp insertion (98–100 % identical to canonical SRK where they align, so identity-based filtering fails), and an <strong>ambiguity (N-content) filter</strong> (<a href="#ambigfilter">Step 7b</a>) that removes contigs with N-rich termini introduced by Canu <em>de novo</em> assembly when Nanopore reads are shorter than the expected ~3.5 kb amplicon — the upstream cause of trailing <code>X</code> blocks (and hence spurious gaps on BEA canonical references) in downstream AA alignments.</p>
 <p><strong>Phase 2 — Allele definition and genotyping</strong> (Steps 10–12). Distance-based clustering of validated proteins into S-allele bins (<a href="#SRKalleledist">Step 10</a>), per-individual allele copy-count genotyping (<a href="#SRKfunctionalprotgenotype">Step 11</a>), and tetraploid zygosity classification into <code>AAAA</code>/<code>AAAB</code>/<code>AABB</code>/<code>AABC</code>/<code>ABCD</code> genotypes (<a href="#zygosity">Step 12</a>). The current dataset comprises 272 ingroup individuals across 19 <em>Lepidium papilliferum</em> Element Occurrences resolved into 54 S-allele bins.</p>
 <p><strong>Phase 3 — Population genetics under a bottleneck-lineage framework</strong> (Steps 13–21). <a href="#BLintegration">Step 13</a> imports five independent bottleneck lineages (BL1–BL5) from the sibling repository <a href="https://github.com/svenbuerki/LEPA_EO_spatial_clustering">LEPA_EO_spatial_clustering</a> — derived by Ward’s D2 hierarchical clustering of 32 geographic-group centroids under a 500 m pollinator-connectivity threshold — and writes a per-individual BL assignment table consumed by every downstream analysis. Steps 14–21 then compute population-genetic statistics, allele-accumulation curves with Michaelis-Menten and Chao1 estimators, χ² goodness-of-fit against the NFDS equal-frequency expectation, the TP1 tipping-point diagnostic (allele richness × frequency evenness), allele composition / sharing (UpSet + heatmap), per-individual Genotypic Fitness Score, the TP2 tipping-point diagnostic (mean GFS × proportion AAAA), and reproductive-effort summaries — every output stratified in parallel by EO (management unit, sorted by parent BL) and by BL (inferential unit, aggregated for power). The locked Set1 colour palette (BL1 red, BL2 blue, BL3 green, BL4 purple, BL5 orange) is used consistently with the sibling spatial-clustering repository.</p>
 <p><strong>Phase 4 — Hypothesis testing and crossing design</strong> (Steps 22–23). <a href="#alleleclusters">Step 22a</a> (<code>srk_variability_landscape.py</code>) runs an identical sliding-window Shannon-entropy scan on a combined alignment of LEPA + 22 <em>Brassica</em> + 10 <em>Arabidopsis</em> SRK alleles to detect hypervariable (HV) columns per species, validates LEPA HV regions against Brassica/Arabidopsis with a 10 000-permutation overlap test, and overlays the 12 SCR9-contact residues from Ma et al. 2016 (PDB 5GYY) for structural validation. Step 22b (<code>srk_allele_hypotheses.py</code>) consumes the canonical HV columns to compute HV-only pairwise distances, UPGMA-detect Class I / Class II, build the synonymy network (synonymy groups (HV-identical) + Synonymy_test bridges), and rank the AAAA × AAAA cross matrix into Incompatible / Synonymy_test / Compatible_within / Compatible_cross categories. Two optional diagnostics — <strong>Step 22c</strong> (<code>srk_wgroup_collapse_test.py</code>, tests how much Synonymy group redundancy contributes to LEPA’s low Shannon entropy) and <strong>Step 22d</strong> (<code>srk_perBL_entropy_test.py</code>, decomposes LEPA HV-column residue diversity per Bottleneck Lineage and compares to Brassica + Arabidopsis to distinguish drift from selection convergence) — flesh out the biological mechanism. <strong>Step 22e</strong> (<code>srk_cross_plan.py</code>) translates the cross categorisation into a phased experimental protocol (H0 / H1a / H1b / H2 / H3) with explicit AAAA / AAAB / AABB genotype requirements and paired controls for heterozygous-donor tests; every cross row is traceable to a sequence-based category (HV distance + Class from Step 22b) plus a genotype-based feasibility filter (<code>Allele_composition</code> from Step 12). <a href="#crossresults">Step 23</a> reads completed cross records and tests the predictions.</p>
@@ -1509,10 +1509,12 @@ border-radius: 0px;
 <li><a href="#prepcanseq">Prepare Canonical Sequences</a> – Preparation of reference SRK sequences used for downstream assembly and validation.</li>
 <li><a href="#nanampassphas">Nanopore Amplicon Assembly and Phasing Pipeline</a> – Multi-CANU assembly of Nanopore amplicons followed by haplotype phasing to reconstruct allelic sequences.</li>
 <li><a href="#haporient">Haplotype Orientation and Consolidation Pipeline</a> – Standardization of sequence orientation and consolidation of phased haplotypes.</li>
-<li><a href="#fastafiltrefint">FASTA Sequence Filtering and Reference Integration Pipeline</a> – Quality filtering of sequences and integration of validated reference alleles.</li>
+<li><a href="#fastafiltrefint">FASTA Sequence Filtering and Reference Integration Pipeline</a> – Quality filtering of sequences by length and integration of validated reference alleles.
+4b. <a href="#refsimfilter">Reference-Similarity Filter (BLAST + coverage)</a> – Removes SRK paralogs that pass length filtering but contain a localised ~500 bp insertion. Paralogs are 98–100 % identical to canonical SRK where they align, so percent identity does not discriminate — the filter uses BLAST query coverage (≥0.90) against the canonical LEPA SRK reference set.</li>
 <li><a href="#msa">Multiple Sequence Alignment</a> – Alignment of nucleotide sequences using MAFFT.</li>
 <li><a href="#exonextract">Exon Extraction from Multiple Sequence Alignments Pipeline</a> – Extraction of coding regions based on AUGUSTUS gene annotations.</li>
-<li><a href="#msagapback">MSA Gap Backfilling and Terminus Processing Pipeline</a> – Reference-guided backfilling of terminal alignment gaps and sequence terminus correction.</li>
+<li><a href="#msagapback">MSA Gap Backfilling and Terminus Processing Pipeline</a> – Reference-guided backfilling of terminal alignment gaps and sequence terminus correction.
+7b. <a href="#ambigfilter">Ambiguity (N-content) Filter</a> – Removes contigs with N-rich termini. Origin of the <code>N</code>s: when Nanopore reads are shorter than the ~3.5 kb SRK amplicon (fragmentation during library prep, partial pore translocation), Canu <em>de novo</em> assembly produces contigs shorter than the canonical reference, and Step 7 pads the missing terminus with <code>N</code>. Those <code>N</code> codons translate to <code>X</code> residues in Step 8 and cause MAFFT to insert spurious gap blocks on the BEA canonical reference rows. Filtering at the DNA stage prevents the cascade.</li>
 <li><a href="#DNA2AA">DNA to Amino Acid Translation Pipeline</a> – Frame-specific translation of nucleotide sequences into proteins.
 <strong>Note:</strong> This step is optional and may be skipped if protein sequences are not required.</li>
 </ol>
@@ -1544,7 +1546,7 @@ border-radius: 0px;
 <div id="phase-4-testing-s-allele-hypotheses" class="section level2" number="4.4">
 <h2><span class="header-section-number">4.4</span> <a href="#phase4">Phase 4: Testing S-allele Hypotheses</a></h2>
 <ol start="22" style="list-style-type: decimal">
-<li><a href="#alleleclusters">Hypervariable-Position Allele Hypothesis Testing and Crossing Design</a> – Cross-Brassicaceae sliding-window Shannon-entropy scan identifies 73 canonical HV columns (validated by 10 000-permutation test against Brassica + Arabidopsis HV regions and structural overlap with Ma 2016 SCR9-contact residues); UPGMA auto-threshold clustering detects the Class I / Class II phylogenetic split; generates a sequence-based cross design for AAAA × AAAA pairs with four categories (Incompatible, Synonymy_test, Compatible_within, Compatible_cross). Optional diagnostics 22c (Synonymy group collapse test) and 22d (per-BL entropy decomposition) test alternative mechanisms underlying LEPA’s low entropy. <strong>Step 22e</strong> (<a href="#crossplan">Hypothesis-Testing Cross Plan</a>) translates the sequence-based categories into a phased experimental protocol with explicit AAAA / AAAB / AABB genotype constraints (H0 SI validation, H1a within-Class baseline, H1b between-Class baseline, H2 synonymy bin boundaries, H3 hidden bins via heterozygous donors + paired controls).</li>
+<li><a href="#alleleclusters">Hypervariable-Position Allele Hypothesis Testing and Crossing Design</a> – Cross-Brassicaceae sliding-window Shannon-entropy scan identifies 66 canonical HV columns (anchored structurally by 11 of the 12 mappable Ma 2016 SCR9-contact residues; cross-genus permutation overlap with Brassica + Arabidopsis is no longer significant in the current post-QC dataset — interpreted as drift-eroded standing variation, see Step 22d); UPGMA auto-threshold clustering detects the Class I / Class II phylogenetic split (Class II = single allele, Allele_055); generates a sequence-based cross design for AAAA × AAAA pairs with four categories (Incompatible, Synonymy_test, Compatible_within, Compatible_cross). Optional diagnostics 22c (Synonymy group collapse test) and 22d (per-BL entropy decomposition) test alternative mechanisms underlying LEPA’s low entropy. <strong>Step 22e</strong> (<a href="#crossplan">Hypothesis-Testing Cross Plan</a>) translates the sequence-based categories into a phased experimental protocol with explicit AAAA / AAAB / AABB genotype constraints (H0 SI validation, H1a within-Class baseline, H1b between-Class baseline, H2 synonymy bin boundaries, H3 hidden bins via heterozygous donors + paired controls).</li>
 <li><a href="#crossresults">Cross Result Analysis</a> – Statistical comparison of seed yield across Incompatible / Synonymy_test / Compatible_within / Compatible_cross cross categories to test whether HV-based allele bin boundaries predict functional recognition specificity.</li>
 </ol>
 <hr />
@@ -2582,10 +2584,110 @@ rm -f &quot;$TMP_COMBINED&quot;
 echo &quot;Filtered FASTA written to: $OUT&quot;</code></pre>
 </div>
 </div>
-<div id="msa" class="section level2" number="5.5">
-<h2><span class="header-section-number">5.5</span> Multiple Sequence Alignment</h2>
+<div id="refsimfilter" class="section level2" number="5.5">
+<h2><span class="header-section-number">5.5</span> Reference-Similarity Filter (BLAST + coverage)</h2>
+<div id="overview-3" class="section level3" number="5.5.1">
+<h3><span class="header-section-number">5.5.1</span> Overview</h3>
+<p>Length-based filtering alone (Step 4) does not separate true SRK alleles from SRK paralogs.
+Library 010 (2026-05-11) revealed a bimodal length distribution after the length filter:
+a true SRK cluster at ~3300 bp and a paralog cluster at ~3900 bp carrying a localised
+~500 bp insertion. Crucially, <strong>both clusters are 98–100 % identical</strong> to the canonical
+SRK reference where they align, so percent identity does not discriminate. The only
+discriminator is <strong>BLAST query coverage</strong>: true SRK aligns over ≥90 % of query length,
+paralogs over ≤85 % (the inserted region does not align to canonical SRK).</p>
+<p>If these paralogs are not removed before Step 5, they inflate the MAFFT alignment
+(Library 010: 5690 bp wide, 40–45 % gaps per row) and produce spurious gap blocks
+in the Step 8 AA alignment.</p>
+</div>
+<div id="pipeline-steps-3" class="section level3" number="5.5.2">
+<h3><span class="header-section-number">5.5.2</span> Pipeline Steps</h3>
+<ol style="list-style-type: decimal">
+<li>Build a <code>blastn</code> database from the canonical LEPA SRK reference set
+(4 BEA-hybrid haplotypes).</li>
+<li>Align each length-filtered query against the database, retaining the best hit
+per query (<code>-max_target_seqs 1 -max_hsps 1</code>).</li>
+<li>Compute per-query coverage = <code>alignment_length / query_length</code>.</li>
+<li>Retain sequences with <code>coverage ≥ 0.90</code> <strong>and</strong> <code>pct_identity ≥ 95</code>;
+canonical reference IDs are always retained regardless of result.</li>
+</ol>
+</div>
+<div id="defaults-and-parameter-choice" class="section level3" number="5.5.3">
+<h3><span class="header-section-number">5.5.3</span> Defaults and parameter choice</h3>
 <ul>
-<li>Align sequences with <code>MAFFT</code></li>
+<li><code>min_coverage = 0.90</code> — selected from the Library 010 distribution (clean gap
+between true SRK at 90–100 % cov and paralogs at 70–85 % cov).</li>
+<li><code>min_identity = 95</code> — rejects spurious low-identity hits but does not attempt
+to use identity for paralog discrimination (paralogs are 98–100 % identical
+where they align).</li>
+</ul>
+</div>
+<div id="validation-library-010" class="section level3" number="5.5.4">
+<h3><span class="header-section-number">5.5.4</span> Validation (Library 010)</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th align="right">Before Step 4b</th>
+<th align="right">After Step 4b</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Sequences</td>
+<td align="right">2260</td>
+<td align="right">1516 (–744 paralog/chimeric)</td>
+</tr>
+<tr class="even">
+<td>Step 5 MSA width</td>
+<td align="right">5690 bp</td>
+<td align="right">3735 bp</td>
+</tr>
+<tr class="odd">
+<td>Per-row gap fraction</td>
+<td align="right">40–45 %</td>
+<td align="right">&lt;20 %</td>
+</tr>
+</tbody>
+</table>
+<p>Runtime ~3 s on 2260 sequences (4 threads).</p>
+</div>
+<div id="bioinformatics-3" class="section level3" number="5.5.5">
+<h3><span class="header-section-number">5.5.5</span> Bioinformatics</h3>
+<ul>
+<li>Script: <code>filter_by_reference_similarity.sh</code></li>
+<li>Input:
+<ul>
+<li>Length-filtered FASTA (Step 4 output, e.g. <code>all_Library010_Phased_haplotypes_filtered_min3250_max4000.fasta</code>)</li>
+<li>Canonical SRK reference FASTA (<code>Canonical_sequences/SRK_canonical_haplotype_sequences_revcomp_ATGfixed.fasta</code>)</li>
+<li>Minimum query coverage <code>[default 0.90]</code></li>
+<li>Minimum percent identity <code>[default 95]</code></li>
+<li>BLAST threads <code>[default 4]</code></li>
+</ul></li>
+<li>Output:
+<ul>
+<li><code>all_Library00X_..._min3250_max4000_blastfilt.fasta</code> — paralog-purged FASTA, input to Step 5</li>
+<li><code>all_Library00X_..._min3250_max4000_blastfilt_log.tsv</code> — per-query decision log
+(<code>query_id</code>, <code>query_length</code>, <code>pct_identity</code>, <code>coverage</code>, <code>decision</code>)</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="msa" class="section level2" number="5.6">
+<h2><span class="header-section-number">5.6</span> Multiple Sequence Alignment</h2>
+<ul>
+<li>Align sequences with <code>MAFFT</code>.</li>
+<li>Two naming conventions appear in the example commands below:
+<ul>
+<li><strong>Legacy (Libraries 001–009):</strong> Step 5 was run on <code>_min3250_max4000.fasta</code>
+directly (Step 4b was not yet part of the pipeline). Filename suffix:
+<code>_aligned.fasta</code>.</li>
+<li><strong>Current (Library 010 onward):</strong> Step 5 is run on the Step 4b output
+(<code>_min3250_max4000_blastfilt.fasta</code>). Filename suffix: <code>_blastfilt_aligned.fasta</code>.</li>
+</ul></li>
+</ul>
+<div id="libraries-001009-legacy-convention" class="section level3" number="5.6.1">
+<h3><span class="header-section-number">5.6.1</span> Libraries 001–009 (legacy convention)</h3>
+<ul>
 <li>Input: <code>all_Library00X_Phased_haplotypes_filtered_min3250_max4000.fasta</code></li>
 </ul>
 <pre class="bash"><code># Library001
@@ -2609,16 +2711,25 @@ mafft --auto --adjustdirection all_Library006_Phased_haplotypes_filtered_min3250
 # Library009
 mafft --auto --adjustdirection all_Library009_Phased_haplotypes_filtered_min3250_max4000.fasta &gt; all_Library009_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta</code></pre>
 </div>
-<div id="exonextract" class="section level2" number="5.6">
-<h2><span class="header-section-number">5.6</span> Exon Extraction from Multiple Sequence Alignments Pipeline</h2>
-<div id="overview-3" class="section level3" number="5.6.1">
-<h3><span class="header-section-number">5.6.1</span> Overview</h3>
+<div id="library-010-onward-current-convention-steps-4b-7b-applied" class="section level3" number="5.6.2">
+<h3><span class="header-section-number">5.6.2</span> Library 010 onward (current convention, Steps 4b + 7b applied)</h3>
+<ul>
+<li>Input: <code>all_Library00X_Phased_haplotypes_filtered_min3250_max4000_blastfilt.fasta</code></li>
+</ul>
+<pre class="bash"><code># Library010
+mafft --auto --adjustdirection all_Library010_Phased_haplotypes_filtered_min3250_max4000_blastfilt.fasta &gt; all_Library010_Phased_haplotypes_filtered_min3250_max4000_blastfilt_aligned.fasta</code></pre>
+</div>
+</div>
+<div id="exonextract" class="section level2" number="5.7">
+<h2><span class="header-section-number">5.7</span> Exon Extraction from Multiple Sequence Alignments Pipeline</h2>
+<div id="overview-4" class="section level3" number="5.7.1">
+<h3><span class="header-section-number">5.7.1</span> Overview</h3>
 <p>This Python pipeline extracts exonic sequences from multiple sequence alignments (MSAs) using gene structure annotations from AUGUSTUS gene prediction software. The workflow maps genomic coordinates to alignment positions and extracts coding sequences while preserving alignment-derived insertions and deletions, enabling comparative analysis of protein-coding regions across haplotypes.</p>
 </div>
-<div id="pipeline-steps-3" class="section level3" number="5.6.2">
-<h3><span class="header-section-number">5.6.2</span> Pipeline Steps</h3>
-<div id="exon-focused-comparative-analysis" class="section level4" number="5.6.2.1">
-<h4><span class="header-section-number">5.6.2.1</span> Exon-Focused Comparative Analysis</h4>
+<div id="pipeline-steps-4" class="section level3" number="5.7.2">
+<h3><span class="header-section-number">5.7.2</span> Pipeline Steps</h3>
+<div id="exon-focused-comparative-analysis" class="section level4" number="5.7.2.1">
+<h4><span class="header-section-number">5.7.2.1</span> Exon-Focused Comparative Analysis</h4>
 <p>Exon extraction serves critical functions in self-incompatibility research:</p>
 <ul>
 <li><strong>Functional sequence analysis</strong>: Focuses on protein-coding regions</li>
@@ -2627,8 +2738,8 @@ mafft --auto --adjustdirection all_Library009_Phased_haplotypes_filtered_min3250
 <li><strong>Phylogenetic inference</strong>: Improves signal-to-noise ratio for evolutionary analysis</li>
 </ul>
 </div>
-<div id="input-parameters-and-validation-1" class="section level4" number="5.6.2.2">
-<h4><span class="header-section-number">5.6.2.2</span> Input Parameters and Validation</h4>
+<div id="input-parameters-and-validation-1" class="section level4" number="5.7.2.2">
+<h4><span class="header-section-number">5.7.2.2</span> Input Parameters and Validation</h4>
 <p>The script requires five user-specified parameters:</p>
 <pre class="python"><code>msa_file = input(&quot;Enter MSA FASTA path (aligned sequences, including canonical reference): &quot;).strip()
 canonical_id = input(&quot;Enter canonical reference ID (exact header in MSA): &quot;).strip()
@@ -2644,8 +2755,8 @@ min_exon_len = input(&quot;Enter minimum exon length (default 0): &quot;).strip(
 <li><strong>Minimum exon length</strong>: Quality filter for exon inclusion (default: 0 bp)</li>
 </ul>
 </div>
-<div id="multiple-sequence-alignment-loading" class="section level4" number="5.6.2.3">
-<h4><span class="header-section-number">5.6.2.3</span> Multiple Sequence Alignment Loading</h4>
+<div id="multiple-sequence-alignment-loading" class="section level4" number="5.7.2.3">
+<h4><span class="header-section-number">5.7.2.3</span> Multiple Sequence Alignment Loading</h4>
 <p>Loads and validates the input MSA using BioPython:</p>
 <pre class="python"><code>msa = SeqIO.to_dict(SeqIO.parse(msa_file, &quot;fasta&quot;))
 
@@ -2661,8 +2772,8 @@ canonical_seq = msa[canonical_id].seq</code></pre>
 <li>Sequence object preservation for downstream processing</li>
 </ul>
 </div>
-<div id="augustus-annotation-processing" class="section level4" number="5.6.2.4">
-<h4><span class="header-section-number">5.6.2.4</span> AUGUSTUS Annotation Processing</h4>
+<div id="augustus-annotation-processing" class="section level4" number="5.7.2.4">
+<h4><span class="header-section-number">5.7.2.4</span> AUGUSTUS Annotation Processing</h4>
 <p>Parses gene structure annotations and applies quality filters:</p>
 <pre class="python"><code>with open(augustus_csv, newline=&#39;&#39;) as csvfile:
     reader = csv.DictReader(csvfile)
@@ -2679,8 +2790,8 @@ exons.sort(key=lambda x: int(x[&#39;V4&#39;]))</code></pre>
 <li><strong>Quality control</strong>: Ensures reliable exon boundary definition</li>
 </ul>
 </div>
-<div id="genomic-to-msa-coordinate-mapping" class="section level4" number="5.6.2.5">
-<h4><span class="header-section-number">5.6.2.5</span> Genomic-to-MSA Coordinate Mapping</h4>
+<div id="genomic-to-msa-coordinate-mapping" class="section level4" number="5.7.2.5">
+<h4><span class="header-section-number">5.7.2.5</span> Genomic-to-MSA Coordinate Mapping</h4>
 <p>Creates position mapping between genomic coordinates and alignment positions:</p>
 <pre class="python"><code>genomic_to_msa = {}
 seq_index = 0
@@ -2696,8 +2807,8 @@ for i, nt in enumerate(canonical_seq):
 <li><strong>Insertion preservation</strong>: Maintains alignment-derived insertions in other sequences</li>
 </ul>
 </div>
-<div id="exon-sequence-extraction" class="section level4" number="5.6.2.6">
-<h4><span class="header-section-number">5.6.2.6</span> Exon Sequence Extraction</h4>
+<div id="exon-sequence-extraction" class="section level4" number="5.7.2.6">
+<h4><span class="header-section-number">5.7.2.6</span> Exon Sequence Extraction</h4>
 <p>Extracts exonic sequences from all sequences in the MSA:</p>
 <pre class="python"><code>for seq_name, seq_record in msa.items():
     seq_aln = seq_record.seq
@@ -2721,8 +2832,8 @@ for i, nt in enumerate(canonical_seq):
 <li><strong>Universal processing</strong>: Applies same extraction to all sequences</li>
 </ul>
 </div>
-<div id="strand-specific-processing" class="section level4" number="5.6.2.7">
-<h4><span class="header-section-number">5.6.2.7</span> Strand-Specific Processing</h4>
+<div id="strand-specific-processing" class="section level4" number="5.7.2.7">
+<h4><span class="header-section-number">5.7.2.7</span> Strand-Specific Processing</h4>
 <p>Handles gene orientation through conditional reverse-complementation:</p>
 <pre class="python"><code>if strand == &#39;-&#39;:
     exon_seq = exon_seq.reverse_complement()</code></pre>
@@ -2734,8 +2845,8 @@ for i, nt in enumerate(canonical_seq):
 <li><strong>Translation compatibility</strong>: Enables downstream protein analysis</li>
 </ul>
 </div>
-<div id="output-generation" class="section level4" number="5.6.2.8">
-<h4><span class="header-section-number">5.6.2.8</span> Output Generation</h4>
+<div id="output-generation" class="section level4" number="5.7.2.8">
+<h4><span class="header-section-number">5.7.2.8</span> Output Generation</h4>
 <p>Creates BioPython SeqRecord objects and writes output FASTA:</p>
 <pre class="python"><code>exon_records.append(SeqRecord(exon_seq, id=seq_name, description=&quot;&quot;))
 
@@ -2750,10 +2861,10 @@ SeqIO.write(exon_records, out_file, &quot;fasta&quot;)</code></pre>
 </ul>
 </div>
 </div>
-<div id="output-files-3" class="section level3" number="5.6.3">
-<h3><span class="header-section-number">5.6.3</span> Output Files</h3>
-<div id="primary-output-1" class="section level4" number="5.6.3.1">
-<h4><span class="header-section-number">5.6.3.1</span> Primary Output</h4>
+<div id="output-files-3" class="section level3" number="5.7.3">
+<h3><span class="header-section-number">5.7.3</span> Output Files</h3>
+<div id="primary-output-1" class="section level4" number="5.7.3.1">
+<h4><span class="header-section-number">5.7.3.1</span> Primary Output</h4>
 <ul>
 <li><code>${input_basename}_exons.fasta</code>: Concatenated exonic sequences for all input sequences</li>
 </ul>
@@ -2766,10 +2877,10 @@ SeqIO.write(exon_records, out_file, &quot;fasta&quot;)</code></pre>
 </ul>
 </div>
 </div>
-<div id="scientific-applications-1" class="section level3" number="5.6.4">
-<h3><span class="header-section-number">5.6.4</span> Scientific Applications</h3>
-<div id="molecular-evolution-analysis" class="section level4" number="5.6.4.1">
-<h4><span class="header-section-number">5.6.4.1</span> Molecular Evolution Analysis</h4>
+<div id="scientific-applications-1" class="section level3" number="5.7.4">
+<h3><span class="header-section-number">5.7.4</span> Scientific Applications</h3>
+<div id="molecular-evolution-analysis" class="section level4" number="5.7.4.1">
+<h4><span class="header-section-number">5.7.4.1</span> Molecular Evolution Analysis</h4>
 <p><strong>Synonymous vs. Non-synonymous Analysis:</strong></p>
 <ul>
 <li>Calculation of dN/dS ratios for selection detection</li>
@@ -2783,8 +2894,8 @@ SeqIO.write(exon_records, out_file, &quot;fasta&quot;)</code></pre>
 <li>Comparative protein modeling across haplotypes</li>
 </ul>
 </div>
-<div id="self-incompatibility-research-1" class="section level4" number="5.6.4.2">
-<h4><span class="header-section-number">5.6.4.2</span> Self-Incompatibility Research</h4>
+<div id="self-incompatibility-research-1" class="section level4" number="5.7.4.2">
+<h4><span class="header-section-number">5.7.4.2</span> Self-Incompatibility Research</h4>
 <p><strong>Functional Domain Analysis:</strong>
 - <strong>Hypervariable regions</strong>: Identification of polymorphic sites critical for specificity
 - <strong>Conserved domains</strong>: Detection of structurally important regions
@@ -2795,18 +2906,18 @@ SeqIO.write(exon_records, out_file, &quot;fasta&quot;)</code></pre>
 - Prediction of incompatibility phenotypes from sequence data</p>
 </div>
 </div>
-<div id="quality-control-and-error-handling" class="section level3" number="5.6.5">
-<h3><span class="header-section-number">5.6.5</span> Quality Control and Error Handling</h3>
-<div id="coordinate-mapping-validation" class="section level4" number="5.6.5.1">
-<h4><span class="header-section-number">5.6.5.1</span> Coordinate Mapping Validation</h4>
+<div id="quality-control-and-error-handling" class="section level3" number="5.7.5">
+<h3><span class="header-section-number">5.7.5</span> Quality Control and Error Handling</h3>
+<div id="coordinate-mapping-validation" class="section level4" number="5.7.5.1">
+<h4><span class="header-section-number">5.7.5.1</span> Coordinate Mapping Validation</h4>
 <ul>
 <li><strong>Boundary checking</strong>: Ensures exon coordinates fall within sequence bounds</li>
 <li><strong>Gap handling</strong>: Properly manages alignment gaps in coordinate conversion</li>
 <li><strong>Missing data</strong>: Graceful handling of unmappable exon positions</li>
 </ul>
 </div>
-<div id="sequence-integrity" class="section level4" number="5.6.5.2">
-<h4><span class="header-section-number">5.6.5.2</span> Sequence Integrity</h4>
+<div id="sequence-integrity" class="section level4" number="5.7.5.2">
+<h4><span class="header-section-number">5.7.5.2</span> Sequence Integrity</h4>
 <ul>
 <li><strong>Length validation</strong>: Confirms expected exon lengths after extraction</li>
 <li><strong>Frame preservation</strong>: Maintains reading frame consistency across sequences</li>
@@ -2814,8 +2925,8 @@ SeqIO.write(exon_records, out_file, &quot;fasta&quot;)</code></pre>
 </ul>
 </div>
 </div>
-<div id="integration-with-upstream-workflows-1" class="section level3" number="5.6.6">
-<h3><span class="header-section-number">5.6.6</span> Integration with Upstream Workflows</h3>
+<div id="integration-with-upstream-workflows-1" class="section level3" number="5.7.6">
+<h3><span class="header-section-number">5.7.6</span> Integration with Upstream Workflows</h3>
 <p>This pipeline integrates with previous steps in the haplotype analysis workflow:</p>
 <ol style="list-style-type: decimal">
 <li><strong>MSA dependency</strong>: Requires high-quality multiple sequence alignment</li>
@@ -2825,20 +2936,22 @@ SeqIO.write(exon_records, out_file, &quot;fasta&quot;)</code></pre>
 </ol>
 <p>The extracted exonic sequences provide the foundation for detailed molecular evolutionary analyses essential for understanding the functional significance of sequence variation in self-incompatibility systems, where protein-level changes directly impact reproductive compatibility and population genetic dynamics.</p>
 </div>
-<div id="bioinformatics-3" class="section level3" number="5.6.7">
-<h3><span class="header-section-number">5.6.7</span> Bioinformatics</h3>
+<div id="bioinformatics-4" class="section level3" number="5.7.7">
+<h3><span class="header-section-number">5.7.7</span> Bioinformatics</h3>
 <ul>
 <li>Activate container: source srk_env/bin/activate</li>
 <li>Script: <code>extract_exons_with_annotation.py</code></li>
 </ul>
 <p>Input:
-- MSA file: all_Library006_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta
+- MSA file (current convention, Library 010+): <code>all_Library010_Phased_haplotypes_filtered_min3250_max4000_blastfilt_aligned.fasta</code>
+- MSA file (legacy convention, Libraries 001–009): <code>all_Library006_Phased_haplotypes_filtered_min3250_max4000_aligned.fasta</code>
 - Name of ref sequence associated with Augustus annotation: <code>SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407</code>
 - Annotation file in csv: <code>/Users/buerkilab/Documents/Amplicon_SRK/Canu_amplicon/Canonical_sequences/augustus_SRK_canonical_haplotype_sequences_revcomp_ATGfixed_arabidopsis.csv</code> -&gt; This file was generated by annotating the canonical sequences using Augustus
 - Annotation strand: <code>+</code>
 - Min exon length: 0
 Output:
-- <code>all_Library003_Phased_haplotypes_filtered_min3250_max4000_aligned_exons.fasta</code></p>
+- Current convention: <code>all_Library010_Phased_haplotypes_filtered_min3250_max4000_blastfilt_aligned_exons.fasta</code>
+- Legacy convention: <code>all_Library003_Phased_haplotypes_filtered_min3250_max4000_aligned_exons.fasta</code></p>
 <pre class="python"><code>#!/usr/bin/env python3
 import csv
 from Bio import SeqIO
@@ -2921,16 +3034,16 @@ print(f&quot;Exon DNA FASTA written to: {out_file}&quot;)
 </code></pre>
 </div>
 </div>
-<div id="msagapback" class="section level2" number="5.7">
-<h2><span class="header-section-number">5.7</span> MSA Gap Backfilling and Terminus Processing Pipeline</h2>
-<div id="overview-4" class="section level3" number="5.7.1">
-<h3><span class="header-section-number">5.7.1</span> Overview</h3>
+<div id="msagapback" class="section level2" number="5.8">
+<h2><span class="header-section-number">5.8</span> MSA Gap Backfilling and Terminus Processing Pipeline</h2>
+<div id="overview-5" class="section level3" number="5.8.1">
+<h3><span class="header-section-number">5.8.1</span> Overview</h3>
 <p>This Python pipeline addresses alignment gaps in multiple sequence alignments (MSAs) by implementing a reference-based backfilling strategy combined with terminus gap replacement. The workflow improves alignment quality for downstream phylogenetic analysis by reducing the impact of assembly artifacts and sequencing limitations while preserving authentic biological variation.</p>
 </div>
-<div id="pipeline-steps-4" class="section level3" number="5.7.2">
-<h3><span class="header-section-number">5.7.2</span> Pipeline Steps</h3>
-<div id="alignment-quality-enhancement-strategy" class="section level4" number="5.7.2.1">
-<h4><span class="header-section-number">5.7.2.1</span> Alignment Quality Enhancement Strategy</h4>
+<div id="pipeline-steps-5" class="section level3" number="5.8.2">
+<h3><span class="header-section-number">5.8.2</span> Pipeline Steps</h3>
+<div id="alignment-quality-enhancement-strategy" class="section level4" number="5.8.2.1">
+<h4><span class="header-section-number">5.8.2.1</span> Alignment Quality Enhancement Strategy</h4>
 <p>Gap backfilling serves multiple analytical purposes in haplotype analysis:</p>
 <ul>
 <li><strong>Assembly artifact correction</strong>: Addresses incomplete terminal regions in de novo assemblies</li>
@@ -2939,8 +3052,8 @@ print(f&quot;Exon DNA FASTA written to: {out_file}&quot;)
 <li><strong>Reference-guided improvement</strong>: Leverages high-quality reference sequences to fill technical gaps</li>
 </ul>
 </div>
-<div id="input-parameters-and-configuration" class="section level4" number="5.7.2.2">
-<h4><span class="header-section-number">5.7.2.2</span> Input Parameters and Configuration</h4>
+<div id="input-parameters-and-configuration" class="section level4" number="5.8.2.2">
+<h4><span class="header-section-number">5.8.2.2</span> Input Parameters and Configuration</h4>
 <p>The script requires two user-specified parameters with one hardcoded constant:</p>
 <pre class="python"><code>msa_fasta = input(&quot;Enter MSA FASTA file: &quot;).strip()
 ref_id = input(&quot;Enter canonical reference ID (exact FASTA header): &quot;).strip()
@@ -2952,8 +3065,8 @@ WINDOW = 25  # bp to backfill from reference</code></pre>
 <li><strong>Backfill window</strong>: Fixed 25 bp window at sequence termini for reference-based gap filling</li>
 </ul>
 </div>
-<div id="msa-loading-and-validation" class="section level4" number="5.7.2.3">
-<h4><span class="header-section-number">5.7.2.3</span> MSA Loading and Validation</h4>
+<div id="msa-loading-and-validation" class="section level4" number="5.8.2.3">
+<h4><span class="header-section-number">5.8.2.3</span> MSA Loading and Validation</h4>
 <p>Loads alignment data and performs reference sequence validation:</p>
 <pre class="python"><code>records = list(SeqIO.parse(msa_fasta, &quot;fasta&quot;))
 seqs = {r.id: list(str(r.seq)) for r in records}
@@ -2971,8 +3084,8 @@ aln_len = len(ref_seq)</code></pre>
 <li><strong>Reference validation</strong>: Confirms canonical sequence availability</li>
 </ul>
 </div>
-<div id="sequence-boundary-detection" class="section level4" number="5.7.2.4">
-<h4><span class="header-section-number">5.7.2.4</span> Sequence Boundary Detection</h4>
+<div id="sequence-boundary-detection" class="section level4" number="5.8.2.4">
+<h4><span class="header-section-number">5.8.2.4</span> Sequence Boundary Detection</h4>
 <p>Implements helper function to identify authentic sequence boundaries:</p>
 <pre class="python"><code>def real_bounds(seq):
     start = next((i for i, x in enumerate(seq) if x != &#39;-&#39;), None)
@@ -2986,8 +3099,8 @@ aln_len = len(ref_seq)</code></pre>
 <li><strong>Efficient search</strong>: Uses generator expressions for optimal performance</li>
 </ul>
 </div>
-<div id="terminal-region-backfilling" class="section level4" number="5.7.2.5">
-<h4><span class="header-section-number">5.7.2.5</span> Terminal Region Backfilling</h4>
+<div id="terminal-region-backfilling" class="section level4" number="5.8.2.5">
+<h4><span class="header-section-number">5.8.2.5</span> Terminal Region Backfilling</h4>
 <p>Applies reference-based gap filling in terminal regions:</p>
 <pre class="python"><code># ---- Backfill first 25 bp ----
 for i in range(min(WINDOW, aln_len)):
@@ -3011,8 +3124,8 @@ for i in range(max(0, aln_len - WINDOW), aln_len):
 - <strong>Assembly algorithms</strong>: Difficulty resolving terminal repeats or low-complexity regions
 - <strong>Sequencing bias</strong>: Reduced quality at read termini affecting assembly</p>
 </div>
-<div id="extended-gap-processing" class="section level4" number="5.7.2.6">
-<h4><span class="header-section-number">5.7.2.6</span> Extended Gap Processing</h4>
+<div id="extended-gap-processing" class="section level4" number="5.8.2.6">
+<h4><span class="header-section-number">5.8.2.6</span> Extended Gap Processing</h4>
 <p>Converts remaining gaps to ambiguous nucleotides outside sequence boundaries:</p>
 <pre class="python"><code># ---- Replace extra leading gaps with Ns ----
 for i in range(0, start):
@@ -3031,8 +3144,8 @@ for i in range(end + 1, aln_len):
 <li><strong>Phylogenetic compatibility</strong>: ‘N’ characters are properly handled by most phylogenetic software</li>
 </ul>
 </div>
-<div id="sequence-reconstruction-and-output" class="section level4" number="5.7.2.7">
-<h4><span class="header-section-number">5.7.2.7</span> Sequence Reconstruction and Output</h4>
+<div id="sequence-reconstruction-and-output" class="section level4" number="5.8.2.7">
+<h4><span class="header-section-number">5.8.2.7</span> Sequence Reconstruction and Output</h4>
 <p>Creates new SeqRecord objects and writes processed alignment:</p>
 <pre class="python"><code>new_records.append(
     SeqIO.SeqRecord(
@@ -3053,10 +3166,10 @@ SeqIO.write(new_records, out_fasta, &quot;fasta&quot;)</code></pre>
 </ul>
 </div>
 </div>
-<div id="output-files-4" class="section level3" number="5.7.3">
-<h3><span class="header-section-number">5.7.3</span> Output Files</h3>
-<div id="primary-output-2" class="section level4" number="5.7.3.1">
-<h4><span class="header-section-number">5.7.3.1</span> Primary Output</h4>
+<div id="output-files-4" class="section level3" number="5.8.3">
+<h3><span class="header-section-number">5.8.3</span> Output Files</h3>
+<div id="primary-output-2" class="section level4" number="5.8.3.1">
+<h4><span class="header-section-number">5.8.3.1</span> Primary Output</h4>
 <ul>
 <li><code>${input_basename}_backfilled.fasta</code>: Processed MSA with gap-filled terminal regions</li>
 </ul>
@@ -3069,10 +3182,10 @@ SeqIO.write(new_records, out_fasta, &quot;fasta&quot;)</code></pre>
 </ul>
 </div>
 </div>
-<div id="quality-control-and-processing-logic" class="section level3" number="5.7.4">
-<h3><span class="header-section-number">5.7.4</span> Quality Control and Processing Logic</h3>
-<div id="gap-classification-system" class="section level4" number="5.7.4.1">
-<h4><span class="header-section-number">5.7.4.1</span> Gap Classification System</h4>
+<div id="quality-control-and-processing-logic" class="section level3" number="5.8.4">
+<h3><span class="header-section-number">5.8.4</span> Quality Control and Processing Logic</h3>
+<div id="gap-classification-system" class="section level4" number="5.8.4.1">
+<h4><span class="header-section-number">5.8.4.1</span> Gap Classification System</h4>
 <p>The pipeline implements a three-tier gap classification:</p>
 <ol style="list-style-type: decimal">
 <li><strong>Terminal gaps within backfill window</strong>: Filled with reference sequence</li>
@@ -3080,8 +3193,8 @@ SeqIO.write(new_records, out_fasta, &quot;fasta&quot;)</code></pre>
 <li><strong>Internal gaps within sequence boundaries</strong>: Preserved as authentic indels</li>
 </ol>
 </div>
-<div id="sequence-integrity-preservation" class="section level4" number="5.7.4.2">
-<h4><span class="header-section-number">5.7.4.2</span> Sequence Integrity Preservation</h4>
+<div id="sequence-integrity-preservation" class="section level4" number="5.8.4.2">
+<h4><span class="header-section-number">5.8.4.2</span> Sequence Integrity Preservation</h4>
 <p><strong>Biological variation protection:</strong></p>
 <ul>
 <li>Internal gaps representing genuine insertions/deletions are preserved</li>
@@ -3096,10 +3209,10 @@ SeqIO.write(new_records, out_fasta, &quot;fasta&quot;)</code></pre>
 </ul>
 </div>
 </div>
-<div id="scientific-applications-2" class="section level3" number="5.7.5">
-<h3><span class="header-section-number">5.7.5</span> Scientific Applications</h3>
-<div id="phylogenetic-analysis-enhancement" class="section level4" number="5.7.5.1">
-<h4><span class="header-section-number">5.7.5.1</span> Phylogenetic Analysis Enhancement</h4>
+<div id="scientific-applications-2" class="section level3" number="5.8.5">
+<h3><span class="header-section-number">5.8.5</span> Scientific Applications</h3>
+<div id="phylogenetic-analysis-enhancement" class="section level4" number="5.8.5.1">
+<h4><span class="header-section-number">5.8.5.1</span> Phylogenetic Analysis Enhancement</h4>
 <p><strong>Tree reconstruction improvement:</strong></p>
 <ul>
 <li>Reduced terminal gap artifacts improve branch length estimation</li>
@@ -3113,8 +3226,8 @@ SeqIO.write(new_records, out_fasta, &quot;fasta&quot;)</code></pre>
 <li>Improved statistical confidence in phylogenetic relationships</li>
 </ul>
 </div>
-<div id="population-genetic-analysis" class="section level4" number="5.7.5.2">
-<h4><span class="header-section-number">5.7.5.2</span> Population Genetic Analysis</h4>
+<div id="population-genetic-analysis" class="section level4" number="5.8.5.2">
+<h4><span class="header-section-number">5.8.5.2</span> Population Genetic Analysis</h4>
 <p><strong>Allelic diversity assessment:</strong></p>
 <ul>
 <li>More accurate sequence length estimates for diversity calculations</li>
@@ -3127,8 +3240,8 @@ SeqIO.write(new_records, out_fasta, &quot;fasta&quot;)</code></pre>
 - Improved power for detecting selection in terminal domains</p>
 </div>
 </div>
-<div id="integration-with-downstream-workflows" class="section level3" number="5.7.6">
-<h3><span class="header-section-number">5.7.6</span> Integration with Downstream Workflows</h3>
+<div id="integration-with-downstream-workflows" class="section level3" number="5.8.6">
+<h3><span class="header-section-number">5.8.6</span> Integration with Downstream Workflows</h3>
 <p>This processed alignment serves as optimized input for:</p>
 <ol style="list-style-type: decimal">
 <li><strong>Phylogenetic reconstruction</strong>: Maximum likelihood and Bayesian inference</li>
@@ -3138,17 +3251,22 @@ SeqIO.write(new_records, out_fasta, &quot;fasta&quot;)</code></pre>
 </ol>
 <p>The backfilled alignment provides a balance between technical artifact correction and biological variation preservation, essential for accurate evolutionary analysis of self-incompatibility haplotypes where terminal regions may contain functionally important domains.</p>
 </div>
-<div id="bioinformatics-4" class="section level3" number="5.7.7">
-<h3><span class="header-section-number">5.7.7</span> Bioinformatics</h3>
+<div id="bioinformatics-5" class="section level3" number="5.8.7">
+<h3><span class="header-section-number">5.8.7</span> Bioinformatics</h3>
 <p>Add primer sequences to fill out ends of the exon sequences.</p>
 <ul>
 <li>Script: <code>backfill_alignment_ends.py</code></li>
 <li>Input:
 <ul>
-<li>MSA fasta file (exon): <code>all_Library006_Phased_haplotypes_filtered_min3250_max4000_aligned_exons.fasta</code></li>
+<li>MSA fasta file (exon, current convention Library 010+): <code>all_Library010_Phased_haplotypes_filtered_min3250_max4000_blastfilt_aligned_exons.fasta</code></li>
+<li>MSA fasta file (exon, legacy convention Libraries 001–009): <code>all_Library006_Phased_haplotypes_filtered_min3250_max4000_aligned_exons.fasta</code></li>
 <li>Canonical reference ID (exact FASTA header): <code>SRK_BEA_hybrid_bp_hap1_p_ctg_fa|amp_1|h1tg000019l|1700582|3407</code></li>
 </ul></li>
-<li>Output: <code>all_Library003_Phased_haplotypes_filtered_min3250_max4000_aligned_exons_backfilled.fasta</code></li>
+<li>Output:
+<ul>
+<li>Current convention: <code>all_Library010_Phased_haplotypes_filtered_min3250_max4000_blastfilt_aligned_exons_backfilled.fasta</code> → continue to Step 7b</li>
+<li>Legacy convention: <code>all_Library003_Phased_haplotypes_filtered_min3250_max4000_aligned_exons_backfilled.fasta</code></li>
+</ul></li>
 </ul>
 <pre class="python"><code>#!/usr/bin/env python3
 from Bio import SeqIO
@@ -3231,16 +3349,114 @@ print(&quot;\n✅ Done!&quot;)
 print(f&quot;Backfilled alignment written to: {out_fasta}&quot;)</code></pre>
 </div>
 </div>
-<div id="DNA2AA" class="section level2" number="5.8">
-<h2><span class="header-section-number">5.8</span> DNA to Amino Acid Translation Pipeline</h2>
-<div id="overview-5" class="section level3" number="5.8.1">
-<h3><span class="header-section-number">5.8.1</span> Overview</h3>
+<div id="ambigfilter" class="section level2" number="5.9">
+<h2><span class="header-section-number">5.9</span> Ambiguity (N-content) Filter</h2>
+<div id="overview-6" class="section level3" number="5.9.1">
+<h3><span class="header-section-number">5.9.1</span> Overview</h3>
+<p>The MSA gap-backfill of Step 7 fills terminal gaps of short contigs against the canonical
+reference with <code>N</code> characters when the contig stops before the reference end. These
+trailing <code>N</code> blocks are a downstream symptom of an <strong>upstream assembly issue</strong>, not a
+problem with the backfill logic itself.</p>
+</div>
+<div id="why-the-ns-appear-causal-chain" class="section level3" number="5.9.2">
+<h3><span class="header-section-number">5.9.2</span> Why the <code>N</code>s appear — causal chain</h3>
+<ol style="list-style-type: decimal">
+<li><strong>Short Nanopore fragments.</strong> A subset of barcodes in any given library produces
+Nanopore reads that are shorter than the expected ~3.5 kb SRK amplicon. This is
+typically caused by DNA fragmentation during library preparation, partial pore
+translocation, or end-of-read truncation during basecalling.</li>
+<li><strong>Canu <em>de novo</em> assembly cannot span the full amplicon.</strong> With only short reads
+available for some barcodes, Canu produces contigs that are shorter than the
+canonical reference at one (usually the 3′) terminus.</li>
+<li><strong>Step 7 backfill writes <code>N</code>s.</strong> <code>backfill_alignment_ends.py</code> pads the missing
+terminal positions with <code>N</code> so that all sequences share the same alignment width
+as the canonical reference. This is correct DNA-stage behaviour — the <code>N</code>s preserve
+column registry without inventing nucleotides.</li>
+<li><strong>Step 8 translates <code>N</code> codons to <code>X</code>.</strong> Any codon containing <code>N</code> translates to the
+ambiguity character <code>X</code> in the predicted protein. The 3′ N-block therefore appears
+as a contiguous block of <code>X</code> residues at the C-terminus.</li>
+<li><strong>MAFFT inflates the AA alignment.</strong> When the AA MSA is built, MAFFT cannot match
+<code>X</code> to a defined residue, so it inserts gap columns to accommodate the <code>X</code> block.
+Those gaps appear on the <strong>BEA canonical reference rows</strong> (which have proper
+residues there), producing the visible trailing-gap artefact reported during
+Library 010 processing.</li>
+</ol>
+<p>Filtering at the DNA stage (this step), <strong>before translation</strong>, removes the affected
+contigs cleanly and prevents the downstream cascade.</p>
+</div>
+<div id="pipeline-steps-6" class="section level3" number="5.9.3">
+<h3><span class="header-section-number">5.9.3</span> Pipeline Steps</h3>
+<ol style="list-style-type: decimal">
+<li>Iterate over each backfilled DNA sequence.</li>
+<li>Count <code>N</code> characters per sequence and compute the N fraction (<code>N_count / length</code>).</li>
+<li>Retain sequences with <code>N_count ≤ max_N</code> <strong>and</strong> <code>N_fraction ≤ max_N_fraction</code>.</li>
+<li>Write the filtered FASTA and a per-query decision log.</li>
+</ol>
+</div>
+<div id="defaults-and-parameter-choice-1" class="section level3" number="5.9.4">
+<h3><span class="header-section-number">5.9.4</span> Defaults and parameter choice</h3>
+<ul>
+<li><code>max_N = 9</code> — Library 010 N-count distribution is sharply bimodal:
+a clean cluster at 0–9 <code>N</code>s (the bulk of true SRK sequences) and a problematic
+cluster at 10–100+ <code>N</code>s (contigs with short 3′ ends). A threshold at 9 separates
+them cleanly.</li>
+<li><code>max_N_fraction = 0.005</code> — secondary safety check (~13 <code>N</code>s for a 2530 bp sequence).</li>
+</ul>
+</div>
+<div id="validation-library-010-1" class="section level3" number="5.9.5">
+<h3><span class="header-section-number">5.9.5</span> Validation (Library 010)</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th align="right">Before Step 7b</th>
+<th align="right">After Step 7b</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Sequences</td>
+<td align="right">1516</td>
+<td align="right">1388 (–128 N-rich contigs)</td>
+</tr>
+<tr class="even">
+<td>Trailing-gap artefact on BEA AA refs</td>
+<td align="right">present</td>
+<td align="right">resolved</td>
+</tr>
+</tbody>
+</table>
+<p>Runtime &lt;1 s on 1516 sequences.</p>
+</div>
+<div id="bioinformatics-6" class="section level3" number="5.9.6">
+<h3><span class="header-section-number">5.9.6</span> Bioinformatics</h3>
+<ul>
+<li>Script: <code>filter_by_ambiguity.sh</code></li>
+<li>Input:
+<ul>
+<li>Backfilled FASTA (Step 7 output, e.g. <code>all_Library010_..._blastfilt_aligned_exons_backfilled.fasta</code>)</li>
+<li>Maximum N count per sequence <code>[default 9]</code></li>
+<li>Maximum N fraction <code>[default 0.005]</code></li>
+</ul></li>
+<li>Output:
+<ul>
+<li><code>all_Library00X_..._backfilled_Nfilt.fasta</code> — N-purged DNA, input to Step 8</li>
+<li><code>all_Library00X_..._backfilled_Nfilt_log.tsv</code> — per-query decision log
+(<code>query_id</code>, <code>length</code>, <code>N_count</code>, <code>N_fraction</code>, <code>decision</code>)</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="DNA2AA" class="section level2" number="5.10">
+<h2><span class="header-section-number">5.10</span> DNA to Amino Acid Translation Pipeline</h2>
+<div id="overview-7" class="section level3" number="5.10.1">
+<h3><span class="header-section-number">5.10.1</span> Overview</h3>
 <p>This Python pipeline translates aligned DNA sequences to amino acid sequences using a specified reading frame and the standard nuclear genetic code. The workflow is essential for protein-level comparative analysis of coding sequences, enabling detection of selection pressures, functional domain identification, and phylogenetic analysis based on protein evolution rather than nucleotide changes.</p>
 </div>
-<div id="pipeline-steps-5" class="section level3" number="5.8.2">
-<h3><span class="header-section-number">5.8.2</span> Pipeline Steps</h3>
-<div id="protein-level-evolutionary-analysis" class="section level4" number="5.8.2.1">
-<h4><span class="header-section-number">5.8.2.1</span> Protein-Level Evolutionary Analysis</h4>
+<div id="pipeline-steps-7" class="section level3" number="5.10.2">
+<h3><span class="header-section-number">5.10.2</span> Pipeline Steps</h3>
+<div id="protein-level-evolutionary-analysis" class="section level4" number="5.10.2.1">
+<h4><span class="header-section-number">5.10.2.1</span> Protein-Level Evolutionary Analysis</h4>
 <p>Translation to amino acids serves critical functions in molecular evolution studies:</p>
 <ul>
 <li><strong>Selection pressure detection</strong>: Enables synonymous vs. non-synonymous substitution analysis</li>
@@ -3249,8 +3465,8 @@ print(f&quot;Backfilled alignment written to: {out_fasta}&quot;)</code></pre>
 <li><strong>Protein structure analysis</strong>: Facilitates domain identification and structural modeling</li>
 </ul>
 </div>
-<div id="input-parameters-and-validation-2" class="section level4" number="5.8.2.2">
-<h4><span class="header-section-number">5.8.2.2</span> Input Parameters and Validation</h4>
+<div id="input-parameters-and-validation-2" class="section level4" number="5.10.2.2">
+<h4><span class="header-section-number">5.10.2.2</span> Input Parameters and Validation</h4>
 <p>The script requires two user-specified parameters:</p>
 <pre class="python"><code>dna_fasta = input(&quot;Enter aligned DNA FASTA file: &quot;).strip()
 frame = int(input(&quot;Enter translation frame (1, 2, or 3): &quot;).strip())
@@ -3270,8 +3486,8 @@ if frame not in (1, 2, 3):
 <li><strong>Frame 3</strong>: Translation starting from third nucleotide (for sequences with longer 5’ extensions)</li>
 </ul>
 </div>
-<div id="genetic-code-configuration" class="section level4" number="5.8.2.3">
-<h4><span class="header-section-number">5.8.2.3</span> Genetic Code Configuration</h4>
+<div id="genetic-code-configuration" class="section level4" number="5.10.2.3">
+<h4><span class="header-section-number">5.10.2.3</span> Genetic Code Configuration</h4>
 <p>Specifies the appropriate genetic code for translation:</p>
 <pre class="python"><code>GENETIC_CODE = 1  # Standard nuclear code (plants)</code></pre>
 <p><strong>Genetic code selection:</strong></p>
@@ -3281,8 +3497,8 @@ if frame not in (1, 2, 3):
 <li><strong>Translation accuracy</strong>: Ensures correct amino acid assignment for all codons</li>
 </ul>
 </div>
-<div id="output-file-generation" class="section level4" number="5.8.2.4">
-<h4><span class="header-section-number">5.8.2.4</span> Output File Generation</h4>
+<div id="output-file-generation" class="section level4" number="5.10.2.4">
+<h4><span class="header-section-number">5.10.2.4</span> Output File Generation</h4>
 <p>Creates descriptive output filename incorporating processing parameters:</p>
 <pre class="python"><code>out_fasta = dna_fasta.replace(&quot;.fasta&quot;, f&quot;_frame{frame}_AA.fasta&quot;)</code></pre>
 <p><strong>Naming convention benefits:</strong></p>
@@ -3293,8 +3509,8 @@ if frame not in (1, 2, 3):
 <li><strong>Workflow integration</strong>: Enables automated downstream processing</li>
 </ul>
 </div>
-<div id="sequence-processing-and-gap-handling" class="section level4" number="5.8.2.5">
-<h4><span class="header-section-number">5.8.2.5</span> Sequence Processing and Gap Handling</h4>
+<div id="sequence-processing-and-gap-handling" class="section level4" number="5.10.2.5">
+<h4><span class="header-section-number">5.10.2.5</span> Sequence Processing and Gap Handling</h4>
 <p>Processes each DNA sequence with gap removal and frame application:</p>
 <pre class="python"><code>for record in SeqIO.parse(dna_fasta, &quot;fasta&quot;):
     # Remove gaps
@@ -3310,8 +3526,8 @@ if frame not in (1, 2, 3):
 <li><strong>Sequence integrity</strong>: Preserves biological sequence content while removing alignment artifacts</li>
 </ul>
 </div>
-<div id="codon-boundary-management" class="section level4" number="5.8.2.6">
-<h4><span class="header-section-number">5.8.2.6</span> Codon Boundary Management</h4>
+<div id="codon-boundary-management" class="section level4" number="5.10.2.6">
+<h4><span class="header-section-number">5.10.2.6</span> Codon Boundary Management</h4>
 <p>Ensures translation occurs on complete codons only:</p>
 <pre class="python"><code># Trim to full codons
 trim_len = len(cds) - (len(cds) % 3)
@@ -3324,8 +3540,8 @@ cds = cds[:trim_len]</code></pre>
 <li><strong>Translation compatibility</strong>: Ensures all sequences translate without frame errors</li>
 </ul>
 </div>
-<div id="translation-execution" class="section level4" number="5.8.2.7">
-<h4><span class="header-section-number">5.8.2.7</span> Translation Execution</h4>
+<div id="translation-execution" class="section level4" number="5.10.2.7">
+<h4><span class="header-section-number">5.10.2.7</span> Translation Execution</h4>
 <p>Performs actual DNA to amino acid translation:</p>
 <pre class="python"><code>if len(cds) == 0:
     aa_seq = &quot;&quot;
@@ -3344,8 +3560,8 @@ else:
 - <strong>Sequencing errors</strong>: Should be identified rather than truncated
 - <strong>Rare allelic variants</strong>: May have biological significance in population studies</p>
 </div>
-<div id="seqrecord-creation-and-metadata" class="section level4" number="5.8.2.8">
-<h4><span class="header-section-number">5.8.2.8</span> SeqRecord Creation and Metadata</h4>
+<div id="seqrecord-creation-and-metadata" class="section level4" number="5.10.2.8">
+<h4><span class="header-section-number">5.10.2.8</span> SeqRecord Creation and Metadata</h4>
 <p>Creates properly formatted output records with descriptive metadata:</p>
 <pre class="python"><code>aa_records.append(
     SeqIO.SeqRecord(
@@ -3362,8 +3578,8 @@ else:
 <li><strong>Downstream traceability</strong>: Enables tracking of processing parameters</li>
 </ul>
 </div>
-<div id="output-generation-and-reporting" class="section level4" number="5.8.2.9">
-<h4><span class="header-section-number">5.8.2.9</span> Output Generation and Reporting</h4>
+<div id="output-generation-and-reporting" class="section level4" number="5.10.2.9">
+<h4><span class="header-section-number">5.10.2.9</span> Output Generation and Reporting</h4>
 <p>Writes translated sequences and provides processing summary:</p>
 <pre class="python"><code>SeqIO.write(aa_records, out_fasta, &quot;fasta&quot;)
 
@@ -3371,10 +3587,10 @@ print(&quot;\n✅ Translation complete&quot;)
 print(f&quot;AA FASTA written to: {out_fasta}&quot;)</code></pre>
 </div>
 </div>
-<div id="output-files-5" class="section level3" number="5.8.3">
-<h3><span class="header-section-number">5.8.3</span> Output Files</h3>
-<div id="primary-output-3" class="section level4" number="5.8.3.1">
-<h4><span class="header-section-number">5.8.3.1</span> Primary Output</h4>
+<div id="output-files-5" class="section level3" number="5.10.3">
+<h3><span class="header-section-number">5.10.3</span> Output Files</h3>
+<div id="primary-output-3" class="section level4" number="5.10.3.1">
+<h4><span class="header-section-number">5.10.3.1</span> Primary Output</h4>
 <ul>
 <li><code>${input_basename}_frame${frame}_AA.fasta</code>: Amino acid sequences translated from specified reading frame</li>
 </ul>
@@ -3387,10 +3603,10 @@ print(f&quot;AA FASTA written to: {out_fasta}&quot;)</code></pre>
 </ul>
 </div>
 </div>
-<div id="quality-control-considerations" class="section level3" number="5.8.4">
-<h3><span class="header-section-number">5.8.4</span> Quality Control Considerations</h3>
-<div id="translation-validation" class="section level4" number="5.8.4.1">
-<h4><span class="header-section-number">5.8.4.1</span> Translation Validation</h4>
+<div id="quality-control-considerations" class="section level3" number="5.10.4">
+<h3><span class="header-section-number">5.10.4</span> Quality Control Considerations</h3>
+<div id="translation-validation" class="section level4" number="5.10.4.1">
+<h4><span class="header-section-number">5.10.4.1</span> Translation Validation</h4>
 <p><strong>Frame selection verification:</strong></p>
 <ul>
 <li>Correct frame identification crucial for meaningful protein analysis</li>
@@ -3404,8 +3620,8 @@ print(f&quot;AA FASTA written to: {out_fasta}&quot;)</code></pre>
 <li>Complete translation enables comprehensive analysis of all sequence variants</li>
 </ul>
 </div>
-<div id="sequence-length-considerations" class="section level4" number="5.8.4.2">
-<h4><span class="header-section-number">5.8.4.2</span> Sequence Length Considerations</h4>
+<div id="sequence-length-considerations" class="section level4" number="5.10.4.2">
+<h4><span class="header-section-number">5.10.4.2</span> Sequence Length Considerations</h4>
 <p><strong>Codon trimming effects:</strong></p>
 <ul>
 <li>1-2 nucleotide loss at 3’ end for sequences not divisible by 3</li>
@@ -3414,10 +3630,10 @@ print(f&quot;AA FASTA written to: {out_fasta}&quot;)</code></pre>
 </ul>
 </div>
 </div>
-<div id="scientific-applications-3" class="section level3" number="5.8.5">
-<h3><span class="header-section-number">5.8.5</span> Scientific Applications</h3>
-<div id="molecular-evolution-analysis-1" class="section level4" number="5.8.5.1">
-<h4><span class="header-section-number">5.8.5.1</span> Molecular Evolution Analysis</h4>
+<div id="scientific-applications-3" class="section level3" number="5.10.5">
+<h3><span class="header-section-number">5.10.5</span> Scientific Applications</h3>
+<div id="molecular-evolution-analysis-1" class="section level4" number="5.10.5.1">
+<h4><span class="header-section-number">5.10.5.1</span> Molecular Evolution Analysis</h4>
 <p><strong>Selection pressure quantification:</strong></p>
 <ul>
 <li><strong>dN/dS analysis</strong>: Ratio of non-synonymous to synonymous substitution rates</li>
@@ -3431,8 +3647,8 @@ print(f&quot;AA FASTA written to: {out_fasta}&quot;)</code></pre>
 <li><strong>Functional grouping</strong>: Clustering based on protein similarity rather than DNA similarity</li>
 </ul>
 </div>
-<div id="self-incompatibility-research-2" class="section level4" number="5.8.5.2">
-<h4><span class="header-section-number">5.8.5.2</span> Self-Incompatibility Research</h4>
+<div id="self-incompatibility-research-2" class="section level4" number="5.10.5.2">
+<h4><span class="header-section-number">5.10.5.2</span> Self-Incompatibility Research</h4>
 <p><strong>Functional domain analysis:</strong></p>
 <ul>
 <li><strong>Hypervariable regions</strong>: Identification of specificity-determining domains</li>
@@ -3447,8 +3663,8 @@ print(f&quot;AA FASTA written to: {out_fasta}&quot;)</code></pre>
 </ul>
 </div>
 </div>
-<div id="integration-with-downstream-workflows-1" class="section level3" number="5.8.6">
-<h3><span class="header-section-number">5.8.6</span> Integration with Downstream Workflows</h3>
+<div id="integration-with-downstream-workflows-1" class="section level3" number="5.10.6">
+<h3><span class="header-section-number">5.10.6</span> Integration with Downstream Workflows</h3>
 <p>The translated amino acid sequences serve as input for:</p>
 <ol style="list-style-type: decimal">
 <li><strong>Phylogenetic analysis</strong>: Maximum likelihood protein evolution models</li>
@@ -3458,8 +3674,8 @@ print(f&quot;AA FASTA written to: {out_fasta}&quot;)</code></pre>
 </ol>
 <p>This translation step bridges the gap between nucleotide-level haplotype reconstruction and protein-level functional analysis, essential for understanding the molecular basis of self-incompatibility specificity and the evolutionary forces maintaining allelic diversity in natural populations.</p>
 </div>
-<div id="bioinformatics-5" class="section level3" number="5.8.7">
-<h3><span class="header-section-number">5.8.7</span> Bioinformatics</h3>
+<div id="bioinformatics-7" class="section level3" number="5.10.7">
+<h3><span class="header-section-number">5.10.7</span> Bioinformatics</h3>
 <blockquote>
 <p>POTENTIALLY NOT NEEDED BECAUSE IT APPLIES TO INDIVIDUAL LIBRARY!</p>
 </blockquote>
@@ -3468,12 +3684,17 @@ print(f&quot;AA FASTA written to: {out_fasta}&quot;)</code></pre>
 <li>Only keep AA without stop codons in sequence</li>
 <li>Input:
 <ul>
-<li>Exon aligned fasta: all_Library006_Phased_haplotypes_filtered_min3250_max4000_aligned_exons_backfilled.fasta</li>
+<li>Exon aligned fasta (current convention, Library 010+, after Step 7b): <code>all_Library010_Phased_haplotypes_filtered_min3250_max4000_blastfilt_aligned_exons_backfilled_Nfilt.fasta</code></li>
+<li>Exon aligned fasta (legacy convention, Libraries 001–009): <code>all_Library006_Phased_haplotypes_filtered_min3250_max4000_aligned_exons_backfilled.fasta</code></li>
 <li>Position for translation (here, 1st)</li>
 </ul></li>
 <li>Output:
 <ul>
-<li>4 files, but this one if important: <code>all_Library003_Phased_haplotypes_filtered_min3250_max4000_aligned_exons_backfilled_frame1_AA_filtered_aligned.fasta</code></li>
+<li>4 files; the important one is the aligned AA FASTA:
+<ul>
+<li>Current convention: <code>all_Library010_Phased_haplotypes_filtered_min3250_max4000_blastfilt_aligned_exons_backfilled_Nfilt_frame1_AA_filtered_aligned.fasta</code></li>
+<li>Legacy convention: <code>all_Library003_Phased_haplotypes_filtered_min3250_max4000_aligned_exons_backfilled_frame1_AA_filtered_aligned.fasta</code></li>
+</ul></li>
 </ul></li>
 </ul>
 <pre class="python"><code>#!/usr/bin/env python3
@@ -3543,11 +3764,11 @@ print(f&quot;AA FASTA written to: {out_fasta}&quot;)
 <h1><span class="header-section-number">6</span> Phase 2: Functional proteins, S alleles and genotyping</h1>
 <div id="SRKprotandfilter" class="section level2" number="6.1">
 <h2><span class="header-section-number">6.1</span> SRK Protein Translation, Alignment, and Abundance Filtering Pipeline</h2>
-<div id="overview-6" class="section level3" number="6.1.1">
+<div id="overview-8" class="section level3" number="6.1.1">
 <h3><span class="header-section-number">6.1.1</span> Overview</h3>
 <p>This comprehensive Python pipeline translates DNA sequences to amino acids, performs multiple sequence alignment, and applies abundance-based filtering to identify functional SRK (S-receptor kinase) proteins. The workflow includes enhanced tracking and validation features specifically designed for self-incompatibility research, enabling identification of potentially self-compatible individuals through protein-level analysis. The script is designed to be re-run incrementally as new sequencing libraries are added, with built-in safeguards to prevent accidental use of stale output files.</p>
 </div>
-<div id="pipeline-steps-6" class="section level3" number="6.1.2">
+<div id="pipeline-steps-8" class="section level3" number="6.1.2">
 <h3><span class="header-section-number">6.1.2</span> Pipeline Steps</h3>
 <div id="srk-protein-analysis-framework" class="section level4" number="6.1.2.1">
 <h4><span class="header-section-number">6.1.2.1</span> SRK Protein Analysis Framework</h4>
@@ -3870,13 +4091,18 @@ too_many = [row[&#39;Individual&#39;] for row in report_data
 <p>This pipeline provides a robust framework for identifying functional SRK proteins and detecting potential self-compatibility evolution, essential for understanding the maintenance and breakdown of self-incompatibility systems in natural populations.</p>
 </div>
 </div>
-<div id="bioinformatics-6" class="section level3" number="6.1.6">
+<div id="bioinformatics-8" class="section level3" number="6.1.6">
 <h3><span class="header-section-number">6.1.6</span> Bioinformatics</h3>
 <ul>
 <li><p><strong>Definition:</strong> A functional allele is defined by the number of distinct functional protein sequences (isoforms) underpinning all DNA SRK sequences. We need to include frequency to remove bioinformatics and sequencing noise (set to 5). Individuals with more distinct proteins than the ploidy level (set to 4 for allotetraploid) are excluded as likely data quality issues.</p></li>
-<li><p><strong>Approach:</strong> Merge <code>_exons_backfilled.fasta</code> files, translate sequences and discard those that do not produce functional proteins, and create protein sequences (with a key). Discarded samples carry information about whether they have lost SI due to non-functional SRK and will then be self-compatible.</p></li>
+<li><p><strong>Approach:</strong> Merge per-library DNA FASTAs, translate sequences and discard those that do not produce functional proteins, and create protein sequences (with a key). Discarded samples carry information about whether they have lost SI due to non-functional SRK and will then be self-compatible.</p></li>
 <li><p><strong>Script:</strong> <code>define_functional_proteins.py</code></p></li>
-<li><p><strong>Input:</strong> <code>*_exons_backfilled.fasta</code> (e.g., <code>all_Library003_Phased_haplotypes_filtered_min3250_max4000_aligned_exons_backfilled.fasta</code>)</p>
+<li><p><strong>Input:</strong> Two file-naming conventions are accepted by the script and combined into a single input set:</p>
+<ul>
+<li>Legacy: <code>*_exons_backfilled.fasta</code> — libraries processed before Step 7b was introduced (e.g. Libraries 001–008)</li>
+<li>Current: <code>*_exons_backfilled_Nfilt.fasta</code> — libraries processed through Steps 4b + 7b (e.g. Library 010 onward)</li>
+</ul>
+<p>When <strong>both</strong> files exist for the same library, the <code>_Nfilt</code> version is used and the legacy file is automatically shadowed (skipped). The script prints the shadowed file paths so the user can verify the correct version is being processed.</p>
 <ul>
 <li>frame = 1</li>
 <li>filter = 5</li>
@@ -3968,7 +4194,7 @@ import re
 # ----------------------------
 # Files
 # ----------------------------
-pattern = &quot;*_exons_backfilled.fasta&quot;
+patterns = (&quot;*_exons_backfilled.fasta&quot;, &quot;*_exons_backfilled_Nfilt.fasta&quot;)  # legacy + current
 raw_fasta = &quot;SRK_proteins_raw.fasta&quot;
 aligned_fasta = &quot;SRK_proteins_aligned.fasta&quot;
 final_fasta = &quot;SRK_functional_proteins.fasta&quot;
@@ -4312,7 +4538,7 @@ print(f&quot;Too-many-alleles exclusions: {too_many_file}&quot;)</code></pre>
 </div>
 <div id="SRKalleledist" class="section level2" number="6.2">
 <h2><span class="header-section-number">6.2</span> Distance-Based SRK S-Allele Definition</h2>
-<div id="overview-7" class="section level3" number="6.2.1">
+<div id="overview-9" class="section level3" number="6.2.1">
 <h3><span class="header-section-number">6.2.1</span> Overview</h3>
 <p>This step addresses a fundamental limitation of the upstream protein pipeline: treating every unique protein sequence as a distinct S-allele overestimates allelic diversity because Nanopore sequencing noise and assembly artefacts generate near-identical sequence variants that do not represent biologically distinct recognition specificities. Two scripts implement a distance-based proxy for functional allele identity, mirroring the biological criterion used in crossing experiments (where two proteins specify the same allele if pollen bearing one is rejected by a pistil expressing the other).</p>
 <p>Two complementary outputs are produced: an allele assignment table grouping proteins into bins, and amino acid variation heatmaps that visualise where along the protein sequence the informative differences are located and how frequent each amino acid is at each variable position.</p>
@@ -4392,10 +4618,54 @@ print(f&quot;Too-many-alleles exclusions: {too_many_file}&quot;)</code></pre>
 <hr />
 </div>
 </div>
-<div id="pipeline-steps-7" class="section level3" number="6.2.4">
+<div id="pipeline-steps-9" class="section level3" number="6.2.4">
 <h3><span class="header-section-number">6.2.4</span> Pipeline Steps</h3>
-<div id="step-1-distance-based-allele-grouping-define_srk_alleles_from_distance.py" class="section level4" number="6.2.4.1">
-<h4><span class="header-section-number">6.2.4.1</span> Step 1 — Distance-based allele grouping (<code>define_SRK_alleles_from_distance.py</code>)</h4>
+<div id="step-0-calibration-identify-the-elbow-of-the-sensitivity-curve-find_allele_plateau.py" class="section level4" number="6.2.4.1">
+<h4><span class="header-section-number">6.2.4.1</span> Step 0 (calibration) — Identify the elbow of the sensitivity curve (<code>find_allele_plateau.py</code>)</h4>
+<p>Whenever the input dataset changes (new library, re-run after a filter change), run the calibration utility <strong>first</strong> so the <code>N_ALLELES</code> setting in Step 1 reflects the new curve.</p>
+<p>The script applies three independent estimators to the (threshold, n_alleles) curve:</p>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Method</th>
+<th>What it measures</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Kneedle</strong></td>
+<td>Maximum perpendicular distance from the chord connecting curve endpoints (Satopaa et al. 2011)</td>
+<td>The canonical “elbow” — recommended default; matches a visually identified primary plateau on well-behaved curves.</td>
+</tr>
+<tr class="even">
+<td><strong>Slope-magnitude minimum</strong></td>
+<td>Smoothed <code>|dN/dt|</code> within a constrained allele-count range</td>
+<td>Finds the flattest region of the curve; may lock onto secondary plateaus lower on the curve.</td>
+</tr>
+<tr class="odd">
+<td><strong>Longest persistent run</strong></td>
+<td>Contiguous threshold steps where N stays within ±3 alleles of a candidate centre</td>
+<td>Robust measure of plateau width.</td>
+</tr>
+</tbody>
+</table>
+<p>The script also prints a per-threshold table around the Kneedle elbow so the curve shape can be sanity-checked numerically. Use the Kneedle value unless the per-threshold table shows it sitting on a knife-edge transition rather than a stable level. Inspect <code>SRK_protein_distance_analysis.pdf</code> (output of Step 1 below) for visual confirmation.</p>
+<p><strong>No files written</strong> — the script reports the recommended <code>N_ALLELES</code> on stdout. Set this value manually at the top of <code>define_SRK_alleles_from_distance.py</code>.</p>
+<p><strong>Why the calibration is separate from the clustering script:</strong></p>
+<ul>
+<li><em>Single-responsibility separation</em>: the calibration is a one-shot decision per dataset; the clustering script may be re-run many times for sensitivity testing or after filter changes. Decoupling keeps each script focused.</li>
+<li><em>Manual inspection gate</em>: keeping a visible “look at the PDF, sanity-check, then commit” step protects against silent miscalibration on noisy curves where Kneedle can mis-fire.</li>
+<li><em>Auditable parameter trail</em>: the chosen <code>N_ALLELES</code> value appears as a deliberate edit to <code>define_SRK_alleles_from_distance.py</code> (visible in <code>git diff</code>), rather than as an opaque algorithm-determined value.</li>
+</ul>
+</div>
+<div id="step-1-distance-based-allele-grouping-define_srk_alleles_from_distance.py" class="section level4" number="6.2.4.2">
+<h4><span class="header-section-number">6.2.4.2</span> Step 1 — Distance-based allele grouping (<code>define_SRK_alleles_from_distance.py</code>)</h4>
 <p><strong>Key parameters:</strong></p>
 <table>
 <colgroup>
@@ -4418,8 +4688,8 @@ print(f&quot;Too-many-alleles exclusions: {too_many_file}&quot;)</code></pre>
 </tr>
 <tr class="even">
 <td><code>N_ALLELES</code></td>
-<td><code>63</code></td>
-<td><strong>Option A</strong> — fix the number of alleles directly (overrides <code>DIST_THRESHOLD</code> when not <code>None</code>). Use when you can identify the elbow on the sensitivity curve but cannot read the exact distance. For the current dataset (Libraries 001–009, 308 individuals, 302 functional proteins), the sensitivity curve showed a plateau between 50–100 alleles centred at 63 (implied threshold ≈ 0.005).</td>
+<td><code>58</code></td>
+<td><strong>Option A</strong> — fix the number of alleles directly (overrides <code>DIST_THRESHOLD</code> when not <code>None</code>). Set this from the Kneedle elbow returned by Step 0 (calibration). For the current dataset (Libraries 001–010, 380 individuals, 376 functional proteins after Step 4b + Step 7b filtering) the Kneedle elbow is at N = 58 (implied threshold ≈ 0.0055). Earlier (Libraries 001–009, 302 functional proteins) the value was N ≈ 63 (implied threshold ≈ 0.005); the shift reflects the addition of Library 010 and the cleaner protein set produced by Steps 4b/7b.</td>
 </tr>
 <tr class="odd">
 <td><code>DIST_THRESHOLD</code></td>
@@ -4493,8 +4763,8 @@ print(f&quot;Too-many-alleles exclusions: {too_many_file}&quot;)</code></pre>
 </tbody>
 </table>
 </div>
-<div id="step-2-amino-acid-variation-heatmaps-srk_aa_mutation_heatmap.py" class="section level4" number="6.2.4.2">
-<h4><span class="header-section-number">6.2.4.2</span> Step 2 — Amino acid variation heatmaps (<code>SRK_AA_mutation_heatmap.py</code>)</h4>
+<div id="step-2-amino-acid-variation-heatmaps-srk_aa_mutation_heatmap.py" class="section level4" number="6.2.4.3">
+<h4><span class="header-section-number">6.2.4.3</span> Step 2 — Amino acid variation heatmaps (<code>SRK_AA_mutation_heatmap.py</code>)</h4>
 <p>Produces two complementary figures sharing the same set of variable positions and domain annotation track.</p>
 <p><strong>Key parameters:</strong></p>
 <table>
@@ -4763,7 +5033,7 @@ print(f&quot;Too-many-alleles exclusions: {too_many_file}&quot;)</code></pre>
 </ol>
 <hr />
 </div>
-<div id="bioinformatics-7" class="section level3" number="6.2.9">
+<div id="bioinformatics-9" class="section level3" number="6.2.9">
 <h3><span class="header-section-number">6.2.9</span> Bioinformatics</h3>
 <div id="scripts" class="section level4" number="6.2.9.1">
 <h4><span class="header-section-number">6.2.9.1</span> Scripts</h4>
@@ -4845,7 +5115,7 @@ DOMAIN_REGIONS = [
 </div>
 <div id="SRKfunctionalprotgenotype" class="section level2" number="6.3">
 <h2><span class="header-section-number">6.3</span> SRK S-Allele Genotyping Pipeline</h2>
-<div id="overview-8" class="section level3" number="6.3.1">
+<div id="overview-10" class="section level3" number="6.3.1">
 <h3><span class="header-section-number">6.3.1</span> Overview</h3>
 <p>This Python pipeline genotypes individuals based on <strong>distance-defined S-allele bins</strong> rather than raw functional protein sequences. The workflow joins two upstream outputs — the functional protein key (sequence → protein) and the allele assignment table (protein → allele) — to produce per-individual allele lists and a count-based genotype matrix for population genetic analysis. Reference sequences are automatically excluded; only <code>Library*</code> individuals are retained.</p>
 <p>The wide genotype matrix records <strong>allele copy counts</strong> (number of distinct proteins per individual assigned to each allele bin) rather than binary presence/absence. For a tetraploid, an individual with two proteins in Allele_044 and two in Allele_047 receives counts of 2 and 2 respectively, directly reflecting its AABB dosage state. This information drives zygosity inference and allele frequency estimation downstream.</p>
@@ -4891,7 +5161,7 @@ SRK_individual_allele_genotypes.tsv (wide count matrix: individuals × alleles, 
 </tbody>
 </table>
 </div>
-<div id="pipeline-steps-8" class="section level3" number="6.3.3">
+<div id="pipeline-steps-10" class="section level3" number="6.3.3">
 <h3><span class="header-section-number">6.3.3</span> Pipeline Steps</h3>
 <div id="ingroup-filtering-optional" class="section level4" number="6.3.3.1">
 <h4><span class="header-section-number">6.3.3.1</span> Ingroup filtering (optional)</h4>
@@ -4975,7 +5245,7 @@ Max alleles/individual: 3
 Mean alleles/individual: 1.47</code></pre>
 <p>152 ingroup individuals genotyped; 8 outgroup samples excluded. 43 of the 50 defined allele bins are observed in the ingroup. Two alleles dominate: <code>Allele_044</code> (43 individuals) and <code>Allele_047</code> (40 individuals), together accounting for ~54% of the ingroup.</p>
 </div>
-<div id="bioinformatics-8" class="section level3" number="6.3.6">
+<div id="bioinformatics-10" class="section level3" number="6.3.6">
 <h3><span class="header-section-number">6.3.6</span> Bioinformatics</h3>
 <ul>
 <li><strong>Script:</strong> <code>genotype_SRK_from_alleles.py</code></li>
@@ -5078,7 +5348,7 @@ print(f&quot;Mean alleles/individual: {sum(n_alleles_per_ind)/len(n_alleles_per_
 - Results should be treated with caution and validated in FigTree/iTOL before use in conservation management decisions.</p>
 <p>A working draft of this analysis is also available in <code>tmp_SRK_classes_prediction.Rmd</code> (may be outdated relative to this section).</p>
 </blockquote>
-<div id="overview-9" class="section level3" number="6.4.1">
+<div id="overview-11" class="section level3" number="6.4.1">
 <h3><span class="header-section-number">6.4.1</span> Overview</h3>
 <p>This Python pipeline takes the functional SRK protein alignment and individual genotype data, filters to ingroup individuals, infers a maximum-likelihood phylogenetic tree, and automatically assigns proteins to Class I or Class II based on tree topology. Per-individual class genotypes are then derived to predict dominance behaviour for crossing decisions in a conservation breeding program.</p>
 </div>
@@ -5136,7 +5406,7 @@ print(f&quot;Mean alleles/individual: {sum(n_alleles_per_ind)/len(n_alleles_per_
 <p>Midpoint rooting is still produced as a separate output file for visual validation in FigTree or iTOL.</p>
 </div>
 </div>
-<div id="pipeline-steps-9" class="section level3" number="6.4.3">
+<div id="pipeline-steps-11" class="section level3" number="6.4.3">
 <h3><span class="header-section-number">6.4.3</span> Pipeline Steps</h3>
 <div id="output-file-management-and-overwrite-safeguard-1" class="section level4" number="6.4.3.1">
 <h4><span class="header-section-number">6.4.3.1</span> Output File Management and Overwrite Safeguard</h4>
@@ -5406,7 +5676,7 @@ Library001_barcode05    0                             3           SRK_protein_01
 Library002_barcode14    0                             0                                           no_functional_SRK</code></pre>
 </div>
 </div>
-<div id="bioinformatics-9" class="section level3" number="6.4.5">
+<div id="bioinformatics-11" class="section level3" number="6.4.5">
 <h3><span class="header-section-number">6.4.5</span> Bioinformatics</h3>
 <ul>
 <li><strong>Goal:</strong> Assign functional SRK proteins to Class I or Class II using phylogenetic topology, then predict dominance behaviour for ingroup individuals to guide crossing decisions in the breeding program</li>
@@ -5758,11 +6028,11 @@ print(f&quot;Individual class geno:   {ind_class_file}&quot;)</code></pre>
 </div>
 <div id="zygosity" class="section level2" number="6.5">
 <h2><span class="header-section-number">6.5</span> SRK Zygosity Analysis Pipeline for Tetraploid Species</h2>
-<div id="overview-10" class="section level3" number="6.5.1">
+<div id="overview-12" class="section level3" number="6.5.1">
 <h3><span class="header-section-number">6.5.1</span> Overview</h3>
 <p>This R pipeline analyzes S-locus zygosity patterns in tetraploid species by quantifying the number of distinct SRK proteins per individual and classifying genotype configurations. The workflow addresses the complex genetics of polyploid self-incompatibility systems, where individuals can carry multiple S-alleles with varying degrees of heterozygosity, providing insights into mating system evolution and population genetic structure.</p>
 </div>
-<div id="pipeline-steps-10" class="section level3" number="6.5.2">
+<div id="pipeline-steps-12" class="section level3" number="6.5.2">
 <h3><span class="header-section-number">6.5.2</span> Pipeline Steps</h3>
 <div id="polyploid-self-incompatibility-analysis-framework" class="section level4" number="6.5.2.1">
 <h4><span class="header-section-number">6.5.2.1</span> Polyploid Self-Incompatibility Analysis Framework</h4>
@@ -6036,7 +6306,7 @@ Library001_barcode05  1                   2                 Homozygous    AAAA  
 <p>This zygosity analysis pipeline provides essential insights into the genetic architecture of self-incompatibility in polyploid species, enabling assessment of system functionality and population genetic health critical for both evolutionary understanding and conservation management.</p>
 </div>
 </div>
-<div id="bioinformatics-10" class="section level3" number="6.5.7">
+<div id="bioinformatics-12" class="section level3" number="6.5.7">
 <h3><span class="header-section-number">6.5.7</span> Bioinformatics</h3>
 <ul>
 <li>Goal: Score individual zygosity from the allele count matrix to AAAA, AAAB, AABB, AABC, ABCD based on number of distinct allele bins and their copy counts</li>
@@ -6201,7 +6471,7 @@ Even where some allele diversity persists, drift causes allele copy-count imbala
 </div>
 <div id="BLintegration" class="section level2" number="7.2">
 <h2><span class="header-section-number">7.2</span> Element Occurrence and Bottleneck Lineage Integration</h2>
-<div id="overview-11" class="section level3" number="7.2.1">
+<div id="overview-13" class="section level3" number="7.2.1">
 <h3><span class="header-section-number">7.2.1</span> Overview</h3>
 <p>This step bridges the SRK individual-level dataset to the spatial framework defined in the sibling project <a href="https://github.com/svenbuerki/LEPA_EO_spatial_clustering">LEPA_EO_spatial_clustering</a>. For each post-QC individual, the script resolves a complete sampling lineage record: which Element Occurrence (EO) the sample was collected from, which connected geographic group(s) that EO occupies, which independent bottleneck lineage (BL1–BL5) the group belongs to, and the relative drift index of its habitat patch. The output table is the join key used by every subsequent Phase 3 step to add the BL stratification.</p>
 </div>
@@ -6211,7 +6481,7 @@ Even where some allele diversity persists, drift causes allele copy-count imbala
 <p>Without a BL assignment for every individual, downstream analyses can only stratify by EO, which (a) misses the larger evolutionary structure — EOs are nested within BLs, and (b) is forced to discard the small localities (n = 1–3 each) for which EO-level statistics are unreliable. By aggregating those small localities into their parent BL, this step rescues those individuals for analysis at the lineage scale while keeping the EO label available for management-level reporting.</p>
 <p>Comparing allele richness, frequency evenness, and allele composition <em>across BLs</em> provides a direct test of the hypothesis that <strong>independent bottlenecks</strong> have shaped S-allele diversity. If bottlenecks are truly independent, allele losses should be largely non-overlapping between lineages — each BL missing a different subset of the species pool. If, instead, all BLs are missing the same alleles, a single shared species-level bottleneck is the more parsimonious explanation.</p>
 </div>
-<div id="pipeline-steps-11" class="section level3" number="7.2.3">
+<div id="pipeline-steps-13" class="section level3" number="7.2.3">
 <h3><span class="header-section-number">7.2.3</span> Pipeline Steps</h3>
 <blockquote>
 <p>Requires <code>sampling_metadata.csv</code>, <code>SRK_individual_zygosity.tsv</code> (canonical post-QC list, output of <a href="#zygosity">Step 12</a>), and <code>EO_group_BL_summary.csv</code> from the sibling project. Run once at the start of Phase 3 — every downstream step joins on <code>Individual</code> against the output table.</p>
@@ -6292,7 +6562,7 @@ Even where some allele diversity persists, drift causes allele copy-count imbala
 </div>
 <div id="popgenetics" class="section level2" number="7.3">
 <h2><span class="header-section-number">7.3</span> Population Genetic Statistics</h2>
-<div id="overview-12" class="section level3" number="7.3.1">
+<div id="overview-14" class="section level3" number="7.3.1">
 <h3><span class="header-section-number">7.3.1</span> Overview</h3>
 <p>This pipeline calculates key population genetic statistics from SRK genotyping data in order to evaluate whether <strong>self-incompatibility allele diversity is maintained by negative frequency-dependent selection (NFDS)</strong> or instead influenced by <strong>genetic drift or demographic bottlenecks</strong>.</p>
 <p>The analysis integrates individual genotype data, inferred zygosity states, and population metadata to produce summary statistics at the population level. These statistics provide insight into the evolutionary dynamics governing the SRK self-incompatibility system.</p>
@@ -6304,7 +6574,7 @@ Even where some allele diversity persists, drift causes allele copy-count imbala
 </ul>
 <p>Deviations from these expectations can indicate demographic or evolutionary processes affecting allele maintenance.</p>
 </div>
-<div id="pipeline-steps-12" class="section level3" number="7.3.2">
+<div id="pipeline-steps-14" class="section level3" number="7.3.2">
 <h3><span class="header-section-number">7.3.2</span> Pipeline Steps</h3>
 <div id="biological-expectations-for-srk-systems" class="section level4" number="7.3.2.1">
 <h4><span class="header-section-number">7.3.2.1</span> Biological Expectations for SRK Systems</h4>
@@ -6721,7 +6991,7 @@ H = \frac{\text{number of heterozygous individuals}}{\text{total individuals}}
 <p>Comparing these metrics across populations can identify <strong>populations experiencing allele erosion or reduced mating compatibility</strong>.</p>
 </div>
 </div>
-<div id="bioinformatics-11" class="section level3" number="7.3.4">
+<div id="bioinformatics-13" class="section level3" number="7.3.4">
 <h3><span class="header-section-number">7.3.4</span> Bioinformatics</h3>
 <div id="script" class="section level4" number="7.3.4.1">
 <h4><span class="header-section-number">7.3.4.1</span> Script</h4>
@@ -6841,7 +7111,7 @@ cat(&quot;Analysis complete\n&quot;)</code></pre>
 </div>
 <div id="alleleaccum" class="section level2" number="7.4">
 <h2><span class="header-section-number">7.4</span> Allele Accumulation Curves</h2>
-<div id="overview-13" class="section level3" number="7.4.1">
+<div id="overview-15" class="section level3" number="7.4.1">
 <h3><span class="header-section-number">7.4.1</span> Overview</h3>
 <p>Allele accumulation curves quantify how rapidly new alleles are discovered as additional individuals are sampled. In systems under <strong>negative frequency-dependent selection (NFDS)</strong>, such as plant self-incompatibility loci, rare alleles are continuously maintained in populations. This leads to a characteristic accumulation pattern where new alleles continue to appear even after substantial sampling effort.</p>
 <p>In contrast, populations evolving primarily under <strong>genetic drift</strong> show rapid early allele discovery followed by saturation, indicating that most diversity is captured quickly.</p>
@@ -6852,7 +7122,7 @@ cat(&quot;Analysis complete\n&quot;)</code></pre>
 </ul>
 <p>From these curves, several statistics are extracted that provide quantitative indicators of <strong>NFDS versus drift</strong>. In addition, the pipeline estimates the <strong>total number of SRK alleles in the species</strong> using three complementary richness estimators applied to the species-level data. This estimated total serves as a baseline for evaluating how far each population is from a balanced NFDS equilibrium.</p>
 </div>
-<div id="pipeline-steps-13" class="section level3" number="7.4.2">
+<div id="pipeline-steps-15" class="section level3" number="7.4.2">
 <h3><span class="header-section-number">7.4.2</span> Pipeline Steps</h3>
 <div id="data-integration" class="section level4" number="7.4.2.1">
 <h4><span class="header-section-number">7.4.2.1</span> Data Integration</h4>
@@ -7046,7 +7316,7 @@ n^* = \frac{S^* \cdot K}{S_{max} - S^*}
 <div id="output-files-13" class="section level3" number="7.4.3">
 <h3><span class="header-section-number">7.4.3</span> Output Files</h3>
 <blockquote>
-<p>As of 2026-05-07 the script reads <code>SRK_individual_BL_assignments.tsv</code> and applies a <strong>split-filter design</strong>: the species-level curve uses ALL 272 ingroup individuals (so the species pool baseline is inclusive), while EO and BL curves use only the 262 BL-assigned individuals. The species pool stays at 54 observed / MM=69 / Chao1=73; without the split it would shrink to 50 / MM=63.</p>
+<p>As of 2026-05-07 the script reads <code>SRK_individual_BL_assignments.tsv</code> and applies a <strong>split-filter design</strong>: the species-level curve uses ALL ingroup individuals (so the species pool baseline is inclusive), while EO and BL curves use only the BL-assigned individuals. Current dataset (2026-05-11): species pool = 49 observed / MM = 59 / Chao1 = 61 / consensus = 60; species-level uses all 335 ingroup individuals, EO/BL curves use 325 BL-assigned (was 54 / MM = 69 / 272 species / 262 BL-assigned prior to Library 010 and Steps 4b/7b).</p>
 </blockquote>
 <div id="primary-outputs-3" class="section level4" number="7.4.3.1">
 <h4><span class="header-section-number">7.4.3.1</span> Primary Outputs</h4>
@@ -7062,7 +7332,7 @@ n^* = \frac{S^* \cdot K}{S_{max} - S^*}
 <ul>
 <li><code>figures/SRK_allele_accumulation_species.png</code> — species curve with MM/Chao1 asymptotes (y-axis extended to accommodate the asymptotes).</li>
 <li><code>figures/SRK_allele_accumulation_combined.png</code> — all qualifying EO curves on shared axes, <strong>colored by parent BL</strong> (Set1 palette). End-of-curve labels show <code>EOXX (observed/MM)</code>. Legend grouped by BL.</li>
-<li><code>figures/SRK_allele_accumulation_BL_combined.png</code> — <strong>NEW</strong>. The 5 BL aggregate curves on shared axes; the headline visual test of “are independent bottleneck lineages approaching saturation independently?” Headline finding: BL4 climbs to 31 alleles toward MM=47 while BL2 plateaus at 8 alleles (MM=10).</li>
+<li><code>figures/SRK_allele_accumulation_BL_combined.png</code> — <strong>NEW</strong>. The 5 BL aggregate curves on shared axes; the headline visual test of “are independent bottleneck lineages approaching saturation independently?” Headline finding (current dataset 2026-05-11): BL4 climbs to 27 alleles toward MM=37 while BL2 plateaus at 8 alleles (MM=10).</li>
 <li><code>figures/SRK_allele_accumulation_drift_erosion.png</code> — stacked bars per EO (observed / predicted-undetected / lost-to-drift), with EOs sorted by parent BL and a thin BL color strip along the x-axis baseline grouping EOs visually.</li>
 <li><code>figures/SRK_allele_accumulation_BL_drift_erosion.png</code> — <strong>NEW</strong>. Same decomposition aggregated to the BL level. Headline finding: BL4 has lost only 32% of the species pool; BL1 (~90%) and BL2 (~86%) have collapsed.</li>
 </ul>
@@ -7346,7 +7616,7 @@ Late_fraction &lt; 0.10 → drift-dominated diversity</code></pre>
 </table>
 <p>This framework complements traditional neutrality tests by directly analyzing <strong>allele discovery dynamics</strong>.</p>
 </div>
-<div id="bioinformatics-12" class="section level3" number="7.4.6">
+<div id="bioinformatics-14" class="section level3" number="7.4.6">
 <h3><span class="header-section-number">7.4.6</span> Bioinformatics</h3>
 <ul>
 <li>Script: <code>SRK_allele_accumulation_analysis.R</code></li>
@@ -7415,7 +7685,7 @@ Late_fraction &lt; 0.10 → drift-dominated diversity</code></pre>
 </div>
 <div id="allelefrqanalysis" class="section level2" number="7.5">
 <h2><span class="header-section-number">7.5</span> Allele Frequency Analysis</h2>
-<div id="overview-14" class="section level3" number="7.5.1">
+<div id="overview-16" class="section level3" number="7.5.1">
 <h3><span class="header-section-number">7.5.1</span> Overview</h3>
 <p>While <strong>negative frequency-dependent selection (NFDS)</strong> maintains high allelic diversity at the <strong>SRK self-incompatibility locus</strong>, allele <strong>frequencies may still deviate from equal expectations</strong> due to demographic processes such as genetic drift, population structure, or recent allele turnover.</p>
 <p>This analysis evaluates whether observed <strong>SRK allele frequency distributions deviate from the theoretical NFDS expectation</strong>, where all alleles should occur at approximately equal frequencies.</p>
@@ -7430,7 +7700,7 @@ Late_fraction &lt; 0.10 → drift-dominated diversity</code></pre>
 <li>Outputs a <strong>summary table of statistical tests</strong></li>
 </ul>
 </div>
-<div id="pipeline-steps-14" class="section level3" number="7.5.2">
+<div id="pipeline-steps-16" class="section level3" number="7.5.2">
 <h3><span class="header-section-number">7.5.2</span> Pipeline Steps</h3>
 <div id="species-richness-optimum" class="section level4" number="7.5.2.1">
 <h4><span class="header-section-number">7.5.2.1</span> Species Richness Optimum</h4>
@@ -7710,7 +7980,7 @@ p_{expected} = \frac{1}{k}
 </ul>
 </div>
 </div>
-<div id="bioinformatics-13" class="section level3" number="7.5.5">
+<div id="bioinformatics-15" class="section level3" number="7.5.5">
 <h3><span class="header-section-number">7.5.5</span> Bioinformatics</h3>
 <ul>
 <li>Script: <code>SRK_chisq_species_population.R</code></li>
@@ -7858,7 +8128,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 </div>
 <div id="allelesharing" class="section level2" number="7.7">
 <h2><span class="header-section-number">7.7</span> Allele Composition Comparison</h2>
-<div id="overview-15" class="section level3" number="7.7.1">
+<div id="overview-17" class="section level3" number="7.7.1">
 <h3><span class="header-section-number">7.7.1</span> Overview</h3>
 <p>This step quantifies how S-allele sets are partitioned and shared across Element Occurrences (EOs). While allele accumulation curves (Step 15) and frequency analyses (Step 16) characterise diversity within and relative to the species optimum, this analysis asks a complementary question: <strong>which alleles are exclusive to a single EO, which are shared between subsets, and which are ubiquitous?</strong> The answer directly informs cross-population breeding decisions — EOs that share few alleles are the most important exchange partners for increasing allele richness in the focal population.</p>
 <p>Two complementary visualisations are produced:</p>
@@ -7879,7 +8149,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 <p><strong>2026-05-07 update:</strong> the script now reads <code>SRK_individual_BL_assignments.tsv</code> (Step 13) instead of raw <code>Pop</code> from sampling metadata, and produces UpSet + heatmap plots at TWO levels in parallel: EO (sorted by parent BL, dots colored by BL) and BL (5 lineages, colored by BL).</p>
 </blockquote>
 </div>
-<div id="bioinformatics-14" class="section level3" number="7.7.3">
+<div id="bioinformatics-16" class="section level3" number="7.7.3">
 <h3><span class="header-section-number">7.7.3</span> Bioinformatics</h3>
 <ul>
 <li>Script: <code>SRK_allele_sharing_EOs.py</code></li>
@@ -7986,7 +8256,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 </tr>
 </tbody>
 </table>
-<p><strong>33 of 54 alleles (61%) are private to a single BL</strong>; only 2 alleles (Allele_050 and Allele_057) are shared across all 5 BLs. The BL4 ↔︎ BL5 pair shares 12 alleles (highest off-diagonal in the heatmap), hinting at limited historical contact between these two lineages.</p>
+<p><strong>26 of 49 alleles (53 %) are private to a single BL</strong> (current dataset, 2026-05-11); only 2 alleles (Allele_050 and Allele_051) are shared across all 5 BLs. The BL4 ↔︎ BL5 pair shares 7 alleles (highest off-diagonal in the heatmap), hinting at limited historical contact between these two lineages.</p>
 </div>
 <div id="scientific-applications-7" class="section level4" number="7.7.3.5">
 <h4><span class="header-section-number">7.7.3.5</span> Scientific Applications</h4>
@@ -8001,7 +8271,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 </div>
 <div id="GFS" class="section level2" number="7.8">
 <h2><span class="header-section-number">7.8</span> Individual Genotypic Fitness Score</h2>
-<div id="overview-16" class="section level3" number="7.8.1">
+<div id="overview-18" class="section level3" number="7.8.1">
 <h3><span class="header-section-number">7.8.1</span> Overview</h3>
 <p>This analysis introduces the <strong>Genotypic Fitness Score (GFS)</strong> — a per-individual metric that quantifies reproductive potential under the tetraploid SI system. GFS is defined as the <strong>proportion of diploid gametes that carry two distinct alleles</strong> (heterozygous gametes), computed directly from allele copy numbers at the SRK locus.</p>
 <p>The key motivation is that two individuals carrying the same <em>number</em> of unique alleles can have very different seed production potential depending on the <em>dosage balance</em> of those alleles. For example:</p>
@@ -8070,7 +8340,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 </tbody>
 </table>
 </div>
-<div id="bioinformatics-15" class="section level3" number="7.8.5">
+<div id="bioinformatics-17" class="section level3" number="7.8.5">
 <h3><span class="header-section-number">7.8.5</span> Bioinformatics</h3>
 <ul>
 <li>Script: <code>SRK_individual_GFS.R</code></li>
@@ -8183,7 +8453,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 <blockquote>
 <p>Requires <code>SRK_individual_GFS.tsv</code> from <a href="#GFS">Step 19</a>. Run after Step 19 has completed.</p>
 </blockquote>
-<div id="overview-17" class="section level3" number="7.9.1">
+<div id="overview-19" class="section level3" number="7.9.1">
 <h3><span class="header-section-number">7.9.1</span> Overview</h3>
 <p>The TP2 Tipping Point Analysis assesses <strong>reproductive fitness</strong> at the population level — the degree to which individuals within an EO can actually participate in compatible crosses and contribute allelic diversity to the next generation. While <a href="#GFS">Step 19</a> characterises each individual’s gametic diversity potential, this step synthesises those scores at the EO level and combines them with AAAA prevalence into a single diagnostic framework. Two complementary questions define the two axes:</p>
 <ul>
@@ -8223,7 +8493,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 </table>
 <p>A group (EO or BL) is flagged <strong>CRITICAL</strong> when both thresholds are breached simultaneously; <strong>AT RISK</strong> when either one is breached; <strong>OK</strong> otherwise.</p>
 </div>
-<div id="bioinformatics-16" class="section level3" number="7.9.3">
+<div id="bioinformatics-18" class="section level3" number="7.9.3">
 <h3><span class="header-section-number">7.9.3</span> Bioinformatics</h3>
 <p>The TP2 analysis is performed by the same script as <a href="#GFS">Step 19</a> (<code>SRK_individual_GFS.R</code>). EO-level and BL-level summaries are computed in parallel; the TP2 figure plots EOs as circles and BLs as triangles on the same axes, both coloured by parent BL using the locked Set1 palette.</p>
 <p><strong>Headline.</strong> All 5 BLs are CRITICAL on TP2 (BL3 worst at mean GFS = 0.196, prop AAAA = 0.662); 5 of 6 plotted EOs (N ≥ 5) are CRITICAL — only EO67 is AT RISK rather than CRITICAL.</p>
@@ -8288,7 +8558,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 <blockquote>
 <p>Requires <code>SRK_individual_GFS.tsv</code> from <a href="#GFS">Step 19</a> (now carries the BL column from the Step 13 bridge).</p>
 </blockquote>
-<div id="overview-18" class="section level3" number="7.10.1">
+<div id="overview-20" class="section level3" number="7.10.1">
 <h3><span class="header-section-number">7.10.1</span> Overview</h3>
 <p>This analysis visualises the proportion of individuals at each GFS tier — first per Element Occurrence (EO), then per Bottleneck Lineage (BL) — making explicit the fraction of each group that actively contributes allelic diversity to compatible crosses. The figure translates the GFS principle into a population-level diagnostic: for each EO and each BL, it shows what fraction of individuals can “support reproductive effort” (GFS &gt; 0 — carrying at least two distinct alleles and producing at least one heterozygous gamete combination) and how those individuals are distributed across GFS tiers.</p>
 </div>
@@ -8297,7 +8567,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 <p>AAAA individuals (GFS = 0) carry a single SRK allele across all four genome copies. All six of their diploid gamete combinations are homozygous for that allele, meaning they contribute no allelic diversity to crosses and cannot drive compatible pairings with any partner carrying the same allele. All other genotype classes (AAAB through ABCD) carry at least two distinct alleles and produce at least 3 of 6 heterozygous gametes — they “support reproductive effort” in the sense that their gametes diversify the allele combinations available to offspring.</p>
 <p>The proportion of supporting individuals per EO and per BL, combined with the GFS tier distribution within that fraction, provides a direct measure of how much reproductive capacity each unit retains. The BL panel adds a test of the independent-bottleneck hypothesis: if drift trajectories were independent, the AAAA-allele identities should differ across BLs.</p>
 </div>
-<div id="bioinformatics-17" class="section level3" number="7.10.3">
+<div id="bioinformatics-19" class="section level3" number="7.10.3">
 <h3><span class="header-section-number">7.10.3</span> Bioinformatics</h3>
 <ul>
 <li>Script: <code>SRK_GFS_reproductive_effort.R</code></li>
@@ -8334,7 +8604,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 </tbody>
 </table>
 <p><strong>BL-stratified design.</strong> EOs are sorted by parent BL then by mean GFS within BL; y-axis labels are coloured by parent BL (Set1 palette). The BL panel pools all BL-assigned individuals into 5 lineage rows, sorted by mean GFS. The TP2 AAAA threshold (30%) is marked on both panels.</p>
-<p><strong>Pan-group AAAA alleles.</strong> <em>Pan-BL</em> alleles are present in AAAA individuals across every BL; <em>pan-EO</em> alleles are present in AAAA individuals in ≥80% of focus EOs (relaxed threshold accommodates EO18, the smallest focus EO with only 4 AAAA individuals carrying a different drift signature). Allele_050 and Allele_057 (Synonymy group 1, HV-identical, likely the same SI specificity) appear as pan-BL across all 5 BLs and pan-EO in 5 of 6 focus EOs — confirming that independent bottlenecks have all converged on the same fixed SI specificity.</p>
+<p><strong>Pan-group AAAA alleles.</strong> <em>Pan-BL</em> alleles are present in AAAA individuals across every BL; <em>pan-EO</em> alleles are present in AAAA individuals in ≥80% of focus EOs (relaxed threshold accommodates EO18, the smallest focus EO with only 4 AAAA individuals carrying a different drift signature). Allele_050 and Allele_051 (Synonymy group 1, HV-identical, likely the same SI specificity) appear as pan-BL across all 5 BLs and pan-EO in 5 of 6 focus EOs — confirming that independent bottlenecks have all converged on the same fixed SI specificity.</p>
 </div>
 <div id="key-parameters-top-of-script-1" class="section level4" number="7.10.3.2">
 <h4><span class="header-section-number">7.10.3.2</span> Key Parameters (top of script)</h4>
@@ -8424,8 +8694,8 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 <h4><span class="header-section-number">7.10.3.4</span> Figure Descriptions</h4>
 <p><strong><code>SRK_GFS_reproductive_effort</code> (page 1, EO panel):</strong> Each horizontal bar represents one EO with N ≥ 5. EOs are sorted by parent BL then by mean GFS (worst at top); y-axis labels are coloured by parent BL using the Set1 palette. Segments are coloured by GFS class (red = AAAA through blue = ABCD), stacked left to right from lowest to highest GFS. The dashed vertical line marks the TP2 AAAA threshold (30%): bars where the red (AAAA) segment extends past this line indicate a TP2 breach. Annotations to the right show proportion supporting (%), count (n / N), and mean GFS.</p>
 <p><strong><code>SRK_GFS_reproductive_effort</code> (page 2, BL panel):</strong> Same layout for the 5 BLs (sorted by mean GFS, worst at top). All 262 BL-assigned individuals are aggregated into their respective BL rows; y-axis labels are coloured by BL.</p>
-<p><strong><code>SRK_GFS_AAAA_allele_composition</code> (page 1, EO panel):</strong> Companion figure unpacking the AAAA bar from the EO reproductive effort figure. Each bar shows how many AAAA individuals in that EO carry each allele. Pan-EO Synonymy group 1 alleles (Allele_050, Allele_057; orange and blue) are highlighted; all remaining alleles are shown as a single grey “Other alleles” segment. Annotations show total AAAA count and percentage carrying a Synonymy group 1 allele.</p>
-<p><strong><code>SRK_GFS_AAAA_allele_composition</code> (page 2, BL panel):</strong> Same composition shown across the 5 BLs. Allele_050 and Allele_057 are pan-BL (5/5 BLs) — confirms shared Synonymy group 1 fixation despite independent bottlenecks. BL2 reaches 69% Synonymy group 1 saturation; BL5 is the lowest at 24%.</p>
+<p><strong><code>SRK_GFS_AAAA_allele_composition</code> (page 1, EO panel):</strong> Companion figure unpacking the AAAA bar from the EO reproductive effort figure. Each bar shows how many AAAA individuals in that EO carry each allele. Pan-EO Synonymy group 1 alleles (Allele_050, Allele_051; orange and blue) are highlighted; all remaining alleles are shown as a single grey “Other alleles” segment. Annotations show total AAAA count and percentage carrying a Synonymy group 1 allele.</p>
+<p><strong><code>SRK_GFS_AAAA_allele_composition</code> (page 2, BL panel):</strong> Same composition shown across the 5 BLs. Allele_050 and Allele_051 are pan-BL (5/5 BLs) — confirms shared Synonymy group 1 fixation despite independent bottlenecks. BL2 reaches 69% Synonymy group 1 saturation; BL5 is the lowest at 24%.</p>
 </div>
 </div>
 <div id="scientific-applications-9" class="section level3" number="7.10.4">
@@ -8462,7 +8732,7 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 <blockquote>
 <p>Requires <code>SRK_protein_allele_representatives.fasta</code> from <a href="#SRKalleledist">Step 10</a>, <code>SRK_individual_zygosity.tsv</code> from <a href="#zygosity">Step 12</a>, and <code>SRK_individual_metadata.tsv</code> from <a href="#SRKfunctionalprotgenotype">Step 11</a>. Run after Steps 10, 11, and 12 have completed.</p>
 </blockquote>
-<div id="overview-19" class="section level3" number="8.2.1">
+<div id="overview-21" class="section level3" number="8.2.1">
 <h3><span class="header-section-number">8.2.1</span> Overview</h3>
 <p>Step 22 is split into two scripts:</p>
 <ul>
@@ -8475,29 +8745,38 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 <h3><span class="header-section-number">8.2.2</span> Biological Rationale</h3>
 <p><strong>Why detect HV positions cross-species?</strong> A single-species sliding-window scan tells us <em>where</em> in LEPA’s alignment the allele bins differ — but it cannot tell us whether those positions correspond to the conserved SI-specificity surface known from <em>Brassica</em> and <em>Arabidopsis</em>, or to Lepidium-specific variability that may not even contact SCR. By applying the <em>same</em> detection method to LEPA, Brassica, and Arabidopsis SRK alleles separately, we can both (i) confirm that LEPA HV regions co-locate with the known Brassicaceae-conserved HV regions, and (ii) flag any LEPA-specific HV signal that may represent novel specificity sites.</p>
 <p><strong>Why Shannon entropy as the primary metric?</strong> Shannon entropy is the standard information-theoretic measure of column diversity in protein alignments and is comparable across species with very different per-column residue compositions. The pipeline also computes Wu-Kabat variability (<span class="math inline">\(V = N \cdot k / n_\text{max}\)</span>) as a sanity check; in the current dataset Brassica HV calls are 88% concordant and Arabidopsis 75% concordant under both metrics, while LEPA’s lower 45% concordance reflects its tighter allele bins (most LEPA columns have low diversity, so Wu-Kabat’s denominator behaves differently than entropy).</p>
-<p><strong>Why this validation matters.</strong> In the current dataset, all three pairwise HV-overlap permutation tests are highly significant (LEPA↔︎Brassica obs = 17 cols, p = 0.0005; LEPA↔︎Arabidopsis 22 cols, p = 0.0024; Brassica↔︎Arabidopsis 43 cols, p &lt; 0.0001). All 11 of the 12 mappable Ma 2016 SCR9-contact residues fall within LEPA HV regions — independent structural confirmation that the entropy scan is detecting the SI-specificity surface. LEPA additionally has a unique HV peak at columns 358–388 that is absent from Brassica/Arabidopsis — a candidate Lepidium-specific specificity site flagged for future investigation.</p>
-<p><strong>Phylogenetic class detection</strong> — UPGMA clustering of the resulting 63 × 63 HV-only pairwise distances automatically detects the natural class structure: the largest gap in the merge-height sequence defines the cut point, splitting the 63 allele bins into Class I (62 alleles) and Class II (1 allele, Allele_061) — corresponding to the known phylogenetic lineages in <em>Brassica</em> SRK. Class II alleles are guaranteed to be compatible with all Class I alleles, providing unambiguous Compatible_cross controls at the maximum possible HV distance.</p>
+<p><strong>Why this validation matters.</strong> In the current post-QC dataset (2026-05-11), the cross-Brassicaceae HV-overlap permutation tests return contrasting results: LEPA↔︎Brassica obs = 10 cols, p = 0.18 (n.s.); LEPA↔︎Arabidopsis 15 cols, p = 0.16 (n.s.); Brassica↔︎Arabidopsis 43 cols, p &lt; 0.0001 (highly significant). Earlier analyses on a paralog-contaminated dataset (pre-Steps 4b/7b) returned LEPA↔︎Brassica p = 0.0005 and LEPA↔︎Arabidopsis p = 0.0024. The shift to non-significance for LEPA pairs after QC is interpreted as <strong>drift-eroded standing variation</strong> — the same conclusion drawn from the per-BL entropy decomposition (Step 22d, 73 % LEPA-specific residues). Brassica↔︎Arabidopsis remains highly significant, so the test still has power on genus-spanning conservation. <strong>The structural anchor — 11 of 12 mappable Ma 2016 SCR9-contact residues map within or adjacent to LEPA HV regions — carries the validation independently</strong> and confirms the entropy scan is detecting the SI-specificity surface.</p>
+<p><strong>Phylogenetic class detection</strong> — UPGMA clustering of the HV-only pairwise distance matrix automatically detects the natural class structure: the largest gap in the merge-height sequence defines the cut point. In the current dataset (2026-05-11), this splits 58 allele bins into <strong>Class I (57 alleles)</strong> and <strong>Class II (1 allele, Allele_055)</strong> — corresponding to the known phylogenetic lineages in <em>Brassica</em> SRK. Class II alleles are guaranteed to be compatible with all Class I alleles, providing unambiguous Compatible_cross controls at the maximum possible HV distance.</p>
 <p><strong>Four-tier cross design:</strong> the WITHIN_CLASS_THRESHOLD (default 0.04, approximately the median within-class HV distance) divides within-class pairs into three tiers. The N tier — small but non-zero HV differences — is the scientific core: an incompatible Synonymy_test cross means the two allele bins share recognition specificity (merge them); a compatible Synonymy_test cross confirms the small HV difference is functionally real (keep bins separate). In the current dataset, 6 365 Synonymy_test pairs are available for testing — the largest tier and the highest priority for the crossing experiment.</p>
 </div>
-<div id="bioinformatics-18" class="section level3" number="8.2.3">
+<div id="bioinformatics-20" class="section level3" number="8.2.3">
 <h3><span class="header-section-number">8.2.3</span> Bioinformatics</h3>
 <ul>
 <li>Scripts: <code>srk_variability_landscape.py</code> (Step 22a), <code>srk_allele_hypotheses.py</code> (Step 22b)</li>
-<li>Helper scripts (one-time setup): <code>srk_fetch_reference_alleles.py</code>, <code>srk_brassica_hv_mapping.py</code></li>
+<li>Helper scripts:
+<ul>
+<li><code>srk_fetch_reference_alleles.py</code> — one-time NCBI fetch of Brassica + Arabidopsis SRK references (re-run only if reference set changes)</li>
+<li><code>pad_representatives.py</code> — pads LEPA representatives (Step 10a output) to uniform length for <code>mafft --add</code>; <strong>re-run every time Step 10a re-runs</strong></li>
+<li><code>srk_brassica_hv_mapping.py</code> — maps Ma 2016 SCR9-contact residues to LEPA coordinates; <strong>re-run every time the combined alignment is rebuilt</strong> (column coordinates shift)</li>
+</ul></li>
 <li>Environment: Python 3 with numpy, pandas, matplotlib, scipy, biopython, plus <code>mafft</code> on PATH</li>
 <li>Execution (run from project root):</li>
 </ul>
-<pre class="bash"><code># One-time setup (fetch references + add Brassica reference for Ma 2016 markers)
+<pre class="bash"><code># (Once per project) fetch external references
 python3 srk_fetch_reference_alleles.py
-mafft --add all_reference_SRKs_dedup.fasta SRK_protein_allele_representatives_padded.fasta \
-      &gt; SRK_combined_alignment.fasta
-python3 srk_brassica_hv_mapping.py
 
-# Step 22a — variability landscape (re-run when LEPA representatives change)
+# Rebuild chain — run every time Step 10a re-runs (new library, new N_ALLELES, filter change):
+python3 pad_representatives.py            # pads new LEPA reps to uniform length
+mafft --add all_reference_SRKs_dedup.fasta SRK_protein_allele_representatives_padded.fasta \
+      &gt; SRK_combined_alignment.fasta      # rebuilds 90-sequence combined alignment
+python3 srk_brassica_hv_mapping.py        # remaps SCR9 contacts to new LEPA coordinates
+
+# Step 22a — variability landscape
 python3 srk_variability_landscape.py
 
 # Step 22b — allele hypothesis testing and crossing design
 python3 srk_allele_hypotheses.py</code></pre>
+<p><strong>Why the rebuild chain is non-optional:</strong> the LEPA allele representatives define the <em>columns</em> of the combined alignment that downstream Step 22 scripts treat as canonical (HV column indices in <code>SRK_LEPA_HV_positions.tsv</code>, SCR9-contact mappings in <code>SRK_brassica_hv_mapping.tsv</code>). Re-running Step 10a with a different <code>N_ALLELES</code> produces a different representative set, shifting <code>mafft --add</code> column coordinates. Skipping the rebuild would silently mix Step 22 outputs against incompatible coordinate systems — a hard-to-debug failure mode. <strong>Always rebuild in this order: pad → mafft –add → hv_mapping → Step 22a.</strong></p>
 <div id="key-parameters-1" class="section level4" number="8.2.3.1">
 <h4><span class="header-section-number">8.2.3.1</span> Key Parameters</h4>
 <p><strong>Step 22a — <code>srk_variability_landscape.py</code>:</strong></p>
@@ -8664,7 +8943,7 @@ python3 srk_allele_hypotheses.py</code></pre>
 </tr>
 <tr class="odd">
 <td><code>SRK_LEPA_HV_positions.tsv</code></td>
-<td><strong>73 canonical LEPA HV columns</strong> (consumed by Step 22b)</td>
+<td><strong>66 canonical LEPA HV columns</strong> (consumed by Step 22b)</td>
 </tr>
 <tr class="even">
 <td><code>SRK_HV_overlap_permutation.tsv</code></td>
@@ -8687,7 +8966,7 @@ python3 srk_allele_hypotheses.py</code></pre>
 <tbody>
 <tr class="odd">
 <td><code>SRK_HV_allele_distances.tsv</code></td>
-<td>Pairwise HV-only p-distances for all 63 allele bin pairs (computed on the 73 canonical HV cols)</td>
+<td>Pairwise HV-only p-distances for all 58 allele bin pairs (computed on the 66 canonical HV cols)</td>
 </tr>
 <tr class="even">
 <td><code>SRK_allele_similarity_heatmap.pdf</code></td>
@@ -8728,8 +9007,8 @@ python3 srk_allele_hypotheses.py</code></pre>
 </tbody>
 </table>
 </div>
-<div id="key-output-statistics-current-dataset-272-individuals-63-allele-bins-164-aaaa-73-canonical-hv-cols" class="section level4" number="8.2.3.4">
-<h4><span class="header-section-number">8.2.3.4</span> Key Output Statistics (current dataset: 272 individuals, 63 allele bins, 164 AAAA, 73 canonical HV cols)</h4>
+<div id="key-output-statistics-current-dataset-2026-05-11-335-individuals-58-allele-bins-211-aaaa-66-canonical-hv-cols" class="section level4" number="8.2.3.4">
+<h4><span class="header-section-number">8.2.3.4</span> Key Output Statistics (current dataset, 2026-05-11: 335 individuals, 58 allele bins, 211 AAAA, 66 canonical HV cols)</h4>
 <table>
 <colgroup>
 <col width="39%" />
@@ -8749,30 +9028,30 @@ python3 srk_allele_hypotheses.py</code></pre>
 <tr class="odd">
 <td>Incompatible</td>
 <td>HV-identical (d = 0)</td>
-<td align="center">5 663</td>
+<td align="center">9 700</td>
 <td>Negative control — confirms allele identity</td>
 </tr>
 <tr class="even">
 <td>Synonymy_test</td>
 <td>0 &lt; d &lt; 0.04, same class</td>
-<td align="center">6 365</td>
+<td align="center">10 343</td>
 <td><strong>Synonymy test</strong> — highest scientific priority</td>
 </tr>
 <tr class="odd">
 <td>Compatible_within</td>
 <td>d ≥ 0.04, same class</td>
-<td align="center">1 338</td>
+<td align="center">2 112</td>
 <td>Within-class positive control</td>
 </tr>
 <tr class="even">
 <td>Compatible_cross</td>
 <td>Different class</td>
 <td align="center">0 (AAAA only)</td>
-<td>Between-class control — requires AAAB parents</td>
+<td>Between-class control — requires heterozygous Allele_055 carrier</td>
 </tr>
 </tbody>
 </table>
-<p>Allele bin availability: 20 bins with ≥ 2 AAAA individuals (full design), 14 bins with 1 AAAA (partner only), 29 bins with no AAAA (require AAAB/AABB). Synonymy candidates: 1 891 within-class pairs; 561 testable with available AAAA individuals. Synonymy network collapses 63 alleles into <strong>9 synonymy groups + 23 isolated singletons = 32 effective bins</strong> (40 of 63 alleles fall into synonymy groups, 23 are HV-unique).</p>
+<p>Allele bin availability (current dataset, 2026-05-11): 20 bins with full AAAA representation, 9 bins with singleton AAAA, 29 bins with no AAAA (require AAAB/AABB donors). Synonymy network collapses 58 alleles into <strong>8 synonymy groups + 19 isolated singletons = 27 effective bins</strong> (39 of 58 alleles fall into synonymy groups, 19 are HV-unique).</p>
 </div>
 <div id="output-file-descriptions" class="section level4" number="8.2.3.5">
 <h4><span class="header-section-number">8.2.3.5</span> Output File Descriptions</h4>
@@ -8892,7 +9171,7 @@ python3 srk_allele_hypotheses.py</code></pre>
 <ul>
 <li><strong>Cross prioritisation</strong>: Synonymy_test pairs are the highest scientific priority — incompatibility confirms synonymy (merge bins); compatibility confirms the HV difference changes recognition specificity (retain bins)</li>
 <li><strong>Allele bin refinement</strong>: compatible Synonymy_test crosses → bin boundary is real; incompatible Synonymy_test crosses → merge bins into one functional allele</li>
-<li><strong>Class validation</strong>: Compatible_cross crosses (requiring AAAB parents with Allele_061) provide maximum-distance compatible controls anchoring the upper end of the seed yield scale</li>
+<li><strong>Class validation</strong>: Compatible_cross crosses (requiring AAAB parents with Allele_055) provide maximum-distance compatible controls anchoring the upper end of the seed yield scale</li>
 <li><strong>Conservation breeding</strong>: Incompatible crosses yielding seeds are direct evidence of SI breakdown — Stage 5 Compatibility Collapse Cascade events — and identify individuals for immediate priority in inter-EO allele rescue crosses</li>
 <li><strong>Extending the design</strong>: adding AAAB parents unlocks the 29 allele bins currently without AAAA representatives and provides the Compatible_cross controls absent from the AAAA-only dataset</li>
 </ul>
@@ -8904,7 +9183,7 @@ python3 srk_allele_hypotheses.py</code></pre>
 <blockquote>
 <p>Requires <code>SRK_AAAA_cross_design_HV.tsv</code>, <code>SRK_synonymy_groups.csv</code>, <code>SRK_HV_allele_distances.tsv</code>, and <code>SRK_functional_allele_groups.tsv</code> from <a href="#alleleclusters">Step 22b</a>; <code>SRK_individual_BL_assignments.tsv</code> from <a href="#BLintegration">Step 13</a>; <code>SRK_individual_zygosity.tsv</code> from <a href="#zygosity">Step 12</a>; <code>SRK_individual_allele_table.tsv</code> from <a href="#SRKfunctionalprotgenotype">Step 11</a>. Run after Step 22b has completed.</p>
 </blockquote>
-<div id="overview-20" class="section level3" number="8.3.1">
+<div id="overview-22" class="section level3" number="8.3.1">
 <h3><span class="header-section-number">8.3.1</span> Overview</h3>
 <p>Step 22e is the <strong>operational deliverable</strong> of Phase 4: it translates the bioinformatics-predicted compatibility categories (Incompatible / Synonymy_test / Compatible_within / Compatible_cross) into a phased experimental protocol that field biologists can execute. The plan structures crossing experiments around five nested hypotheses (H0–H3) that progressively validate the SI system, calibrate the seed-yield scale, test bin-boundary predictions, and extend coverage to “hidden” bins lacking homozygous representatives. Each cross row in the output TSVs is fully traceable — Step 22e never invents pairings; it only translates upstream pipeline outputs into actionable experimental designs.</p>
 </div>
@@ -8941,13 +9220,13 @@ python3 srk_allele_hypotheses.py</code></pre>
 <td>Hypervariable (HV) columns identifying the SI-recognition surface</td>
 <td><code>srk_variability_landscape.py</code></td>
 <td><code>SRK_LEPA_HV_positions.tsv</code></td>
-<td>Shannon entropy &gt; mean + 1×SD on a 20 aa smoothed profile, with min run of 3 cols. Validated cross-Brassicaceae by 10 000-permutation test (LEPA↔︎Brassica p = 0.0005, LEPA↔︎Arabidopsis p = 0.0024) and structural overlap with the 12 SCR9-contact residues from the Ma et al. 2016 <em>B. rapa</em> eSRK9–SCR9 crystal structure (PDB 5GYY)</td>
+<td>Shannon entropy &gt; mean + 1×SD on a 20 aa smoothed profile, with min run of 3 cols. Anchored structurally by 11 of 12 mappable SCR9-contact residues from the Ma et al. 2016 <em>B. rapa</em> eSRK9–SCR9 crystal structure (PDB 5GYY). In the current post-QC dataset (2026-05-11), the cross-genus HV-overlap permutation is no longer significant for LEPA pairs (LEPA↔︎Brassica p = 0.18; LEPA↔︎Arabidopsis p = 0.16); Brassica↔︎Arabidopsis remains highly significant (p &lt; 0.0001) — interpretation: drift-eroded LEPA standing variation.</td>
 </tr>
 <tr class="even">
 <td>Pairwise HV distance</td>
 <td><code>srk_allele_hypotheses.py</code> Part 2</td>
 <td><code>SRK_HV_allele_distances.tsv</code></td>
-<td>p-distance computed only on the 73 canonical HV columns (not the full S-domain)</td>
+<td>p-distance computed only on the 66 canonical HV columns (not the full S-domain)</td>
 </tr>
 <tr class="odd">
 <td>Phylogenetic class assignment (Class I / Class II)</td>
@@ -9153,7 +9432,7 @@ python3 srk_allele_hypotheses.py</code></pre>
 <div id="assumptions-made-explicit-for-reviewer-facing-justification" class="section level3" number="8.3.6">
 <h3><span class="header-section-number">8.3.6</span> Assumptions made explicit (for reviewer-facing justification)</h3>
 <ol style="list-style-type: decimal">
-<li><strong>The 73 HV columns are the SI-recognition surface.</strong> Justified by cross-Brassicaceae permutation tests (3 pairs all p ≤ 0.0024) and by structural overlap with the Ma 2016 <em>B. rapa</em> eSRK9–SCR9 crystal structure.</li>
+<li><strong>The 66 HV columns are the SI-recognition surface.</strong> Justified by structural overlap with the Ma 2016 <em>B. rapa</em> eSRK9–SCR9 crystal structure (PDB 5GYY, 11 of 12 contact residues map within or adjacent to LEPA HV regions). In the current cleaner post-QC dataset (2026-05-11), the cross-Brassicaceae HV-overlap permutation test is no longer significant for LEPA pairs (LEPA ↔︎ Brassica p = 0.18; LEPA ↔︎ Arabidopsis p = 0.16) but Brassica ↔︎ Arabidopsis remains highly significant (p &lt; 0.0001) — the LEPA HV signal is interpreted as drift-eroded standing variation on a shared LEPA ancestral pool (see Step 22d). The structural anchor from Ma 2016 carries the validation.</li>
 <li><strong>HV-only p-distance approximates SI-specificity divergence.</strong> This is the working hypothesis the H2 synonymy tests will <em>empirically validate or refute</em> — it is not assumed correct, it is the thing being tested.</li>
 <li><strong>The UPGMA largest-gap cut correctly identifies Class I vs Class II.</strong> Validated by the strongly bimodal HV-distance distribution and by consistency with the documented Brassicaceae class split.</li>
 <li><strong><code>WITHIN_CLASS_THRESHOLD = 0.04</code> separates small from substantial HV differences.</strong> Empirical, derived from the within-class HV-distance distribution. Sensitivity analysis is straightforward (re-run Step 22b with a different value).</li>
@@ -9162,7 +9441,7 @@ python3 srk_allele_hypotheses.py</code></pre>
 <li><strong>Heterozygous-donor seed yields are interpretable only when paired with AAAA × AAAA baseline controls.</strong> This is <em>why</em> H3 includes paired controls — without them, the AAAB-pollen yield is confounded by the AA-pollen baseline.</li>
 </ol>
 </div>
-<div id="bioinformatics-19" class="section level3" number="8.3.7">
+<div id="bioinformatics-21" class="section level3" number="8.3.7">
 <h3><span class="header-section-number">8.3.7</span> Bioinformatics</h3>
 <ul>
 <li>Script: <code>srk_cross_plan.py</code></li>
@@ -9303,8 +9582,8 @@ python3 srk_allele_hypotheses.py</code></pre>
 </tbody>
 </table>
 </div>
-<div id="key-output-statistics-current-dataset-272-individuals-63-allele-bins-164-aaaa-9-synonymy-groups-23-isolated" class="section level4" number="8.3.7.4">
-<h4><span class="header-section-number">8.3.7.4</span> Key Output Statistics (current dataset: 272 individuals, 63 allele bins, 164 AAAA, 9 synonymy groups + 23 isolated)</h4>
+<div id="key-output-statistics-current-dataset-2026-05-11-335-individuals-58-allele-bins-211-aaaa-8-synonymy-groups-19-isolated" class="section level4" number="8.3.7.4">
+<h4><span class="header-section-number">8.3.7.4</span> Key Output Statistics (current dataset, 2026-05-11: 335 individuals, 58 allele bins, 211 AAAA, 8 synonymy groups + 19 isolated)</h4>
 <table>
 <colgroup>
 <col width="18%" />
@@ -9367,7 +9646,7 @@ python3 srk_allele_hypotheses.py</code></pre>
 </tr>
 </tbody>
 </table>
-<p><strong>Sample-size constraints in the current dataset.</strong> H1b is sample-limited to 1 cross because Allele_061 (the only Class II allele) has a single carrier in the dataset (Library008_barcode08, AABB Allele_050+Allele_061). H3 covers 20 of the 29 hidden bins; the remaining 9 lack AAAA mothers carrying a Compatible_within partner allele (the constraint required to keep the AA-pollen baseline interpretable). Adding additional Allele_061 carriers and additional AAAA mothers would directly relax both constraints. The carrier-detection logic reads <code>Allele_composition</code> strings authoritatively, so the cross plan automatically expands as new individuals are added — re-run Step 22a → 22b → 22e after new genotyping data lands.</p>
+<p><strong>Sample-size constraints in the current dataset.</strong> H1b is sample-limited to 1 cross because Allele_055 (the only Class II allele) has a single carrier in the dataset (Library008_barcode08, AABB Allele_050+Allele_055). H3 covers 20 of the 29 hidden bins; the remaining 9 lack AAAA mothers carrying a Compatible_within partner allele (the constraint required to keep the AA-pollen baseline interpretable). Adding additional Allele_055 carriers and additional AAAA mothers would directly relax both constraints. The carrier-detection logic reads <code>Allele_composition</code> strings authoritatively, so the cross plan automatically expands as new individuals are added — re-run Step 22a → 22b → 22e after new genotyping data lands.</p>
 </div>
 </div>
 <div id="decision-tree-per-hypothesis-outcome" class="section level3" number="8.3.8">
@@ -9376,7 +9655,7 @@ python3 srk_allele_hypotheses.py</code></pre>
 <ul>
 <li><strong>H0 pass</strong> (≥ 80 % of Incompatible crosses produce 0 seeds) → SI system is functional → proceed to H1–H3. <strong>H0 fail</strong> → SI is broken at the Stage 5 polyploid breakdown level → revise interpretation framework before scheduling H1–H3.</li>
 <li><strong>H1a + H1b</strong> outcomes calibrate the seed-yield scale (low end = 0 from H0; H1a-baseline = within-Class compatible yield; H1b-baseline = between-Class maximum yield).</li>
-<li><strong>H2 outcomes</strong> decide which synonymy groups should be <strong>merged</strong> (0 seeds → same SI specificity) or <strong>kept separate</strong> (yield ≥ H1a baseline → distinct specificities). Most extreme case: every Synonymy_test cross is incompatible → 63 sequence bins collapse to <strong>32 functional specificities</strong> (9 synonymy groups + 23 isolated alleles).</li>
+<li><strong>H2 outcomes</strong> decide which synonymy groups should be <strong>merged</strong> (0 seeds → same SI specificity) or <strong>kept separate</strong> (yield ≥ H1a baseline → distinct specificities). Most extreme case: every Synonymy_test cross is incompatible → 58 sequence bins collapse to <strong>27 functional specificities</strong> (8 synonymy groups + 19 isolated alleles).</li>
 <li><strong>H3 outcomes</strong> classify each of the 20 testable hidden alleles as compatible or incompatible with at least one major Class I specificity, by comparing total seed yield to the paired-control AA-only baseline.</li>
 </ul>
 <p>The combined H2 + H3 outcomes produce a <strong>validated functional S-allele table</strong> that supersedes the sequence-only allele bin definitions and serves as the input to operational seed-orchard design (downstream of <a href="#crossresults">Step 23</a>).</p>
@@ -9388,7 +9667,7 @@ python3 srk_allele_hypotheses.py</code></pre>
 <blockquote>
 <p>Requires <code>SRK_functional_allele_groups.tsv</code> and <code>SRK_AAAA_cross_design_HV.tsv</code> from <a href="#alleleclusters">Step 22</a>, plus a completed cross results file. Run after crossing experiments have been conducted and seed yields recorded.</p>
 </blockquote>
-<div id="overview-21" class="section level3" number="8.4.1">
+<div id="overview-23" class="section level3" number="8.4.1">
 <h3><span class="header-section-number">8.4.1</span> Overview</h3>
 <p>This step reads completed cross records — a file with one row per cross, containing the mother and father plant IDs and a seed yield column — and assigns each cross to a Incompatible, Synonymy_test, Compatible_within, or Compatible_cross category using the HV-based class structure from Step 22. It then tests whether category predicts seed yield using Kruskal-Wallis and pairwise Mann-Whitney U tests, and produces a figure showing seed yield distributions and success rates per category.</p>
 <p><strong>To activate this step</strong>, set <code>CROSS_TSV</code> in the settings section of <code>srk_allele_hypotheses.py</code> to the filename of the completed cross records file, then re-run the script.</p>
@@ -9397,7 +9676,7 @@ python3 srk_allele_hypotheses.py</code></pre>
 <h3><span class="header-section-number">8.4.2</span> Biological Rationale</h3>
 <p>The statistical test is a direct evaluation of the allele bin definitions using HV-distance-based categories. The expected ordering is Incompatible &lt; Synonymy_test ≤ Compatible_within &lt; Compatible_cross for seed yield: Incompatible crosses are rejected by SI (HV-identical alleles); Synonymy_test crosses test whether small HV differences change recognition specificity; Compatible_within crosses are expected compatible within the same phylogenetic class; Compatible_cross crosses between classes are maximally compatible and set the upper yield reference. A significant Kruskal-Wallis result with this ordering validates the HV-based bin structure. Synonymy_test crosses that fail (yield ≈ W) indicate synonymous allele bins that should be merged; Synonymy_test crosses that succeed confirm the small HV difference is functionally real. Incompatible crosses yielding seeds are direct evidence of SI breakdown.</p>
 </div>
-<div id="bioinformatics-20" class="section level3" number="8.4.3">
+<div id="bioinformatics-22" class="section level3" number="8.4.3">
 <h3><span class="header-section-number">8.4.3</span> Bioinformatics</h3>
 <ul>
 <li>Script: <code>srk_allele_hypotheses.py</code> (Part 5, activated by setting <code>CROSS_TSV</code>)</li>
