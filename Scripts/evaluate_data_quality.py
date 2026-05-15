@@ -132,25 +132,99 @@ if not os.path.exists(AUDIT_TSV):
 
 audit = pd.read_csv(AUDIT_TSV, sep="\t")
 
-# Build EO → BL map from BL_assignments (uses the standardised EO labels)
+# BL assignment per sample — two-stage lookup:
+#   1. AUTHORITATIVE: per-sample BL from SRK_BL_integration.py bridge (Step 13).
+#      This handles all the EO normalisation logic (Pop="8" → EO08, "15" → EO18,
+#      "26-3" → EO26, etc.) and is the single source of truth for the genotyped
+#      dataset (335 individuals).
+#   2. FALLBACK: for samples NOT in the bridge (i.e., excluded before Step 13:
+#      Re_PCR, Re_DNA_extraction, SI_escape candidates), derive the BL from
+#      their raw Pop / EO_w_sub metadata column via a Pop → EO → BL map built
+#      from the bridge plus the same POP_TO_EO_OVERRIDE used by Step 13.
+#      This is essential for lab deliverables — Re-PCR / Re-DNA-extraction CSVs
+#      need a BL so colleagues know which slickspot population to revisit.
+bl_per_sample = {}
+eo_per_sample = {}
+pop_to_eo: dict[str, str] = {}
+eo_to_bl: dict[str, str] = {}
 bl_map = {}
+
+# Manual Pop → EO overrides — must mirror POP_TO_EO_OVERRIDE in SRK_BL_integration.py.
+POP_TO_EO_OVERRIDE = {
+    "15": "EO18",   # locationID 15 is in EO18 group 12, BL5; no EO15 exists
+}
+
 if os.path.exists(BL_TSV):
     bl_df = pd.read_csv(BL_TSV, sep="\t")
-    # Each EO maps to a single BL — use mode (most common) within EO
-    bl_map = bl_df.groupby("EO")["BL"].agg(lambda x: x.mode().iloc[0] if len(x) > 0 else "").to_dict()
+    for _, r in bl_df.iterrows():
+        ind = r["Individual"]
+        bl_per_sample[ind] = r["BL"] if pd.notna(r["BL"]) else "Unassigned"
+        eo_per_sample[ind] = r["EO"] if pd.notna(r["EO"]) else ""
 
-# The audit's EO column has raw metadata values (e.g. "27", "98-2"); normalise to "EO27"
-def normalise_eo(raw: str) -> str:
+    # Build EO → BL map (drop Unassigned rows; mode within EO)
+    eo_to_bl = (bl_df[bl_df["BL"].notna() & (bl_df["BL"] != "Unassigned")]
+                .groupby("EO")["BL"]
+                .agg(lambda x: x.mode().iloc[0] if len(x) > 0 else "")
+                .to_dict())
+    bl_map = eo_to_bl  # alias for back-compat
+
+    # Build Pop (raw metadata) → EO (canonical label) map by joining the bridge
+    # back to sampling_metadata. This is what the bridge already did internally;
+    # we replicate the lookup so excluded samples can also be resolved.
+    if "Pop" in bl_df.columns:
+        for _, r in bl_df.iterrows():
+            pop_raw = str(r["Pop"]).strip()
+            if pop_raw and pop_raw.lower() != "nan" and pd.notna(r["EO"]):
+                pop_to_eo[pop_raw] = r["EO"]
+    pop_to_eo.update(POP_TO_EO_OVERRIDE)
+
+
+def resolve_eo(raw) -> str:
+    """Resolve a raw Pop / EO_w_sub metadata value to a canonical EO label.
+
+    Strategy:
+      1. If already EO-prefixed, return as-is.
+      2. Look up the raw value in the Pop → EO map built from the bridge.
+      3. Try the hyphen-prefix (e.g., "26-3" → "26") in the Pop → EO map.
+      4. Apply manual override (e.g., "15" → "EO18").
+      5. Fall back to a naive zero-padded EO label.
+    """
     s = str(raw).strip()
     if not s or s.lower() == "nan":
         return ""
     if s.startswith("EO"):
         return s
-    # Handle compound codes like "26-3" → "EO26"
-    return f"EO{s.split('-')[0]}"
+    if s in pop_to_eo:
+        return pop_to_eo[s]
+    prefix = s.split("-")[0]
+    if prefix in pop_to_eo:
+        return pop_to_eo[prefix]
+    if s in POP_TO_EO_OVERRIDE:
+        return POP_TO_EO_OVERRIDE[s]
+    # Naive fallback: zero-pad single-digit numeric Pop codes to two digits.
+    try:
+        n = int(prefix)
+        return f"EO{n:02d}"
+    except ValueError:
+        return f"EO{prefix}"
 
-audit["EO_normalised"] = audit["EO"].apply(normalise_eo)
-audit["BL_inferred"]   = audit["EO_normalised"].map(bl_map).fillna("Unassigned")
+
+def resolve_bl(sample_id: str, raw_eo) -> str:
+    """Per-sample BL: try the bridge first (authoritative), then derive from EO."""
+    if sample_id in bl_per_sample:
+        return bl_per_sample[sample_id]
+    eo = resolve_eo(raw_eo)
+    return eo_to_bl.get(eo, "Unassigned")
+
+
+audit["EO_normalised"] = audit.apply(
+    lambda r: eo_per_sample.get(r["Sample_ID"]) or resolve_eo(r["EO"]),
+    axis=1,
+)
+audit["BL_inferred"] = audit.apply(
+    lambda r: resolve_bl(r["Sample_ID"], r["EO"]),
+    axis=1,
+)
 
 
 # ─── Categorise every sample ──────────────────────────────────────────────────

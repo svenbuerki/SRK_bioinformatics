@@ -2,21 +2,21 @@
 
 ## Executive Summary
 
-**The conservation challenge.** *Lepidium papilliferum* (LEPA) is a self-incompatible (SI) tetraploid plant restricted to fragmented populations occupying slickspots in southwestern Idaho (USA) (Buerki et al., 2026). This report uses an SRK haplotype dataset of **335 individuals across 19 Element Occurrences** to ask: *what is the impact of habitat fragmentation and genetic drift on the species' SI system, and how can we design a genetically informed breeding programme to recover reproductive fitness?* The analysis is structured around six questions, each with a defensible biological headline.
+**The conservation challenge.** *Lepidium papilliferum* (slickspot peppergrass; hereafter LEPA) is a self-incompatible (SI) tetraploid plant restricted to fragmented populations occupying slick spots in southwestern Idaho (USA) (Buerki et al., 2026). This report uses an SRK haplotype dataset of **335 individuals across 19 Element Occurrences** to ask: *what is the impact of habitat fragmentation and genetic drift on the species' SI system, and how can we design a genetically informed breeding programme to recover reproductive fitness?* The analysis is structured around seven sequential biological questions; each headline below summarises the answer to one of them.
 
-**Q1 — Habitat fragmentation and bottlenecks.** Spatial-connectivity analysis (sibling repository [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering)) identifies **five independent bottleneck lineages (BL1–BL5)** across the species range with **no between-EO pollinator connections anywhere in the dataset**, establishing the demographic strata used throughout the report.
+**Habitat fragmentation has produced five independent bottleneck lineages.** Spatial-connectivity analysis (sibling repository [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering)) identifies **five independent bottleneck lineages (BL1–BL5)** across the species range with **no between-EO pollinator connections anywhere in the dataset**, establishing the demographic strata used throughout the report.
 
-**Q2 — Species S-allele richness.** 49 distinct S-alleles observed; Michaelis-Menten estimate = 59 (consensus across MM and Chao1 = 60). Per-BL richness varies dramatically: **BL4 retains 27 alleles (55 % — the diversity reservoir)** while BL1 and BL2 retain only 4 and 8 alleles respectively. **26 of 49 alleles (53 %) are private to a single BL** — direct empirical evidence of multiple independent founder events, not a single shared bottleneck.
+**LEPA's SI system remains functional species-wide, with one ecologically stressed exception.** Several severely bottlenecked SI plant species have been documented escaping SI through the evolution of self-compatibility (SC) — a short-term adaptive response that restores immediate reproductive output but typically incurs inbreeding depression, ultimately deepening rather than resolving the conservation concern. The current LEPA dataset shows **no evidence of species-wide SI escape**: only 7 of 401 ingroup individuals (1.7 %) carry the molecular signature of complete SI loss (every recovered SRK haplotype carries a premature stop codon). The signal is **sharply geographically concentrated — 5 of these 7 candidates are in EO76 (BL3)**, the slick spot population already independently flagged as the most ecologically degraded in the species (highest AAAA fraction, 0 AABC seed parents, and substantial invasive-species encroachment on the native slick spot habitat). This concentration suggests that the SI-escape signal reflects **localised ecological stress at the most degraded site rather than a species-wide SC transition** — a positive conservation finding: with managed crossing intervention, the SI system can still be supported across the rest of the species range, avoiding the inbreeding-depression trajectory that follows SC evolution in bottlenecked SI plants.
 
-**Q3 — Drift on populations' diversity (TP1).** All five BLs and all 6 plotted EOs are flagged **CRITICAL** (richness < 50 % of optimum AND frequency evenness Ne/N < 0.80). No lineage retains a balanced allele pool — restoration requires inter-BL allele transfers; within-lineage breeding alone cannot rebuild the SI system.
+**Species S-allele richness is severely depleted, with one diversity reservoir.** 49 distinct S-alleles observed; Michaelis-Menten estimate = 59 (consensus across MM and Chao1 = 60). Per-BL richness varies dramatically: **BL4 retains 27 alleles (55 % — the diversity reservoir)** while BL1 and BL2 retain only 4 and 8 alleles respectively. **26 of 49 alleles (53 %) are private to a single BL** — direct empirical evidence of multiple independent founder events, not a single shared bottleneck.
 
-**Q4 — Drift on individual reproductive fitness (TP2).** All five BLs CRITICAL on TP2 (mean Genotypic Fitness Score < 0.667 AND > 30 % AAAA homozygotes). Allele_050 and Allele_051 (both members of Synonymy group 1) are pan-BL fixed in AAAA individuals — **convergent drift onto the same SI specificity despite independent bottlenecks**. **15 AABC individuals** species-wide carry the heterozygous-gamete potential needed for high-yield managed crossing — they are the immediate seed-parent priority.
+**Drift has eroded population-level S-allele diversity to a critical level (Tipping Point 1).** All five BLs and all 6 plotted EOs are flagged **CRITICAL** (richness < 50 % of optimum AND frequency evenness Ne/N < 0.80). No lineage retains a balanced allele pool — restoration requires inter-BL allele transfers; within-lineage breeding alone cannot rebuild the SI system.
 
-**Has LEPA escaped self-incompatibility?** Several severely bottlenecked SI plant species have been documented escaping SI through the evolution of self-compatibility (SC) — a short-term adaptive response that restores immediate reproductive output but typically incurs inbreeding depression, ultimately deepening rather than resolving the conservation concern. The current LEPA dataset shows **no evidence of species-wide SI escape**: only 7 of 401 ingroup individuals (1.7 %) carry the molecular signature of complete SI loss (every recovered SRK haplotype carries a premature stop codon). The signal is **sharply geographically concentrated — 5 of these 7 candidates are in EO76 (BL3)**, the slickspot population already independently flagged as the most ecologically degraded in the species (highest AAAA fraction, 0 AABC seed parents, and substantial invasive-species encroachment on the native slickspot habitat). This concentration suggests that the SI-escape signal reflects **localised ecological stress at the most degraded site rather than a species-wide SC transition** — a positive conservation finding: with managed crossing intervention (Q6), the SI system can still be supported across the rest of the species range, avoiding the inbreeding-depression trajectory that follows SC evolution in bottlenecked self-incompatible plants.
+**Drift has degraded individual-level reproductive fitness to a critical level (Tipping Point 2).** All five BLs CRITICAL on TP2 (mean Genotypic Fitness Score < 0.667 AND > 30 % AAAA homozygotes). Allele_050 and Allele_051 (both members of Synonymy group 1) are pan-BL fixed in AAAA individuals — **convergent drift onto the same SI specificity despite independent bottlenecks**. **15 AABC individuals** species-wide carry the heterozygous-gamete potential needed for high-yield managed crossing — they are the immediate seed-parent priority.
 
-**Q5 — Mechanism: convergent S-allele depletion.** A **five-stage Compatibility Collapse Cascade (C3)** explains how habitat fragmentation produces 60 % reproductive dead-ends within a structurally intact SI system. Cross-Brassicaceae per-BL entropy decomposition reveals that the residue identities at LEPA hypervariable (HV) columns are **73 % LEPA-specific** (different from Brassica AND Arabidopsis dominant residues), confirming the convergent allele depletion is **drift on a shared LEPA ancestral pool**, not pan-Brassicaceae selection convergence.
+**The mechanism is a self-reinforcing Compatibility Collapse Cascade driven by drift on a shared ancestral pool.** A **five-stage Compatibility Collapse Cascade (C3)** explains how habitat fragmentation produces 60 % reproductive dead-ends within a structurally intact SI system. Cross-Brassicaceae per-BL entropy decomposition reveals that the residue identities at LEPA hypervariable (HV) columns are **73 % LEPA-specific** (different from Brassica AND Arabidopsis dominant residues), confirming the convergent allele depletion is **drift on a shared LEPA ancestral pool**, not pan-Brassicaceae selection convergence.
 
-**Q6 — Cross-based hypothesis testing.** A **104-cross phased experimental plan (1 368 attempts)** validates the bioinformatic predictions. The plan is structured around five nested hypotheses (H0 SI validation; H1a/H1b compatibility baselines; H2 synonymy bin boundaries; H3 hidden bins via heterozygous donors with paired controls). Outcomes feed into a **validated functional S-allele table** that informs operational seed-orchard design.
+**A 104-cross phased experimental plan converts sequence-based predictions into a validated functional S-allele table.** The plan (1 368 attempts) is structured around five nested hypotheses (H0 SI validation; H1a/H1b compatibility baselines; H2 synonymy bin boundaries; H3 hidden bins via heterozygous donors with paired controls). Outcomes feed into a **validated functional S-allele table** that informs operational seed-orchard design.
 
 ---
 
@@ -24,14 +24,15 @@
 
 Self-incompatibility (SI) in *L. papilliferum* is controlled by the S-locus, where the extracellular S-domain of the S-receptor kinase (SRK) protein acts as the female determinant of pollen rejection. Each individual carries up to four allele copies (tetraploid), and compatible mating requires that pollen and pistil carry different SRK alleles. Throughout this report, each functionally distinct SRK protein variant is referred to as an **S-allele**, and the tetraploid combination of S-alleles an individual carries is its **genotype** (e.g., `AAAA`, `AABB`, `AABC`). Under balancing selection — specifically, negative frequency-dependent selection (NFDS) — all S-alleles are maintained at approximately equal frequencies, maximising the proportion of compatible mating pairs. In small or isolated populations, however, genetic drift counteracts balancing selection, reducing allele richness, skewing allele frequencies, and degrading individual genotype quality, with direct consequences for reproductive success.
 
-A [**Data Quality Evaluation**](#data-quality-evaluation) — including the library-effect ruling, sample outcome categorisation, and lab-deliverable tables — is presented *first*, before any biological interpretation, because the trustworthiness of the dataset gates every downstream inference. The analysis then addresses six sequential biological questions:
+A [**Data Quality Evaluation**](#data-quality-evaluation) — including the library-effect ruling, sample outcome categorisation, and lab-deliverable tables — is presented *first*, before any biological interpretation, because the trustworthiness of the dataset gates every downstream inference. The analysis then addresses seven sequential biological questions:
 
 1. [**Q1 — How has habitat fragmentation produced demographic bottlenecks that shape the SRK self-incompatibility system in *L. papilliferum*?**](#q1-habitat-fragmentation-and-the-bottleneck-framework)
-2. [**Q2 — What is the S-allele richness of *L. papilliferum*, and how is it distributed across bottleneck lineages?**](#q2-species-s-allele-richness-and-bl-distribution)
-3. [**Q3 — How has genetic drift eroded S-allele diversity within populations and lineages? (Tipping Point 1)**](#q3-genetic-drift-on-populations-s-allele-diversity-tp1)
-4. [**Q4 — How has genetic drift degraded the reproductive fitness of individuals within populations and lineages? (Tipping Point 2)**](#q4-genetic-drift-on-individual-reproductive-fitness-tp2)
-5. [**Q5 — What mechanism explains the convergent S-allele depletion observed across all five bottleneck lineages of *L. papilliferum*?**](#q5-mechanism-convergent-s-allele-depletion)
-6. [**Q6 — How can S-allele specificity hypotheses be tested with controlled crosses to support a genetically informed breeding programme?**](#q6-cross-based-hypothesis-testing-for-informed-breeding)
+2. [**Q2 — Is the LEPA self-incompatibility system functional, or has the species transitioned to self-compatibility?**](#q2-is-the-lepa-si-system-functional)
+3. [**Q3 — What is the S-allele richness of *L. papilliferum*, and how is it distributed across bottleneck lineages?**](#q3-species-s-allele-richness-and-bl-distribution)
+4. [**Q4 — How has genetic drift eroded S-allele diversity within populations and lineages? (Tipping Point 1)**](#q4-genetic-drift-on-populations-s-allele-diversity-tp1)
+5. [**Q5 — How has genetic drift degraded the reproductive fitness of individuals within populations and lineages? (Tipping Point 2)**](#q5-genetic-drift-on-individual-reproductive-fitness-tp2)
+6. [**Q6 — What mechanism explains the convergent S-allele depletion observed across all five bottleneck lineages of *L. papilliferum*?**](#q6-mechanism-convergent-s-allele-depletion)
+7. [**Q7 — How can S-allele specificity hypotheses be tested with controlled crosses to support a genetically informed breeding programme?**](#q7-cross-based-hypothesis-testing-for-informed-breeding)
 
 The bioinformatic pipeline producing the underlying data is documented in [Bioinformatics_pipeline.md](Bioinformatics_pipeline.md). A complete methodological reference, including reproducible commands and parameter tables, is in [index.Rmd](https://svenbuerki.github.io/SRK_bioinformatics/).
 
@@ -39,7 +40,7 @@ The bioinformatic pipeline producing the underlying data is documented in [Bioin
 
 ## Data Quality Evaluation {#data-quality-evaluation}
 
-Before turning to the biological questions, this section presents the **Step 12c data-quality evaluation** that gates every downstream inference. Data quality can make or break the interpretations that follow — a dataset confounded by technical artefacts cannot support biological claims, regardless of how strong the apparent signal appears. The questions below (Q1–Q6) draw on the 401 ingroup samples that survive this evaluation; understanding *which* samples those are and *why* the rest were excluded is therefore foundational.
+Before turning to the biological questions, this section presents the **Step 12c data-quality evaluation** that gates every downstream inference. Data quality can make or break the interpretations that follow — a dataset confounded by technical artefacts cannot support biological claims, regardless of how strong the apparent signal appears. The questions below (Q1–Q7) draw on the 401 ingroup samples that survive this evaluation; understanding *which* samples those are and *why* the rest were excluded is therefore foundational.
 
 ### Three sequential questions answered by the evaluation
 
@@ -53,7 +54,7 @@ Three formal tests confirm that no systematic library bias contaminates the biol
 
 - **Global Library × `SI_functional_status` (χ²):** χ² = 17.3, df = 18, **p = 0.50 (not significant).** The proportions of Functional / Partial_translation_failure / Complete_loss are statistically indistinguishable across libraries.
 - **Within-EO Library 009 / Library 010 vs other libraries (Fisher's exact, n = 18 tests):** 0 significant differences for AAAA proportion, 0 significant differences for Complete_loss proportion. Samples from the same EO behave equivalently regardless of which library they came from.
-- **Global Library × `Dominant_failure_mode` (χ²):** χ² = 51.9, df = 18, **p ≈ 4 × 10⁻⁵ (significant) — but in the favourable direction.** Library 010 (the only library processed through the full Step 4b + 7b filters) is enriched in `premature_stop` failures and depleted in `mixed`/`ambiguous_aa` failures, meaning its remaining failure signal is the biologically interpretable loss-of-function signature rather than data-quality noise. This favourable bias *strengthens* rather than undermines the SI-escape findings in Q4.
+- **Global Library × `Dominant_failure_mode` (χ²):** χ² = 51.9, df = 18, **p ≈ 4 × 10⁻⁵ (significant) — but in the favourable direction.** Library 010 (the only library processed through the full Step 4b + 7b filters) is enriched in `premature_stop` failures and depleted in `mixed`/`ambiguous_aa` failures, meaning its remaining failure signal is the biologically interpretable loss-of-function signature rather than data-quality noise. This favourable bias *strengthens* rather than undermines the SI-escape findings in Q5.
 
 ### Outcome categories for 401 ingroup samples
 
@@ -63,7 +64,7 @@ Every ingroup sample is assigned to one of five mutually exclusive outcome categ
 |---|---:|---:|---|
 | **Functional** | 181 | 45.1 % | included in dataset; SI system intact at the molecular level |
 | **Partial_translation_failure** | 154 | 38.4 % | included in dataset. **NEUTRAL label — does NOT imply biological SI loss.** Most likely a technical artefact from chimeric Canu *de novo* assembly (spliced junctions introduce premature stops that inflate the failure denominator). Step 9's abundance filter (`min_count = 5`) excludes chimeric proteins from the numerator but not from `Total_sequences`. **The current dataset provides no tangible evidence supporting biological SI loss in this category** — no inference about SI status is made from this label alone. |
-| **SI_escape_candidate** | 7 | 1.7 % | excluded from genotype data; all SRK sequences carry premature stop codons. Strong molecular candidate for ongoing self-compatibility evolution via loss-of-function mutations. **Detailed in Q4.** |
+| **SI_escape_candidate** | 7 | 1.7 % | excluded from genotype data; all SRK sequences carry premature stop codons. Strong molecular candidate for ongoing self-compatibility evolution via loss-of-function mutations. **Detailed in Q5.** |
 | **Re_PCR** | 44 | 11.0 % | excluded; existing DNA stock is fine, PCR product is the problem (no Canu assembly, fragmented amplicon, paralog amplification, N-rich short product, low yield, dirty product). Lab action: re-amplify SRK from existing DNA stock. |
 | **Re_DNA_extraction** | 15 | 3.7 % | excluded; DNA stock itself contaminated (>4 distinct functional proteins per supposed tetraploid → mixed sample or barcode bleed-through). Lab action: re-isolate single-plant tissue and re-extract DNA before any further PCR. |
 
@@ -89,7 +90,7 @@ The Step 12c evaluation produces three CSV tables that conservation colleagues c
 
 ### Take-home for the rest of the report
 
-Across the dataset's six biological questions, the data-quality footing is solid: no library effect confounds the analyses, only ~5 % of samples are flagged for re-PCR/re-extraction, and the 7 SI-escape candidates (Q4) are robust to library identity. The 38 % Partial_translation_failure category is uncertain and not interpreted biologically. The 49 observed S-alleles in 335 ingroup individuals (Q2) and all subsequent population-genetic analyses (Q3–Q6) are based on samples that pass this quality gate.
+Across the dataset's six biological questions, the data-quality footing is solid: no library effect confounds the analyses, only ~5 % of samples are flagged for re-PCR/re-extraction, and the 7 SI-escape candidates (Q5) are robust to library identity. The 38 % Partial_translation_failure category is uncertain and not interpreted biologically. The 49 observed S-alleles in 335 ingroup individuals (Q3) and all subsequent population-genetic analyses (Q4–Q7) are based on samples that pass this quality gate.
 
 ---
 
@@ -97,7 +98,7 @@ Across the dataset's six biological questions, the data-quality footing is solid
 
 ### Why this question matters
 
-Genetic drift acts within demographically isolated populations. Before evaluating how drift has impacted S-allele diversity (Q3) and individual reproductive fitness (Q4), we must establish how the species is spatially structured into demographically distinct units. This question defines the inferential strata used throughout the rest of the report.
+Genetic drift acts within demographically isolated populations. Before evaluating how drift has impacted S-allele diversity (Q4) and individual reproductive fitness (Q5), we must establish how the species is spatially structured into demographically distinct units. This question defines the inferential strata used throughout the rest of the report.
 
 ### Method
 
@@ -129,21 +130,61 @@ The BL × group × EO cross-reference is published as `tables/EO_group_BL_summar
 
 - **Connectivity:** of 741 pairwise location comparisons, only 7 pairs (0.9 %) are connected within the 500 m pollinator dispersal threshold — and **all 7 are within the same EO**. There are *no between-EO pollinator connections anywhere in the dataset* under current conditions: every EO is a closed demographic unit at the pollination scale.
 - **Habitat footprint:** ≈ 84 % of the 32 geographic groups occupy < 1 ha (DI > 0.95), placing the vast majority of locations in the extreme-drift regime. Only EO27 group 11 (19.6 ha, DI = 0.000), EO32 (14.6 ha), and EO18 (8.1 ha as a fully-connected 5-location chain) escape extreme spatial drift.
-- **Five lineages, independent histories:** the BL framework provides three analytical advantages — it rescues 21 small localities (n = 1–3 each) that cannot support EO-level statistics on their own; it allows direct empirical testing of the independent-bottleneck hypothesis (confirmed in Q3 by allele-sharing analyses); and it preserves the full 335-individual species pool for any species-level baseline by stratifying only at the population/lineage level.
+- **Five lineages, independent histories:** the BL framework provides three analytical advantages — it rescues 21 small localities (n = 1–3 each) that cannot support EO-level statistics on their own; it allows direct empirical testing of the independent-bottleneck hypothesis (confirmed in Q4 by allele-sharing analyses); and it preserves the full 335-individual species pool for any species-level baseline by stratifying only at the population/lineage level.
 
 The locked Set1 colour palette (BL1 red `#E41A1C`, BL2 blue `#377EB8`, BL3 green `#4DAF4A`, BL4 purple `#984EA3`, BL5 orange `#FF7F00`) is used consistently across this report and the sibling spatial-clustering repository so that the dendrogram, drift panels, and every BL-stratified figure cross-reference visually.
 
 ---
 
-## Q2 — Species S-allele richness and BL distribution {#q2-species-s-allele-richness-and-bl-distribution}
+## Q2 — Is the LEPA SI system functional? {#q2-is-the-lepa-si-system-functional}
 
 ### Why this question matters
 
-The species-level S-allele pool approximates the balancing-selection richness equilibrium and serves as the reference baseline against which all population-level deficits in Q3 and Q4 are measured. Per-BL stratification of the same data tests the independent-bottleneck hypothesis directly: if all five lineages had derived from a single shared ancestral bottleneck, each would have lost approximately the same alleles. If drift acted independently in each BL, each lineage's surviving allele set should be largely private.
+Before quantifying allele richness (Q3) or modelling drift (Q4–Q5), we must first establish whether the species' self-incompatibility system is still **operational at the molecular level**. This is not a trivial question for a severely bottlenecked plant: several SI species under demographic stress have been documented evolving self-compatibility (SC) as a short-term adaptive response — restoring immediate seed set but trading away the inbreeding-avoidance benefit of SI. If LEPA had transitioned to species-wide SC, the entire conservation strategy would shift: the priority would become **detecting and mitigating inbreeding depression** in the descendant generations, and the informed-breeding programme would need a fundamentally different design (avoiding self-fertilisation lineages rather than maximising compatible cross diversity). Conversely, if SI remains functional, the strategy outlined in Q4–Q7 — managed inter-BL crosses to restore allele diversity — applies. This question therefore *gates* the rest of the report.
 
 ### Method
 
-S-alleles were defined by distance-based clustering of validated SRK protein sequences on the S-domain ectodomain (Step 10 of the bioinformatic pipeline). The number of alleles to call (`N_ALLELES`) was determined by Kneedle elbow-detection on the sensitivity curve — the relationship between the p-distance cutoff and the resulting allele count (`find_allele_plateau.py`). For the current 376-protein dataset, the elbow falls at **N = 58 alleles** at an implied p-distance threshold of ≈ 0.0055 (0.55 %), corresponding to the natural plateau where the curve transitions from steep merging of distinct alleles to shallow lumping of sequencing noise ([Figure 5](#figure-5)). Each cluster represents an *S-allele bin* — a **sequence-based hypothesis** that proteins within the bin share SI-recognition specificity; the hypothesis is experimentally tested by the cross plan in Q6.
+The Step 12c data-quality evaluation (presented before Q1) categorises every metadata sample by its molecular SI functional status using two columns derived from the per-individual translation audit (`audit_sample_exclusions.py`):
+
+- `SI_functional_status`: **Functional** (≥50 % of recovered SRK haplotypes translate into a valid functional protein), **Partial_translation_failure** (some functional, some not — a label that is technical-artefact-likely and from which no biological inference is drawn; see Data Quality Evaluation), or **Complete_loss** (zero functional proteins recovered despite successful sequencing).
+- `Dominant_failure_mode` for the Complete_loss tier: **premature_stop** (real loss-of-function mutations in SRK — strong molecular candidate for SI escape) versus **ambiguous_aa** / **mixed** (data-quality artefact rather than biological signal).
+
+The combination `Complete_loss + premature_stop` is the strongest defensible molecular signature of ongoing self-compatibility evolution: it requires *every* observed SRK haplotype in an individual to carry a premature stop, a pattern hard to explain by chimeric assembly noise alone (unlike the Partial_translation_failure tier).
+
+### Key findings — SI is functional in LEPA, with a sharply localised exception
+
+Of **378 ingroup individuals** that reached Step 9 translation, the per-BL and per-EO outcome-category distributions ([Figure 1](#figure-1) and [Figure 2](#figure-2)) show that the molecular SI machinery is **broadly intact across the species**:
+
+- **199 individuals (53 %) are Functional** — SI system intact at the molecular level.
+- **154 individuals (38 %) are Partial_translation_failure** — most likely a technical artefact from chimeric Canu assembly, *not* biological SI loss; **no biological inference is made from this label**. See Data Quality Evaluation for the full caveat.
+- **7 individuals (1.7 %) are SI_escape candidates** — the only category that supports a defensible biological interpretation of SI loss. These individuals carry premature stops in every recovered SRK haplotype.
+
+**The geographic distribution of the 7 SI-escape candidates is the headline finding.** Five of the 7 cluster in **EO76 (BL3)** ([Figure 2](#figure-2)), the slick spot population already independently flagged in the spatial analysis as the most ecologically degraded — highest invasive-species encroachment, smallest residual native habitat, and (as we will see in Q5) the highest AAAA fraction with zero AABC seed parents. The remaining 2 candidates are isolated cases (1 in EO70/BL2, 1 in a germplasm sub-code with no BL placement).
+
+This pattern strongly implies **localised SI breakdown at the most ecologically stressed site**, not a species-wide SC transition. **The species-level SI system can therefore still be supported by managed crossing intervention** (Q7), avoiding the inbreeding-depression trajectory documented in other bottlenecked SI plants that have transitioned to SC.
+
+### Conservation implications
+
+| If LEPA had transitioned to SC | Current evidence: SI remains functional |
+|---|---|
+| Inbreeding depression detection would become the central metric | Allele richness restoration (Q4) and reproductive fitness (Q5) remain the central metrics |
+| Breeding design would minimise self-fertilisation lineages | Breeding design maximises compatible cross diversity |
+| Within-EO recovery via census growth would risk progeny fitness loss | Within-EO census growth is unproblematic if accompanied by inter-BL allele transfers |
+| Long-term evolutionary trajectory: rapid genetic erosion via selfing | Long-term evolutionary trajectory: balancing-selection-mediated diversity recovery is achievable |
+
+The 7 SI-escape candidates are flagged for follow-up phenotyping in [`Tables/SRK_SI_escape_candidates.csv`](Tables/SRK_SI_escape_candidates.csv) (controlled selfing tests). If those tests confirm self-compatibility — and especially if the EO76 cluster proves to be a population-wide SC transition rather than 5 independent rare events — the recommendations below would need revisiting for that population specifically. For now, **the conservation strategy proceeds on the basis that SI is functional species-wide**, and Q3–Q7 develop the implications of that finding.
+
+---
+
+## Q3 — Species S-allele richness and BL distribution {#q3-species-s-allele-richness-and-bl-distribution}
+
+### Why this question matters
+
+The species-level S-allele pool approximates the balancing-selection richness equilibrium and serves as the reference baseline against which all population-level deficits in Q4 and Q5 are measured. Per-BL stratification of the same data tests the independent-bottleneck hypothesis directly: if all five lineages had derived from a single shared ancestral bottleneck, each would have lost approximately the same alleles. If drift acted independently in each BL, each lineage's surviving allele set should be largely private.
+
+### Method
+
+S-alleles were defined by distance-based clustering of validated SRK protein sequences on the S-domain ectodomain (Step 10 of the bioinformatic pipeline). The number of alleles to call (`N_ALLELES`) was determined by Kneedle elbow-detection on the sensitivity curve — the relationship between the p-distance cutoff and the resulting allele count (`find_allele_plateau.py`). For the current 376-protein dataset, the elbow falls at **N = 58 alleles** at an implied p-distance threshold of ≈ 0.0055 (0.55 %), corresponding to the natural plateau where the curve transitions from steep merging of distinct alleles to shallow lumping of sequencing noise ([Figure 5](#figure-5)). Each cluster represents an *S-allele bin* — a **sequence-based hypothesis** that proteins within the bin share SI-recognition specificity; the hypothesis is experimentally tested by the cross plan in Q7.
 
 To validate that this clustering reflects biologically meaningful amino-acid variation rather than arbitrary sequence drift, the alignment was scanned for variable AA positions (`SRK_AA_mutation_heatmap.py`). The resulting AA-frequency heatmap ([Figure 6](#figure-6)) shows **193 variable positions** across the 856-column protein alignment, with strong physicochemical structure — the alleles partition the variable positions into discrete residue patterns, confirming that the 58 sequence-defined bins correspond to distinct AA configurations in the recognition surface and not to noise.
 
@@ -167,7 +208,7 @@ Allele accumulation curves were then fit at species level (all 335 ingroup indiv
 
 <a name="figure-9"></a>
 
-![Figure 9: S-allele accumulation curves per Element Occurrence (focus EOs with N ≥ 5). EO curves are coloured by their parent BL using the locked Set1 palette so each EO can be visually placed within its lineage of origin. End-of-curve labels show `EOXX (observed/MM)` for each EO. Within each BL, EOs that climb above the parent-BL aggregate curve are accumulating diversity faster than the lineage average; EOs that flatten early indicate locally severe drift. Provides the within-BL counterpart to Figure 8 — useful for choosing which EO in each BL is the best maternal source for inter-BL transfers in Q6.](figures/SRK_allele_accumulation_combined.png)
+![Figure 9: S-allele accumulation curves per Element Occurrence (focus EOs with N ≥ 5). EO curves are coloured by their parent BL using the locked Set1 palette so each EO can be visually placed within its lineage of origin. End-of-curve labels show `EOXX (observed/MM)` for each EO. Within each BL, EOs that climb above the parent-BL aggregate curve are accumulating diversity faster than the lineage average; EOs that flatten early indicate locally severe drift. Provides the within-BL counterpart to Figure 8 — useful for choosing which EO in each BL is the best maternal source for inter-BL transfers in Q7.](figures/SRK_allele_accumulation_combined.png)
 
 ### Key findings
 
@@ -179,7 +220,7 @@ Across **335 individuals** sampled from 26 population localities, **49 distinct 
 | Chao1 | 61 alleles |
 | Consensus (mean of MM + Chao1) | 60 alleles |
 
-The MM estimate of 59 alleles (consensus 60) is adopted as the species optimum — the allele richness expected under balancing selection at evolutionary equilibrium, used as the reference baseline for Q3 and Q4. An additional ~93 individuals would need to be sampled to discover the next new allele. The species SI repertoire remains substantially under-characterised.
+The MM estimate of 59 alleles (consensus 60) is adopted as the species optimum — the allele richness expected under balancing selection at evolutionary equilibrium, used as the reference baseline for Q4 and Q5. An additional ~93 individuals would need to be sampled to discover the next new allele. The species SI repertoire remains substantially under-characterised.
 
 **BL stratification reveals the diversity reservoir.** When the same individuals are partitioned into the five independent bottleneck lineages (Q1), S-allele richness varies dramatically across lineages despite comparable sampling effort ([Figure 8](#figure-8); see Q1 table for sample sizes):
 
@@ -187,17 +228,17 @@ The MM estimate of 59 alleles (consensus 60) is adopted as the species optimum �
 - The four other BLs have each collapsed to a fraction of their lineage-level potential: BL1 retains 4 alleles (8 %) and BL2 retains 8 (16 %); BL3 and BL5 retain 17 and 23 alleles respectively (35–47 %).
 - The > 5-fold gradient of richness loss across BLs (BL1: 4 alleles → BL4: 27) can only arise if **the bottlenecks operating in each lineage have proceeded independently**: a single shared species-level bottleneck would predict comparable richness loss across BLs.
 
-This independent-bottleneck signature is reinforced by the allele-sharing analyses in Q3.
+This independent-bottleneck signature is reinforced by the allele-sharing analyses in Q4.
 
-### Linking Q2 → Q6: from sequence-based bins to validated functional specificities
+### Linking Q3 → Q7: from sequence-based bins to validated functional specificities
 
 The 58 alleles called here (49 observed in the ingroup dataset) are **sequence-based hypotheses about functional SI specificity**, not validated functional alleles. Two proteins clustered into the same allele bin (Figs 3–4) are *predicted* to share recognition specificity because they share residue identity at every variable position — but until they are tested against each other in a controlled cross, that prediction remains a hypothesis. Conversely, two proteins in different bins are *predicted* to be functionally distinct, but the threshold (p-distance > 0.0055) is itself an empirical compromise, not a biological certainty.
 
-[Q6 — Cross-based hypothesis testing for informed breeding](#q6-cross-based-hypothesis-testing-for-informed-breeding) builds the experimental framework that converts these sequence-based predictions into validated functional alleles. Specifically, Step 22b ([Figure 22](#figure-22)) re-computes pairwise distances on the **66 canonical hypervariable (HV) columns** (a subset of the 193 variable positions in Fig 4 that determine SI specificity per the C3 mechanism in Q5) and identifies **synonymy groups** — clusters of alleles that are HV-identical and therefore strong candidates for being functionally equivalent. The synonymy-test network ([Figure 23](#figure-23)) then identifies the pairwise distances most worth interrogating experimentally. The Step 22e cross plan (104 crosses, 1 368 attempts; [Figure 24](#figure-24)) tests these in a phased H0 → H3 protocol; outcomes update the 58 sequence-based bins into a **validated functional S-allele table** that supersedes the sequence-only definitions used in Q2–Q5.
+[Q7 — Cross-based hypothesis testing for informed breeding](#q7-cross-based-hypothesis-testing-for-informed-breeding) builds the experimental framework that converts these sequence-based predictions into validated functional alleles. Specifically, Step 22b ([Figure 22](#figure-22)) re-computes pairwise distances on the **66 canonical hypervariable (HV) columns** (a subset of the 193 variable positions in Fig 4 that determine SI specificity per the C3 mechanism in Q6) and identifies **synonymy groups** — clusters of alleles that are HV-identical and therefore strong candidates for being functionally equivalent. The synonymy-test network ([Figure 23](#figure-23)) then identifies the pairwise distances most worth interrogating experimentally. The Step 22e cross plan (104 crosses, 1 368 attempts; [Figure 24](#figure-24)) tests these in a phased H0 → H3 protocol; outcomes update the 58 sequence-based bins into a **validated functional S-allele table** that supersedes the sequence-only definitions used in Q3–Q6.
 
 ---
 
-## Q3 — Genetic drift on populations' S-allele diversity (TP1) {#q3-genetic-drift-on-populations-s-allele-diversity-tp1}
+## Q4 — Genetic drift on populations' S-allele diversity (TP1) {#q4-genetic-drift-on-populations-s-allele-diversity-tp1}
 
 ### Why this question matters
 
@@ -226,7 +267,7 @@ A complementary χ² goodness-of-fit test against the equal-frequency NFDS expec
 
 ![Figure 11: S-allele erosion by genetic drift per Element Occurrence. Same decomposition as Figure 10, disaggregated to the EO level (EOs with N ≥ 5; sorted by parent BL). Between ~37 % (EO27) and ~88 % (EO70) of the species-level S-allele pool has been irreversibly lost from each EO. The predicted-undetected component is small per EO, confirming that further sampling will not close the gap — the missing alleles are genuinely absent from these populations.](figures/SRK_allele_accumulation_drift_erosion.png)
 
-**Per-BL drift loss** ranges from ~45 % (BL4, the diversity reservoir) to ≥ 84 % (BL1, BL2). Even BL4's lineage-level MM asymptote (37) falls well short of the species pool (59), and BL1/BL2 have collapsed to a small fraction of their lineage-level potential. The > 5-fold gradient of richness loss across BLs (BL1: 4 alleles → BL4: 27) is the **independent-bottleneck signature** documented in Q2: a single shared species-level bottleneck would predict comparable richness loss across BLs.
+**Per-BL drift loss** ranges from ~45 % (BL4, the diversity reservoir) to ≥ 84 % (BL1, BL2). Even BL4's lineage-level MM asymptote (37) falls well short of the species pool (59), and BL1/BL2 have collapsed to a small fraction of their lineage-level potential. The > 5-fold gradient of richness loss across BLs (BL1: 4 alleles → BL4: 27) is the **independent-bottleneck signature** documented in Q3: a single shared species-level bottleneck would predict comparable richness loss across BLs.
 
 **Per-EO drift loss** ranges from ~37 % (EO27, the least eroded) to ~88 % (EO70, the most eroded). Even in EO27 — the most allele-rich EO — many of the 59 species-level S-allele bins have been permanently lost from the local gene pool. **These deficits are not sampling artefacts**: the predicted-undetected component is small per EO, confirming that further sampling within these EOs cannot close the gap.
 
@@ -266,11 +307,11 @@ At the **EO level** ([Figure 14](#figure-14)) the partitioning is even more seve
 
 ---
 
-## Q4 — Genetic drift on individual reproductive fitness (TP2) {#q4-genetic-drift-on-individual-reproductive-fitness-tp2}
+## Q5 — Genetic drift on individual reproductive fitness (TP2) {#q5-genetic-drift-on-individual-reproductive-fitness-tp2}
 
 ### Why this question matters
 
-Even where some allele diversity persists (Q3), drift causes allele copy-count imbalances at the *individual* level that directly reduce reproductive output. In a tetraploid, the proportion of compatible diploid gametes an individual produces — the **Genotypic Fitness Score (GFS)** — depends not only on which alleles are present but on their dosage balance across the four allele copies. Tipping Point 2 (TP2) marks the threshold at which this individual-level degradation is so advanced that within-population crosses alone cannot restore reproductive fitness.
+Even where some allele diversity persists (Q4), drift causes allele copy-count imbalances at the *individual* level that directly reduce reproductive output. In a tetraploid, the proportion of compatible diploid gametes an individual produces — the **Genotypic Fitness Score (GFS)** — depends not only on which alleles are present but on their dosage balance across the four allele copies. Tipping Point 2 (TP2) marks the threshold at which this individual-level degradation is so advanced that within-population crosses alone cannot restore reproductive fitness.
 
 ### Method — Genotypic Fitness Score (GFS) and TP2
 
@@ -322,11 +363,11 @@ TP2 is breached when (i) `mean GFS < 0.667` (the average individual has less rep
 
 EO-level results show all 6 plotted EOs CRITICAL on TP2. **EO67 is the least degraded** EO with the highest proportion of AABC individuals (8 %).
 
-**The AAAA majority is dominated by just two alleles species-wide — a pan-BL convergent fixation.** Allele_050 and Allele_051 (both members of Synonymy group 1) are present as AAAA homozygotes in **every BL** (pan-BL, 5/5) ([Figure 18](#figure-18)). This convergent fixation across five independently-bottlenecked lineages is the single most important biological result of the TP2 analysis — every lineage has independently fixed the same dominant allele family. If the synonymy hypothesis is confirmed by crossing (Q6), then the entire AAAA fraction species-wide represents a small number of effectively-identical functional locks, dramatically reducing the practical breeding pool.
+**The AAAA majority is dominated by just two alleles species-wide — a pan-BL convergent fixation.** Allele_050 and Allele_051 (both members of Synonymy group 1) are present as AAAA homozygotes in **every BL** (pan-BL, 5/5) ([Figure 18](#figure-18)). This convergent fixation across five independently-bottlenecked lineages is the single most important biological result of the TP2 analysis — every lineage has independently fixed the same dominant allele family. If the synonymy hypothesis is confirmed by crossing (Q7), then the entire AAAA fraction species-wide represents a small number of effectively-identical functional locks, dramatically reducing the practical breeding pool.
 
 <a name="figure-18"></a>
 
-![Figure 18: Allele identity of AAAA individuals per Bottleneck Lineage. Allele_050 and Allele_051 — both members of Synonymy group 1 (Q6) — are pan-BL across all 5 BLs. The 73 % LEPA-specific residues vs only 17 % shared with both Brassica AND Arabidopsis at HV columns confirm this is shared-ancestry drift, not pan-genera selection (Q5).](figures/SRK_GFS_AAAA_allele_composition_BL.png)
+![Figure 18: Allele identity of AAAA individuals per Bottleneck Lineage. Allele_050 and Allele_051 — both members of Synonymy group 1 (Q7) — are pan-BL across all 5 BLs. The 73 % LEPA-specific residues vs only 17 % shared with both Brassica AND Arabidopsis at HV columns confirm this is shared-ancestry drift, not pan-genera selection (Q6).](figures/SRK_GFS_AAAA_allele_composition_BL.png)
 
 **Top seed-parent priorities (15 AABC individuals, GFS = 0.833):**
 
@@ -352,7 +393,7 @@ Full ranked lists per EO are in `SRK_individual_GFS.tsv`; EO-level summaries and
 
 ### Candidate SI-escape individuals — molecular signal of ongoing self-compatibility evolution
 
-The C3 cascade described in Q5 explains how AAAA homozygosity accumulates while the SI gene remains *structurally* intact. A second, more direct molecular signature of ongoing self-compatibility evolution comes from the per-sample translation audit (`audit_sample_exclusions.py`). For every individual that reached Step 9 (translation), the audit records `SI_functional_status` — Functional / Partial_translation_failure / Complete_loss — based on the fraction of the individual's recovered SRK sequences that translate into a valid functional protein.
+The C3 cascade described in Q6 explains how AAAA homozygosity accumulates while the SI gene remains *structurally* intact. A second, more direct molecular signature of ongoing self-compatibility evolution comes from the per-sample translation audit (`audit_sample_exclusions.py`). For every individual that reached Step 9 (translation), the audit records `SI_functional_status` — Functional / Partial_translation_failure / Complete_loss — based on the fraction of the individual's recovered SRK sequences that translate into a valid functional protein.
 
 | `SI_functional_status` | n | % of 378 | Interpretation |
 |---|---:|---:|---|
@@ -380,7 +421,7 @@ Among the 14 Complete_loss individuals, the **dominant translation failure mode*
 
 **Five of the seven candidates cluster in EO76 (BL3).** This molecular signal independently corroborates the EO-level demographic picture: EO76 holds **0 AABC seed parents** (table above), the lowest reproductive-effort support in the dataset ([Figure 16](#figure-16)), and now five individuals where every recovered SRK allele carries a premature stop. The directionality is consistent — EO76 is the population in which the SI system is failing most visibly at every level we can measure.
 
-**Two complementary mechanisms of SI breakdown.** The C3 cascade (Q5) drives AAAA accumulation while SRK remains structurally intact; the candidate SI-escape individuals here represent a second mechanism — direct loss of function at the SRK locus. Whether the LoF signal is driven by convergent independent mutations across the four tetraploid allele copies, or by tetrasomic inheritance of a single ancestral LoF allele through repeated selfing, both interpretations imply ongoing self-compatibility evolution.
+**Two complementary mechanisms of SI breakdown.** The C3 cascade (Q6) drives AAAA accumulation while SRK remains structurally intact; the candidate SI-escape individuals here represent a second mechanism — direct loss of function at the SRK locus. Whether the LoF signal is driven by convergent independent mutations across the four tetraploid allele copies, or by tetrasomic inheritance of a single ancestral LoF allele through repeated selfing, both interpretations imply ongoing self-compatibility evolution.
 
 **Recommended follow-up.** Phenotype the seven candidates via controlled selfing tests (no-pollen-deposition vs self-pollen vs cross-pollen seed-set comparison). A positive selfing-success outcome would confirm self-compatibility and validate the molecular signal at the phenotype level. The five EO76 candidates are the highest priority — if EO76 is genuinely undergoing population-wide SI escape, the implications for the recovery programme are substantial (the population can no longer be relied on as a long-term genetic reservoir under random mating; managed crossing becomes the only viable path).
 
@@ -391,15 +432,15 @@ The full per-sample audit is in `SRK_sample_exclusion_audit.tsv` (script: `audit
 
 **Library-effect ruling:** the EO76 SI-escape cluster spans three independent libraries (005, 009, 010), so a single-library technical bias cannot explain the pattern. Formal library-effect testing returns no significant within-EO bias and a favourable global failure-mode pattern that strengthens rather than undermines the SI-escape conclusion. The full statistical results are in the [Data Quality Evaluation](#data-quality-evaluation) section above.
 
-**TP1 and TP2 interact.** Even if allele richness were restored through inter-BL transfers (Q3 intervention), the benefit would be limited if incoming alleles were absorbed into AAAA or AAAB individuals. Effective restoration therefore requires simultaneously targeting allele richness (inter-BL transfers of rare alleles) AND genotype quality (crosses designed to produce AABB, AABC, and ABCD offspring).
+**TP1 and TP2 interact.** Even if allele richness were restored through inter-BL transfers (Q4 intervention), the benefit would be limited if incoming alleles were absorbed into AAAA or AAAB individuals. Effective restoration therefore requires simultaneously targeting allele richness (inter-BL transfers of rare alleles) AND genotype quality (crosses designed to produce AABB, AABC, and ABCD offspring).
 
 ---
 
-## Q5 — Mechanism: convergent S-allele depletion {#q5-mechanism-convergent-s-allele-depletion}
+## Q6 — Mechanism: convergent S-allele depletion {#q6-mechanism-convergent-s-allele-depletion}
 
 ### Why this question matters
 
-Q1–Q4 document the *outcomes* of habitat fragmentation and drift on LEPA's SI system. The central question this section addresses is *how* — what mechanism explains both (i) the severe allele depletion observed in every lineage AND (ii) the convergent fixation of the same Synonymy group 1 alleles across five independently-bottlenecked lineages?
+Q1–Q5 document the *outcomes* of habitat fragmentation and drift on LEPA's SI system. The central question this section addresses is *how* — what mechanism explains both (i) the severe allele depletion observed in every lineage AND (ii) the convergent fixation of the same Synonymy group 1 alleles across five independently-bottlenecked lineages?
 
 Two complementary lines of evidence are presented: a **mechanistic hypothesis** (the Compatibility Collapse Cascade, C3) explaining the demographic-genetic causal chain, and a **direct empirical test** (cross-Brassicaceae per-BL entropy decomposition) distinguishing drift on a shared LEPA ancestral pool from pan-Brassicaceae selection convergence.
 
@@ -453,25 +494,25 @@ The test is decisive ([Figure 21](#figure-21)). For every LEPA HV column, we ask
 
 The 17 % of HV columns where LEPA = Brassica = Arabidopsis dominant residue mark the **truly deeply conserved SI-recognition positions under genus-spanning selection**. The remaining 83 % are positions where each genus's S-allele pool has been shaped by its own demographic history. For LEPA, that history is **drift-driven fixation of a small ancestral allele family across all five independent bottleneck lineages** — the molecular signature of the C3 cascade Stage 1, observed at residue resolution.
 
-This finding closes the loop with the BL stratification: the pan-BL fixation of Synonymy group 1 documented by the per-BL accumulation curves (Q2), the allele-sharing UpSet ([Figure 13](#figure-13)), and the TP2 reproductive-effort analyses ([Figure 15](#figure-15)) is precisely the same signal recovered here at the residue level. **Drift acting independently in each BL on a shared ancestral allele pool produces the appearance of cross-BL convergence at the residue level (every BL fixes the most-common ancestral allele) without invoking pan-Brassicaceae selection.**
+This finding closes the loop with the BL stratification: the pan-BL fixation of Synonymy group 1 documented by the per-BL accumulation curves (Q3), the allele-sharing UpSet ([Figure 13](#figure-13)), and the TP2 reproductive-effort analyses ([Figure 15](#figure-15)) is precisely the same signal recovered here at the residue level. **Drift acting independently in each BL on a shared ancestral allele pool produces the appearance of cross-BL convergence at the residue level (every BL fixes the most-common ancestral allele) without invoking pan-Brassicaceae selection.**
 
 ### Conservation implication
 
-The mechanism dictates the intervention strategy. Increasing census population size within an EO alone is insufficient to reverse the AAAA trajectory — if the prevailing AAAA frequency exceeds the reproductive dead-end threshold, within-population growth simply produces more AAAA offspring (Stage 3–4 dynamic). **Allele introduction via inter-BL crosses is the primary lever.** Introducing B, C, and D S-alleles from the 15 AABC individuals (Q4) into crosses with AAAA individuals simultaneously restores SI compatibility AND re-engages balancing selection — the mechanism that, once functional, will favour the spread of introduced S-alleles through subsequent generations (reversing Stage 2). The 15 AABC seed parents are therefore the only endogenous genetic resource capable of reversing the C3 cascade.
+The mechanism dictates the intervention strategy. Increasing census population size within an EO alone is insufficient to reverse the AAAA trajectory — if the prevailing AAAA frequency exceeds the reproductive dead-end threshold, within-population growth simply produces more AAAA offspring (Stage 3–4 dynamic). **Allele introduction via inter-BL crosses is the primary lever.** Introducing B, C, and D S-alleles from the 15 AABC individuals (Q5) into crosses with AAAA individuals simultaneously restores SI compatibility AND re-engages balancing selection — the mechanism that, once functional, will favour the spread of introduced S-alleles through subsequent generations (reversing Stage 2). The 15 AABC seed parents are therefore the only endogenous genetic resource capable of reversing the C3 cascade.
 
 ---
 
-## Q6 — Cross-based hypothesis testing for informed breeding {#q6-cross-based-hypothesis-testing-for-informed-breeding}
+## Q7 — Cross-based hypothesis testing for informed breeding {#q7-cross-based-hypothesis-testing-for-informed-breeding}
 
 ### Why this question matters
 
-The bioinformatics in Q1–Q5 produces *predictions* about which sequence-defined allele bins represent which functional SI specificities, and identifies the diversity reservoir (BL4) and the priority seed parents (15 AABC individuals). To move from prediction to breeding-programme practice, those predictions must be **validated by controlled crosses**. This question lays out the experimental framework, the underlying decision logic, and the resulting cross plan. The cross design depends entirely on the **66 LEPA HV columns** identified in Q5 ([Figure 20](#figure-20)) — these are the alignment positions that discriminate alleles for SI specificity, and all subsequent distance and synonymy calculations are computed on them rather than on the full S-domain.
+The bioinformatics in Q1–Q6 produces *predictions* about which sequence-defined allele bins represent which functional SI specificities, and identifies the diversity reservoir (BL4) and the priority seed parents (15 AABC individuals). To move from prediction to breeding-programme practice, those predictions must be **validated by controlled crosses**. This question lays out the experimental framework, the underlying decision logic, and the resulting cross plan. The cross design depends entirely on the **66 LEPA HV columns** identified in Q6 ([Figure 20](#figure-20)) — these are the alignment positions that discriminate alleles for SI specificity, and all subsequent distance and synonymy calculations are computed on them rather than on the full S-domain.
 
 ### Synonymy network — collapsing 58 sequence bins toward functional specificities
 
 Pairwise distances recomputed on the 66 canonical HV positions reveal a strongly bimodal structure within the main LEPA cluster, plus one allele (Allele_055) separated from the rest by a much larger distance. UPGMA clustering automatically detects this gap, splitting the 58 allele bins into **Class I (57 alleles)** and **Class II (1 allele: Allele_055)** — corresponding to the documented Brassicaceae phylogenetic split.
 
-Within Class I, the HV-identical allele pairs form **eight tight synonymy groups** ranging from 2 to 15 alleles per group ([Figure 22](#figure-22)), accounting for 38 of the 57 Class I alleles. The remaining 19 Class I alleles and the single Class II allele are isolated. **If HV identity reliably predicts shared recognition specificity, the 58 sequence bins collapse to 27 functional specificities** (8 synonymy groups + 19 isolated alleles). The largest synonymy group (Synonymy group 1) comprises **15 alleles observed in 134 AAAA individuals** — including Allele_050 and Allele_051, the two pan-BL fixed alleles documented in Q4 — making it the most prevalent specificity in the dataset and the highest priority for synonymy confirmation by crossing.
+Within Class I, the HV-identical allele pairs form **eight tight synonymy groups** ranging from 2 to 15 alleles per group ([Figure 22](#figure-22)), accounting for 38 of the 57 Class I alleles. The remaining 19 Class I alleles and the single Class II allele are isolated. **If HV identity reliably predicts shared recognition specificity, the 58 sequence bins collapse to 27 functional specificities** (8 synonymy groups + 19 isolated alleles). The largest synonymy group (Synonymy group 1) comprises **15 alleles observed in 134 AAAA individuals** — including Allele_050 and Allele_051, the two pan-BL fixed alleles documented in Q5 — making it the most prevalent specificity in the dataset and the highest priority for synonymy confirmation by crossing.
 
 <a name="figure-22"></a>
 
@@ -536,9 +577,9 @@ The combined H2 + H3 outcomes produce a **validated functional S-allele table** 
 
 The six questions converge on three immediate priorities for the *Lepidium papilliferum* recovery programme:
 
-1. **Cross all 15 AABC individuals this season** (Q4). They are the only endogenous source of GFS = 0.833 gametes and the only individuals that can simultaneously contribute B, C, and D S-alleles to AAAA recipients — directly reversing the C3 Stage 5 trajectory (Q5). EO67 (4 AABC), EO27 (4 AABC), and EO18 (3 AABC, including 2 newly identified in Library 010) are the priority maternal sites; EO76 (0 AABC) is the most degraded and the most in need of allele importation.
-2. **Prioritise inter-BL allele transfers, especially BL4 → other BLs** (Q3). BL4 is the species' diversity reservoir (27 of 49 alleles, 10 of which are BL4-private). With no between-EO pollinator connections anywhere in the dataset (Q1), inter-BL crosses are the *only* mechanism for redistributing private alleles. Within-BL or within-EO crossing alone re-segregates the same drift-purged pool and cannot restore the SI system (Q3 TP1 finding).
-3. **Schedule the Step 22e cross plan with Synonymy group 1 as the first H2 priority** (Q6). Synonymy group 1 contains 15 HV-identical alleles spanning 134 AAAA individuals (~65 % of all AAAA species-wide). An incompatible Synonymy_test cross would consolidate the largest single block of allele bins into one functional specificity, dramatically clarifying the breeding-pool design. Conversely, a compatible Synonymy_test cross would reveal that even within Synonymy group 1 there is genuine functional diversity worth preserving.
+1. **Cross all 15 AABC individuals this season** (Q5). They are the only endogenous source of GFS = 0.833 gametes and the only individuals that can simultaneously contribute B, C, and D S-alleles to AAAA recipients — directly reversing the C3 Stage 5 trajectory (Q6). EO67 (4 AABC), EO27 (4 AABC), and EO18 (3 AABC, including 2 newly identified in Library 010) are the priority maternal sites; EO76 (0 AABC) is the most degraded and the most in need of allele importation.
+2. **Prioritise inter-BL allele transfers, especially BL4 → other BLs** (Q4). BL4 is the species' diversity reservoir (27 of 49 alleles, 10 of which are BL4-private). With no between-EO pollinator connections anywhere in the dataset (Q1), inter-BL crosses are the *only* mechanism for redistributing private alleles. Within-BL or within-EO crossing alone re-segregates the same drift-purged pool and cannot restore the SI system (Q4 TP1 finding).
+3. **Schedule the Step 22e cross plan with Synonymy group 1 as the first H2 priority** (Q7). Synonymy group 1 contains 15 HV-identical alleles spanning 134 AAAA individuals (~65 % of all AAAA species-wide). An incompatible Synonymy_test cross would consolidate the largest single block of allele bins into one functional specificity, dramatically clarifying the breeding-pool design. Conversely, a compatible Synonymy_test cross would reveal that even within Synonymy group 1 there is genuine functional diversity worth preserving.
 
 The full execution plan is in `SRK_cross_plan_H0_SI_validation.tsv` through `SRK_cross_plan_H3_hidden_bin_tests.tsv` (Step 22e outputs). Outcomes feed back into Step 23 of the bioinformatic pipeline (`SRK_cross_result_analysis_HV.pdf`), which formally tests whether the bioinformatic compatibility predictions match the observed seed yields and produces the **validated functional S-allele table** that anchors operational seed-orchard design.
 
