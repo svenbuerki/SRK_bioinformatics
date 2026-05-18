@@ -10,23 +10,23 @@ Library001_barcode08	1	8	70	EO70	BL2	1	24	20			normal	11.0	Functional	ambiguous_
 Library001_barcode09	1	9	76	EO76	BL3	1	32	28			low_functional_rate	13.0	Partial_translation_failure	premature_stop	Assigned	Included			Partial_translation_failure
 Library001_barcode10	1	10	25	EO25	BL5	1	28	24			normal	9.0	Functional	mixed	Assigned	Included			Functional
 Library001_barcode11	1	11	709	EO709	Unassigned	1	36	28			normal	10.0	Functional	premature_stop	Unassigned	Included			Functional
-Library001_barcode12	1	12	15	EO15	Unassigned	1	32	28			low_functional_rate	8.0	Partial_translation_failure	premature_stop	Inferred	Included			Partial_translation_failure
+Library001_barcode12	1	12	15	EO18	BL5	1	32	28			low_functional_rate	8.0	Partial_translation_failure	premature_stop	Inferred	Included			Partial_translation_failure
 Library001_barcode13	1	13	18	EO18	BL5	1	24	16			dropped_abundance_filter	0.0	Partial_translation_failure	premature_stop		Excluded	Step 9 — dropped_abundance_filter	functional proteins present but below min_count = 5 abundance filter (Top failures: premature_stop(11);ambiguous_aa(4))	Re_PCR
 Library001_barcode14	1	14	118	EO118	BL3	1	64	32			low_functional_rate	12.0	Partial_translation_failure	premature_stop	Assigned	Included			Partial_translation_failure
 Library001_barcode15	1	15			Unassigned	0	36	32			low_functional_rate	4.0	Partial_translation_failure	premature_stop		Excluded	Step 11 — outgroup filter	Ingroup = 0 in metadata; intentionally excluded from SI analyses (NOT a quality issue)	Outgroup
 Library001_barcode16	1	16	27	EO27	BL4	1	32	20			low_functional_rate	4.0	Partial_translation_failure	premature_stop	Assigned	Included			Partial_translation_failure
 Library001_barcode17	1	17	76	EO76	BL3	1	68	44			low_functional_rate	12.0	Partial_translation_failure	mixed	Assigned	Included			Partial_translation_failure
 Library001_barcode18	1	18	26-3	EO26	BL1	1	68	48			low_functional_rate	18.0	Partial_translation_failure	premature_stop	Inferred	Included			Partial_translation_failure
-Library001_barcode19	1	19	27pv	EO27pv	Unassigned	1	24	12			normal	8.0	Functional	premature_stop	Assigned	Included			Functional
+Library001_barcode19	1	19	27pv	EO27	BL4	1	24	12			normal	8.0	Functional	premature_stop	Assigned	Included			Functional
 Library001_barcode20	1	20	18	EO18	BL5	1	16	8			normal	6.0	Functional	premature_stop	Assigned	Included			Functional
-Library001_barcode21	1	21	8	EO8	Unassigned	1	32	32			low_functional_rate	5.0	Partial_translation_failure	mixed	Assigned	Included			Partial_translation_failure
+Library001_barcode21	1	21	8	EO08	BL1	1	32	32			low_functional_rate	5.0	Partial_translation_failure	mixed	Assigned	Included			Partial_translation_failure
 Library001_barcode22	1	22	29	EO29	BL1	1	32	28			dropped_abundance_filter	0.0	Partial_translation_failure	premature_stop		Excluded	Step 9 — dropped_abundance_filter	functional proteins present but below min_count = 5 abundance filter (Top failures: premature_stop(26);ambiguous_aa(4))	Re_PCR
 Library002_barcode23	2	23	96-16	EO96	Unassigned	1	32	32			normal	17.0	Functional	premature_stop	Unassigned	Included			Functional
 Library002_barcode24	2	24	montanum	EOmontanum	Unassigned	0	28	24			normal	12.0	Functional	mixed		Excluded	Step 11 — outgroup filter	Ingroup = 0 in metadata; intentionally excluded from SI analyses (NOT a quality issue)	Outgroup
 Library002_barcode25	2	25	montanum	EOmontanum	Unassigned	0	4	4			no_functional_proteins	0.0	Complete_loss	ambiguous_aa		Excluded	Step 9 — no_functional_proteins	all sequences carry X residues from N-rich data — quality issue, NOT a biological SI escape; re-sequencing may help (would have been caught by Step 7b if applied) (Top failures: ambiguous_aa(4);premature_stop(1))	Outgroup
 Library002_barcode26	2	26	freemontii	EOfreemontii	Unassigned	0	20	16			normal	4.0	Functional	premature_stop		Excluded	Step 11 — outgroup filter	Ingroup = 0 in metadata; intentionally excluded from SI analyses (NOT a quality issue)	Outgroup
 Library002_barcode27	2	27	freemontii	EOfreemontii	Unassigned	0	28	24			low_functional_rate	4.0	Partial_translation_failure	mixed		Excluded	Step 11 — outgroup filter	Ingroup = 0 in metadata; intentionally excluded from SI analyses (NOT a quality issue)	Outgroup
-Library002_barcode28	2	28	27rt	EO27rt	Unassigned	1	36	24			low_functional_rate	8.0	Partial_translation_failure	mixed	Assigned	Included			Partial_translation_failure
+Library002_barcode28	2	28	27rt	EO27	BL4	1	36	24			low_functional_rate	8.0	Partial_translation_failure	mixed	Assigned	Included			Partial_translation_failure
 Library002_barcode29	2	29	405	EO405	Unassigned	1	32	24			low_functional_rate	6.0	Partial_translation_failure	mixed	Unassigned	Included			Partial_translation_failure
 Library002_barcode30	2	30	98-2	EO98	Unassigned	1	8	0								Excluded	Step 4 — length filter	8 raw haps, 0 passed 3250–4000 bp length filter — likely fragmented or chimeric assembly; re-sequencing recommended	Re_PCR
 Library002_barcode31	2	31	25	EO25	BL5	1	36	28			normal	15.0	Functional	premature_stop	Assigned	Included			Functional
@@ -36,19 +36,19 @@ Library002_barcode34	2	34	84-2	EO84	Unassigned	1	28	28			low_functional_rate	9.0
 Library002_barcode35	2	35	52	EO52	BL3	1	52	36			low_functional_rate	13.0	Partial_translation_failure	mixed	Assigned	Included			Partial_translation_failure
 Library002_barcode36	2	36	704	EO704	Unassigned	1	16	16			low_functional_rate	4.0	Partial_translation_failure	premature_stop	Unassigned	Included			Partial_translation_failure
 Library002_barcode37	2	37	18	EO18	BL5	1	20	20			normal	8.0	Functional	mixed	Assigned	Included			Functional
-Library002_barcode38	2	38	15	EO15	Unassigned	1	40	24			normal	9.0	Functional	mixed	Inferred	Included			Functional
+Library002_barcode38	2	38	15	EO18	BL5	1	40	24			normal	9.0	Functional	mixed	Inferred	Included			Functional
 Library002_barcode39	2	39	70	EO70	BL2	1	32	28			normal	27.0	Functional	premature_stop	Assigned	Included			Functional
-Library002_barcode40	2	40	8	EO8	Unassigned	1	36	36			too_many_alleles	0.0	Functional	premature_stop		Excluded	Step 9 — too_many_alleles	>4 distinct proteins per individual — likely contamination / assembly artefact (Top failures: premature_stop(10))	Re_DNA_extraction
+Library002_barcode40	2	40	8	EO08	BL1	1	36	36			too_many_alleles	0.0	Functional	premature_stop		Excluded	Step 9 — too_many_alleles	>4 distinct proteins per individual — likely contamination / assembly artefact (Top failures: premature_stop(10))	Re_DNA_extraction
 Library002_barcode41	2	41	24-14	EO24	BL5	1	52	32			too_many_alleles	0.0	Functional	premature_stop		Excluded	Step 9 — too_many_alleles	>4 distinct proteins per individual — likely contamination / assembly artefact (Top failures: premature_stop(10))	Re_DNA_extraction
 Library002_barcode42	2	42	29	EO29	BL1	1	20	20			normal	12.0	Functional	mixed	Assigned	Included			Functional
 Library002_barcode43	2	43	118	EO118	BL3	1	32	32			normal	22.0	Functional	mixed	Assigned	Included			Functional
 Library002_barcode44	2	44	67	EO67	BL4	1	20	16			low_functional_rate	4.0	Partial_translation_failure	premature_stop	Assigned	Included			Partial_translation_failure
 Library002_barcode45	2	45	52	EO52	BL3	1	28	28			low_functional_rate	8.0	Partial_translation_failure	premature_stop	Assigned	Included			Partial_translation_failure
 Library002_barcode46	2	46	68	EO68	BL2	1	36	20			normal	8.0	Functional	premature_stop	Assigned	Included			Functional
-Library002_barcode47	2	47	8	EO8	Unassigned	1	36	28			low_functional_rate	12.0	Partial_translation_failure	mixed	Assigned	Included			Partial_translation_failure
+Library002_barcode47	2	47	8	EO08	BL1	1	36	28			low_functional_rate	12.0	Partial_translation_failure	mixed	Assigned	Included			Partial_translation_failure
 Library002_barcode48	2	48	118	EO118	BL3	1	40	36			low_functional_rate	16.0	Partial_translation_failure	mixed	Assigned	Included			Partial_translation_failure
 Library002_barcode49	2	49	29	EO29	BL1	1	20	16			no_functional_proteins	0.0	Complete_loss	mixed		Excluded	Step 9 — no_functional_proteins	mixed premature_stop + ambiguous_aa failures — both LoF mutations AND data-quality issues; interpret cautiously (Top failures: premature_stop(14);ambiguous_aa(8))	Re_PCR
-Library002_barcode50	2	50	24a	EO24a	Unassigned	1	36	28			low_functional_rate	11.0	Partial_translation_failure	mixed	Assigned	Included			Partial_translation_failure
+Library002_barcode50	2	50	24a	EO24	BL5	1	36	28			low_functional_rate	11.0	Partial_translation_failure	mixed	Assigned	Included			Partial_translation_failure
 Library002_barcode51	2	51	18	EO18	BL5	1	64	48			normal	16.0	Functional	mixed	Assigned	Included			Functional
 Library002_barcode52	2	52	702-24	EO702	Unassigned	1	28	8			normal	4.0	Functional		Unassigned	Included			Functional
 Library002_barcode53	2	53	715-1	EO715	Unassigned	1	48	36			normal	20.0	Functional	mixed	Unassigned	Included			Functional
