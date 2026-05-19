@@ -8,7 +8,7 @@ Hypothesis tested
 -----------------
 LEPA's per-column Shannon entropy is markedly lower than Brassica's or
 Arabidopsis's despite a comparable HV-column count. One mechanism is that
-many LEPA "alleles" are HV-identical (W-groups), so they contribute the same
+many LEPA "alleles" are HV-identical (Synonymy groups), so they contribute the same
 residue at every HV column and inflate the column-variability count without
 adding per-column diversity.
 
@@ -102,7 +102,7 @@ syn = pd.read_csv(SYN_GROUPS_CSV)
 print(f"  {len(syn)} alleles, {syn['Synonymy_group'].nunique()} groups "
       f"(incl. 'Isolated' singletons)")
 
-# For each W-group, pick the allele with the most AAAA individuals
+# For each Synonymy group, pick the allele with the most AAAA individuals
 # (ties broken by lowest allele ID for reproducibility). Isolated alleles
 # are kept as-is (each is its own representative).
 def pick_representative(grp: pd.DataFrame) -> str:

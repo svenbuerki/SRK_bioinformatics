@@ -297,7 +297,7 @@ cat("  Written: figures/SRK_GFS_reproductive_effort_BL.png\n")
 # Unpacks the AAAA bar in the reproductive effort figure: for each EO/BL,
 # shows how many AAAA individuals carry each allele. Pan-group alleles are
 # present in AAAA individuals across (nearly) every focus group. Allele_050
-# and Allele_057 (W-group 1, HV-identical, likely the same SI specificity)
+# and Allele_057 (Synonymy group 1, HV-identical, likely the same SI specificity)
 # appear as pan-BL across all 5 BLs and as pan-EO across the 5 large EOs;
 # EO18 (smallest, only 4 AAAA individuals) carries a different drift
 # signature so a >=80% threshold is used for pan-EO classification.
@@ -362,7 +362,7 @@ build_aaaa_plot <- function(aaaa_df, group_var, pan_alleles, pan_count_map,
     pan_labels <- setNames(
       paste0(pan_alleles, "  (",
              pan_count_map[pan_alleles], "/", n_groups, " ", group_var,
-             "s, W-group 1)"),
+             "s, Synonymy group 1)"),
       pan_alleles
     )
   } else {
@@ -402,7 +402,7 @@ build_aaaa_plot <- function(aaaa_df, group_var, pan_alleles, pan_count_map,
              colour = "white", linewidth = 0.35) +
     geom_text(data = totals,
               aes(y = .group, x = ann_x,
-                  label = sprintf("n = %d  (%d%% W-group 1)",
+                  label = sprintf("n = %d  (%d%% Synonymy group 1)",
                                   n_total, pct_pan)),
               inherit.aes = FALSE, hjust = 0, size = 3.2, colour = "grey20") +
     scale_fill_manual(values = allele_colours, name = "Allele",
@@ -438,7 +438,7 @@ p_aaaa_eo <- build_aaaa_plot(
   title          = "Allele identity of AAAA individuals per Element Occurrence",
   subtitle_template = paste0(
     "Each AAAA individual carries a single SRK allele across all four ",
-    "genome copies. W-group 1 alleles (",
+    "genome copies. Synonymy group 1 alleles (",
     paste(pan_eo_alleles, collapse = ", "),
     ")\nappear in AAAA individuals in >= ", round(PAN_EO_FRAC * 100),
     "% of focus EOs (HV-identical - likely the same SI specificity ",
@@ -459,11 +459,11 @@ p_aaaa_bl <- build_aaaa_plot(
   subtitle_template = paste0(
     "AAAA individuals aggregated across all BL-assigned EOs (n = ",
     nrow(aaaa_bl), " AAAA individuals).\n",
-    "Pan-BL W-group 1 alleles (",
+    "Pan-BL Synonymy group 1 alleles (",
     if (length(pan_bl_alleles) > 0)
       paste(pan_bl_alleles, collapse = ", ") else "none",
     ") are present in AAAA individuals across every BL - confirms ",
-    "shared W-group 1 fixation despite independent bottlenecks.\n",
+    "shared Synonymy group 1 fixation despite independent bottlenecks.\n",
     "BLs sorted by mean GFS. Y-axis labels coloured by BL ",
     "(Set1 palette, matches LEPA_EO_spatial_clustering)."
   )
