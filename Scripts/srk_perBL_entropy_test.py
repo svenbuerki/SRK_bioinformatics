@@ -80,12 +80,13 @@ DOMAIN_REGION  = (31, 430)
 WINDOW_SIZE    = 20
 PEAK_SD_FACTOR = 1.0   # for the LEPA threshold reference line in the figure
 
-# Locked Set1 BL palette (matches every other Phase 3/4 figure)
-BL_PALETTE = {
-    "BL1": "#E41A1C", "BL2": "#377EB8", "BL3": "#4DAF4A",
-    "BL4": "#984EA3", "BL5": "#FF7F00",
-}
-BLS = ["BL1", "BL2", "BL3", "BL4", "BL5"]
+# Shared BL ordering + colour palette (matches every other Phase 3/4 figure).
+from srk_bl_constants import BL_ORDER, BL_ORDER_NUMERIC, BL_COLORS
+
+BL_PALETTE = BL_COLORS
+# BLS drives the per-BL panels in the entropy heatmap — use the connectivity
+# order so the panels line up with the rest of the project (drift panel etc.).
+BLS = list(BL_ORDER)
 
 # Standard 20 amino acids — uniform colour map for residues
 AA_ALPHABET = "ACDEFGHIKLMNPQRSTVWY"

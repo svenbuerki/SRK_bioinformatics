@@ -100,7 +100,7 @@ The `Tables/` folder bundles the deliverables most often shared with downstream 
 
 ### Take-home for the rest of the report
 
-Across the dataset's six biological questions, the data-quality footing is solid: no library effect confounds the analyses, only ~5 % of samples are flagged for re-PCR/re-extraction, and the 7 SI-escape candidates (Q5) are robust to library identity. The 38 % Partial_translation_failure category is uncertain and not interpreted biologically. The 49 observed S-alleles in 335 ingroup individuals (Q3) and all subsequent population-genetic analyses (Q4–Q7) are based on samples that pass this quality gate.
+Across the dataset's seven biological questions, the data-quality footing is solid: no library effect confounds the analyses, only ~15 % of samples are flagged for re-PCR/re-extraction (44 + 15 = 59 of 401 metadata samples), and the 7 SI-escape candidates (Q2) are robust to library identity. The 38 % Partial_translation_failure category is uncertain and not interpreted biologically. The 49 observed S-alleles in 335 ingroup individuals (Q3) and all subsequent population-genetic analyses (Q4–Q7) are based on samples that pass this quality gate.
 
 ---
 
@@ -150,7 +150,7 @@ The BL × group × EO cross-reference is published as `tables/EO_group_BL_summar
 - **Habitat footprint:** ≈ 84 % of the 32 geographic groups occupy < 1 ha (DI > 0.95), placing the vast majority of locations in the extreme-drift regime. Only EO27 group 11 (19.6 ha, DI = 0.000), EO32 (14.6 ha), and EO18 (8.1 ha as a fully-connected 5-location chain) escape extreme spatial drift.
 - **Five lineages, independent histories:** the BL framework provides three analytical advantages — it rescues 21 small localities (n = 1–3 each) that cannot support EO-level statistics on their own; it allows direct empirical testing of the independent-bottleneck hypothesis (confirmed in Q4 by allele-sharing analyses); and it preserves the full 335-individual species pool for any species-level baseline by stratifying only at the population/lineage level.
 
-The locked Set1 colour palette (BL1 red `#E41A1C`, BL2 blue `#377EB8`, BL3 green `#4DAF4A`, BL4 purple `#984EA3`, BL5 orange `#FF7F00`) is used consistently across this report and the sibling spatial-clustering repository so that the dendrogram, drift panels, and every BL-stratified figure cross-reference visually.
+The locked Set1 colour palette (BL1 purple `#984EA3`, BL2 blue `#377EB8`, BL3 red `#E41A1C`, BL4 orange `#FF7F00`, BL5 green `#4DAF4A`) is used consistently across this report and the sibling spatial-clustering repository so that the dendrogram, drift panels, and every BL-stratified figure cross-reference visually. The same Set1 mapping plus the connectivity-driven BL ordering (BL5, BL1, BL4, BL3, BL2) and the within-BL EO ordering (ascending mean Drift_index) are centralised in the mirrored modules `srk_bl_constants.R` and `srk_bl_constants.py`, sourced by every pipeline script that orders or colours BLs.
 
 ---
 
@@ -173,9 +173,10 @@ The combination `Complete_loss + premature_stop` is the strongest defensible mol
 
 Of **378 ingroup individuals** that reached Step 9 translation, the per-BL and per-EO outcome-category distributions ([Figure 1](#figure-1) and [Figure 2](#figure-2)) show that the molecular SI machinery is **broadly intact across the species**:
 
-- **199 individuals (53 %) are Functional** — SI system intact at the molecular level.
+- **181 individuals (45 %) are Functional** — SI system intact at the molecular level.
 - **154 individuals (38 %) are Partial_translation_failure** — most likely a technical artefact from chimeric Canu assembly, *not* biological SI loss; **no biological inference is made from this label**. See Data Quality Evaluation for the full caveat.
 - **7 individuals (1.7 %) are SI_escape candidates** — the only category that supports a defensible biological interpretation of SI loss. These individuals carry premature stops in every recovered SRK haplotype.
+- The remaining **59 individuals (15 %) are flagged for lab follow-up** (44 Re_PCR + 15 Re_DNA_extraction) — technical recoverable failures, not biological signal.
 
 **The geographic distribution of the 7 SI-escape candidates is the headline finding.** Five of the 7 cluster in **EO76 (BL3)** ([Figure 2](#figure-2)), the population already independently flagged in the spatial analysis as the most ecologically degraded — highest invasive-species encroachment, smallest residual native habitat, and (as we will see in Q5) the highest AAAA fraction with zero AABC seed parents. The remaining 2 candidates are isolated cases (1 in EO70/BL2, 1 in a germplasm sub-code with no BL placement).
 
@@ -222,7 +223,7 @@ Allele accumulation curves were then fit at species level (all 335 ingroup indiv
 
 <a name="figure-10"></a>
 
-![Figure 10: S-allele accumulation curves per bottleneck lineage. Each curve is coloured by parent BL (Set1 palette: BL1 red, BL2 blue, BL3 green, BL4 purple, BL5 orange — matching the LEPA_EO_spatial_clustering project). Species MM = 59 shown as a dashed grey reference line; BL-specific MM estimates as dashed coloured lines per curve. BL4 is the diversity reservoir (27 alleles observed, MM = 37); BL1 has retained only 4 of the 49 observed species alleles.](figures/SRK_allele_accumulation_BL_combined.png)
+![Figure 10: S-allele accumulation curves per bottleneck lineage. Each curve is coloured by parent BL (Set1 palette: BL1 purple, BL2 blue, BL3 red, BL4 orange, BL5 green — matching the LEPA_EO_spatial_clustering project). Species MM = 59 shown as a dashed grey reference line; BL-specific MM estimates as dashed coloured lines per curve. BL4 is the diversity reservoir (27 alleles observed, MM = 37); BL1 has retained only 4 of the 49 observed species alleles.](figures/SRK_allele_accumulation_BL_combined.png)
 
 <a name="figure-11"></a>
 
@@ -315,7 +316,7 @@ At the **EO level** ([Figure 16](#figure-16)) the partitioning is even more seve
 
 <a name="figure-15"></a>
 
-![Figure 15: S-allele sharing among Bottleneck Lineages (UpSet plot). Single-BL bars are coloured by BL using the locked Set1 palette (BL1 red, BL2 blue, BL3 green, BL4 purple, BL5 orange); multi-BL intersections are grey. The first three bars (private alleles in BL4, BL3, BL5) account for the bulk of the species' allele diversity and are absent from every other lineage.](figures/SRK_allele_upset_BLs.png)
+![Figure 15: S-allele sharing among Bottleneck Lineages (UpSet plot). Single-BL bars are coloured by BL using the locked Set1 palette (BL1 purple, BL2 blue, BL3 red, BL4 orange, BL5 green); multi-BL intersections are grey. The first three bars (private alleles in BL4, BL3, BL5) account for the bulk of the species' allele diversity and are absent from every other lineage.](figures/SRK_allele_upset_BLs.png)
 
 <a name="figure-16"></a>
 
@@ -580,7 +581,7 @@ The combined H2 + H3 outcomes produce a **validated functional S-allele table** 
 
 ## Conservation Recommendations
 
-The six questions converge on three immediate priorities for the *Lepidium papilliferum* recovery programme:
+The seven questions converge on four immediate priorities for the *Lepidium papilliferum* recovery programme:
 
 1. **Cross all 15 AABC individuals this season** (Q5). They are the only endogenous source of GFS = 0.833 gametes and the only individuals that can simultaneously contribute B, C, and D S-alleles to AAAA recipients — directly reversing the C3 Stage 5 trajectory (Q6). EO67 (4 AABC), EO27 (4 AABC), and EO18 (3 AABC, including 2 newly identified in Library 010) are the priority maternal sites; EO76 (0 AABC) is the most degraded and the most in need of allele importation.
 2. **Prioritise inter-BL allele transfers, especially BL4 → other BLs** (Q4). BL4 is the species' diversity reservoir (27 of 49 alleles, 10 of which are BL4-private). With no between-EO pollinator connections anywhere in the dataset (Q1), inter-BL crosses are the *only* mechanism for redistributing private alleles. Within-BL or within-EO crossing alone re-segregates the same drift-purged pool and cannot restore the SI system (Q4 TP1 finding).

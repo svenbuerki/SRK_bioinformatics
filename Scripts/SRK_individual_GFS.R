@@ -66,11 +66,10 @@ if (!use_repel) {
 ZYG_FILE <- "SRK_individual_zygosity.tsv"
 BL_FILE  <- "SRK_individual_BL_assignments.tsv"
 
-# Locked Set1 BL palette (matches Steps 14-18 and LEPA_EO_spatial_clustering)
-BL_PALETTE <- c(
-  BL1 = "#E41A1C", BL2 = "#377EB8", BL3 = "#4DAF4A",
-  BL4 = "#984EA3", BL5 = "#FF7F00"
-)
+# Shared BL ordering + colour palette (matches Steps 14-18 and the sibling
+# LEPA_EO_spatial_clustering project).
+source("srk_bl_constants.R")
+BL_PALETTE <- BL_COLORS
 
 # Minimum sample size for an EO to appear in plots (BLs are always plotted)
 EO_MIN_N <- 5
@@ -186,11 +185,16 @@ summarise_group <- function(df, key_col) {
 # ---- EO summary ----
 eo_summary <- summarise_group(geno, "EO")
 
-# Attach parent BL and arrange by BL then mean_GFS
+# Attach parent BL and arrange EOs by within-BL connectivity (the canonical
+# ordering for the whole pipeline; see srk_bl_constants.R).
 eo_to_bl <- geno %>% distinct(EO, BL)
 eo_summary <- eo_summary %>%
   left_join(eo_to_bl, by = "EO") %>%
-  arrange(BL, mean_GFS)
+  mutate(
+    BL = factor(BL, levels = BL_ORDER),
+    EO = factor(EO, levels = get_eo_order_within_bl(EO))
+  ) %>%
+  arrange(BL, EO)
 
 write_tsv(eo_summary, "SRK_EO_GFS_summary.tsv")
 cat("  Written: SRK_EO_GFS_summary.tsv\n")
@@ -202,9 +206,9 @@ print(eo_summary %>%
                TP2_status),
       n = Inf)
 
-# ---- BL summary ----
+# ---- BL summary (ordered by within-BL connectivity) ----
 bl_summary <- summarise_group(geno, "BL") %>%
-  mutate(BL = factor(BL, levels = names(BL_PALETTE))) %>%
+  mutate(BL = factor(BL, levels = BL_ORDER)) %>%
   arrange(BL)
 
 write_tsv(bl_summary, "SRK_BL_GFS_summary.tsv")
@@ -225,23 +229,24 @@ GFS_LEVELS  <- c("AAAA (0.000)", "AAAB (0.500)", "AABB (0.667)",
 GFS_COLOURS <- c("#d73027", "#fc8d59", "#fee090", "#91bfdb", "#4575b4")
 names(GFS_COLOURS) <- GFS_LEVELS
 
-# Filter to plotted EOs (N >= EO_MIN_N), sorted by parent BL then EO
-eo_levels <- eo_summary %>%
-  filter(n_individuals >= EO_MIN_N) %>%
-  pull(EO)
+# Filter to plotted EOs (N >= EO_MIN_N) and order them by within-BL
+# connectivity (BL_ORDER then ascending mean Drift_index).
+eo_focus  <- eo_summary %>% filter(n_individuals >= EO_MIN_N) %>% pull(EO)
+eo_levels <- get_eo_order_within_bl(eo_focus)
 
+# BL factor levels: numerical for scatter-plot legend readability (TP2).
 geno_plot <- geno %>%
   filter(EO %in% eo_levels) %>%
   mutate(
     EO        = factor(EO, levels = eo_levels),
     GFS_class = factor(GFS_class, levels = GFS_LEVELS),
-    BL        = factor(BL, levels = names(BL_PALETTE))
+    BL        = factor(BL, levels = BL_ORDER_NUMERIC)
   )
 
 eo_plot <- eo_summary %>%
   filter(EO %in% eo_levels) %>%
   mutate(EO = factor(EO, levels = eo_levels),
-         BL = factor(BL, levels = names(BL_PALETTE)))
+         BL = factor(BL, levels = BL_ORDER_NUMERIC))
 
 bl_plot <- bl_summary
 
@@ -326,7 +331,8 @@ tp2_combined <- bind_rows(
   tp2_eo_pl  %>% mutate(EO = as.character(EO)),
   tp2_bl_pl
 ) %>%
-  mutate(BL = factor(BL, levels = names(BL_PALETTE)),
+  # Numerical BL factor levels = the legend order in the TP2 scatter.
+  mutate(BL = factor(BL, levels = BL_ORDER_NUMERIC),
          level = factor(level, levels = c("EO", "BL")))
 
 p3_base <- ggplot(tp2_combined,
@@ -400,7 +406,9 @@ p3 <- p3_base +
              aes(fill = BL, shape = level),
              size = 5.5, stroke = 0.9, colour = "grey20", alpha = 0.95) +
   scale_fill_manual(values = BL_PALETTE,
-                    name = "Bottleneck lineage", drop = FALSE) +
+                    name = "Bottleneck lineage",
+                    breaks = BL_ORDER_NUMERIC,
+                    drop = FALSE) +
   scale_shape_manual(values = c(EO = 21, BL = 24), name = "Level") +
   guides(fill  = guide_legend(override.aes = list(shape = 21, size = 4.5)),
          shape = guide_legend(override.aes = list(size = 4.5,
@@ -478,6 +486,7 @@ bl_summary %>%
 cat("\n-- Seed production priorities (top GFS individuals per EO) --\n")
 geno %>%
   filter(EO %in% eo_levels) %>%
+  mutate(EO = factor(EO, levels = eo_levels)) %>%
   arrange(EO, desc(GFS)) %>%
   group_by(EO) %>%
   slice_head(n = 3) %>%

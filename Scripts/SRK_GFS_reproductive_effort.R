@@ -56,11 +56,10 @@ EO_MIN_N   <- 5     # matches Step 17 / Step 19 convention
 
 TP2_PROP_AAAA <- 0.30   # TP2 threshold: >30% AAAA = CRITICAL
 
-# Locked Set1 BL palette (matches Steps 14-20 and LEPA_EO_spatial_clustering)
-BL_PALETTE <- c(
-  BL1 = "#E41A1C", BL2 = "#377EB8", BL3 = "#4DAF4A",
-  BL4 = "#984EA3", BL5 = "#FF7F00"
-)
+# Shared BL ordering + colour palette (matches Steps 14-20 and the sibling
+# LEPA_EO_spatial_clustering project).
+source("srk_bl_constants.R")
+BL_PALETTE <- BL_COLORS
 
 GFS_LEVELS  <- c("AAAA (0.000)", "AAAB (0.500)", "AABB (0.667)",
                  "AABC (0.833)", "ABCD (1.000)")
@@ -96,10 +95,12 @@ eo_ok <- gfs %>%
   filter(!is.na(EO), !is.na(BL)) %>%
   group_by(EO) %>%
   summarise(n = n(), BL = first(BL), .groups = "drop") %>%
-  filter(n >= EO_MIN_N) %>%
-  arrange(BL, EO)
+  filter(n >= EO_MIN_N)
 
-EO_FOCUS <- eo_ok$EO
+# Order EOs by within-BL connectivity (BL_ORDER then ascending mean Drift_index;
+# see srk_bl_constants.R for the canonical helper).
+EO_FOCUS <- get_eo_order_within_bl(eo_ok$EO)
+eo_ok    <- eo_ok[match(EO_FOCUS, eo_ok$EO), ]
 cat(sprintf("\n  EOs with N >= %d: %s\n",
             EO_MIN_N, paste(EO_FOCUS, collapse = ", ")))
 
@@ -124,13 +125,15 @@ eo_ann <- gfs_eo %>%
     mean_GFS        = mean(GFS),
     .groups = "drop"
   ) %>%
-  # Order EOs by parent BL, then by mean GFS (worst at top of figure)
-  arrange(BL, mean_GFS) %>%
+  # Order EOs by within-BL connectivity (BL_ORDER then ascending mean Drift_index).
+  # rev() flips factor levels so most-connected BLs / EOs appear at the TOP of
+  # the horizontal-bar figure (ggplot draws factor levels bottom-to-top).
   mutate(
-    EO      = factor(EO, levels = rev(EO)),       # worst at top
-    BL      = factor(BL, levels = names(BL_PALETTE)),
+    EO      = factor(EO, levels = rev(EO_FOCUS)),
+    BL      = factor(BL, levels = rev(BL_ORDER)),
     label_x = (prop_AAAA + 1) / 2
-  )
+  ) %>%
+  arrange(desc(EO))
 
 bl_ann <- gfs_bl %>%
   group_by(BL) %>%
@@ -142,11 +145,12 @@ bl_ann <- gfs_bl %>%
     mean_GFS        = mean(GFS),
     .groups = "drop"
   ) %>%
-  arrange(mean_GFS) %>%
+  # rev(BL_ORDER) so BL5 (most connected) sits at the top of the figure.
   mutate(
-    BL      = factor(BL, levels = rev(BL)),       # worst at top
+    BL      = factor(BL, levels = rev(BL_ORDER)),
     label_x = (prop_AAAA + 1) / 2
-  )
+  ) %>%
+  arrange(desc(BL))
 
 # Persist BL-level summary (NEW output)
 write_tsv(
@@ -257,7 +261,8 @@ p_eo <- build_repro_plot(
   subtitle      = paste0(
     "Individuals with GFS > 0 carry 2+ distinct SRK alleles and can ",
     "contribute allelic diversity to compatible crosses.\n",
-    "EOs sorted by parent BL then by mean GFS (worst at top). ",
+    "EOs ordered by parent BL (within-BL connectivity, most connected at top) ",
+    "then by mean Drift_index within BL.\n",
     "Y-axis labels coloured by parent BL (Set1 palette).\n",
     "Dashed line = TP2 threshold (<= 30% AAAA required to avoid CRITICAL)."
   )
@@ -271,7 +276,7 @@ p_bl <- build_repro_plot(
   title         = "Reproductive effort support per Bottleneck Lineage",
   subtitle      = paste0(
     "BL aggregates all BL-assigned individuals (n = ", nrow(gfs_bl), "). ",
-    "BLs sorted by mean GFS (worst at top).\n",
+    "BLs ordered by within-BL connectivity (most connected at top).\n",
     "Y-axis labels coloured by BL (Set1 palette, matches ",
     "LEPA_EO_spatial_clustering).\n",
     "Dashed line = TP2 threshold (<= 30% AAAA required to avoid CRITICAL)."
@@ -443,7 +448,8 @@ p_aaaa_eo <- build_aaaa_plot(
     ")\nappear in AAAA individuals in >= ", round(PAN_EO_FRAC * 100),
     "% of focus EOs (HV-identical - likely the same SI specificity ",
     "hammered by drift across multiple EOs).\n",
-    "EOs sorted by parent BL then by mean GFS. Y-axis labels coloured by ",
+    "EOs ordered by parent BL (within-BL connectivity, most connected at ",
+    "top) then by mean Drift_index within BL. Y-axis labels coloured by ",
     "parent BL (Set1 palette)."
   )
 )
@@ -464,7 +470,8 @@ p_aaaa_bl <- build_aaaa_plot(
       paste(pan_bl_alleles, collapse = ", ") else "none",
     ") are present in AAAA individuals across every BL - confirms ",
     "shared Synonymy group 1 fixation despite independent bottlenecks.\n",
-    "BLs sorted by mean GFS. Y-axis labels coloured by BL ",
+    "BLs ordered by within-BL connectivity (most connected at top). ",
+    "Y-axis labels coloured by BL ",
     "(Set1 palette, matches LEPA_EO_spatial_clustering)."
   )
 )

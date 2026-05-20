@@ -581,6 +581,13 @@ Reads the audit and library-effect outputs and categorises every metadata sample
 - `Tables/SRK_data_quality_categories.tsv` — master per-sample categorisation with all upstream diagnostic columns preserved.
 - **`Tables/SRK_samples_redo.csv`** — single merged lab deliverable for samples needing follow-up. First column `Lab_action` discriminates **Re-PCR** (existing DNA OK, re-amplify) from **Re-DNA-extraction** (DNA contaminated, re-isolate tissue). Rows sorted by `Lab_action → EO → Sample_ID` for field-collection grouping. Other columns: `Sample_ID`, `Library`, `Barcode`, `EO`, `EO_normalised`, `BL_inferred`, `n_raw_haps`, `Proteins_in_final_data` (informative for Re-DNA-extraction rows where it shows the contaminated extraction's distinct-protein count), `Exclusion_stage`, `Recommended_action` (stage-specific lab instruction).
 - **`Tables/SRK_SI_escape_candidates.csv`** — phenotyping deliverable: only SI-escape candidates, with the recommended controlled-selfing test instruction.
+
+**Modeling deliverables also mirrored into `Tables/`** (produced upstream of Step 12c; bundled here as a single download location for downstream collaborators):
+
+- **`Tables/SRK_individual_allele_genotypes.tsv`** — wide allele×individual count matrix (335 ingroup individuals × 49 alleles, integer copy counts), produced by Step 11. Ready-to-use design matrix for modeling.
+- **`Tables/SRK_individual_zygosity.tsv`** — per-individual genotype summary produced by Step 12. Same information as the wide matrix above, in packed-string form.
+- **`Tables/SRK_synonymy_groups.csv`** — allele → synonymy group mapping produced by Step 22b. Lets modelers collapse putatively identical alleles into one functional unit.
+- **`Tables/sampling_metadata.csv`** — canonical sample registry (`SampleID`, `Pop`, `EO_w_sub`, `Ingroup`, `OccurrenceID`); the population key joining the genotyping tables to `Tables/EO_group_BL_summary.csv` (EO → BL → drift index).
 - `figures/SRK_data_quality_per_BL.{pdf,png}` — stacked-bar chart showing the proportion of each outcome category for each Bottleneck Lineage (BL1–BL5). X-tick labels include sample count `N`; bars are stacked Functional → Partial_translation_failure → SI_escape_candidate → Re_PCR → Re_DNA_extraction with absolute counts annotated inside each non-trivial slice.
 - `figures/SRK_data_quality_per_EO.{pdf,png}` — same chart for the 6 focus EOs (N ≥ 5). X-tick labels are coloured by parent BL using the locked Set1 palette so each EO is visually placed within its lineage.
 
@@ -635,7 +642,7 @@ python3 SRK_BL_integration.py
 
 **Inputs:**
 - `sampling_metadata.csv` — raw sample registry (resolved to ingroup individuals only).
-- `SRK_individual_zygosity.tsv` — canonical post-QC individual list (currently 272 rows). Used to filter the sampling registry to the individuals that actually completed Phase 2.
+- `SRK_individual_zygosity.tsv` — canonical post-QC individual list (currently 335 rows). Used to filter the sampling registry to the individuals that actually completed Phase 2.
 - `EO_group_BL_summary.csv` — authoritative EO → Group → BL → Drift_index mapping, produced by `LEPA_EO_spatial_clustering/EO_spatial_clustering.R`. Path is auto-resolved at `../../LEPA_EO_spatial_clustering/data/EO_group_BL_summary.csv` relative to the pipeline directory.
 
 **Outputs:**
@@ -668,7 +675,7 @@ Rscript SRK_population_genetic_summary.R
 - `SRK_individual_zygosity.tsv` — from Step 12
 - `SRK_individual_BL_assignments.tsv` — **from Step 13 (required for BL stratification)**
 
-The script restricts analyses to BL-assigned individuals (262 of 272; the 10 unresolved germplasm sub-codes are dropped because they cannot be placed into an EO/BL).
+The script restricts analyses to BL-assigned individuals (325 of 335; the 10 unresolved germplasm sub-codes are dropped because they cannot be placed into an EO/BL).
 
 **Key metrics computed per group (EO and BL):**
 - N_alleles — allele richness
@@ -677,8 +684,14 @@ The script restricts analyses to BL-assigned individuals (262 of 272; the 10 unr
 - Mean_alleles per individual
 - Top_alleles — three most abundant alleles with copy counts
 
-**BL color palette** (RColorBrewer Set1, matching the sibling LEPA_EO_spatial_clustering project, locked at this step and reused by Steps 15–21):
-`BL1 = #E41A1C` (red), `BL2 = #377EB8` (blue), `BL3 = #4DAF4A` (green), `BL4 = #984EA3` (purple), `BL5 = #FF7F00` (orange). Unassigned individuals (if retained) use `#999999`.
+**BL palette and ordering — single source of truth.** Every Phase 3/4 script that orders or colours BLs sources/imports the mirrored modules `srk_bl_constants.R` and `srk_bl_constants.py`. Both derive their orderings at load time from CSVs mirrored in `Tables/` (`EO_BL_summary.csv`, `EO_group_BL_summary.csv`), so adding new sampling only requires (i) re-running `LEPA_EO_spatial_clustering`, (ii) refreshing those CSVs — the entire pipeline reorders automatically. The module exposes:
+
+- `BL_COLORS` — RColorBrewer Set1 palette mapped to BL by cluster-index, matching the rendered figures in `LEPA_EO_spatial_clustering`: `BL1 = #984EA3` (purple), `BL2 = #377EB8` (blue), `BL3 = #E41A1C` (red), `BL4 = #FF7F00` (orange), `BL5 = #4DAF4A` (green). Unassigned individuals (if retained) use `#999999`.
+- `BL_ORDER` — BLs sorted high-to-low by within-BL connectivity, computed from `n_locations − n_groups` (descending, tie-broken by `total_pop_size` descending). For the current dataset: **BL5, BL1, BL4, BL3, BL2**. Used for **bars, faceted panels, horizontal-bar axes, and tables** wherever BL appears as a category axis and the ordering itself tells a story.
+- `BL_ORDER_NUMERIC` — alphanumeric BL1→BL5. Used for **scatter-plot legends** (TP1, TP2, accumulation-curve legends) where the axes are not BL and a readable legend matters more than the inferential order.
+- `get_eo_order_within_bl(eo_codes)` — EOs ordered first by parent `BL_ORDER`, then by ascending mean Drift_index within BL, with EO name as deterministic tie-break.
+
+Composite EO entries in `EO_group_BL_summary.csv` of the form `"EO118; EO76"` (one geographic group spanning two EOs) are split inside the helper; each EO inherits the group's mean Drift_index. The R and Python implementations apply the same composite-split + tie-break rules and therefore produce identical orderings.
 
 **Outputs:**
 - `SRK_population_genetic_summary.tsv` — EO-level table sorted by `BL → EO`. Columns: `BL`, `EO`, `Drift_index`, `N_individuals`, `N_individuals_with_alleles`, `N_alleles`, `Effective_alleles_Ne`, `Prop_heterozygous`, `Prop_homozygous`, `Mean_alleles`, `Top_alleles`, `Population` (= EO label, kept for backwards compatibility).
@@ -740,7 +753,7 @@ Rscript SRK_chisq_species_population.R
 - `sampling_metadata.csv`
 - `SRK_individual_BL_assignments.tsv` — from Step 13
 
-**Same split-filter design as Step 15:** the species-level χ² test uses ALL 272 ingroup individuals; EO and BL χ² tests use only the 262 BL-assigned individuals.
+**Same split-filter design as Step 15:** the species-level χ² test uses ALL 335 ingroup individuals; EO and BL χ² tests use only the 325 BL-assigned individuals.
 
 **Key analysis:**
 - χ² goodness-of-fit test vs. equal-frequency NFDS expectation
@@ -1045,7 +1058,7 @@ The LEPA allele set defines the *columns* of the combined alignment that downstr
 | `SRK_LEPA_HV_positions.tsv` | **Canonical LEPA HV columns** (one row per column, 1-based alignment coordinate). Consumed by Step 22b. |
 | `SRK_HV_overlap_permutation.tsv` | Pairwise HV-overlap permutation tests (LEPA↔Brassica, LEPA↔Arabidopsis, Brassica↔Arabidopsis) |
 
-**Headline:** All three pairwise HV overlaps are highly significant (LEPA↔Brassica obs=17 cols, p=0.0005; LEPA↔Arabidopsis 22 cols, p=0.0024; Brassica↔Arabidopsis 43 cols, p<0.0001). All 11 of the 12 mappable Ma 2016 SCR9-contact residues fall within the cross-species shared HV regions — independent structural validation that the variability scan is detecting the SI-specificity surface. LEPA additionally has a unique HV peak at LEPA cols 358–388 not present in Brassica/Arabidopsis (candidate Lepidium-specific specificity site). Wu-Kabat sanity check: Jaccard with Shannon-entropy HV cols = 0.45 (LEPA), 0.88 (Brassica), 0.75 (Arabidopsis) — strong concordance under both metrics.
+**Headline (current post-QC dataset, 2026-05-11).** The cross-Brassicaceae HV-overlap permutation now resolves the three pairs differently. **Brassica ↔ Arabidopsis** remains highly significant (obs = 43 cols, *p* < 0.0001), confirming the conserved selection signature between the two well-sampled genera. The two **LEPA pairs are no longer significant** — LEPA ↔ Brassica obs = 10 cols (*p* = 0.18); LEPA ↔ Arabidopsis obs = 15 cols (*p* = 0.16). This is interpreted as **drift-eroded standing variation** at LEPA HV columns: 11 of the 12 mappable Ma 2016 SCR9-contact residues still fall within the LEPA HV regions (structural validation is intact), and the 66 canonical LEPA HV columns are unchanged — but allele richness inside each column has collapsed to the point where the permutation null can no longer reject random overlap. LEPA additionally retains a unique HV peak at LEPA cols 358–388 not present in Brassica/Arabidopsis (candidate Lepidium-specific specificity site). Wu-Kabat sanity check: Jaccard with Shannon-entropy HV cols = 0.45 (LEPA), 0.88 (Brassica), 0.75 (Arabidopsis) — strong concordance under both metrics. See Step 22d for the per-BL entropy decomposition that quantifies the same drift signature.
 
 ---
 
@@ -1222,7 +1235,7 @@ python3 srk_perBL_entropy_test.py
 
 #### Step 22e — Hypothesis-Testing Cross Plan Generator
 
-> Operational deliverable. Translates the W/N/P-style cross categorisation from Step 22b into a phased experimental protocol that tests S-allele specificity hypotheses with explicit genotype constraints. Run AFTER Steps 22a and 22b; uses Step 13 BL assignments and Step 11/12 genotype + composition outputs. Designed to be re-run when new individuals are added.
+> Operational deliverable. Translates the four-way cross categorisation from Step 22b (Incompatible / Synonymy_test / Compatible_within / Compatible_cross) into a phased experimental protocol that tests S-allele specificity hypotheses with explicit genotype constraints. Run AFTER Steps 22a and 22b; uses Step 13 BL assignments and Step 11/12 genotype + composition outputs. Designed to be re-run when new individuals are added.
 
 **Script:** `srk_cross_plan.py`
 

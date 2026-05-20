@@ -23,16 +23,10 @@ cat("Starting SRK population genetic summary analysis (Step 14)\n")
 ############################
 # Shared BL color palette (used here and in Steps 15, 17, 18, 20)
 ############################
-# RColorBrewer Set1, BL1 -> BL5. Matches the locked palette used in the
-# sibling LEPA_EO_spatial_clustering project so BL identity is visually
-# consistent across all figures in both repositories.
-BL_PALETTE <- c(
-  BL1 = "#E41A1C",   # red
-  BL2 = "#377EB8",   # blue
-  BL3 = "#4DAF4A",   # green
-  BL4 = "#984EA3",   # purple
-  BL5 = "#FF7F00"    # orange
-)
+# Shared BL ordering + colour palette (matches all Phase 3/4 plots and the
+# sibling LEPA_EO_spatial_clustering project).
+source("srk_bl_constants.R")
+BL_PALETTE <- BL_COLORS
 BL_UNASSIGNED_COLOR <- "#999999"
 
 ############################
@@ -196,14 +190,15 @@ analyze_group <- function(group_label, g, z) {
 }
 
 ############################
-# 6. EO-level analysis (sorted by BL then EO)
+# 6. EO-level analysis (sorted by within-BL connectivity)
 ############################
 
 eo_to_bl <- unique(bl_ok[, c("EO", "BL")])
-eo_to_bl <- eo_to_bl[order(eo_to_bl$BL, eo_to_bl$EO), ]
-eos_sorted <- eo_to_bl$EO
+eos_sorted <- get_eo_order_within_bl(eo_to_bl$EO)
+eo_to_bl <- eo_to_bl[match(eos_sorted, eo_to_bl$EO), ]
 
-cat("\nEO-level analysis (", length(eos_sorted), " EOs, sorted by BL):\n", sep = "")
+cat("\nEO-level analysis (", length(eos_sorted),
+    " EOs, sorted by within-BL connectivity):\n", sep = "")
 
 eo_results <- do.call(rbind, lapply(eos_sorted, function(eo) {
   res <- analyze_group(eo,
@@ -237,7 +232,7 @@ cat("\nWritten EO summary -> SRK_population_genetic_summary.tsv (",
 # 7. BL-level analysis
 ############################
 
-bls_sorted <- sort(unique(bl_ok$BL))
+bls_sorted <- intersect(BL_ORDER, unique(bl_ok$BL))
 
 cat("\nBL-level analysis (", length(bls_sorted), " BLs):\n", sep = "")
 
@@ -308,7 +303,10 @@ pdf("SRK_population_genetic_summary.pdf", width = 14, height = 9)
 par(mfrow = c(2, 2), mar = c(6, 4, 3, 1), oma = c(0, 0, 3, 0))
 bar_panel(eo_results$Effective_alleles_Ne, eo_results$EO, eo_colors,
           "Effective number of alleles (Ne)", "Effective Allele Diversity")
-legend("topleft", legend = names(BL_PALETTE), fill = unname(BL_PALETTE),
+# Numerical legend order (BL1..BL5) — easier to read than the connectivity
+# axis order used for the bars themselves.
+legend("topleft", legend = BL_ORDER_NUMERIC,
+       fill   = unname(BL_PALETTE[BL_ORDER_NUMERIC]),
        bty = "n", cex = 0.85, ncol = 1, title = "BL", title.font = 2)
 bar_panel(eo_results$Prop_heterozygous,    eo_results$EO, eo_colors,
           "Proportion heterozygous",         "Heterozygosity")

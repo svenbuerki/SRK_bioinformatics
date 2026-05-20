@@ -90,15 +90,12 @@ OUT_SI_CSV    = "Tables/SRK_SI_escape_candidates.csv"
 FIG_DIR     = "figures"
 os.makedirs(FIG_DIR, exist_ok=True)
 
-# BL palette (Set1, locked across the pipeline)
-BL_COLORS = {
-    "BL1": "#E41A1C",  # red
-    "BL2": "#377EB8",  # blue
-    "BL3": "#4DAF4A",  # green
-    "BL4": "#984EA3",  # purple
-    "BL5": "#FF7F00",  # orange
-    "Unassigned": "#999999",
-}
+# Shared BL ordering + colour palette (matches all Phase 3/4 plots and the
+# sibling LEPA_EO_spatial_clustering project).
+from srk_bl_constants import BL_ORDER, BL_COLORS as _BL_COLORS
+
+BL_COLORS = dict(_BL_COLORS)
+BL_COLORS["Unassigned"] = "#999999"
 
 # Categories + plotting order (bottom to top of the stack)
 CATEGORY_ORDER = [
@@ -355,14 +352,14 @@ si_escape[si_escape_cols].to_csv(OUT_SI_CSV, index=False)
 # ─── Build per-BL and per-EO category matrices ────────────────────────────────
 plot_df = audit[audit["Outcome_category"] != "Outgroup"].copy()
 
-# Per-BL counts (BL1..BL5; samples with Unassigned BL pooled separately)
-bl_order = ["BL1", "BL2", "BL3", "BL4", "BL5"]
+# Per-BL counts (BLs ordered by within-BL connectivity; samples with
+# Unassigned BL pooled separately)
 bl_data = (
-    plot_df[plot_df["BL_inferred"].isin(bl_order)]
+    plot_df[plot_df["BL_inferred"].isin(BL_ORDER)]
     .groupby(["BL_inferred", "Outcome_category"])
     .size()
     .unstack(fill_value=0)
-    .reindex(index=bl_order)
+    .reindex(index=BL_ORDER)
     .reindex(columns=CATEGORY_ORDER, fill_value=0)
 )
 bl_props = bl_data.div(bl_data.sum(axis=1), axis=0)

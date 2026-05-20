@@ -16,12 +16,10 @@
 
 cat("\nStarting SRK allele frequency chi-square analysis (Step 16)\n")
 
-# Locked BL color palette (RColorBrewer Set1; must match Steps 14/15/17/18/20
-# and the sibling LEPA_EO_spatial_clustering project).
-BL_PALETTE <- c(
-  BL1 = "#E41A1C", BL2 = "#377EB8", BL3 = "#4DAF4A",
-  BL4 = "#984EA3", BL5 = "#FF7F00"
-)
+# Shared BL ordering + colour palette (matches Steps 14/15/17/18/20 and the
+# sibling LEPA_EO_spatial_clustering project).
+source("srk_bl_constants.R")
+BL_PALETTE <- BL_COLORS
 BL_UNASSIGNED_COLOR <- "#999999"
 
 ###############################
@@ -166,8 +164,8 @@ for (eo in valid_eos) {
   push_result(paste0("EO_", eo), "EO", eo, bl_for_eo, res)
 }
 
-# ---- BL loop (all 5 BLs) ----
-valid_bls <- sort(unique(geno$BL))
+# ---- BL loop (all 5 BLs, ordered by within-BL connectivity) ----
+valid_bls <- intersect(BL_ORDER, unique(geno$BL))
 cat("BLs analyzed:", paste(valid_bls, collapse = ", "), "\n")
 
 for (bl in valid_bls) {

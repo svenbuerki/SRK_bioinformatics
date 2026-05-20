@@ -56,11 +56,10 @@ POPGEN_FILE      <- "SRK_population_genetic_summary.tsv"
 POPGEN_BL_FILE   <- "SRK_population_genetic_summary_BL.tsv"
 RICHNESS_FILE    <- "SRK_species_richness_estimates.tsv"
 
-# Locked Set1 BL palette (matches Steps 14-16 and LEPA_EO_spatial_clustering)
-BL_PALETTE <- c(
-  BL1 = "#E41A1C", BL2 = "#377EB8", BL3 = "#4DAF4A",
-  BL4 = "#984EA3", BL5 = "#FF7F00"
-)
+# Shared BL ordering + colour palette (matches Steps 14-16 and the sibling
+# LEPA_EO_spatial_clustering project).
+source("srk_bl_constants.R")
+BL_PALETTE <- BL_COLORS
 
 # Minimum sample size for an EO to be plotted (BLs are always plotted)
 EO_MIN_N <- 5
@@ -109,7 +108,11 @@ tp1_eo <- popgen %>%
   select(BL, EO, N_individuals, N_alleles, Effective_alleles_Ne,
          prop_optimum, evenness,
          TP1_richness_breach, TP1_evenness_breach, TP1_status) %>%
-  arrange(BL, prop_optimum)
+  mutate(
+    BL = factor(BL, levels = BL_ORDER),
+    EO = factor(EO, levels = get_eo_order_within_bl(EO))
+  ) %>%
+  arrange(BL, EO)
 
 write_tsv(tp1_eo, "SRK_TP1_summary.tsv")
 cat("  Written: SRK_TP1_summary.tsv\n")
@@ -125,6 +128,7 @@ tp1_bl <- popgen_bl %>%
   select(BL, N_EOs, N_individuals, N_alleles, Effective_alleles_Ne,
          prop_optimum, evenness,
          TP1_richness_breach, TP1_evenness_breach, TP1_status) %>%
+  mutate(BL = factor(BL, levels = BL_ORDER)) %>%
   arrange(BL)
 
 write_tsv(tp1_bl, "SRK_TP1_summary_BL.tsv")
@@ -148,7 +152,8 @@ tp1_bl_pl <- tp1_bl %>%
                   "TP1_richness_breach", "TP1_evenness_breach",
                   "TP1_status", "label", "level")))
 tp1_combined <- bind_rows(tp1_eo_pl, tp1_bl_pl) %>%
-  mutate(BL = factor(BL, levels = names(BL_PALETTE)),
+  # Numerical BL factor levels = the legend order in the TP1 scatter.
+  mutate(BL = factor(BL, levels = BL_ORDER_NUMERIC),
          level = factor(level, levels = c("EO", "BL")))
 
 # Base plot: zone polygons + threshold lines (no points)
@@ -234,7 +239,8 @@ p <- p_base +
   geom_point(data = tp1_combined,
              aes(fill = BL, shape = level),
              size = 5.5, stroke = 0.9, colour = "grey20", alpha = 0.95) +
-  scale_fill_manual(values = BL_PALETTE, name = "Bottleneck lineage", drop = FALSE) +
+  scale_fill_manual(values = BL_PALETTE, name = "Bottleneck lineage",
+                    breaks = BL_ORDER_NUMERIC, drop = FALSE) +
   scale_shape_manual(values = c(EO = 21, BL = 24), name = "Level") +
   guides(fill = guide_legend(override.aes = list(shape = 21, size = 4.5)),
          shape = guide_legend(override.aes = list(size = 4.5,

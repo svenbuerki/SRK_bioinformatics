@@ -15,16 +15,10 @@
 pdf(NULL)   # suppress automatic Rplots.pdf creation by Rscript
 cat("Starting SRK allele accumulation analysis (Step 15)\n")
 
-# Shared BL color palette (RColorBrewer Set1, locked at Step 14 - must
-# match across all Phase 3/4 plots and matches the sibling
-# LEPA_EO_spatial_clustering project).
-BL_PALETTE <- c(
-  BL1 = "#E41A1C",   # red
-  BL2 = "#377EB8",   # blue
-  BL3 = "#4DAF4A",   # green
-  BL4 = "#984EA3",   # purple
-  BL5 = "#FF7F00"    # orange
-)
+# Shared BL ordering + colour palette (matches all Phase 3/4 plots and the
+# sibling LEPA_EO_spatial_clustering project).
+source("srk_bl_constants.R")
+BL_PALETTE <- BL_COLORS
 BL_UNASSIGNED_COLOR <- "#999999"
 
 ############################################################
@@ -515,11 +509,13 @@ run_group_accumulation <- function(group_label, member_idx, panel_color,
 
 eo_counts <- table(geno$EO)
 valid_eos <- names(eo_counts[eo_counts >= 5])
-# Sort EOs by parent BL then alphabetically within BL
+# Sort EOs by within-BL connectivity (BL_ORDER, then ascending mean Drift_index;
+# srk_bl_constants.R helper). This drives the bar order in the drift-erosion
+# barplot below as well as the EO line drawing order in the accumulation curve.
 eo_to_bl <- unique(geno[, c("EO", "BL")])
-eo_to_bl <- eo_to_bl[order(eo_to_bl$BL, eo_to_bl$EO), ]
-valid_eos <- intersect(eo_to_bl$EO, valid_eos)
-cat("\nEOs retained (N >= 5, sorted by BL):",
+valid_eos <- get_eo_order_within_bl(valid_eos)
+eo_to_bl  <- eo_to_bl[match(valid_eos, eo_to_bl$EO), ]
+cat("\nEOs retained (N >= 5, sorted by within-BL connectivity):",
     paste(valid_eos, collapse = ", "), "\n")
 
 eo_results <- list()
@@ -535,7 +531,7 @@ for (eo in valid_eos) {
 
 # ---- 7b. BL-level (all 5 BLs) ----
 
-valid_bls <- sort(unique(geno$BL))
+valid_bls <- intersect(BL_ORDER, unique(geno$BL))
 cat("\nBLs retained:", paste(valid_bls, collapse = ", "), "\n")
 
 bl_results <- list()
@@ -681,14 +677,17 @@ for (bl in valid_bls) {
 
 legend(
   "bottomright",
-  legend = sapply(valid_bls, function(b) {
+  # Line-plot legend uses NUMERICAL BL order (BL1..BL5) for readability;
+  # the lines themselves were drawn in connectivity order above.
+  legend = sapply(intersect(BL_ORDER_NUMERIC, valid_bls), function(b) {
     n_b    <- sum(geno$BL == b)
     mm_est <- bl_est[[b]]$mm$Smax
     mm_str <- if (!is.na(mm_est)) paste0(", MM=", mm_est) else ""
     paste0(b, "  N=", n_b, ", obs=",
            bl_results[[b]]$true_alleles, mm_str)
   }),
-  col = bl_colours[valid_bls], lwd = 2.5, bty = "n", cex = 0.85
+  col = bl_colours[intersect(BL_ORDER_NUMERIC, valid_bls)],
+  lwd = 2.5, bty = "n", cex = 0.85
 )
 
 dev.off()

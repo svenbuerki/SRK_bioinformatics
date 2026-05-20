@@ -106,11 +106,10 @@ N_CROSSES = {
     "H3_per_bin":         1,    # one cross per "hidden" bin, plus a paired control
 }
 
-# Set1 BL palette (consistent with rest of pipeline)
-BL_PALETTE = {
-    "BL1": "#E41A1C", "BL2": "#377EB8", "BL3": "#4DAF4A",
-    "BL4": "#984EA3", "BL5": "#FF7F00",
-}
+# Shared BL ordering + colour palette (consistent with rest of pipeline).
+from srk_bl_constants import BL_ORDER, BL_ORDER_NUMERIC, BL_COLORS
+
+BL_PALETTE = BL_COLORS
 
 OUT_TSVS = {
     "H0":  "SRK_cross_plan_H0_SI_validation.tsv",
