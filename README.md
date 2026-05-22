@@ -93,7 +93,7 @@ The pipeline consists of **23 main steps organized into four phases**, progressi
 14. **Population Genetics Statistics** – Estimation of population-level diversity metrics, including heterozygosity, mean alleles per individual, total allele counts, and effective allele numbers. Allele frequencies are based on copy counts summed across individuals (from the count matrix), giving a proper tetraploid frequency estimate.
 15. **Allele Accumulation Curves** – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators. Outputs an empirical species optimum used as a baseline in steps 16 and 17.
 16. **Allele Frequency Analysis** – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under NFDS. The estimated species allele richness from step 15 is used as the optimum, quantifying how many alleles each population is missing relative to the species pool.
-17. **TP1 Tipping Point Analysis** – Diagnostic scatter plot synthesising Steps 14–16, positioning each EO by the proportion of the species optimum retained (x axis) and by allele frequency evenness (Ne/N, y axis). EOs breaching both thresholds (< 50% of optimum; Ne/N < 0.80) are flagged CRITICAL.
+17. **TP1 — Mating-pool functionality** – Reframed diagnostic: evenness J (Shannon H / ln k) on the x axis × the **compatible-pair fraction** P_compat (the fraction of random plant pairs that are cross-compatible under tetraploid sporophytic SI) on the y axis. Depletion against the species optimum is shown by the Step 16 erosion barplots; TP1 now asks the complementary question — *given that a population is depleted, is its mating pool still functioning, and what intervention does the data support?* Quadrants map directly to conservation actions (MONITOR / AUGMENT-evenness / AUGMENT-richness urgently / BIOBANK + RESTORE). Rendered as four panels (EO vs BL × strict SI L=0 vs leaky SI L=0.25); the leaky panel reflects empirical SI breakdown estimated from observed AAAA proportions (L̂ ≈ 0.18, the C3 Stage 5 signature). Compatible with `SRK_TP1_compatibility_metrics.py` (computes metrics) and `SRK_TP1_compatibility.R` (renders the four panels).
 18. **Allele Composition Comparison Across Element Occurrences** – UpSet plot and pairwise sharing heatmap quantifying how S-allele sets partition across Element Occurrences, identifying private alleles and alleles shared across all populations. Requires only standard Python dependencies (pandas, numpy, matplotlib).
 19. **Individual Genotypic Fitness Score (GFS)** – Per-individual metric quantifying the proportion of heterozygous diploid gametes a tetraploid can produce. Differentiates dosage-imbalanced genotypes (AABB vs AAAB) invisible to zygosity analysis alone. Outputs per-individual GFS values and ranked seed parent lists per EO.
 20. **TP2 Tipping Point Analysis** – EO-level assessment placing mean GFS and proportion of AAAA individuals in interaction. EOs breaching both thresholds simultaneously (mean GFS < 0.667; proportion AAAA > 30%) are flagged CRITICAL, AT RISK, or OK.
@@ -253,11 +253,20 @@ Rscript SRK_allele_accumulation_analysis.R
 # Step 16: Allele frequency analysis (reads SRK_species_richness_estimates.tsv)
 Rscript SRK_chisq_species_population.R
 
-# Step 17: TP1 tipping point analysis (reads Steps 14 and 15 outputs)
-Rscript SRK_TP1_tipping_point.R
+# Step 17: TP1 — mating-pool functionality (two scripts)
+#   metrics.py computes per-EO + per-BL evenness J, P_compat (L=0..0.5),
+#   L_hat, k_rarefied30, and writes Tables/SRK_EO_allele_richness.tsv;
+#   compatibility.R renders the four diagnostic panels.
+python SRK_TP1_compatibility_metrics.py
+Rscript SRK_TP1_compatibility.R
 
 # Step 18: Allele composition comparison across Element Occurrences
+#   Python UpSet plots + pairwise heatmaps (EO + BL); R companion produces
+#   an area-proportional 5-set Euler diagram of BL allele sets for
+#   stakeholder presentations. Both scripts read the same Step 11 + Step 13
+#   inputs, so regenerate together whenever the dataset grows.
 python SRK_allele_sharing_EOs.py
+Rscript SRK_allele_eulerr_BLs.R
 
 # Steps 19–20: Individual Genotypic Fitness Score (Step 19) and TP2 tipping point analysis (Step 20)
 Rscript SRK_individual_GFS.R
@@ -356,8 +365,8 @@ EO_group_BL_summary.csv  (EO → BL, Drift_index)
 -   `SRK_individual_zygosity.tsv` - Zygosity classifications with columns: `N_distinct_alleles`, `N_total_proteins`, `Zygosity`, `Genotype` (AAAA/AAAB/AABB/AABC/ABCD), `Allele_composition`
 -   `SRK_self_compatible_candidates.txt` - Potentially self-compatible individuals
 
--   `SRK_TP1_summary.tsv` - Per-EO allele richness, frequency evenness, and TP1 status
--   `SRK_TP1_tipping_point.pdf` - TP1 diagnostic scatter plot (richness retained × frequency evenness)
+-   `Tables/SRK_EO_allele_richness.tsv` - Per-EO + per-BL evenness J, rarefied k (N=30, 1000 perms), P_compat at L ∈ {0, 0.10, 0.25, 0.50}, L̂_from_AAAA, geno_mix (AAAA:AAAB:AABB:AABC:ABCD), raw amplicon copy recovery
+-   `figures/SRK_TP1_compatibility_{EO,BL}_{strict,leaky}.pdf` - Four TP1 diagnostic panels (mating-pool functionality)
 
 ### Population Genetic Outputs (Phase 3)
 
@@ -392,13 +401,15 @@ EO_group_BL_summary.csv  (EO → BL, Drift_index)
 -   `SRK_chisq_species_population.tsv` - χ² test statistics at three levels (Species, EO, BL); new `BL` column; rows ordered Species → EOs (sorted by BL) → BLs
 -   `SRK_chisq_species_population_frequency_plots.pdf` - 12 pages (1 species + 6 EOs sorted by BL + 5 BLs); EO/BL pages colored by parent BL palette
 
-#### Step 17 — TP1 tipping point
+#### Step 17 — TP1 mating-pool functionality
 
--   `SRK_TP1_summary.tsv` - Per-EO TP1 status with new `BL` column; rows arranged by parent BL → prop_optimum
--   `SRK_TP1_summary_BL.tsv` - **NEW**. BL-level TP1 status (5 rows)
--   `SRK_TP1_tipping_point.pdf` - Combined TP1 scatter (root, backwards-compatible)
--   `figures/SRK_TP1_tipping_point.png` - Same scatter; **EOs as circles, BLs as triangles, both colored by parent BL** using the locked Set1 palette. Headline result: every BL and 5 of 6 EOs are CRITICAL.
--   `figures/SRK_TP1_tipping_point_blank.png` - Empty zone polygons for presentations
+-   `Tables/SRK_EO_allele_richness.tsv` - Per-EO (6 rows, N ≥ 15) + per-BL (5 rows) metric table: `level`, `group`, `BL`, `N`, `geno_mix`, `prop_AAAA`, `L_hat_from_AAAA`, `raw_copy_recovery`, `k_observed`, `k_rarefied30_mean/sd`, `shannon_H`, `evenness_J`, `chi2_uniform_p`, `P_compat_uniform_4x`, `P_compat_L0/L0.10/L0.25/L0.50`. Inferred tetraploid genotypes from `SRK_zygosity_from_genotype.R` (every individual filled to 4 S-allele copies). Exact P_compat formula assumes tetrasomic inheritance.
+-   `figures/SRK_TP1_compatibility_EO_strict.png` - **EO panel, strict SI (L = 0)**. Circles coloured by parent BL, sized by rarefied k. Quadrants → MONITOR / AUGMENT-evenness / AUGMENT URGENTLY (too few mates) / BIOBANK + RESTORE.
+-   `figures/SRK_TP1_compatibility_EO_leaky.png` - **EO panel, leaky SI (L = 0.25)**. Same axes; rescue effect of SI breakdown visible. EO70 stays in BIOBANK under both views — the headline conservation-priority signal.
+-   `figures/SRK_TP1_compatibility_BL_strict.png` - **BL panel, strict SI**. Triangles, same conventions. BL1 and BL2 in BIOBANK; BL3 borderline; BL4/BL5 in MONITOR.
+-   `figures/SRK_TP1_compatibility_BL_leaky.png` - **BL panel, leaky SI**. BL3 rescued into MONITOR; BL1, BL2 remain non-MONITOR.
+-   `figures/SRK_TP1_compatibility_*_blank.png` - Empty zones (no points) for presentation overlays.
+-   Legacy `SRK_TP1_tipping_point.R` archived under `archive/`.
 
 #### Step 18 — Allele composition / sharing
 
@@ -406,6 +417,7 @@ EO_group_BL_summary.csv  (EO → BL, Drift_index)
 -   `SRK_allele_sharing_heatmap_EOs.{pdf,png}` - Pairwise allele sharing heatmap between EOs
 -   `SRK_allele_upset_BLs.{pdf,png}` - **NEW**. BL-level UpSet — the direct test of independent bottlenecks
 -   `SRK_allele_sharing_heatmap_BLs.{pdf,png}` - **NEW**. 5×5 BL pairwise sharing heatmap (BL4↔BL5 share 12 alleles, the highest off-diagonal value)
+-   `SRK_allele_eulerr_BLs.{pdf,png}` - **NEW (2026-05-22)**. Area-proportional 5-set Euler diagram of BL allele sets — same data as the BL UpSet, rendered as familiar Venn-style ellipses for stakeholder presentations. Produced by the R companion script `SRK_allele_eulerr_BLs.R` (regenerate together with the Python UpSet whenever new data are added).
 
 PNGs land in `figures/`; PDFs in the project root. **Headline finding (2026-05-11 refresh):** 26 of 49 alleles (53 %) are private to a single BL; only Allele_050 and Allele_051 are shared across all 5 BLs.
 

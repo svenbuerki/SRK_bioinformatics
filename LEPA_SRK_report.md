@@ -10,7 +10,7 @@
 
 **Species S-allele richness is severely depleted, with one diversity reservoir.** 49 distinct S-alleles observed; Michaelis-Menten estimate = 59 (consensus across MM and Chao1 = 60). Per-BL richness varies dramatically: **BL4 retains 27 alleles (55 % — the diversity reservoir)** while BL1 and BL2 retain only 4 and 8 alleles respectively. **26 of 49 alleles (53 %) are private to a single BL** — direct empirical evidence of multiple independent founder events, not a single shared bottleneck.
 
-**Drift has eroded population-level S-allele diversity to a critical level (Tipping Point 1).** All five BLs and all 6 plotted EOs are flagged **CRITICAL** (richness < 50 % of optimum AND frequency evenness Ne/N < 0.80). No lineage retains a balanced allele pool — restoration requires inter-BL allele transfers; within-lineage breeding alone cannot rebuild the SI system.
+**Drift has eroded population-level S-allele diversity, and the depleted populations differ in whether they are still demographically functioning (TP1 — mating-pool functionality).** Step 15–16 erosion barplots establish severe depletion at both stratification levels (37–88 % allele loss per EO; ≥ 53 % per BL). The reframed TP1 then asks whether the depleted mating pool can still sustain reproduction: evenness J × the **compatible-pair fraction** (P_compat — the fraction of random plant pairs that are cross-compatible under tetraploid sporophytic SI), at strict (L = 0) and empirical-leakage (L = 0.25) levels. **EO70 alone remains in the BIOBANK + RESTORE quadrant under both views** — no realistic SI-leakage rate rescues its mating pool. EO67 partially rescues to AUGMENT URGENTLY; EO18, EO76 rescue to MONITOR under leakage but pay the cost in 55–73 % AAAA homozygosity (C3 Stage 5 → Stage 2 self-reinforcing loop). Restoration of the species-wide mating pool requires inter-BL allele transfers; within-lineage breeding alone cannot rebuild the SI system.
 
 **Drift has degraded individual-level reproductive fitness to a critical level (Tipping Point 2).** All five BLs CRITICAL on TP2 (mean Genotypic Fitness Score < 0.667 AND > 30 % AAAA homozygotes). Allele_050 and Allele_051 (both members of Synonymy group 1) are pan-BL fixed in AAAA individuals — **convergent drift onto the same SI specificity despite independent bottlenecks**. **15 AABC individuals** species-wide carry the heterozygous-gamete potential needed for high-yield managed crossing — they are the immediate seed-parent priority.
 
@@ -280,44 +280,86 @@ The 58 alleles called here (49 observed in the ingroup dataset) are **sequence-b
 
 ### Why this question matters
 
-Tipping Point 1 (TP1) assesses the **health of the self-incompatibility system** at the population/lineage level — the degree to which the S-allele pool is capable of sustaining compatible mating. It is breached when allele loss is so severe that inter-population allele transfers are required to restore SI function.
+Drift in small, isolated populations erodes the SI system along two distinct trajectories: it **depletes** the species-level allele pool (some alleles are simply lost), and it **skews** the surviving alleles' frequencies away from the NFDS equal-frequency expectation. The conservation-relevant question is not whether depletion has occurred (it manifestly has — see below), but **whether the depleted population is still demographically functioning**, and if not, **what intervention the data support**. Tipping Point 1 (TP1) — reframed on 2026-05-22 — answers this question directly via a mating-pool functionality scatter that maps each population into one of four conservation-action quadrants.
 
-### Method
+### Method — two layers of evidence
 
-Two complementary axes structure the assessment:
+**Layer 1 — depletion (Steps 15–16 erosion barplots).** For each BL and each EO, we partition the deficit relative to the ~58-allele species optimum (Kneedle/MM consensus) into two components: alleles predicted to exist in the group but not yet detected (light blue; group-MM minus observed), and alleles **lost to genetic drift** (red; species-MM minus group-MM). Figures 12 and 13 visualise this directly. The red component dominates catastrophically at both stratification levels.
 
-- **How many different alleles has a population retained?** (`prop_optimum` = N_alleles / 59 — the proportion of the species-level SI repertoire still present). A population holding all alleles can offer every individual a large pool of compatible partners; as alleles are lost, compatible pairings become progressively rarer.
-- **How evenly are the remaining alleles distributed across individuals?** (`Ne / N_alleles` — the ratio of effective to observed allele number, where Ne = 1/Σpᵢ². A ratio of 1.0 means perfect evenness — the balancing-selection ideal in which every allele contributes equally to compatible crosses; drift and dominance push it downward.)
+**Layer 2 — mating-pool functionality (Step 17 TP1 metric).** Per group (each EO with N ≥ 15, and each BL aggregate), we infer the full tetraploid genotype for every individual (the pipeline's `SRK_zygosity_from_genotype.R` fills under-recovered amplicon copies to AAAA/AAAB/AABB/AABC/ABCD), then compute:
 
-A population breaching both axes simultaneously (`prop_optimum < 0.50` AND `Ne/N < 0.80`) is flagged **CRITICAL**; one criterion is **AT RISK**; neither is **OK**. Both EO-level and BL-level results are computed in parallel.
+- **`J`** — Shannon evenness of the inferred allele frequencies (= H / ln k). J = 1 at NFDS equilibrium; J → 0 as one allele dominates.
+- **`P_compat`** — the **compatible-pair fraction**: the fraction of randomly drawn plant pairs in the population that are cross-compatible under tetraploid sporophytic SI with co-dominance (pollen rejected if any of its 2 alleles matches any of the stigma's 4). A value of 0.40 means roughly 40 % of random pairs can produce seed. Computed exactly under multinomial allele sampling; at equal frequencies the benchmark is 1 − 8/k — much harsher than the diploid 1 − 2/k.
+- **`L̂_from_AAAA = prop_AAAA / 3.5`** — an empirical estimate of historical SI leakage (under strict SI, AAAA homozygotes are impossible from random outcrossing; observed AAAA reflects past selfing or sib-crossing). Computed per group as an upper bound (some apparent AAAA arises from amplicon under-recovery).
 
-A complementary χ² goodness-of-fit test against the equal-frequency NFDS expectation is computed at three levels (species, EO, BL).
+P_compat is then reported at a leakage ladder L ∈ {0, 0.10, 0.25, 0.50} via `P_compat(L) = P_compat_strict + L·(1 − P_compat_strict)`. The L = 0.25 panel is close to the empirical L̂ ≈ 0.18 across the focal EOs and represents the realistic "with SI leakage rescue" case.
 
-### Key findings
+**Quadrant mapping (axes: J × P_compat; thresholds: J = 0.80, P_compat = 0.40):**
 
-**The raw drift signal — alleles lost per Bottleneck Lineage ([Figure 12](#figure-12)) and per Element Occurrence ([Figure 13](#figure-13)).** Before synthesising both axes into the TP1 diagnostic, it is worth visualising the raw drift signal directly. For each BL and each EO, we partition the deficit relative to the 59-allele species optimum (MM) into two components: alleles predicted to exist in the group but not yet detected (light blue; group-MM minus observed), and alleles **lost to genetic drift** (red; species-MM minus group-MM). The red component dominates catastrophically at both stratification levels.
+| Region | Reading | Conservation intervention |
+|---|---|---|
+| top-right | functioning even at depletion | **MONITOR** + augment for sustainability |
+| top-left | mating works despite skew | **AUGMENT** to restore evenness |
+| bottom-right | even but too few alleles | **AUGMENT URGENTLY** |
+| bottom-left | depleted and skewed | **BIOBANK + RESTORE** |
+
+A complementary χ² goodness-of-fit test against the equal-frequency NFDS expectation is also computed per group; with N this large, even modest deviations from uniform 1/k are highly significant — evenness J is the practical interpretive measure.
+
+**Caveat — inheritance mode.** The P_compat formula assumes tetrasomic inheritance (random pairing across all four chromosomes). If LEPA's SRK locus shows disomic inheritance (two homoeologous subgenomes segregating independently), the system would behave more like two superimposed diploid SI systems and be more permissive; current P_compat values are then a conservative lower bound.
+
+### Key findings — Layer 1: depletion is severe at every level
 
 <a name="figure-12"></a>
 
-![Figure 12: S-allele erosion by genetic drift per Bottleneck Lineage. For each BL, the bar height represents the species optimum (59 alleles); segments decompose this into observed alleles (dark blue), predicted-undetected alleles (light blue, group-MM minus observed), and alleles lost to genetic drift (red, species-MM minus group-MM). The BL color strip below the bars matches the lineage palette used elsewhere in the report. BL4 (purple) retains the most alleles (27, 55 % of species pool) but still shows substantial drift loss; BL1 and BL2 have retained only 4 and 8 alleles respectively.](figures/SRK_allele_accumulation_BL_drift_erosion.png)
+![Figure 12: S-allele erosion by genetic drift per Bottleneck Lineage. For each BL, the bar height represents the species optimum (~58 alleles); segments decompose this into observed alleles (dark blue), predicted-undetected alleles (light blue, group-MM minus observed), and alleles lost to genetic drift (red, species-MM minus group-MM). The BL color strip below the bars matches the lineage palette used elsewhere in the report. BL4 retains the most alleles (27, 47 % of species pool) but still shows substantial drift loss; BL1 and BL2 have retained only 4 and 8 alleles respectively.](figures/SRK_allele_accumulation_BL_drift_erosion.png)
 
 <a name="figure-13"></a>
 
-![Figure 13: S-allele erosion by genetic drift per Element Occurrence. Same decomposition as Figure 12, disaggregated to the EO level (EOs with N ≥ 5; sorted by parent BL). Between ~37 % (EO27) and ~88 % (EO70) of the species-level S-allele pool has been irreversibly lost from each EO. The predicted-undetected component is small per EO, confirming that further sampling will not close the gap — the missing alleles are genuinely absent from these populations.](figures/SRK_allele_accumulation_drift_erosion.png)
+![Figure 13: S-allele erosion by genetic drift per Element Occurrence. Same decomposition as Figure 12, disaggregated to the EO level (focal EOs with N ≥ 15; sorted by parent BL). Between ~37 % (EO27) and ~88 % (EO70) of the species-level S-allele pool has been irreversibly lost from each EO. The predicted-undetected component is small per EO, confirming that further sampling will not close the gap — the missing alleles are genuinely absent from these populations.](figures/SRK_allele_accumulation_drift_erosion.png)
 
-**Per-BL drift loss** ranges from ~45 % (BL4, the diversity reservoir) to ≥ 84 % (BL1, BL2). Even BL4's lineage-level MM asymptote (37) falls well short of the species pool (59), and BL1/BL2 have collapsed to a small fraction of their lineage-level potential. The > 5-fold gradient of richness loss across BLs (BL1: 4 alleles → BL4: 27) is the **independent-bottleneck signature** documented in Q3: a single shared species-level bottleneck would predict comparable richness loss across BLs.
+**Per-BL drift loss** ranges from ~53 % (BL4, the diversity reservoir, 27 of ~58) to ≥ 84 % (BL1: 4 alleles; BL2: 8). The > 5-fold gradient of richness loss across BLs is the **independent-bottleneck signature** documented in Q3: a single shared species-level bottleneck would predict comparable richness loss across BLs.
 
-**Per-EO drift loss** ranges from ~37 % (EO27, the least eroded) to ~88 % (EO70, the most eroded). Even in EO27 — the most allele-rich EO — many of the 59 species-level S-allele bins have been permanently lost from the local gene pool. **These deficits are not sampling artefacts**: the predicted-undetected component is small per EO, confirming that further sampling within these EOs cannot close the gap.
+**Per-EO drift loss** ranges from ~37 % (EO27, the least eroded; 21 alleles) to ~88 % (EO70, the most eroded; 6 alleles). Even in EO27 the majority of the species-level S-allele bins have been permanently lost from the local gene pool. **These deficits are not sampling artefacts**: the predicted-undetected component is small per EO.
 
-**Synthesis: the TP1 tipping point ([Figure 14](#figure-14)).** Combining the richness deficit with the frequency-evenness axis produces the TP1 diagnostic: a single scatter that classifies every EO and every BL as CRITICAL / AT RISK / OK based on whether each axis is breached.
+### Key findings — Layer 2: mating-pool functionality (the reframed TP1)
 
-<a name="figure-14"></a>
+The TP1 mating-pool diagnostic is presented as **four panels** so the conservation message stays readable: EO vs BL on separate figures, each at strict SI (L = 0) and at leaky SI (L = 0.25, ≈ empirical L̂).
 
-![Figure 14: TP1 tipping point — health of the SI system. Six EOs (circles) and 5 BL aggregates (triangles) plotted on the same scatter, both coloured by parent BL using the locked Set1 palette. All five BLs and all six plotted EOs fall in the CRITICAL zone (lower-left, both prop_optimum < 0.50 AND evenness < 0.80). Notably, BL4 — the species' diversity reservoir at 46 % of optimum — is CRITICAL through the evenness axis (0.31), demonstrating that drift is operating along two independent dimensions even where allele richness is best preserved.](figures/SRK_TP1_tipping_point.png)
+<a name="figure-14a"></a>
 
-**All five BLs and all 6 plotted EOs are CRITICAL on TP1** ([Figure 14](#figure-14)). Under the BL re-frame, TP1 reveals that **fragmentation has imposed a uniform CRITICAL status across all five bottleneck lineages**: BL1 and BL2 are CRITICAL through richness loss (≥ 84 % of the species pool absent); BL3, BL4 and BL5 are CRITICAL through frequency skew (Ne/N ≤ 0.45). The two axes capture different signatures of drift, but every BL fails on at least one — and most fail on both.
+![Figure 14a: TP1 mating-pool functionality — EO panel, strict SI (L = 0). Six EOs (circles, N ≥ 15) coloured by parent BL using the locked Set1 palette; point size encodes rarefied k (at N = 30, 1000 perms). EO70 sits alone in the BIOBANK + RESTORE quadrant (J = 0.67, P_compat = 0.08, k_rare30 = 4.9). EO67 also in BIOBANK (P_compat = 0.23). EO18 and EO76 in AUGMENT URGENTLY (low P_compat despite J ≥ 0.83). EO25 and EO27 in MONITOR. Quadrant thresholds: J = 0.80, P_compat = 0.40.](figures/SRK_TP1_compatibility_EO_strict.png)
 
-**This is the single most consequential finding of the population-genetic analysis: contemporary recovery requires inter-BL allele transfers because no lineage retains a balanced allele pool that within-lineage crossing alone could draw upon.**
+<a name="figure-14b"></a>
+
+![Figure 14b: TP1 mating-pool functionality — EO panel, leaky SI (L = 0.25, close to empirical L̂ ≈ 0.18). Same axes and palette as Figure 14a. Under SI leakage, EO18 and EO76 rescue into MONITOR; EO67 rescues into AUGMENT URGENTLY. **EO70 remains in BIOBANK under both views** — the cleanest signal that no realistic leakage rate can rescue this population, and seed banking is the priority intervention.](figures/SRK_TP1_compatibility_EO_leaky.png)
+
+<a name="figure-14c"></a>
+
+![Figure 14c: TP1 mating-pool functionality — BL panel, strict SI. All five BL aggregates (triangles). BL1 and BL2 in BIOBANK + RESTORE (J = 0.80 and 0.66; P_compat = 0.07 and 0.11). BL3 borderline (J = 0.83, P_compat = 0.39 — just below the AUGMENT URGENTLY / MONITOR line). BL4 and BL5 in MONITOR (P_compat = 0.42 and 0.47).](figures/SRK_TP1_compatibility_BL_strict.png)
+
+<a name="figure-14d"></a>
+
+![Figure 14d: TP1 mating-pool functionality — BL panel, leaky SI (L = 0.25). BL3 rescued into MONITOR; BL1 rescued into AUGMENT URGENTLY. **BL2 stays in BIOBANK + RESTORE** under the leaky assumption — driven by EO70, which contributes the bulk of BL2's individuals and carries the worst per-EO metrics in the dataset.](figures/SRK_TP1_compatibility_BL_leaky.png)
+
+**Conservation-action distribution at strict SI (L = 0):**
+
+| Quadrant | EOs | BLs |
+|---|---|---|
+| MONITOR | EO25, EO27 | BL4, BL5 |
+| AUGMENT URGENTLY | EO18, EO76 | BL3 |
+| BIOBANK + RESTORE | **EO67, EO70** | **BL1, BL2** |
+
+**Under realistic SI leakage (L = 0.25):**
+
+| Quadrant | EOs | BLs |
+|---|---|---|
+| MONITOR | EO18, EO25, EO27, EO76 | BL3, BL4, BL5 |
+| AUGMENT URGENTLY | EO67 | BL1 |
+| BIOBANK + RESTORE | **EO70** | **BL2** |
+
+**EO70 (and BL2, which it dominates) is the only population that remains in BIOBANK + RESTORE under both strict and leaky views.** This is the single sharpest finding of TP1: no realistic SI-leakage rate can rescue this population's mating pool — restoration here requires either inter-BL augmentation with novel S-alleles or the establishment of a seed-banked restoration source. Every other AUGMENT URGENTLY or BIOBANK population at L = 0 is partially or fully rescued under leakage, which is itself diagnostic: those populations are demographically alive only because SI leakage produces leaky-self offspring, paying the cost in homozygosity (prop_AAAA ranges 0.55–0.73 across the six focal EOs). That is the C3 Stage 5 → Stage 2 self-reinforcing loop in action.
+
+**This is the single most consequential finding of the population-genetic analysis: contemporary recovery requires inter-BL allele transfers because no lineage retains a balanced and functional mating pool that within-lineage crossing alone could draw upon — and for EO70, banking is required *first*, before any augmentation can take hold.**
 
 **Allele-sharing patterns directly confirm the independent-bottleneck hypothesis.** If all five lineages had derived from a single shared species-level bottleneck, we would expect overlapping losses — every BL missing roughly the same alleles. Instead, the BL UpSet ([Figure 15](#figure-15)) and the EO UpSet ([Figure 16](#figure-16)) reveal the opposite pattern:
 
@@ -600,12 +642,13 @@ The combined H2 + H3 outcomes produce a **validated functional S-allele table** 
 
 ## Conservation Recommendations
 
-The seven questions converge on four immediate priorities for the *Lepidium papilliferum* recovery programme:
+The seven questions converge on five immediate priorities for the *Lepidium papilliferum* recovery programme:
 
 1. **Cross all 15 AABC individuals this season** (Q5). They are the only endogenous source of GFS = 0.833 gametes and the only individuals that can simultaneously contribute B, C, and D S-alleles to AAAA recipients — directly reversing the C3 Stage 5 trajectory (Q6). EO67 (4 AABC), EO27 (4 AABC), and EO18 (3 AABC, including 2 newly identified in Library 010) are the priority maternal sites; EO76 (0 AABC) is the most degraded and the most in need of allele importation.
 2. **Prioritise inter-BL allele transfers, especially BL4 → other BLs** (Q4). BL4 is the species' diversity reservoir (27 of 49 alleles, 10 of which are BL4-private). With no between-EO pollinator connections anywhere in the dataset (Q1), inter-BL crosses are the *only* mechanism for redistributing private alleles. Within-BL or within-EO crossing alone re-segregates the same drift-purged pool and cannot restore the SI system (Q4 TP1 finding).
 3. **Schedule the Step 22e cross plan with Synonymy group 1 as the first H2 priority** (Q7). Synonymy group 1 contains 15 HV-identical alleles spanning 134 AAAA individuals (~65 % of all AAAA species-wide). An incompatible Synonymy_test cross would consolidate the largest single block of allele bins into one functional specificity, dramatically clarifying the breeding-pool design. Conversely, a compatible Synonymy_test cross would reveal that even within Synonymy group 1 there is genuine functional diversity worth preserving.
 4. **Treat EO76 as a candidate SI → SC transitional population** (Q2, Q6). EO76 carries every signal predicted for the late stages of leaky-SI-driven SC evolution: the highest AAAA fraction in the species, zero AABC seed parents, 5 of 7 SI-escape candidates species-wide (LoF mutations in SRK), and the most ecologically degraded habitat. **Phenotype the 5 EO76 SI-escape candidates with controlled selfing tests as the highest immediate priority** ([`Tables/SRK_SI_escape_candidates.csv`](Tables/SRK_SI_escape_candidates.csv)). If selfing succeeds, the recovery strategy for EO76 must shift from inter-BL crossing to **ex-situ propagation of any remaining pre-transition (high-GFS) genotypes** from the EO76 collection history before the SC transition fixes locally. In parallel, EO76 individuals should not be used as pollen donors to other EOs until LoF mutations are ruled out, to avoid introducing LoF alleles into populations not yet on the transition trajectory.
+5. **Seed-bank EO70 immediately and use banked accessions for restoration** (Q4 TP1 reframe). EO70 is the only population in the dataset that sits in the **BIOBANK + RESTORE** quadrant under both strict (L = 0) and leaky (L = 0.25) sporophytic-SI assumptions ([Figures 14a, 14b](#figure-14a)). With k_rare30 = 4.9, J = 0.67 and P_compat = 0.08, the mating pool has functionally collapsed and no realistic SI-leakage rate rescues it. EO70 also drives BL2's BIOBANK status at the lineage level ([Figures 14c, 14d](#figure-14c)). The recommended sequence is: (i) targeted seed collection across the remaining EO70 individuals to preserve current allelic diversity *before* further drift; (ii) genotype the banked accessions; (iii) deploy banked seed alongside inter-BL augmentation when reseeding the EO70 site, using BL4 and BL5 donor genotypes (the diversity reservoirs) to introduce novel S-alleles into the rebuilt population. Augmentation without prior banking risks losing any EO70-specific alleles that have not been transferred elsewhere.
 
 The full execution plan is in `SRK_cross_plan_H0_SI_validation.tsv` through `SRK_cross_plan_H3_hidden_bin_tests.tsv` (Step 22e outputs). Outcomes feed back into Step 23 of the bioinformatic pipeline (`SRK_cross_result_analysis_HV.pdf`), which formally tests whether the bioinformatic compatibility predictions match the observed seed yields and produces the **validated functional S-allele table** that anchors operational seed-orchard design.
 

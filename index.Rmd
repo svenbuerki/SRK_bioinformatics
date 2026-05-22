@@ -24,7 +24,7 @@ This pipeline reconstructs S-receptor kinase (SRK) haplotypes from Nanopore ampl
 
 **Phase 2 — Allele definition and genotyping** (Steps 10–12). Distance-based clustering of validated proteins into S-allele bins ([Step 10](#SRKalleledist)), per-individual allele copy-count genotyping ([Step 11](#SRKfunctionalprotgenotype)), and tetraploid zygosity classification into `AAAA`/`AAAB`/`AABB`/`AABC`/`ABCD` genotypes ([Step 12](#zygosity)). The current dataset comprises **335 ingroup individuals across 19 *Lepidium papilliferum* Element Occurrences resolved into 49 observed S-allele bins** (Kneedle calibration N = 58 defined bins; 9 unobserved bins are reference-allele placeholders).
 
-**Phase 3 — Population genetics under a bottleneck-lineage framework** (Steps 13–21). [Step 13](#BLintegration) imports five independent bottleneck lineages (BL1–BL5) from the sibling repository [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering) — derived by Ward's D2 hierarchical clustering of 32 geographic-group centroids under a 500 m pollinator-connectivity threshold — and writes a per-individual BL assignment table consumed by every downstream analysis. Steps 14–21 then compute population-genetic statistics, allele-accumulation curves with Michaelis-Menten and Chao1 estimators, χ² goodness-of-fit against the NFDS equal-frequency expectation, the TP1 tipping-point diagnostic (allele richness × frequency evenness), allele composition / sharing (UpSet + heatmap), per-individual Genotypic Fitness Score, the TP2 tipping-point diagnostic (mean GFS × proportion AAAA), and reproductive-effort summaries — every output stratified in parallel by EO (management unit, ordered within parent BL by ascending mean Drift_index) and by BL (inferential unit, ordered by total habitat area then within-BL connectivity: **BL4, BL5, BL3, BL1, BL2**). The locked Set1 colour palette (BL1 purple, BL2 blue, BL3 red, BL4 orange, BL5 green) is used consistently with the sibling spatial-clustering repository. All BL ordering and palette decisions are centralised in the mirrored modules **`srk_bl_constants.R`** and **`srk_bl_constants.py`**, sourced/imported by every Phase 3/4 script (see Step 14 for the full ordering rules).
+**Phase 3 — Population genetics under a bottleneck-lineage framework** (Steps 13–21). [Step 13](#BLintegration) imports five independent bottleneck lineages (BL1–BL5) from the sibling repository [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering) — derived by Ward's D2 hierarchical clustering of 32 geographic-group centroids under a 500 m pollinator-connectivity threshold — and writes a per-individual BL assignment table consumed by every downstream analysis. Steps 14–21 then compute population-genetic statistics, allele-accumulation curves with Michaelis-Menten and Chao1 estimators, χ² goodness-of-fit against the NFDS equal-frequency expectation, the TP1 mating-pool functionality diagnostic (evenness J × tetraploid sporophytic-SI compatibility P_compat, at strict and leaky SI), allele composition / sharing (UpSet + heatmap), per-individual Genotypic Fitness Score, the TP2 tipping-point diagnostic (mean GFS × proportion AAAA), and reproductive-effort summaries — every output stratified in parallel by EO (management unit, ordered within parent BL by ascending mean Drift_index) and by BL (inferential unit, ordered by total habitat area then within-BL connectivity: **BL4, BL5, BL3, BL1, BL2**). The locked Set1 colour palette (BL1 purple, BL2 blue, BL3 red, BL4 orange, BL5 green) is used consistently with the sibling spatial-clustering repository. All BL ordering and palette decisions are centralised in the mirrored modules **`srk_bl_constants.R`** and **`srk_bl_constants.py`**, sourced/imported by every Phase 3/4 script (see Step 14 for the full ordering rules).
 
 **Phase 4 — Hypothesis testing and crossing design** (Steps 22–23). [Step 22a](#alleleclusters) (`srk_variability_landscape.py`) runs an identical sliding-window Shannon-entropy scan on a combined alignment of LEPA + 22 *Brassica* + 10 *Arabidopsis* SRK alleles to detect hypervariable (HV) columns per species, validates LEPA HV regions against Brassica/Arabidopsis with a 10 000-permutation overlap test, and overlays the 12 SCR9-contact residues from Ma et al. 2016 (PDB 5GYY) for structural validation. Step 22b (`srk_allele_hypotheses.py`) consumes the canonical HV columns to compute HV-only pairwise distances, UPGMA-detect Class I / Class II, build the synonymy network (synonymy groups (HV-identical) + Synonymy_test bridges), and rank the AAAA × AAAA cross matrix into Incompatible / Synonymy_test / Compatible_within / Compatible_cross categories. Two optional diagnostics — **Step 22c** (`srk_wgroup_collapse_test.py`, tests how much Synonymy group redundancy contributes to LEPA's low Shannon entropy) and **Step 22d** (`srk_perBL_entropy_test.py`, decomposes LEPA HV-column residue diversity per Bottleneck Lineage and compares to Brassica + Arabidopsis to distinguish drift from selection convergence) — flesh out the biological mechanism. **Step 22e** (`srk_cross_plan.py`) translates the cross categorisation into a phased experimental protocol (H0 / H1a / H1b / H2 / H3) with explicit AAAA / AAAB / AABB genotype requirements and paired controls for heterozygous-donor tests; every cross row is traceable to a sequence-based category (HV distance + Class from Step 22b) plus a genotype-based feasibility filter (`Allele_composition` from Step 12). [Step 23](#crossresults) reads completed cross records and tests the predictions.
 
@@ -92,7 +92,7 @@ The pipeline consists of **23 main steps organized into four phases**, progressi
 14. [Population Genetics Statistics](#popgenetics) – Estimation of population-level diversity metrics, including heterozygosity, mean alleles per individual, total allele counts, and effective allele numbers.
 15. [Allele Accumulation Curves](#alleleaccum) – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators.
 16. [Allele Frequency Analysis](#allelefrqanalysis) – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under negative frequency-dependent selection. The estimated species allele richness (from step 15) is used as the NFDS optimum baseline.
-17. [TP1 Tipping Point Analysis](#TP1) – **Health of the SI system**: diagnostic scatter plot asking (x) how many different alleles a population has retained and (y) how evenly those alleles are distributed across individuals; with CRITICAL zone shading and TP1 status flags.
+17. [TP1 — Mating-pool functionality](#TP1) – **Is the depleted population still functioning?** Per-EO and per-BL evenness J × tetraploid sporophytic-SI compatibility P_compat, at strict (L = 0) and empirical-leakage (L = 0.25) levels. Quadrants map to conservation actions (MONITOR / AUGMENT-evenness / AUGMENT URGENTLY / BIOBANK + RESTORE). Connects directly to Stage 5 of the C3 cascade.
 18. [Allele Composition Comparison Across Element Occurrences](#allelesharing) – UpSet plot and pairwise sharing heatmap quantifying how S-allele sets overlap and partition across Element Occurrences, identifying private alleles and alleles shared by all populations.
 19. [Individual Genotypic Fitness Score](#GFS) – Per-individual GFS quantifying the proportion of heterozygous diploid gametes a tetraploid individual can produce, differentiating dosage-imbalanced genotypes (e.g. AABB vs AAAB) invisible to simple zygosity classification.
 20. [TP2 Tipping Point Analysis](#TP2) – **Reproductive Fitness**: EO-level tipping point assessment asking (x) what fraction of individuals are reproductive dead-ends (prop_AAAA) and (y) how much reproductive capacity the average individual still has (mean GFS); EOs breaching both thresholds simultaneously are flagged CRITICAL.
@@ -4788,9 +4788,9 @@ Three sequential questions then structure the analyses.
 The species-level allele pool approximates the NFDS richness equilibrium: the total number of functionally distinct S-alleles that selection is capable of maintaining across the species. This is estimated from allele accumulation curves and asymptotic richness estimators (Michaelis-Menten, Chao1, iNEXT) applied to the full dataset ([Step 15](#alleleaccum)), and serves as the reference optimum against which population-level deficits are measured. Population genetic parameters — allele richness, effective allele number, heterozygosity, and mean alleles per individual — are characterised per EO ([Step 14](#popgenetics)) to provide the empirical foundation for downstream comparisons.
 
 **Q2 — How did genetic drift impact populations' S-allele diversity?**
-Genetic drift reduces allele richness and skews remaining frequencies away from the equal-frequency NFDS expectation. **Tipping Point 1 (TP1)** marks the threshold at which allele loss is so severe that inter-population allele transfers are required to restore the SI system. Two criteria are evaluated per EO: the proportion of the species optimum retained (allele richness deficit), and the frequency evenness of those alleles — the ratio of effective allele number to observed allele count (Ne/N) — as a measure of departure from NFDS equal-frequency expectations. These are assessed through allele accumulation ([Step 15](#alleleaccum)), frequency analysis ([Step 16](#allelefrqanalysis)), TP1 synthesis ([Step 17](#TP1)), and allele composition comparison across EOs ([Step 18](#allelesharing)). EOs breaching both thresholds (< 50% of optimum and Ne/N < 0.80) are flagged **CRITICAL**.
+Genetic drift reduces allele richness and skews remaining frequencies away from the equal-frequency NFDS expectation. Two complementary diagnostic levels are evaluated. **Steps 15–16** quantify *depletion* — how many alleles have been lost relative to the species optimum (≈ 58 alleles), and how their surviving frequencies deviate from the NFDS equal-frequency expectation. **Step 17 (TP1)** then takes that depletion as given and asks the complementary question: *is the depleted population still demographically functioning, and what conservation intervention does the data support?* TP1 places each EO and BL on a scatter of evenness J × tetraploid sporophytic-SI mating compatibility P_compat, with quadrants mapped directly to conservation actions (MONITOR / AUGMENT-evenness / AUGMENT URGENTLY / BIOBANK + RESTORE). Allele composition comparison across EOs ([Step 18](#allelesharing)) identifies which populations are reservoirs of unique allelic diversity.
 
-Note that "genetic drift" here encompasses two conceptually distinct processes: (1) a discrete historical **bottleneck** — a sudden reduction in population size that causes rapid simultaneous loss of allele richness; and (2) **ongoing drift** in small populations — the continuous stochastic erosion of allele frequency evenness as dominant alleles accumulate. The two TP1 axes are designed to capture these separately: low prop_optimum reflects richness loss consistent with a bottleneck or founder event; low Ne/N reflects frequency distortion consistent with ongoing drift. EOs deficient on both axes simultaneously — as observed across all five LEPA EOs — are most consistent with a historical bottleneck followed by prolonged ongoing drift. The SRK locus is under balancing selection (NFDS) and cannot be used directly with standard neutral-marker bottleneck tests; formally partitioning the two processes requires genome-wide neutral marker data and demographic modelling (e.g., SMC++, PSMC).
+Note that "genetic drift" here encompasses two conceptually distinct processes: (1) a discrete historical **bottleneck** — a sudden reduction in population size that causes rapid simultaneous loss of allele richness; and (2) **ongoing drift** in small populations — the continuous stochastic erosion of allele frequency evenness as dominant alleles accumulate. Steps 15–16 carry the richness signal (bottleneck footprint); TP1's evenness J axis carries the ongoing-drift signal. Populations scoring poorly on both — as observed across the focal LEPA EOs — are most consistent with a historical bottleneck followed by prolonged ongoing drift. The SRK locus is under balancing selection (NFDS) and cannot be used directly with standard neutral-marker bottleneck tests; formally partitioning the two processes requires genome-wide neutral marker data and demographic modelling (e.g., SMC++, PSMC).
 
 **Q3 — How did genetic drift impact the reproductive fitness of individuals within populations?**
 Even where some allele diversity persists, drift causes allele copy-count imbalances at the individual level that directly reduce reproductive output. In a tetraploid, the proportion of compatible diploid gametes an individual produces — the Genotypic Fitness Score (GFS) — depends not only on which alleles are present but on their dosage balance across the four allele copies. An AABB individual (balanced 2+2) produces heterozygous gametes in 4 of 6 combinations (GFS = 0.667), whereas an AAAB individual (unbalanced 3+1) produces only 3 of 6 (GFS = 0.500), despite both carrying two distinct alleles. In self-incompatible plants, an individual's value as a breeding partner depends not only on which key/lock types it carries, but also on the number of distinct alleles present across its genome copies. Individuals with more key/lock types can participate in more compatible crosses, making them especially valuable in a managed breeding program. **Tipping Point 2 (TP2)** marks the threshold at which this individual-level degradation is so advanced that within-population crosses alone cannot restore reproductive fitness. Two criteria are evaluated per EO: mean GFS below the AABB benchmark (< 0.667) and the proportion of AAAA individuals — which produce no heterozygous gametes — exceeding 30%. These are assessed through individual GFS computation ([Step 19](#GFS)), TP2 synthesis ([Step 20](#TP2)), and the reproductive effort visualisation ([Step 21](#reproeffort)). EOs breaching both criteria are flagged **CRITICAL**.
@@ -5948,69 +5948,117 @@ cat("Allele bins:", length(allele_cols), "\n")
 
 ---
 
-## TP1 Tipping Point Analysis {#TP1}
+## TP1 — Mating-pool Functionality {#TP1}
 
-> Requires outputs from Steps 14 and 15. Run after both have completed.
+> Requires the allele count matrix (Step 11), the inferred tetraploid zygosity table (Step 12), the BL assignments (Step 13), and the sampling metadata. The pre-existing erosion barplots from Steps 15–16 already document depletion against the species optimum; TP1 takes that as given and asks a different question.
 
-**Script:** `SRK_TP1_tipping_point.R`
+**Scripts:**
+
+1. `SRK_TP1_compatibility_metrics.py` — computes per-EO and per-BL metrics, writes `Tables/SRK_EO_allele_richness.tsv`
+2. `SRK_TP1_compatibility.R` — renders the four diagnostic panels
 
 **Command:**
 ```bash
-Rscript SRK_TP1_tipping_point.R
+python3 SRK_TP1_compatibility_metrics.py
+Rscript SRK_TP1_compatibility.R
 ```
 
 **Inputs:**
-- `SRK_population_genetic_summary.tsv` — EO-level, from Step 14
-- `SRK_population_genetic_summary_BL.tsv` — BL aggregates, from Step 14
-- `SRK_species_richness_estimates.tsv` — from Step 15
+- `Tables/SRK_individual_allele_genotypes.tsv` — Step 11 count matrix
+- `Tables/sampling_metadata.csv` — per-individual EO assignment
+- `SRK_individual_BL_assignments.tsv` — Step 13 BL labels
+- `Tables/SRK_individual_zygosity.tsv` — Step 12 inferred tetraploid genotype classes (the metrics script applies the same inference rule directly from the raw matrix; the zygosity TSV is the validated reference)
 
-### What TP1 measures — health of the SI system
+### What TP1 measures — is the depleted population still functioning?
 
-TP1 assesses the **health of the SI system** at the population level: the degree to which the SRK allele pool within an EO is still capable of sustaining compatible mating. Two complementary questions define the two axes:
+TP1 was reframed on 2026-05-22. The previous formulation (`prop_optimum × Ne/N_alleles`) repeated, in a scatter, what the Step 15 erosion barplots already show: how depleted each population is relative to the species-level optimum (≈ 58 alleles). The reframed TP1 asks the **complementary** question:
 
-- **How many different alleles has a population retained?** (x-axis) — A population holding all alleles can offer each individual a large pool of compatible partners; as alleles are lost, compatible pairings become progressively rarer.
-- **How evenly are the remaining alleles distributed across individuals?** (y-axis) — Even if some alleles survive, a system where one allele dominates is functionally impoverished: most individuals share that allele and cannot mate with each other.
+> *Given that this population is depleted, is its mating pool still functioning, and what conservation intervention does the data support?*
 
-Together, the two axes diagnose whether SI system health has degraded beyond the point where within-population crossing alone can restore it.
+Two axes diagnose mating-pool function:
 
-**Key metrics per EO:**
-- `prop_optimum` = N_alleles / MM_estimate — proportion of the species-level S-allele pool retained, using the Michaelis-Menten asymptote as the species optimum. Answers: *how many different alleles does this EO still have?*
-- `evenness` = Ne / N_alleles — frequency evenness index. Ne (effective allele number) = 1/Σpᵢ², where pᵢ is the frequency of allele i; it answers *how many equally frequent alleles would produce the same level of diversity as observed*. When all alleles are at equal frequency (NFDS ideal), Ne = N and the ratio = 1.0. Genetic drift pushes the ratio downward by creating dominant alleles and marginalising rare ones. An EO with evenness = 0.50, for example, has allele frequencies so uneven that only half the observed alleles are effectively contributing to SI function — the remainder are present in such low copy numbers that they are rarely expressed in crosses and are at elevated risk of loss through drift. Answers: *how evenly are the surviving alleles distributed?*
+- **x = evenness J (Shannon H / ln k)** — *how evenly are the surviving alleles held?* J = 1 at NFDS equilibrium; J → 0 as one allele dominates (drift signature).
+- **y = P_compat — the compatible-pair fraction** — *what fraction of random plant pairs are mating-compatible under tetraploid sporophytic SI?* A value of 0.40 means roughly 40 % of random pairs in the population can produce seed. Computed exactly from the inferred allele frequencies (formula below). Directly demographic — translates to expected fraction of compatible crosses.
 
-**Interpreting the two axes — bottleneck vs. ongoing drift**
+Point size encodes rarefied k (richness at N = 30, 1000 perms) so depletion remains visible without dominating the figure.
 
-The two metrics capture different aspects of demographic history. `prop_optimum` (allele richness relative to the species optimum) is the primary footprint of a **historical bottleneck or founder event**: the rapid, simultaneous elimination of rare alleles when population size collapsed. `evenness` (Ne/N) reflects **ongoing drift** in small populations: the progressive skewing of surviving allele frequencies as dominant alleles accumulate across generations. An EO that experienced only a historical bottleneck — with no subsequent drift — would show low richness but moderate evenness (founders carry whatever they carried, at roughly similar initial frequencies). An EO experiencing only ongoing drift without a prior bottleneck would retain more alleles but show declining evenness over time.
+### How tetraploidy is handled
 
-EOs that score poorly on **both** axes simultaneously — as observed across all five LEPA EOs — are most consistent with a historical bottleneck (which reduced richness) followed by prolonged ongoing drift (which subsequently eroded evenness). The allele composition analysis ([Step 18](#allelesharing)) adds a further signal: if all EOs were founded from a single shared bottlenecked pool, they would be missing the same alleles. Predominantly private allele sets across EOs instead point to independent drift in isolated populations. Note that the SRK locus, being under balancing selection, cannot be used with standard neutral-marker bottleneck tests (e.g., BOTTLENECK software, M-ratio); formally distinguishing the two processes requires genome-wide neutral marker data and demographic modelling.
+LEPA is tetraploid (2n = 4x). Amplicon SRK sequencing recovers ≤ 4 allele copies per individual but often returns fewer because of allele drop-out. Step 12 (`SRK_zygosity_from_genotype.R`) infers the full tetraploid genotype with this rule:
 
-**Two analysis levels overlaid on the same scatter (since 2026-05-07):**
+| Distinct alleles observed | Inferred tetraploid genotype | Logic |
+|---|---|---|
+| 1 | AAAA | fill to 4 copies of A |
+| 2, dominant ≥ 2× minor | AAAB | 3 + 1 |
+| 2, roughly equal | AABB | 2 + 2 |
+| 3 | AABC | 2 + 1 + 1 |
+| 4 | ABCD | 1 + 1 + 1 + 1 |
 
-- **EO** — circles, one per EO with N ≥ 5 individuals, **colored by parent BL** (Set1 palette, matching Steps 14–16 and the LEPA_EO_spatial_clustering project)
-- **BL** — triangles, one per bottleneck lineage (BL1–BL5), colored by BL
+The metrics script applies this same rule before counting allele copies, so every individual contributes exactly 4 inferred copies. The per-EO denominator for allele frequencies is C = 4N.
 
-The combined scatter directly answers two complementary questions in one figure: (i) which EOs are CRITICAL on richness vs evenness vs both? and (ii) does the parent BL share that status, or is the EO failing where its lineage as a whole still passes?
+### Compatibility formula
 
-**TP1 thresholds (adjustable at top of script):**
+Sporophytic SI, tetraploid stigma (up to 4 distinct alleles), diploid pollen (up to 2 distinct alleles), co-dominance. Pollen is rejected if **any** of its 2 alleles matches **any** of the stigma's 4. The exact strict-SI formula under multinomial allele sampling is
+
+$$ P_\text{compat strict} \;=\; \sum_{a, b} p_a\, p_b\, \bigl(1 - p_a - p_b \cdot \mathbb{I}[a \ne b]\bigr)^4. $$
+
+Equal-frequency benchmark: $1 - 8/k$ (much harsher than the diploid $1 - 2/k$ — tetraploid SI requires roughly four times the allelic richness to reach the same compatibility level).
+
+### SI leakage and the C3 Stage 5 connection
+
+At leakage rate L ∈ [0, 1], a fraction L of would-be-incompatible matings succeed anyway (selfing or SI-leaky outcrossing):
+
+$$ P_\text{compat}(L) \;=\; P_\text{compat strict} + L \cdot \bigl(1 - P_\text{compat strict}\bigr). $$
+
+The script reports P_compat at L ∈ {0, 0.10, 0.25, 0.50}. An empirical estimate `L̂ = prop_AAAA / 3.5` is also computed per group: AAAA cannot arise under strict outcrossing SI, so observed AAAA reflects historical selfing or sib-crossing. The 3.5 divisor is a population-averaged tetrasomic correction (AABB self → AAAA in ~1/6 of offspring; AAAB self → AAAA in ~1/2; averaged over the AABB/AAAB mix typical of the data, the effective correction is ~3–4). `L̂` is an **upper bound** because some apparent AAAA arises from amplicon under-recovery.
+
+### Inheritance-mode caveat
+
+The exact P_compat formula assumes **tetrasomic** inheritance (random pairing across all four chromosomes — autotetraploid-like). If LEPA's SRK locus shows **disomic** inheritance (two homoeologous subgenomes segregating independently), the system behaves more like two superimposed diploid SI systems, which is generally more permissive — current P_compat is then a conservative lower bound. The formula should be revisited if cytology or segregation data establish disomic inheritance at SRK.
+
+### Quadrants map directly to conservation actions
+
+| Region | Reading | Intervention |
+|---|---|---|
+| top-right (high J, high P_compat) | functioning, even — NFDS still works | **MONITOR** + augment for long-term sustainability |
+| top-left (low J, high P_compat) | mating works despite frequency skew | **AUGMENT** to restore evenness |
+| bottom-right (high J, low P_compat) | evenly held but too few alleles | **AUGMENT URGENTLY** (too few compatible mates) |
+| bottom-left (low J, low P_compat) | skewed and depleted — mating pool collapsed | **BIOBANK + RESTORE** |
+
+**TP1 thresholds (adjustable at top of R script):**
 
 | Parameter | Default | Criterion |
 |-----------|---------|-----------|
-| `TP1_PROP_OPTIMUM` | 0.50 | group retains < 50% of species optimum |
-| `TP1_EVENNESS` | 0.80 | Ne/N_alleles below 0.80 |
-| `EO_MIN_N` | 5 | minimum sample size to plot an EO; BLs are always plotted |
+| `TP1_J` | 0.80 | evenness floor (frequencies skewed from NFDS expectation) |
+| `TP1_P_COMPAT` | 0.40 | mating-pool floor (fewer than 40% of random pairs compatible) |
 
-Groups breaching both criteria are flagged **CRITICAL**; those breaching either one are flagged **AT RISK**; the remainder are **OK**.
+Per-EO inclusion threshold is **N ≥ 15 individuals** (smaller EOs lack power for k_rarefied). All five BL aggregates are always plotted.
 
-**Outputs:**
+### Four diagnostic panels
 
-- `SRK_TP1_summary.tsv` — per-EO TP1 status with new `BL` column; rows arranged by parent BL → prop_optimum
-- `SRK_TP1_summary_BL.tsv` — **NEW**, per-BL TP1 status (5 rows)
-- `figures/SRK_TP1_tipping_point.png` — combined EO + BL scatter
-- `SRK_TP1_tipping_point.pdf` — same as PNG, root-level (backwards compat)
-- `figures/SRK_TP1_tipping_point_blank.png` — empty zones for presentations
+To keep the figures readable for stakeholder presentations, EO and BL points are placed on separate panels, each at two leakage levels:
 
-**Headline result (current dataset):** every BL and 5 of 6 EOs are CRITICAL. Only EO18 (N = 5) escapes CRITICAL through small-N evenness inflation. **BL4 has the highest prop_optimum (0.45) of any group but the lowest evenness (0.33)** — the species' diversity reservoir is CRITICAL through frequency skew rather than richness loss, demonstrating that drift operates along two axes simultaneously.
+- `figures/SRK_TP1_compatibility_EO_strict.{png,pdf}` — EO panel, strict SI (L = 0)
+- `figures/SRK_TP1_compatibility_EO_leaky.{png,pdf}` — EO panel, leaky SI (L = 0.25, close to empirical L̂ ≈ 0.18)
+- `figures/SRK_TP1_compatibility_BL_strict.{png,pdf}` — BL panel, strict SI
+- `figures/SRK_TP1_compatibility_BL_leaky.{png,pdf}` — BL panel, leaky SI
 
-**2026-05-07 backwards-compat note:** the old `EO_MAP` lookup that mapped raw `Pop` (e.g. `"27"`) to canonical labels (`"EO27"`) was removed; Step 14 now writes `Population` already populated with the canonical EO label.
+Each panel ships with a `_blank.png` companion (empty quadrants, no points) for presentation overlays.
+
+### Outputs
+
+- `Tables/SRK_EO_allele_richness.tsv` — 5 BL rows + 6 EO rows × 17 metric columns (`level`, `group`, `BL`, `N`, `geno_mix`, `prop_AAAA`, `L_hat_from_AAAA`, `raw_copy_recovery`, `k_observed`, `k_rarefied30_mean/sd`, `shannon_H`, `evenness_J`, `chi2_uniform_p`, `P_compat_uniform_4x`, `P_compat_L0/L0.10/L0.25/L0.50`)
+- Four PNG + four PDF panels (above)
+- Four `_blank.png` zone-only variants
+
+### Headline result (current dataset, 2026-05-22)
+
+- **Strict SI (L = 0):** EO70 sits alone in BIOBANK + RESTORE (P_compat = 0.08, J = 0.67, k_rare30 = 4.9 against a species optimum ≈ 58). EO67 also BIOBANK (P_compat = 0.23). EO18, EO76 in AUGMENT URGENTLY. EO25, EO27 in MONITOR. BL1 + BL2 in BIOBANK; BL3 borderline AUGMENT URGENTLY; BL4 + BL5 in MONITOR.
+- **Leaky SI (L = 0.25):** EO18, EO76, BL3 rescued into MONITOR (the C3 Stage 5 signature). **EO70 and BL2 stay in BIOBANK under both views** — the cleanest signal that SI leakage cannot rescue these populations and seed banking is the priority intervention. EO67 and BL1 partially rescue into AUGMENT URGENTLY.
+
+The rescue effect visible across the leaky-vs-strict comparison **is** C3 Stage 5: populations that look catastrophic under strict SI are demographically alive only because SI is leaky. The cost is homozygosity accumulation (prop_AAAA ranges 0.55–0.73 across the six focal EOs), which feeds Stage 2 of the cascade via the self-reinforcing loop.
+
+**Legacy:** the prior implementation `SRK_TP1_tipping_point.R` is archived under `archive/`.
 
 ---
 
@@ -6037,12 +6085,15 @@ Under negative frequency-dependent selection (NFDS), S-alleles are maintained at
 
 ### Bioinformatics
 
-* Script: `SRK_allele_sharing_EOs.py`
-* Environment: `polyploid-model` (requires only pandas, numpy, matplotlib)
-* Execution:
+* Scripts:
+  - `SRK_allele_sharing_EOs.py` — UpSet plots + pairwise heatmaps (EO + BL)
+  - `SRK_allele_eulerr_BLs.R` — area-proportional 5-set Euler diagram of BL allele sets (stakeholder-facing companion to the BL UpSet; requires the R `eulerr` package)
+* Environments: `polyploid-model` (Python: pandas, numpy, matplotlib) and base R + `eulerr`
+* Execution (both scripts; regenerate together as the dataset grows):
 
 ```bash
 python3 SRK_allele_sharing_EOs.py
+Rscript SRK_allele_eulerr_BLs.R
 ```
 
 #### Key Parameters
@@ -6066,6 +6117,7 @@ python3 SRK_allele_sharing_EOs.py
 * `SRK_allele_sharing_heatmap_EOs.{pdf,png}` — pairwise EO sharing heatmap
 * `SRK_allele_upset_BLs.{pdf,png}` — **NEW**, BL-level UpSet
 * `SRK_allele_sharing_heatmap_BLs.{pdf,png}` — **NEW**, 5×5 BL pairwise heatmap
+* `figures/SRK_allele_eulerr_BLs.{png,pdf}` — **NEW (2026-05-22)**, area-proportional 5-set Euler diagram of BL allele sets. Same data as the BL UpSet but rendered as familiar Venn-style ellipses for stakeholder presentations. Produced by the R companion script (`SRK_allele_eulerr_BLs.R`).
 
 #### Headline Result (Current Dataset)
 
