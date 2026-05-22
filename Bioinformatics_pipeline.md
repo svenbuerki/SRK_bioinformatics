@@ -661,6 +661,43 @@ python3 SRK_BL_integration.py
 
 ---
 
+### Step 13b — Sampling Overview Map
+
+**Script:** `SRK_sampling_map.R`
+
+**Command:**
+```bash
+Rscript SRK_sampling_map.R
+```
+
+**Purpose.** Single-panel geographic map showing every catalogued population of the species against its parent BL, with a clear visual distinction between populations successfully sampled by the SRK pipeline (filled triangles) and not-yet-sampled populations (filled circles). The figure is the recommended *first* visual in any presentation or report: it sets the geographic baseline before any per-locus analysis and makes the gap between current sampling and the full species range immediately obvious.
+
+**Inputs:**
+- `Tables/SRK_individual_allele_genotypes.tsv` — canonical successful-sample roster (= 335 individuals)
+- `Tables/sampling_metadata.csv` — `Pop` and `EO_w_sub` lookup
+- `SRK_individual_BL_assignments.tsv` — from Step 13 (provides per-sample EO → BL resolution)
+- `EO_location_groups.csv` — coordinates for every catalogued population, mirrored from the sibling `LEPA_EO_spatial_clustering` project (path resolution: NSF data dir first, then `Tables/` fallback)
+- `Tables/EO_group_BL_summary.csv` — provides parent BL for *every* catalogued EO, including ones that are catalogued but not yet sampled (so unsampled populations still get their BL colour)
+- `srk_bl_constants.R` — locked Set1 palette + `BL_ORDER`
+
+**Visual conventions:**
+- **Shape**: filled triangle = sampled; filled circle = not yet sampled.
+- **Colour**: parent BL (Set1 palette, matches every BL-stratified figure in the project).
+- **Size**: habitat area (ha) — `sqrt`-scaled so small populations remain visible.
+- **Labels**: for each sampled EO, the EO code (with `n =` sample count) is placed on the **largest** location within that EO (the convention for compound germplasm sub-codes that cannot be pinned to a specific sub-location). Focus EOs (EO18, EO25, EO27, EO67, EO70, EO76) carry bold white-fill labels; other sampled EOs carry smaller plain labels. Unsampled populations are left unlabelled.
+- **Landscape backdrop**: same DEM topo + Snake River + reference cities as the sibling project's `EO_BL_geographic_context_map.png`, so the two figures cross-reference visually.
+
+**Outputs:**
+
+| File | Content |
+|------|---------|
+| `figures/SRK_sampling_map.png` / `SRK_sampling_map.pdf` | Captioned version for the report / pipeline doc |
+| `figures/SRK_sampling_map_presentation.png` / `SRK_sampling_map_presentation.pdf` | Title / subtitle / caption stripped, for slide decks |
+
+**Headline numbers (current dataset, 2026-05-21).** **325 BL-resolved samples across 17 populations in 16 EOs** (BL1: 5 samples / 4 EOs / 4 Pops · BL2: 59 / 2 / 2 · BL3: 80 / 4 / 4 · BL4: 89 / 2 / 2 · BL5: 92 / 4 / 5) + **10 samples / 9 germplasm sub-codes in the JAR region** (no resolved coordinates, not plotted) = **335 total successful ingroup samples**.
+
+---
+
 ### Step 14 — Population Genetics Statistics
 
 **Script:** `SRK_population_genetic_summary.R`
@@ -687,7 +724,7 @@ The script restricts analyses to BL-assigned individuals (325 of 335; the 10 unr
 **BL palette and ordering — single source of truth.** Every Phase 3/4 script that orders or colours BLs sources/imports the mirrored modules `srk_bl_constants.R` and `srk_bl_constants.py`. Both derive their orderings at load time from CSVs mirrored in `Tables/` (`EO_BL_summary.csv`, `EO_group_BL_summary.csv`), so adding new sampling only requires (i) re-running `LEPA_EO_spatial_clustering`, (ii) refreshing those CSVs — the entire pipeline reorders automatically. The module exposes:
 
 - `BL_COLORS` — RColorBrewer Set1 palette mapped to BL by cluster-index, matching the rendered figures in `LEPA_EO_spatial_clustering`: `BL1 = #984EA3` (purple), `BL2 = #377EB8` (blue), `BL3 = #E41A1C` (red), `BL4 = #FF7F00` (orange), `BL5 = #4DAF4A` (green). Unassigned individuals (if retained) use `#999999`.
-- `BL_ORDER` — BLs sorted high-to-low by within-BL connectivity, computed from `n_locations − n_groups` (descending, tie-broken by `total_pop_size` descending). For the current dataset: **BL5, BL1, BL4, BL3, BL2**. Used for **bars, faceted panels, horizontal-bar axes, and tables** wherever BL appears as a category axis and the ordering itself tells a story.
+- `BL_ORDER` — BLs sorted high-to-low by **total habitat area (ha)**, with **within-BL connectivity** as the secondary tie-break, then BL name as a deterministic final tie-break. Connectivity = `n_locations − n_groups`. For the current dataset: **BL4, BL5, BL3, BL1, BL2**. Area is the primary *Ne* proxy (carrying capacity → drift floor); connectivity is the secondary stratification for BLs of similar size. Used for **bars, faceted panels, horizontal-bar axes, and tables** wherever BL appears as a category axis and the ordering itself tells a story.
 - `BL_ORDER_NUMERIC` — alphanumeric BL1→BL5. Used for **scatter-plot legends** (TP1, TP2, accumulation-curve legends) where the axes are not BL and a readable legend matters more than the inferential order.
 - `get_eo_order_within_bl(eo_codes)` — EOs ordered first by parent `BL_ORDER`, then by ascending mean Drift_index within BL, with EO name as deterministic tie-break.
 

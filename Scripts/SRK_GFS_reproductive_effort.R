@@ -261,7 +261,7 @@ p_eo <- build_repro_plot(
   subtitle      = paste0(
     "Individuals with GFS > 0 carry 2+ distinct SRK alleles and can ",
     "contribute allelic diversity to compatible crosses.\n",
-    "EOs ordered by parent BL (within-BL connectivity, most connected at top) ",
+    "EOs ordered by parent BL (total habitat area, largest at top) ",
     "then by mean Drift_index within BL.\n",
     "Y-axis labels coloured by parent BL (Set1 palette).\n",
     "Dashed line = TP2 threshold (<= 30% AAAA required to avoid CRITICAL)."
@@ -276,7 +276,7 @@ p_bl <- build_repro_plot(
   title         = "Reproductive effort support per Bottleneck Lineage",
   subtitle      = paste0(
     "BL aggregates all BL-assigned individuals (n = ", nrow(gfs_bl), "). ",
-    "BLs ordered by within-BL connectivity (most connected at top).\n",
+    "BLs ordered by total habitat area, then within-BL connectivity (largest at top).\n",
     "Y-axis labels coloured by BL (Set1 palette, matches ",
     "LEPA_EO_spatial_clustering).\n",
     "Dashed line = TP2 threshold (<= 30% AAAA required to avoid CRITICAL)."
@@ -448,9 +448,8 @@ p_aaaa_eo <- build_aaaa_plot(
     ")\nappear in AAAA individuals in >= ", round(PAN_EO_FRAC * 100),
     "% of focus EOs (HV-identical - likely the same SI specificity ",
     "hammered by drift across multiple EOs).\n",
-    "EOs ordered by parent BL (within-BL connectivity, most connected at ",
-    "top) then by mean Drift_index within BL. Y-axis labels coloured by ",
-    "parent BL (Set1 palette)."
+    "EOs ordered by parent BL (total habitat area, largest at top) then by ",
+    "mean Drift_index within BL. Y-axis labels coloured by parent BL (Set1 palette)."
   )
 )
 
@@ -470,7 +469,7 @@ p_aaaa_bl <- build_aaaa_plot(
       paste(pan_bl_alleles, collapse = ", ") else "none",
     ") are present in AAAA individuals across every BL - confirms ",
     "shared Synonymy group 1 fixation despite independent bottlenecks.\n",
-    "BLs ordered by within-BL connectivity (most connected at top). ",
+    "BLs ordered by total habitat area, then within-BL connectivity (largest at top). ",
     "Y-axis labels coloured by BL ",
     "(Set1 palette, matches LEPA_EO_spatial_clustering)."
   )

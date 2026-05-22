@@ -21,7 +21,7 @@ All BL / EO ordering and colour decisions are centralised in two mirrored module
 
 Two BL orderings are exposed:
 
-- **`BL_ORDER`** — high-to-low within-BL connectivity (currently **BL5, BL1, BL4, BL3, BL2**). Connectivity = `n_locations − n_groups`, tie-broken by `total_pop_size` (both descending). Used for **bars, faceted panels, horizontal-bar y-axes, and tables** — where BL appears as an axis category and the order itself tells a story.
+- **`BL_ORDER`** — high-to-low by total habitat area, with within-BL connectivity as the secondary tie-break (currently **BL4, BL5, BL3, BL1, BL2**). Sort key: `total_area_ha` (desc), then connectivity = `n_locations − n_groups` (desc), then BL name (asc). Area is the primary *Ne* proxy (carrying capacity → drift floor); connectivity is the secondary stratification for BLs of similar size. Used for **bars, faceted panels, horizontal-bar y-axes, and tables** — where BL appears as an axis category and the order itself tells a story.
 - **`BL_ORDER_NUMERIC`** — alphanumeric BL1→BL5. Used for **scatter-plot legends** (TP1, TP2, accumulation-curve legends) where the axes are not BL and a readable legend matters more than the inferential order.
 
 EOs are ordered within their parent BL by ascending mean Drift_index (lower DI = more connected = first), with EO name as deterministic tie-break, via `get_eo_order_within_bl()`. The same formula is implemented identically in R and Python so the two languages produce identical orderings.
@@ -89,6 +89,7 @@ The pipeline consists of **23 main steps organized into four phases**, progressi
 ## Phase 3: Data Analyses
 
 13. **Element Occurrence and Bottleneck Lineage Integration** – Bridges the SRK individual-level dataset to the spatial framework defined in the sibling project [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering). For each post-QC individual, joins EO label, geographic group, bottleneck lineage (BL1–BL5), and drift index from `EO_group_BL_summary.csv`. Produces `SRK_individual_BL_assignments.tsv`, the join key used by all subsequent Phase 3 steps to add BL stratification (EO sorted within BL for management; BL aggregated for inferential power on small localities).
+13b. **Sampling overview map** – Plots all catalogued populations of the species against their BL membership, distinguishing populations successfully sampled by the SRK pipeline (filled triangles) from those not yet sampled (filled circles). Focus EOs used in most downstream analyses (EO18, EO25, EO27, EO67, EO70, EO76) are labelled in white-fill boxes. JAR-region germplasm sub-codes (no resolved coordinates) are not plotted. Implemented in `SRK_sampling_map.R`; reads `Tables/SRK_individual_allele_genotypes.tsv`, `Tables/sampling_metadata.csv`, `SRK_individual_BL_assignments.tsv`, and `EO_location_groups.csv` mirrored from the spatial-clustering project.
 14. **Population Genetics Statistics** – Estimation of population-level diversity metrics, including heterozygosity, mean alleles per individual, total allele counts, and effective allele numbers. Allele frequencies are based on copy counts summed across individuals (from the count matrix), giving a proper tetraploid frequency estimate.
 15. **Allele Accumulation Curves** – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators. Outputs an empirical species optimum used as a baseline in steps 16 and 17.
 16. **Allele Frequency Analysis** – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under NFDS. The estimated species allele richness from step 15 is used as the optimum, quantifying how many alleles each population is missing relative to the species pool.
@@ -238,6 +239,10 @@ python evaluate_data_quality.py
 # Step 13: EO + bottleneck lineage integration (run first — produces the join key for all downstream steps)
 python3 SRK_BL_integration.py
 
+# Step 13b: Sampling overview map (sampled triangles vs unsampled circles, coloured by BL)
+#   Requires Step 13 output + EO_location_groups.csv from the sibling spatial-clustering project
+Rscript SRK_sampling_map.R
+
 # Step 14: Population genetics statistics
 Rscript SRK_population_genetic_summary.R
 
@@ -360,9 +365,14 @@ EO_group_BL_summary.csv  (EO → BL, Drift_index)
 
 -   `SRK_individual_BL_assignments.tsv` - Per-individual EO, Group, BL (BL1–BL5), Drift_index, BL_status (Assigned / Inferred / Unassigned). Join key consumed by every Phase 3/4 R script that adds a BL stratification.
 
+#### Step 13b — Sampling overview map
+
+-   `figures/SRK_sampling_map.png` / `SRK_sampling_map.pdf` - Geographic map of all catalogued *L. papilliferum* populations against their parent BL. Sampled populations drawn as filled triangles; not-yet-sampled populations as filled circles; both coloured by parent BL and sized by habitat area. The 6 focus EOs (EO18, EO25, EO27, EO67, EO70, EO76) carry bold white-fill labels with sample counts; other sampled EOs carry smaller plain labels. Headline: **325 BL-resolved samples across 17 populations in 16 EOs** + **10 JAR samples / 9 germplasm sub-codes** (not plotted) = 335 total successful samples.
+-   `figures/SRK_sampling_map_presentation.png` / `SRK_sampling_map_presentation.pdf` - Same plot with title/subtitle/caption stripped for slide decks.
+
 #### Step 14 — Population genetics
 
--   `SRK_population_genetic_summary.tsv` - EO-level summary with `BL` and `Drift_index` columns; rows ordered by within-BL connectivity (BL5→BL2) then EO mean Drift_index
+-   `SRK_population_genetic_summary.tsv` - EO-level summary with `BL` and `Drift_index` columns; rows ordered by parent BL (total habitat area, then within-BL connectivity → BL4, BL5, BL3, BL1, BL2) then by EO mean Drift_index
 -   `SRK_population_genetic_summary_BL.tsv` - BL-level aggregate (5 rows) with `N_EOs`, `Mean_drift`, plus per-group metrics
 -   `SRK_population_genetic_summary.pdf` - 2-page PDF: page 1 EO bars in connectivity order with the locked Set1 BL palette; page 2 BL aggregate bars
 
@@ -460,7 +470,7 @@ This pipeline is designed for:
 
 For a full worked example of results produced by this pipeline, see [LEPA_SRK_report.md](LEPA_SRK_report.md).
 
-Key findings from **335 ingroup individuals across six focus Element Occurrences** (EO18, EO25, EO27, EO67, EO70, EO76; spanning all five bottleneck lineages BL1–BL5) and 49 metadata samples reserved for lab follow-up (Libraries 001–010):
+Key findings from the **335 successful ingroup samples** — 325 BL-resolved across **17 populations in 16 Element Occurrences** spanning all five bottleneck lineages BL1–BL5 (with the 6 focus EOs EO18, EO25, EO27, EO67, EO70, EO76 driving most downstream analyses); plus 10 samples in the JAR region with unresolved coordinates; plus **59 metadata samples reserved for lab follow-up** (Libraries 001–010). See `figures/SRK_sampling_map.png` for the sampling overview:
 
 - **49 observed S-allele bins** species-wide, with a predicted total of **60** (consensus of Michaelis-Menten = 59 and Chao1 = 61) — the species retains ~82% of its expected SI repertoire, but the retention is unevenly distributed across BLs.
 - The five bottleneck lineages have eroded their S-allele pools very unevenly: **BL4 retains ~68%** of its expected richness while **BL1 and BL2 have lost ≥86%**, consistent with their lower within-BL connectivity.

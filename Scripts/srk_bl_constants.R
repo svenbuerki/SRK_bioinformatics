@@ -9,11 +9,15 @@
 # automatically when sampling grows — only the CSVs in Tables/ need updating.
 #
 #   BL_ORDER (built from Tables/EO_BL_summary.csv):
-#     BLs sorted high-to-low by within-BL connectivity using the formula
-#       connectivity = n_locations - n_groups           (primary, desc)
-#       total_pop_size                                  (tie-break, desc)
-#     This is the same formula that orders the panels in the BL drift
-#     figure produced by the spatial-clustering project.
+#     BLs sorted high-to-low by total habitat area, with within-BL
+#     connectivity as tie-breaker:
+#       total_area_ha                              (primary, desc)
+#       connectivity = n_locations - n_groups      (secondary, desc)
+#       BL name                                    (deterministic tie-break)
+#     Area is the primary Ne proxy (carrying capacity -> drift floor);
+#     connectivity is the secondary stratification for BLs of similar size.
+#     Same sort key drives the panel order in the BL drift figure produced
+#     by the spatial-clustering project.
 #
 #   BL_COLORS:
 #     Set1 palette mapped to BL by cluster-index, matching the rendered
@@ -40,13 +44,16 @@ BL_COLORS <- c(
 )
 
 # Build BL_ORDER from the per-BL summary CSV at load time.
+# Sort key: total habitat area (ha) DESC, then within-BL connectivity DESC,
+# then BL name ASC. Area is the primary Ne proxy; connectivity is the
+# secondary stratification for BLs of similar size.
 .derive_bl_order <- function(path = .BL_SUMMARY_FILE) {
   if (!file.exists(path))
     stop("BL summary file not found: ", path,
          " — mirror it from LEPA_EO_spatial_clustering/data/EO_BL_summary.csv")
   s <- read.csv(path, stringsAsFactors = FALSE)
   s$connectivity <- s$n_locations - s$n_groups
-  s <- s[order(-s$connectivity, -s$total_pop_size, s$BL), ]
+  s <- s[order(-s$total_area_ha, -s$connectivity, s$BL), ]
   s$BL
 }
 BL_ORDER <- .derive_bl_order()
@@ -55,8 +62,8 @@ BL_ORDER <- .derive_bl_order()
 # (TP1, TP2, GFS scatters, allele-accumulation curve legend, etc.) where the
 # x/y axes are not BL and the legend just needs an easy-to-read order.
 # Pass to ggplot scales as `breaks = BL_ORDER_NUMERIC`. Factor levels on the
-# data should still be BL_ORDER (connectivity-driven) so axis / facet / table
-# order remains connectivity-based.
+# data should still be BL_ORDER (area-then-connectivity) so axis / facet /
+# table order remains driven by the Ne-proxy ranking.
 BL_ORDER_NUMERIC <- sort(BL_ORDER)
 
 # Order EOs by (BL_ORDER, ascending mean Drift_index, EO name).

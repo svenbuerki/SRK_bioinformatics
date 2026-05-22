@@ -11,12 +11,16 @@ updating.
 Exports
 -------
 BL_ORDER : list[str]
-    BLs sorted high-to-low by within-BL connectivity, computed at import
-    time from ``Tables/EO_BL_summary.csv`` using the formula
-        connectivity = n_locations - n_groups        (primary, desc)
-        total_pop_size                               (tie-break, desc)
-    Same formula used to order the panels in the BL drift figure
-    produced by the spatial-clustering project.
+    BLs sorted high-to-low by total habitat area, with within-BL
+    connectivity as tie-breaker. Computed at import time from
+    ``Tables/EO_BL_summary.csv`` using the sort key
+        total_area_ha                          (primary, desc)
+        connectivity = n_locations - n_groups  (secondary, desc)
+        BL name                                (deterministic tie-break)
+    Area is the primary Ne proxy (carrying capacity -> drift floor);
+    connectivity is the secondary stratification for BLs of similar size.
+    Same sort key drives the panel order in the BL drift figure produced
+    by the spatial-clustering project.
 
 BL_COLORS : dict[str, str]
     Set1 palette mapped to BL by cluster-index, matching the rendered
@@ -47,6 +51,9 @@ BL_COLORS = {
 
 
 def _derive_bl_order(path=_BL_SUMMARY_FILE):
+    """BL order sort key: total habitat area (ha) DESC, then within-BL
+    connectivity DESC, then BL name ASC. Area is the primary Ne proxy;
+    connectivity is the secondary stratification for BLs of similar size."""
     path = Path(path)
     if not path.is_file():
         raise FileNotFoundError(
@@ -58,11 +65,11 @@ def _derive_bl_order(path=_BL_SUMMARY_FILE):
         for r in csv.DictReader(f):
             rows.append((
                 r["BL"],
-                int(r["n_locations"]) - int(r["n_groups"]),  # connectivity
-                int(r["total_pop_size"]),
+                float(r["total_area_ha"]),                       # primary
+                int(r["n_locations"]) - int(r["n_groups"]),      # connectivity
             ))
     rows.sort(key=lambda x: (-x[1], -x[2], x[0]))
-    return [bl for bl, _conn, _pop in rows]
+    return [bl for bl, _area, _conn in rows]
 
 
 BL_ORDER = _derive_bl_order()
@@ -72,7 +79,7 @@ BL_ORDER = _derive_bl_order()
 # the x/y axes are not BL and the legend just needs an easy-to-read order.
 # Pass to plotting code (e.g. matplotlib legend handles, ggplot breaks=...)
 # wherever the BL appears in a colour legend.  Categorical axes / facets /
-# tables should still use BL_ORDER (connectivity-driven).
+# tables should still use BL_ORDER (area-then-connectivity, Ne-proxy driven).
 BL_ORDER_NUMERIC = sorted(BL_ORDER)
 
 

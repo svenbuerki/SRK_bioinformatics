@@ -24,7 +24,7 @@ This pipeline reconstructs S-receptor kinase (SRK) haplotypes from Nanopore ampl
 
 **Phase 2 — Allele definition and genotyping** (Steps 10–12). Distance-based clustering of validated proteins into S-allele bins ([Step 10](#SRKalleledist)), per-individual allele copy-count genotyping ([Step 11](#SRKfunctionalprotgenotype)), and tetraploid zygosity classification into `AAAA`/`AAAB`/`AABB`/`AABC`/`ABCD` genotypes ([Step 12](#zygosity)). The current dataset comprises **335 ingroup individuals across 19 *Lepidium papilliferum* Element Occurrences resolved into 49 observed S-allele bins** (Kneedle calibration N = 58 defined bins; 9 unobserved bins are reference-allele placeholders).
 
-**Phase 3 — Population genetics under a bottleneck-lineage framework** (Steps 13–21). [Step 13](#BLintegration) imports five independent bottleneck lineages (BL1–BL5) from the sibling repository [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering) — derived by Ward's D2 hierarchical clustering of 32 geographic-group centroids under a 500 m pollinator-connectivity threshold — and writes a per-individual BL assignment table consumed by every downstream analysis. Steps 14–21 then compute population-genetic statistics, allele-accumulation curves with Michaelis-Menten and Chao1 estimators, χ² goodness-of-fit against the NFDS equal-frequency expectation, the TP1 tipping-point diagnostic (allele richness × frequency evenness), allele composition / sharing (UpSet + heatmap), per-individual Genotypic Fitness Score, the TP2 tipping-point diagnostic (mean GFS × proportion AAAA), and reproductive-effort summaries — every output stratified in parallel by EO (management unit, ordered within parent BL by ascending mean Drift_index) and by BL (inferential unit, ordered by within-BL connectivity: **BL5, BL1, BL4, BL3, BL2**). The locked Set1 colour palette (BL1 purple, BL2 blue, BL3 red, BL4 orange, BL5 green) is used consistently with the sibling spatial-clustering repository. All BL ordering and palette decisions are centralised in the mirrored modules **`srk_bl_constants.R`** and **`srk_bl_constants.py`**, sourced/imported by every Phase 3/4 script (see Step 14 for the full ordering rules).
+**Phase 3 — Population genetics under a bottleneck-lineage framework** (Steps 13–21). [Step 13](#BLintegration) imports five independent bottleneck lineages (BL1–BL5) from the sibling repository [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering) — derived by Ward's D2 hierarchical clustering of 32 geographic-group centroids under a 500 m pollinator-connectivity threshold — and writes a per-individual BL assignment table consumed by every downstream analysis. Steps 14–21 then compute population-genetic statistics, allele-accumulation curves with Michaelis-Menten and Chao1 estimators, χ² goodness-of-fit against the NFDS equal-frequency expectation, the TP1 tipping-point diagnostic (allele richness × frequency evenness), allele composition / sharing (UpSet + heatmap), per-individual Genotypic Fitness Score, the TP2 tipping-point diagnostic (mean GFS × proportion AAAA), and reproductive-effort summaries — every output stratified in parallel by EO (management unit, ordered within parent BL by ascending mean Drift_index) and by BL (inferential unit, ordered by total habitat area then within-BL connectivity: **BL4, BL5, BL3, BL1, BL2**). The locked Set1 colour palette (BL1 purple, BL2 blue, BL3 red, BL4 orange, BL5 green) is used consistently with the sibling spatial-clustering repository. All BL ordering and palette decisions are centralised in the mirrored modules **`srk_bl_constants.R`** and **`srk_bl_constants.py`**, sourced/imported by every Phase 3/4 script (see Step 14 for the full ordering rules).
 
 **Phase 4 — Hypothesis testing and crossing design** (Steps 22–23). [Step 22a](#alleleclusters) (`srk_variability_landscape.py`) runs an identical sliding-window Shannon-entropy scan on a combined alignment of LEPA + 22 *Brassica* + 10 *Arabidopsis* SRK alleles to detect hypervariable (HV) columns per species, validates LEPA HV regions against Brassica/Arabidopsis with a 10 000-permutation overlap test, and overlays the 12 SCR9-contact residues from Ma et al. 2016 (PDB 5GYY) for structural validation. Step 22b (`srk_allele_hypotheses.py`) consumes the canonical HV columns to compute HV-only pairwise distances, UPGMA-detect Class I / Class II, build the synonymy network (synonymy groups (HV-identical) + Synonymy_test bridges), and rank the AAAA × AAAA cross matrix into Incompatible / Synonymy_test / Compatible_within / Compatible_cross categories. Two optional diagnostics — **Step 22c** (`srk_wgroup_collapse_test.py`, tests how much Synonymy group redundancy contributes to LEPA's low Shannon entropy) and **Step 22d** (`srk_perBL_entropy_test.py`, decomposes LEPA HV-column residue diversity per Bottleneck Lineage and compares to Brassica + Arabidopsis to distinguish drift from selection convergence) — flesh out the biological mechanism. **Step 22e** (`srk_cross_plan.py`) translates the cross categorisation into a phased experimental protocol (H0 / H1a / H1b / H2 / H3) with explicit AAAA / AAAB / AABB genotype requirements and paired controls for heterozygous-donor tests; every cross row is traceable to a sequence-based category (HV distance + Class from Step 22b) plus a genotype-based feasibility filter (`Allele_composition` from Step 12). [Step 23](#crossresults) reads completed cross records and tests the predictions.
 
@@ -88,6 +88,7 @@ The pipeline consists of **23 main steps organized into four phases**, progressi
 ## [Phase 3: Data Analyses](#phase3)
 
 13. [Element Occurrence and Bottleneck Lineage Integration](#BLintegration) – Bridges the SRK individual-level dataset to the spatial framework defined in the sibling project [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering). For each post-QC individual, joins EO label, geographic group, bottleneck lineage (BL1–BL5), and drift index from `EO_group_BL_summary.csv`. Produces `SRK_individual_BL_assignments.tsv`, the join key used by all subsequent Phase 3 steps to add BL stratification (EO sorted within BL for management; BL aggregated for inferential power on small localities).
+13b. [Sampling Overview Map](#samplingmap) – Single-panel geographic map plotting every catalogued population against its parent BL. Filled triangles = sampled by the SRK pipeline; filled circles = not yet sampled. Recommended first visual in any presentation or report.
 14. [Population Genetics Statistics](#popgenetics) – Estimation of population-level diversity metrics, including heterozygosity, mean alleles per individual, total allele counts, and effective allele numbers.
 15. [Allele Accumulation Curves](#alleleaccum) – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators.
 16. [Allele Frequency Analysis](#allelefrqanalysis) – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under negative frequency-dependent selection. The estimated species allele richness (from step 15) is used as the NFDS optimum baseline.
@@ -4859,6 +4860,43 @@ Stratifying every Phase 3 analysis by both EO (sorted within BL) and BL (aggrega
 
 ---
 
+## Sampling Overview Map {#samplingmap}
+
+### Purpose
+
+A single-panel geographic map showing every catalogued population of the species against its parent BL, with a clear visual distinction between populations successfully sampled by the SRK pipeline and not-yet-sampled populations. This is the **recommended first visual** in any presentation or report: it sets the geographic baseline before any per-locus analysis and makes the gap between current sampling and the full species range immediately obvious. Produced by `SRK_sampling_map.R` and built on top of the canonical post-QC allele matrix + Step 13 BL assignments.
+
+### Inputs
+
+| File | From step | Description |
+|------|-----------|-------------|
+| `Tables/SRK_individual_allele_genotypes.tsv` | [Step 11](#SRKfunctionalprotgenotype) | Canonical successful-sample roster (335 ingroup individuals) |
+| `Tables/sampling_metadata.csv` | (registry) | `Pop` and `EO_w_sub` lookup per `SampleID` |
+| `SRK_individual_BL_assignments.tsv` | [Step 13](#BLintegration) | Per-sample EO → BL resolution |
+| `EO_location_groups.csv` | sibling [`LEPA_EO_spatial_clustering`](https://github.com/svenbuerki/LEPA_EO_spatial_clustering) | Lat/lon for every catalogued population |
+| `Tables/EO_group_BL_summary.csv` | sibling project (mirror) | Parent BL for every catalogued EO (so unsampled populations still get their BL colour) |
+| `srk_bl_constants.R` | (constants) | Locked Set1 BL palette + `BL_ORDER` |
+
+### Visual conventions
+
+- **Shape**: filled triangle = sampled; filled circle = not yet sampled. Both filled with the parent BL colour from the locked Set1 palette.
+- **Size**: habitat area (ha), `sqrt`-scaled so small populations stay visible.
+- **Labels**: for each sampled EO, the EO code (with `n =` sample count) is placed on the *largest* location within that EO — this is the convention for compound germplasm sub-codes that cannot be pinned to a specific sub-location. Focus EOs (EO18, EO25, EO27, EO67, EO70, EO76) carry bold white-fill labels; other sampled EOs carry smaller plain labels. Unsampled populations are left unlabelled to keep the map readable.
+- **Landscape backdrop**: same DEM topo + Snake River + reference cities as the sibling project's `EO_BL_geographic_context_map.png`, so the two figures cross-reference visually.
+
+### Output files
+
+| File | Content |
+|------|---------|
+| `figures/SRK_sampling_map.png` / `SRK_sampling_map.pdf` | Captioned version |
+| `figures/SRK_sampling_map_presentation.png` / `SRK_sampling_map_presentation.pdf` | Title / subtitle / caption stripped, for slide decks |
+
+### Headline numbers (current dataset, 2026-05-21)
+
+**325 BL-resolved samples across 17 populations in 16 EOs**, with the following per-BL distribution: BL1 (5 / 4 / 4) · BL2 (59 / 2 / 2) · BL3 (80 / 4 / 4) · BL4 (89 / 2 / 2) · BL5 (92 / 4 / 5). Plus **10 samples / 9 germplasm sub-codes in the JAR region** (no coordinates in the spatial catalogue; not plotted on the map). Sum = **335 total successful ingroup samples**.
+
+---
+
 ## Population Genetic Statistics {#popgenetics}
 
 ### Overview
@@ -4985,7 +5023,7 @@ One row per BL (5 rows). Each BL aggregates all individuals across its constitue
 SRK_population_genetic_summary.pdf
 ```
 
-Two-page PDF, four panels per page (Effective allele diversity, Heterozygosity, Allele richness, Sample size). **Page 1**: EO bars in connectivity order (parent BL by within-BL connectivity → EOs by ascending mean Drift_index), bars coloured by BL using the locked Set1 palette (legend in panel 1). **Page 2**: BL aggregate bars in connectivity order (BL5, BL1, BL4, BL3, BL2).
+Two-page PDF, four panels per page (Effective allele diversity, Heterozygosity, Allele richness, Sample size). **Page 1**: EO bars in area-then-connectivity order (parent BL by `BL_ORDER` → EOs by ascending mean Drift_index), bars coloured by BL using the locked Set1 palette (legend in panel 1). **Page 2**: BL aggregate bars in area-then-connectivity order (BL4, BL5, BL3, BL1, BL2).
 
 The Set1 BL palette and ordering rules established here are sourced by Steps 15–21 from the shared module `srk_bl_constants.R` (Python equivalent `srk_bl_constants.py`) and match the sibling LEPA_EO_spatial_clustering project:
 
@@ -6214,7 +6252,7 @@ Rscript SRK_GFS_reproductive_effort.R
 | `SRK_individual_GFS.tsv` | [Step 19](#GFS) | Per-individual GFS scores, genotype classes, **EO + BL + Drift_index** |
 | `SRK_individual_zygosity.tsv` | [Step 12](#zygosity) | Per-individual allele composition used to identify the single allele carried by AAAA individuals |
 
-**BL-stratified design.** EOs are ordered by parent BL (within-BL connectivity, most connected at top) then by ascending mean Drift_index within BL; y-axis labels are coloured by parent BL (Set1 palette). The BL panel pools all BL-assigned individuals into 5 lineage rows, ordered by within-BL connectivity (BL5, BL1, BL4, BL3, BL2 — most connected at top). The TP2 AAAA threshold (30%) is marked on both panels.
+**BL-stratified design.** EOs are ordered by parent BL (total habitat area, then within-BL connectivity, largest at top) then by ascending mean Drift_index within BL; y-axis labels are coloured by parent BL (Set1 palette). The BL panel pools all BL-assigned individuals into 5 lineage rows, ordered by total habitat area then within-BL connectivity (BL4, BL5, BL3, BL1, BL2 — largest at top). The TP2 AAAA threshold (30%) is marked on both panels.
 
 **Pan-group AAAA alleles.** *Pan-BL* alleles are present in AAAA individuals across every BL; *pan-EO* alleles are present in AAAA individuals in ≥80% of focus EOs (relaxed threshold accommodates EO18, the smallest focus EO with only 4 AAAA individuals carrying a different drift signature). Allele_050 and Allele_051 (Synonymy group 1, HV-identical, likely the same SI specificity) appear as pan-BL across all 5 BLs and pan-EO in 5 of 6 focus EOs — confirming that independent bottlenecks have all converged on the same fixed SI specificity.
 
@@ -6241,9 +6279,9 @@ Rscript SRK_GFS_reproductive_effort.R
 
 #### Figure Descriptions
 
-**`SRK_GFS_reproductive_effort` (page 1, EO panel):** Each horizontal bar represents one EO with N ≥ 5. EOs are ordered by parent BL (within-BL connectivity, most connected at top) then by ascending mean Drift_index within BL; y-axis labels are coloured by parent BL using the Set1 palette. Segments are coloured by GFS class (red = AAAA through blue = ABCD), stacked left to right from lowest to highest GFS. The dashed vertical line marks the TP2 AAAA threshold (30%): bars where the red (AAAA) segment extends past this line indicate a TP2 breach. Annotations to the right show proportion supporting (%), count (n / N), and mean GFS.
+**`SRK_GFS_reproductive_effort` (page 1, EO panel):** Each horizontal bar represents one EO with N ≥ 5. EOs are ordered by parent BL (total habitat area, then within-BL connectivity, largest at top) then by ascending mean Drift_index within BL; y-axis labels are coloured by parent BL using the Set1 palette. Segments are coloured by GFS class (red = AAAA through blue = ABCD), stacked left to right from lowest to highest GFS. The dashed vertical line marks the TP2 AAAA threshold (30%): bars where the red (AAAA) segment extends past this line indicate a TP2 breach. Annotations to the right show proportion supporting (%), count (n / N), and mean GFS.
 
-**`SRK_GFS_reproductive_effort` (page 2, BL panel):** Same layout for the 5 BLs, ordered by within-BL connectivity (BL5, BL1, BL4, BL3, BL2 — most connected at top). All 325 BL-assigned individuals are aggregated into their respective BL rows; y-axis labels are coloured by BL.
+**`SRK_GFS_reproductive_effort` (page 2, BL panel):** Same layout for the 5 BLs, ordered by total habitat area then within-BL connectivity (BL4, BL5, BL3, BL1, BL2 — largest at top). All 325 BL-assigned individuals are aggregated into their respective BL rows; y-axis labels are coloured by BL.
 
 **`SRK_GFS_AAAA_allele_composition` (page 1, EO panel):** Companion figure unpacking the AAAA bar from the EO reproductive effort figure. Each bar shows how many AAAA individuals in that EO carry each allele. Pan-EO Synonymy group 1 alleles (Allele_050, Allele_051; orange and blue) are highlighted; all remaining alleles are shown as a single grey "Other alleles" segment. Annotations show total AAAA count and percentage carrying a Synonymy group 1 allele.
 
