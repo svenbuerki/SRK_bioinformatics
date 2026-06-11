@@ -10,7 +10,7 @@
 
 **Species S-allele richness is severely depleted, with one diversity reservoir.** 49 distinct S-alleles observed; Michaelis-Menten estimate = 59 (consensus across MM and Chao1 = 60). Per-BL richness varies dramatically: **BL4 retains 27 alleles (55 % — the diversity reservoir)** while BL1 and BL2 retain only 4 and 8 alleles respectively. **26 of 49 alleles (53 %) are private to a single BL** — direct empirical evidence of multiple independent founder events, not a single shared bottleneck.
 
-**Drift has eroded population-level S-allele diversity, and the depleted populations differ in whether they are still demographically functioning (TP1 — mating-pool functionality).** Step 15–16 erosion barplots establish severe depletion at both stratification levels (37–88 % allele loss per EO; ≥ 53 % per BL). The reframed TP1 then asks whether the depleted mating pool can still sustain reproduction: evenness J × the **compatible-pair fraction** (P_compat — the fraction of random plant pairs that are cross-compatible under tetraploid sporophytic SI), at strict (L = 0) and empirical-leakage (L = 0.25) levels. **EO70 alone remains in the BIOBANK + RESTORE quadrant under both views** — no realistic SI-leakage rate rescues its mating pool. EO67 partially rescues to AUGMENT URGENTLY; EO18, EO76 rescue to MONITOR under leakage but pay the cost in 55–73 % AAAA homozygosity (C3 Stage 5 → Stage 2 self-reinforcing loop). Restoration of the species-wide mating pool requires inter-BL allele transfers; within-lineage breeding alone cannot rebuild the SI system.
+**Drift has eroded population-level S-allele diversity, and the depleted populations differ in whether random mating is still demographically viable (TP1 — mating-pool functionality).** Step 15–16 erosion barplots establish severe depletion at both stratification levels (37–88 % allele loss per EO; ≥ 53 % per BL). The reframed TP1 then asks the demographic question directly via the **compatible-pair fraction** (P_compat — the fraction of random plant pairs that are cross-compatible under tetraploid sporophytic SI). The headline result is a single traffic-light figure ([Figure 14](#figure-14)): **EO70 (BL2) is the only RED population (random mating failed; bootstrap 95 % CI well below threshold), three EOs are AMBER (struggling), and EO25 and EO27 sit just at the GREEN threshold**. Recovery requires both informed breeding (within-EO managed crosses) — to make the most of the remaining diversity — and inter-BL allele transfers — to remove the diversity ceiling that bounds informed breeding. The complementary two-axis (J × P_compat) view with strict-vs-leaky panels ([Figures 14a–d](#figure-14a)) reveals which populations are demographically alive only because of SI leakage, exposing the C3 Stage 5 → Stage 2 feedback loop directly. **EO70 alone remains in the BIOBANK + RESTORE quadrant under both views** — no realistic SI-leakage rate rescues its mating pool. EO67 partially rescues to AUGMENT URGENTLY; EO18, EO76 rescue to MONITOR under leakage but pay the cost in 55–73 % AAAA homozygosity (C3 Stage 5 → Stage 2 self-reinforcing loop). Restoration of the species-wide mating pool requires inter-BL allele transfers; within-lineage breeding alone cannot rebuild the SI system.
 
 **Drift has degraded individual-level reproductive fitness to a critical level (Tipping Point 2).** All five BLs CRITICAL on TP2 (mean Genotypic Fitness Score < 0.667 AND > 30 % AAAA homozygotes). Allele_050 and Allele_051 (both members of Synonymy group 1) are pan-BL fixed in AAAA individuals — **convergent drift onto the same SI specificity despite independent bottlenecks**. **15 AABC individuals** species-wide carry the heterozygous-gamete potential needed for high-yield managed crossing — they are the immediate seed-parent priority.
 
@@ -210,7 +210,118 @@ This pattern strongly implies **localised SI breakdown at the most ecologically 
 | Within-EO recovery via census growth would risk progeny fitness loss | Within-EO census growth is unproblematic if accompanied by inter-BL allele transfers |
 | Long-term evolutionary trajectory: rapid genetic erosion via selfing | Long-term evolutionary trajectory: balancing-selection-mediated diversity recovery is achievable |
 
-The 7 SI-escape candidates are flagged for follow-up phenotyping in [`Tables/SRK_SI_escape_candidates.csv`](Tables/SRK_SI_escape_candidates.csv) (controlled selfing tests). If those tests confirm self-compatibility — and especially if the EO76 cluster proves to be a population-wide SC transition rather than 5 independent rare events — the recommendations below would need revisiting for that population specifically. For now, **the conservation strategy proceeds on the basis that SI is functional species-wide**, and Q3–Q7 develop the implications of that finding.
+The 7 SI-escape candidates are flagged for follow-up phenotyping in [`Tables/SRK_SI_escape_candidates.csv`](Tables/SRK_SI_escape_candidates.csv) (controlled selfing tests). If those tests confirm self-compatibility — and especially if the EO76 cluster proves to be a population-wide SC transition rather than 5 independent rare events — the recommendations below would need revisiting for that population specifically.
+
+### Refinement (Step 25 + Step 26, 2026-06-11): per-individual SI / pSI / SC reconstruction
+
+The categorical framework above (Functional / Partial / Complete_loss) was built before we re-examined the per-haplotype data Step 7 archives in the `_frame1_stopcodon_log.tsv` files. Those logs tag every Canu-assembled haplotype as `OK` (no internal stop) or `REMOVED` (premature stop → non-functional SRK) and are dropped before the genotyping cascade, so the per-haplotype functional information never reaches the per-individual genotype calls — which count only the functional copies. **Step 25** re-aggregates the stop-codon logs into a per-individual tetraploid count of `copies_functional` and `copies_nonfunctional`, applies a Canu-noise filter (`n_REMOVED < 2 → SI`), and assigns each individual to one of four states:
+
+| `SI_status` | Definition | n / 401 ingroup |
+|---|---|---:|
+| **SI**  | 4 functional copies (or single `REMOVED` rejected as noise) | 37 (9.2 %) |
+| **pSI · high confidence** | 1–3 broken copies AND `frac_NF ≥ 0.25` — robust signal that ≥ 1 of 4 real copies is non-functional | 209 (52.1 %) |
+| **pSI · low confidence** | 1–3 broken copies but `frac_NF < 0.25` — ambiguous | 23 (5.7 %) |
+| **SC**  | 4 broken copies — robust because every haplotype must independently carry a stop | 8 (2.0 %) |
+| **Insufficient_data** | < 4 raw haplotypes — cannot resolve four copies | 124 (30.9 %) |
+
+The refined picture is **substantially less optimistic than the categorical framework above** suggested:
+
+- The SC count rises modestly (7 → 8) — one additional individual with all-null SRK detected.
+- The SI count drops dramatically. Only **37 of 401 ingroup individuals (9.2 %)** carry a fully intact molecular SI system. The remainder split into pSI (58 %), SC (2 %), or Insufficient_data (31 %).
+- **pSI · high confidence is the dominant state across the species** (209 / 401 = 52 %). These individuals have at least one biologically real non-functional SRK copy.
+- The **8 SC individuals cluster in EO76 (n = 3), EO29 (n = 2), and EO18 / EO70 / EO97 (one each)** — the same EO76 hotspot identified in the original analysis, but now with EO29 emerging as a second cluster (2 of 3 sampled EO29 plants are SC).
+
+#### pSI severity breakdown — how many SRK copies are broken?
+
+Within the 209 pSI · high-confidence individuals, the number of broken SRK copies (out of four) is itself a gradient — and the modal individual is *not* on the mild end:
+
+| pSI severity | n | % of pSI · high | Biological reading |
+|---|---:|---:|---|
+| **1 of 4 copies non-functional** | 63 | 30 % | Mild leakiness — still likely SI in practice |
+| **2 of 4 copies non-functional** | **110** | **53 %** | **Modal state across the species.** Half the SRK locus is broken; mating-pool recognition specificity is halved |
+| **3 of 4 copies non-functional** | 36 | 17 % | Severe leakiness — only one functional copy left, one mutation away from SC |
+
+**The modal pSI individual in *L. papilliferum* has two of four SRK copies broken** — exactly halfway along the SI → SC erosion axis. The 36 individuals with three broken copies are functionally one mutation away from SC and merit phenotyping alongside the eight current SC candidates. Together SC (n = 8) + pSI · 3 NF (n = 36) = **44 individuals (11 % of the ingroup) are at the edge of SI breakdown** — roughly six times the count flagged by the original `Complete_loss + premature_stop` filter alone.
+
+### A two-layer model for the SI → pSI → SC process
+
+The robust data (n = 254) support a clean two-layer model: a **static** snapshot of the current state of each BL plus a **dynamic** projection of where each BL is heading under drift, mutation, and SC-feedback selection. Both layers are documented under Step 25 + Step 27 in `Bioinformatics_pipeline.md`.
+
+#### Layer 1 — Per-copy binomial snapshot (Step 25 model)
+
+Treat the four tetraploid SRK copies of each individual as approximately independent Bernoulli outcomes, each broken with probability *p* per copy. The expected number of broken copies per individual then follows **Binomial(4, p)**. Fitting *p* by method of moments to each BL's robust subset gives:
+
+| BL | n (robust) | p̂ per copy | Chi² (df) | p-value | Reading |
+|---|---:|---:|---|---|---|
+| BL5 | 68 | **0.393** | 4.39 (2) | 0.11 | well-fit; healthiest BL |
+| BL4 | 71 | **0.401** | 1.74 (2) | 0.42 | well-fit |
+| BL2 | 52 | **0.438** | 5.21 (2) | 0.074 | borderline-fit; more pSI · 2 NF than expected |
+| BL3 | 44 | **0.438** | 4.67 (2) | 0.097 | well-fit; excess at the SI end + SC end (bifurcation signal) |
+| BL1 | 7 | **0.571** | 0.72 (1) | 0.40 | well-fit but n small; most advanced BL |
+| **Species (pooled)** | **254** | **0.416** | **12.76 (3)** | **0.005** | **mixture of BL-specific binomials → rejects pooled fit** |
+
+**Reading.** Within each BL the data are statistically indistinguishable from Bin(4, p_BL). Across BLs the per-copy break probability varies from 0.39 (BL5) to 0.57 (BL1) — the species-level model rejects only because it is a *mixture* of these different-p binomials. **Independence of copies + BL-specific drift rates is sufficient to explain everything we see at the snapshot level.** The expected SC frequency under the binomial model is p̂⁴, which gives 0.024 species-wide vs 0.031 observed — within sampling noise.
+
+#### Layer 2 — Forward-time inheritance model (Step 27 simulator)
+
+The binomial snapshot tells us where each BL sits today but not *where it is heading*. A tetraploid Wright–Fisher simulator (`SRK_inheritance_simulator.py`, 100 generations × 30 replicates, mu = 1 × 10⁻⁴ per copy per gen, δ = 0.5, s = 0.5) projects each BL forward from its empirical Step 26 initial state under four scenarios: **baseline** (current isolated state, no migration); **rescue_low** (m = 0.001 inter-BL migration per individual per generation); **rescue_high** (m = 0.01); **high_drift** (effective N halved). Model assumptions: tetrasomic random pairing with double-reduction α = 0.10; sporophytic SI rejection where any functional pollen S-allele matching any functional stigma S-allele rejects the cross (NULL alleles never trigger rejection); SC individuals self at rate s with selfed-offspring fitness 1 − δ.
+
+**Median time to 50 % SC frequency per BL (generations):**
+
+| Scenario | BL5 | BL4 | BL3 | BL2 | BL1 |
+|---|---:|---:|---:|---:|---:|
+| baseline | 21.5 | 22 | 20 | 9 | **4** |
+| rescue_low (m = 0.001) | 22.5 | 22 | 23 | 10 | 5 |
+| rescue_high (m = 0.01) | 23 | 28 | 24.5 | 10 | 4 |
+| high_drift (N × 0.5) | 15.5 | 17 | 17 | 7.5 | 2.5 |
+
+**Three biological readings.**
+
+1. **Every BL crosses the 50 % SC threshold within ~25 generations under baseline conditions.** Even BL5 — the healthiest BL with current p̂ = 0.39 and the largest sampled N — reaches 50 % SC in ~22 generations. **The species is on a rapid SI → SC trajectory** in the absence of intervention.
+
+2. **Habitat loss accelerates the collapse.** Halving effective N (high_drift) advances the SC tipping point by 4–7 generations for BL3–BL5 and by ~2 generations for BL1–BL2 (already on the edge). The dependence is sub-linear because drift dominates the dynamics even at the current N.
+
+3. **Passive inter-BL migration alone cannot rescue.** Even m = 0.01 (1 % of individuals replaced by migrants from a randomly chosen other BL each generation) delays the tipping point by only 1–6 generations. The reason is mechanistic: the donor BLs themselves carry p̂ = 0.39–0.57, so importing random migrants does not bring in *functional* alleles preferentially — it just averages a near-pSI state across BLs. **A meaningful rescue requires targeted introduction of functional alleles** (managed crosses with selected donors carrying SI status, not random inter-BL migration). This is the conservation-genetics extension of Step 22e's cross plan: the H1a/H1b/H2 crosses must specifically select **SI** mothers and fathers (not pSI), which the Step 25 per-individual SI table now makes possible.
+
+The forward-time figures ([Figures 6d](#figure-6d), [6e](#figure-6e), [6f](#figure-6f)) plot p_NULL trajectories per BL, SC-progression bands, and median time-to-SC bars.
+
+<a name="figure-6d"></a>
+
+![Figure 6d: Projected p_NULL trajectories per BL under four scenarios. Thin lines = individual replicate trajectories (n = 30 reps per scenario per BL); bold lines = median trajectory across replicates. Initial state = empirical Step 26 per-BL genotypes. **Every BL trends upward toward p_NULL ≈ 1.0 (full SC) within 50–100 generations**; the variance across replicates collapses as the population fixes the NULL state. Rescue scenarios (rescue_low, rescue_high) provide minor delay; high_drift accelerates fixation. Source: `figures/SRK_inheritance_pNULL_trajectories.png` produced by `SRK_inheritance_simulator.py` + `SRK_inheritance_figures.R`.](figures/SRK_inheritance_pNULL_trajectories.png)
+
+<a name="figure-6e"></a>
+
+![Figure 6e: Projected SC frequency over time per BL. Bold lines = median across 30 replicates; shaded bands = inter-quartile range. Dashed horizontal line = 50 % SC tipping-point threshold. **All five BLs cross the 50 % SC line within 25 generations under baseline** (BL1: ~4 generations; BL5: ~22 generations). Rescue_high (m = 0.01) shifts BL3/BL4/BL5 curves only marginally — donor BLs themselves carry high p_NULL, so importing random migrants cannot rescue. Source: `figures/SRK_inheritance_SC_progression.png`.](figures/SRK_inheritance_SC_progression.png)
+
+<a name="figure-6f"></a>
+
+![Figure 6f: Median time to 50 % SC frequency per BL × scenario. Bars = median across replicates that reached the threshold; whiskers = IQR; labels above bars = number of replicates reaching SC / total replicates per group. Coloured by scenario. The visual confirms the headline reading: under baseline conditions, BL1 reaches SC in 4 generations and BL5 in 22; rescue scenarios shift these by ≤ 6 generations; high_drift accelerates by 4–7. Source: `figures/SRK_inheritance_time_to_sc.png`.](figures/SRK_inheritance_time_to_sc.png)
+
+**Take-home from the two-layer model.** The species is in a *transient state* approaching SC fixation in every BL. The pSI · 2 NF modal class observed today is not an equilibrium — it is a snapshot of the population moving toward p_NULL ≈ 1.0. The rescue lever that *does* work (selective allele introduction via managed crosses; Q7 cross plan) is incompatible with passive migration; the Step 25 SI status table is the new operational filter for selecting donor mothers / fathers.
+
+**Step 26** then propagates these per-individual SI states into the genotype matrix used by Steps 14, 17, 19, and 20. For pSI · high individuals, the genotype is rescaled to its `copies_functional` slots and the remaining slots are filled with `Allele_NULL`; SC individuals are added with `Allele_NULL × 4`; pSI · low individuals are conservatively treated as SI (we refuse to commit nulls when the signal is dilute); Insufficient_data individuals are written to a re-sequencing redo list (`SRK_samples_for_redo.tsv`, n = 124).
+
+The null-aware reruns (`SRK_population_genetic_summary_with_nulls.R`, `SRK_TP1_compatibility_metrics_with_nulls.py`, `SRK_individual_GFS_with_nulls.R`) confirm that the functional-only baselines used in Q4–Q5 below **overestimated mating-pool functionality and individual fitness by a meaningful margin**:
+
+- Null-aware P_compat (L=0) drops 0.03–0.08 for the larger BLs (BL3–BL5).
+- Null-aware mean GFS sits at 0.15–0.24 for every BL — **all five BLs CRITICAL on TP2** (mean GFS < 0.667 AND prop_zero > 30 %).
+- 60–75 % of individuals in every BL fall to GFS = 0 once broken copies are explicit.
+
+**Take-home for Q2.** SI remains the species-wide state — only 8 SC individuals — so the conservation strategy still rests on restoring allele diversity via managed crosses rather than mitigating inbreeding depression. **But "SI" at the species level is mostly partial / leaky SI at the individual level.** The 5-of-7-in-EO76 signal flagged above is reinforced as a transitional SI → SC trajectory under the Igić–Lande–Kohn framework; the species-wide pSI prevalence is consistent with widespread accumulation of non-functional SRK copies under drift, predicting that mating-pool functionality and per-individual fitness are lower than the functional-only Phase-1–2 analyses indicate. The full bias correction is documented under the Null-Aware Genotype Rebuild (Step 26) in `Bioinformatics_pipeline.md`.
+
+For now, **the conservation strategy proceeds on the basis that SI is functional species-wide** but with explicit acknowledgement that ~58 % of plants are partially leaky, and Q3–Q7 develop the implications of that finding using both the canonical (functional-only) and null-aware metric tracks.
+
+<a name="figure-6a"></a>
+
+![Figure 6a (robust): Per-individual SI system status at the species level — **robust subset** (n = 254 ingroup individuals: SI + pSI · high confidence + SC; drops 124 Insufficient_data and 23 pSI · low confidence). 5-tier pSI-severity breakdown: **SI** (37 / 14.6 %, 4 functional), **pSI · 1 NF copy** (63 / 24.8 %), **pSI · 2 NF copies** (**110 / 43.3 %, modal class**), **pSI · 3 NF copies** (36 / 14.2 %), **SC** (8 / 3.1 %). **Only ~15 % of robustly-called individuals carry a fully intact SI system; the most common state is "two of four SRK copies broken"** — the species sits midway along the SI → SC erosion axis. Source: `figures/SRK_SI_status_species_robust.png` produced by `SRK_SI_status_figures.R` (Step 25). A 7-tier full-dataset variant (`SRK_SI_status_species_full.png`) shows the same data plus the Insufficient_data and pSI_low tiers for QC purposes.](figures/SRK_SI_status_species_robust.png)
+
+<a name="figure-6b"></a>
+
+![Figure 6b (robust): SI status by Bottleneck Lineage — **robust subset only**. Stacked bars show the 5-tier pSI severity breakdown, BLs ordered by total habitat area (Ne proxy). Per-BL N after dropping Insufficient_data + pSI_low: BL4=71, BL5=68, BL3=44, BL1=7, BL2=52. **Per-BL per-copy break probability p̂** (fitted by Bin(4, p) — see model below): BL5=0.39, BL4=0.40, BL3=0.44, BL2=0.44, BL1=0.57. **BL1 (smallest habitat, highest p̂) carries 2 of 7 individuals as SC** (29 %) and **0 SI** — the most advanced position on the SI → SC erosion axis. BL3 has SC concentrated in EO76 (3 of 44). BL4/BL5 host the bulk of pSI individuals. Source: `figures/SRK_SI_status_by_BL_robust.png`.](figures/SRK_SI_status_by_BL_robust.png)
+
+<a name="figure-6c"></a>
+
+![Figure 6c (robust): SI status by focal Element Occurrence — robust subset only — faceted by parent BL with within-BL ordering by ascending drift index. **Per-EO per-copy break probability p̂** for focal EOs with n ≥ 15 (sample sizes after dropping Insufficient_data + pSI_low): EO25 (BL5, n=28) p̂ = **0.29** (the only focal EO < 0.4 — mildest); EO27 (BL4, n=40) p̂ = 0.36; EO70 (BL2, n=49) p̂ = 0.43; EO76 (BL3, n=39) p̂ = 0.44; EO67 (BL4, n=31) p̂ = 0.45; EO18 (BL5, n=37) p̂ = **0.48** (highest — most advanced erosion). **EO76 alone combines 3 SC + 7 pSI · 3 NF (10 individuals one step from SC in a single population) — the leading SI → SC transitional population.** **EO29 (BL1, n=3, small sample)** sits at 67 % SC. Source: `figures/SRK_SI_status_by_EO_robust.png`.](figures/SRK_SI_status_by_EO_robust.png)
 
 ---
 
@@ -238,7 +349,7 @@ Allele accumulation curves were then fit at species level (all 335 ingroup indiv
 
 <a name="figure-9"></a>
 
-![Figure 9: Species-level S-allele accumulation curve. The curve has not yet reached an asymptote, indicating that further sampling would discover additional alleles. The Michaelis-Menten estimate of 59 alleles (consensus 60 with Chao1) is adopted as the species optimum.](figures/SRK_allele_accumulation_species.png)
+![Figure 9: Species-level S-allele accumulation. Left: stacked bar decomposing the species Michaelis-Menten (MM) ceiling into observed alleles (dark blue, 49) and predicted-undetected alleles (light blue, +10 = MM − observed); the colour key matches the BL and EO drift-erosion bars so the species, BL, and EO panels can be read together. Right: rarefaction curve sharing the bar's y-axis, with MM = 59 and Chao1 = 61 reference lines. The curve has not yet reached an asymptote, indicating that further sampling would still discover additional alleles. The MM consensus estimate of 59 (60 with Chao1) is adopted as the species optimum.](figures/SRK_allele_accumulation_species.png)
 
 <a name="figure-10"></a>
 
@@ -291,6 +402,7 @@ Drift in small, isolated populations erodes the SI system along two distinct tra
 - **`J`** — Shannon evenness of the inferred allele frequencies (= H / ln k). J = 1 at NFDS equilibrium; J → 0 as one allele dominates.
 - **`P_compat`** — the **compatible-pair fraction**: the fraction of randomly drawn plant pairs in the population that are cross-compatible under tetraploid sporophytic SI with co-dominance (pollen rejected if any of its 2 alleles matches any of the stigma's 4). A value of 0.40 means roughly 40 % of random pairs can produce seed. Computed exactly under multinomial allele sampling; at equal frequencies the benchmark is 1 − 8/k — much harsher than the diploid 1 − 2/k.
 - **`L̂_from_AAAA = prop_AAAA / 3.5`** — an empirical estimate of historical SI leakage (under strict SI, AAAA homozygotes are impossible from random outcrossing; observed AAAA reflects past selfing or sib-crossing). Computed per group as an upper bound (some apparent AAAA arises from amplicon under-recovery).
+- **`DI` (Depletion Index)** = `1 − k_group / k_species`, where `k_species = 59` (MM consensus). DI = 0 means at species equilibrium; DI = 1 means no alleles retained. Reported in two flavours: `DI_observed` uses sample-size-corrected `k_rarefied30` (the conservative read), `DI_predicted` uses the per-group MM asymptote `k_predicted_MM` (the upper bound on richness achievable from existing sampling without further intervention). Large `DI_observed − DI_predicted` gaps (e.g. EO27, BL4) flag populations where more sampling would likely recover additional alleles; near-asymptote groups (e.g. EO70) confirm that the depletion is real.
 
 P_compat is then reported at a leakage ladder L ∈ {0, 0.10, 0.25, 0.50} via `P_compat(L) = P_compat_strict + L·(1 − P_compat_strict)`. The L = 0.25 panel is close to the empirical L̂ ≈ 0.18 across the focal EOs and represents the realistic "with SI leakage rescue" case.
 
@@ -323,7 +435,17 @@ A complementary χ² goodness-of-fit test against the equal-frequency NFDS expec
 
 ### Key findings — Layer 2: mating-pool functionality (the reframed TP1)
 
-The TP1 mating-pool diagnostic is presented as **four panels** so the conservation message stays readable: EO vs BL on separate figures, each at strict SI (L = 0) and at leaky SI (L = 0.25, ≈ empirical L̂).
+The TP1 mating-pool diagnostic is presented in two complementary forms. The **headline diagnostic** — Figure 14 — is a stakeholder-facing traffic-light figure that places each focal EO on a single axis (strict-SI P_compat) against the two operational thresholds (0.20 = effectively failed; 0.40 = random-mating viable). The detailed two-axis (J × P_compat) view, with separate panels for EO vs BL and strict vs leaky SI, is then presented as Figures 14a–d for completeness.
+
+<a name="figure-14"></a>
+
+![Figure 14: Random-mating viability per focal Element Occurrence — the TP1 headline diagnostic. Strict tetraploid sporophytic SI (L = 0). Bars show the compatible-pair fraction (P_compat, the fraction of randomly drawn plant pairs that are cross-compatible under SI); colours follow a traffic-light scheme — red = random mating failed (< 0.20), amber = struggling (0.20–0.40), green = sustainable (≥ 0.40). Horizontal whiskers are bootstrap 95 % CIs from 1 000 resamples of individuals with replacement. The coloured square at each bar's left edge is the EO's parent bottleneck lineage (BL palette unchanged from elsewhere in the report). EOs are sorted worst-to-best: **EO70 (BL2) is the sole RED case** — random mating has effectively failed; **EO67 (BL4), EO18 (BL5), and EO76 (BL3)** are all AMBER (struggling); **EO27 (BL4) and EO25 (BL5)** sit just at the GREEN threshold. The bootstrap CIs show that EO70's collapse is statistically robust (CI [0.07, 0.10] far below the 0.20 line) while EO27's MONITOR status is genuinely borderline (CI [0.27, 0.46] straddles the 0.40 threshold).](figures/SRK_P_compat_traffic_light_EO.png)
+
+**Why this figure is the conservation headline.** P_compat directly answers the demographic question — *can a random pair of plants in this EO produce seed?* — without requiring the reader to integrate two axes mentally. Below 0.40, random pollination cannot sustain reproduction on its own; below 0.20 it has effectively failed. The traffic-light framing collapses the J × P_compat scatter into a single ranked priority list and connects each EO to an explicit management action: GREEN populations need monitoring and long-term sustainability planning; AMBER populations need informed breeding (managed pairings to make the most of remaining diversity) plus inter-BL allele transfers to lift the diversity ceiling; the RED EO70 requires immediate seed banking before further drift erodes what little remains. Informed breeding alone is bounded by current allele richness (k); allele injection is what removes that ceiling. **The two interventions are complementary, with different time horizons** — informed breeding acts in the next generation, inter-BL augmentation rebuilds over multiple generations.
+
+### The detailed two-axis view (J × P_compat) — Figures 14a–d
+
+The detailed two-axis view is provided for readers who want to see the full diagnostic landscape: which axis (frequency-shape skew vs richness-driven low compatibility) is driving each EO's status, and how SI leakage rescues some populations under the C3 Stage 5 mechanism.
 
 <a name="figure-14a"></a>
 
@@ -340,6 +462,28 @@ The TP1 mating-pool diagnostic is presented as **four panels** so the conservati
 <a name="figure-14d"></a>
 
 ![Figure 14d: TP1 mating-pool functionality — BL panel, leaky SI (L = 0.25). BL3 rescued into MONITOR; BL1 rescued into AUGMENT URGENTLY. **BL2 stays in BIOBANK + RESTORE** under the leaky assumption — driven by EO70, which contributes the bulk of BL2's individuals and carries the worst per-EO metrics in the dataset.](figures/SRK_TP1_compatibility_BL_leaky.png)
+
+### Compatibility × Depletion ranking — explicit intervention assignments
+
+The J × P_compat panels diagnose *why* a mating pool is failing (frequency skew vs. low richness). The conservation conversation, however, hinges on a complementary 2D view: how depleted is the population *and* how compatible is its mating pool? Figure 14e places each group on this second pair of axes and labels each quadrant with the explicit intervention strategy from `Tables/SRK_breeding_strategies.csv`.
+
+<a name="figure-14e"></a>
+
+![Figure 14e: Conservation ranking — compatible-pair fraction × Depletion Index (observed view). x = Depletion Index DI = 1 − k_rarefied30 / k_species (k_species = 59 from MM consensus); 0 = at species equilibrium, 1 = no alleles retained. y = compatible-pair fraction under strict tetraploid SI (L = 0); vertical whisker = bootstrap 95 % CI. Quadrant labels (HEALTHY / INFORMED BREEDING (frequency skew) / INFORMED BREEDING + ALLELE INJECTION (preventive) / INFORMED BREEDING + ALLELE INJECTION (urgent)) follow the three breeding strategies defined in `Tables/SRK_breeding_strategies.csv`. Thresholds: DI = 0.50, P_compat = 0.40. BLs (triangles) and EOs (circles) are coloured by parent BL. **Every group except EO27 falls in one of the two ALLELE INJECTION quadrants**, confirming that inter-BL allele transfers — not just informed within-population crosses — are required across the species. EO70, BL1, BL2 occupy the urgent quadrant; BL4, BL5, EO27 sit near or on the threshold. A `_predicted` companion uses the per-group MM asymptote (`k_predicted_MM`) instead of the sample-size-corrected richness; populations with large gaps between the two views (EO27, BL4) are where additional sampling would most likely change the picture.](figures/SRK_depletion_ranking_observed_all.png)
+
+**Two readings of this figure.** Under the conservative `_observed` view every focal EO except EO27 needs allele injection, and the urgent quadrant (high DI, low P_compat) holds EO70 plus BL1 and BL2 — the same populations the traffic-light figure already flagged RED. Under `_predicted`, EO27 clearly sits in the INFORMED BREEDING (frequency skew) quadrant, and BL4 moves below the DI = 0.50 line, indicating that more sampling in those two would tighten the case for the preventive vs. urgent intervention distinction. **The qualitative conservation call — that allele injection is required for every group except EO27 — is robust across both views.**
+
+### Null-aware companion figures (Step 26)
+
+The four figures above are computed on the **functional-only** genotype matrix (Phase 1–2 baseline). The Step 26 null-aware genotype rebuild (Q2 refinement) propagates the per-individual pSI / SC calls into the same metrics. The figures below repeat the headline diagnostics on that augmented matrix so the conservation story can be read with or without the broken-copy correction.
+
+<a name="figure-14f"></a>
+
+![Figure 14f: Null-aware random-mating traffic-light per EO. Strict tetraploid SI (L = 0) computed on `SRK_individual_allele_genotypes_with_nulls.tsv` (Step 26): pSI · high individuals carry explicit `Allele_NULL` copies (proportional to `copies_nonfunctional` from Step 25), SC individuals are represented as `Allele_NULL × 4`, and Allele_NULL enters the allele-frequency vector. Compared to Figure 14 (functional-only): **EO70 stays RED** (0.13 [0.11, 0.14]); **EO76 slips from green into amber** (0.36 [0.28, 0.40]); **EO27 and EO25 sit right at the 0.40 floor** (0.40 [0.29, 0.46] and 0.42 [0.32, 0.45]); EO67 and EO18 remain amber. The functional-only baseline overestimated mating-pool size for the larger BLs by 0.03–0.08; the null-aware view tightens the case that informed breeding alone is insufficient. Source: `figures/SRK_P_compat_traffic_light_EO_with_nulls.png` produced by `SRK_P_compat_traffic_light_with_nulls.R`.](figures/SRK_P_compat_traffic_light_EO_with_nulls.png)
+
+<a name="figure-14g"></a>
+
+![Figure 14g: Null-aware conservation ranking — compatible-pair fraction × Depletion Index (observed view). Same axes and quadrant scheme as Figure 14e, but P_compat and Allele_NULL frequencies come from the Step 26 augmented genotype matrix. **Every BL and every focal EO now sits in the right half** (DI ≥ 0.5, severe depletion); EO27 and EO25 hover near the P_compat floor in the "preventive" zone; **EO18 / EO67 / EO70 / BL1 / BL2 drop into the "INFORMED BREEDING + ALLELE INJECTION (urgent)" quadrant**. The null-aware view eliminates the borderline "HEALTHY" call for EO27 visible in Figure 14e — under the broken-copy correction *no* group is in the HEALTHY quadrant. Source: `figures/SRK_depletion_ranking_observed_with_nulls_all.png` produced by `SRK_depletion_ranking_with_nulls.R`.](figures/SRK_depletion_ranking_observed_with_nulls_all.png)
 
 **Conservation-action distribution at strict SI (L = 0):**
 
@@ -432,6 +576,14 @@ TP2 is breached when (i) `mean GFS < 0.667` (the average individual has less rep
 ![Figure 19: TP2 tipping point — mean GFS vs proportion AAAA. EOs as circles, BLs as triangles, all coloured by parent BL using the Set1 palette. All five BLs are CRITICAL (mean GFS < 0.667 AND > 30% AAAA); 5 of 6 plotted EOs are CRITICAL (EO67 is AT RISK, breaching only the AAAA threshold).](figures/SRK_GFS_plots_p3_TP2_tipping_point.png)
 
 **All five BLs are CRITICAL on TP2** ([Figure 19](#figure-19)). The lineage-level pattern is robust: even when 325 BL-assigned individuals are pooled into independent bottleneck lineages, every lineage exceeds 30 % AAAA and falls well below the AABB-benchmark mean GFS of 0.667.
+
+<a name="figure-19a"></a>
+
+![Figure 19a: Null-aware GFS-tier composition by BL (Step 26 augmented genotype matrix). Stacked bars show the 12-tier null-aware GFS scheme: the bottom segment (dark red) groups SC + homozygous-null genotypes (0000, A000, AA00, AAA0, AAAA) at GFS = 0; the next segment (orange) groups AAAB / AB00 / AAB0 at GFS = 0.500; AABB (yellow) at 0.667; ABC0 (pale blue) at 0.750; AABC (mid-blue) at 0.833; ABCD (dark green) at 1.000. **60–75 % of individuals in every BL fall to GFS = 0** once broken copies are made explicit. The functional-only Figure 18 / 19 baselines underestimated the prevalence of reproductive dead-ends across every BL. Source: `figures/SRK_GFS_with_nulls_composition.png` produced by `SRK_individual_GFS_with_nulls.R`.](figures/SRK_GFS_with_nulls_composition.png)
+
+<a name="figure-19b"></a>
+
+![Figure 19b: Null-aware TP2 tipping-point scatter. Same axes and thresholds as Figure 19 (mean GFS vs proportion of zero-GFS individuals; dashed lines = 0.667 and 30 % thresholds), but mean GFS and prop_zero are computed on the Step 26 null-aware genotype matrix using `GFS_null_aware = GFS_func × (n_func / 4)`. **All five BLs and every focal EO are CRITICAL** — mean GFS sits at 0.15–0.24 for the five BLs (vs 0.17–0.37 in the functional-only baseline), and prop_zero exceeds 60 % everywhere. EO76 (BL3) is the worst (mean GFS = 0.134, prop_zero = 75 %, 3 SC individuals) and EO29 (BL1, n = 3) sits at 67 % SC. The null-aware view confirms and intensifies the TP2 conclusion: not a single focal group escapes the CRITICAL designation. Source: `figures/SRK_GFS_with_nulls_TP2_scatter.png`.](figures/SRK_GFS_with_nulls_TP2_scatter.png)
 
 | BL | N | mean GFS | % AAAA | TP2 status |
 |----|:---:|:---:|:---:|:---:|

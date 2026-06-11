@@ -367,63 +367,197 @@ species_est <- list(mm = mm_sp, chao1 = chao1_sp, inext = inext_sp, n_more = n_s
 
 ############################################################
 # 6c. Species accumulation as a standalone PNG (figures/)
+#
+# Two-panel layout sharing the same y-axis:
+#   LEFT  - rarefaction curve + MM/Chao1/iNEXT asymptote reference lines
+#   RIGHT - single stacked bar (observed + predicted-undetected = species MM)
+#           using the same colour key as the BL/EO drift-erosion barplots so
+#           the audience can read across the figure to see how the species-
+#           level S-allele ceiling was established (49 observed -> +10
+#           predicted -> 59 MM).
 ############################################################
 
-png("figures/SRK_allele_accumulation_species.png",
-    width = 9, height = 6, units = "in", res = 200)
-par(mar = c(5, 4.5, 4, 2))
+# Colours shared with the BL/EO drift-erosion stacked bars (set early so the
+# species panel can use the same dark/light blue keys).
+col_observed  <- "#2166ac"   # dark blue  — detected
+col_predicted <- "#92c5de"   # light blue — predicted undetected
+col_lost      <- "#d73027"   # red        — lost to genetic drift (BL/EO only)
 
-# y-axis must accommodate the asymptote lines, not just the observed curve
-y_max_species <- max(
-  c(species_res$mean_accum + species_res$sd_accum,
-    mm_sp$Smax, chao1_sp$Chao1, inext_sp$S_asymptote),
-  na.rm = TRUE
-) * 1.05
+# Helper: render the dual-panel species figure to `out_path`.
+#   Layout: LEFT = stacked bar (observed + predicted-undetected),
+#           RIGHT = rarefaction curve. Both share the same y-range so the
+#           audience can read the bar segments straight across to the
+#           curve's asymptote reference lines.
+#   show_predicted : draw the light-blue +predicted segment (TRUE) or leave
+#                    the bar at the observed value only (FALSE, presentation
+#                    build-up frame 1).
+#   show_title     : draw the main title; presentation variants set FALSE.
+render_species_panel <- function(out_path, show_predicted, show_title,
+                                  mm_only = FALSE,
+                                  show_curve = TRUE,
+                                  show_mm_line = TRUE,
+                                  width = 12, height = 6.5) {
 
-plot(
-  1:n_ind, species_res$mean_accum,
-  type = "l", lwd = 3, col = "#2166ac",
-  ylim = c(0, y_max_species),
-  xlab = "Number of individuals sampled",
-  ylab = "Cumulative number of S-alleles",
-  main = paste0("Species-level S-allele accumulation (",
-                species_res$true_alleles, " observed in ", n_ind,
-                " individuals)"),
-  las = 1
-)
-grid(col = "grey90", lty = 1)
-polygon(
-  c(1:n_ind, rev(1:n_ind)),
-  c(species_res$mean_accum - species_res$sd_accum,
-    rev(species_res$mean_accum + species_res$sd_accum)),
-  col = adjustcolor("#2166ac", alpha.f = 0.2), border = NA
-)
-lines(1:n_ind, species_res$mean_accum, lwd = 3, col = "#2166ac")
+  png(out_path, width = width, height = height, units = "in", res = 200)
 
-png_labels <- character(0); png_cols <- character(0); png_lty <- integer(0)
-if (!is.na(mm_sp$Smax)) {
-  abline(h = mm_sp$Smax, col = "darkgreen", lwd = 1.5, lty = 2)
-  png_labels <- c(png_labels, paste0("MM: ", mm_sp$Smax))
-  png_cols   <- c(png_cols, "darkgreen"); png_lty <- c(png_lty, 2L)
+  # Bar narrow on the left (with its own y-axis), curve wide on the right.
+  # Both panels share the same ylim so the bar's tick scale reads through
+  # to the curve's asymptote reference lines. The right panel can be left
+  # blank (show_curve = FALSE) for the slide build-up frame 1.
+  layout(matrix(c(1, 2), nrow = 1), widths = c(1.1, 4.2))
+
+  asym_vec <- c(mm_sp$Smax, if (!mm_only) c(chao1_sp$Chao1, inext_sp$S_asymptote))
+  y_max_species <- max(
+    c(species_res$mean_accum + species_res$sd_accum, asym_vec),
+    na.rm = TRUE
+  ) * 1.05
+
+  top_mar <- if (show_title) 4 else 2
+
+  # ---- LEFT panel: stacked bar with its own y-axis ------------------------
+  par(mar = c(5, 4.5, top_mar, 0.5), yaxs = "i")
+
+  species_obs      <- species_res$true_alleles
+  species_pred_add <- pmax(0, mm_sp$Smax - species_obs)
+  pred_segment     <- if (show_predicted) species_pred_add else 0
+
+  bar_mat_sp <- matrix(c(species_obs, pred_segment), ncol = 1)
+  bp_sp <- barplot(
+    bar_mat_sp,
+    col       = c(col_observed, col_predicted),
+    names.arg = "S-alleles",
+    ylim      = c(0, y_max_species),
+    ylab      = "Number of S-alleles",
+    las       = 1,
+    border    = "white",
+    space     = 0.4,
+    width     = 0.6
+  )
+
+  if (show_mm_line && !is.na(mm_sp$Smax)) {
+    abline(h = mm_sp$Smax, col = "darkgreen", lwd = 1.5, lty = 2)
+  }
+
+  # Inside-bar labels (white, matching the BL/EO drift-erosion style)
+  text(bp_sp, species_obs / 2,
+       labels = species_obs, col = "white", font = 2, cex = 1.1)
+  if (show_predicted && species_pred_add >= 2) {
+    text(bp_sp, species_obs + species_pred_add / 2,
+         labels = paste0("+", species_pred_add),
+         col = "white", font = 2, cex = 1.0)
+  }
+
+  bar_legend <- if (show_predicted) {
+    list(
+      labels = c("Observed", "Predicted undetected"),
+      fills  = c(col_observed, col_predicted)
+    )
+  } else {
+    list(labels = "Observed", fills = col_observed)
+  }
+
+  # ---- RIGHT panel: rarefaction curve (or blank for slide frame 1) --------
+  par(mar = c(5, 0.5, top_mar, 4.5), yaxs = "i")
+
+  if (!show_curve) {
+    # Blank right panel to keep canvas size consistent across slide frames.
+    plot.new()
+    layout(1)
+    par(mar = c(5, 4, 4, 2), yaxs = "r")
+    dev.off()
+    return(invisible(NULL))
+  }
+
+  plot(
+    1:n_ind, species_res$mean_accum,
+    type = "l", lwd = 3, col = col_observed,
+    ylim = c(0, y_max_species),
+    xlab = "Number of individuals sampled",
+    ylab = "",
+    yaxt = "n",
+    main = if (show_title) {
+      paste0("Species-level S-allele accumulation (",
+             species_res$true_alleles, " observed in ", n_ind, " individuals)")
+    } else "",
+    las = 1
+  )
+  grid(col = "grey90", lty = 1)
+  polygon(
+    c(1:n_ind, rev(1:n_ind)),
+    c(species_res$mean_accum - species_res$sd_accum,
+      rev(species_res$mean_accum + species_res$sd_accum)),
+    col = adjustcolor(col_observed, alpha.f = 0.2), border = NA
+  )
+  lines(1:n_ind, species_res$mean_accum, lwd = 3, col = col_observed)
+
+  png_labels <- character(0); png_cols <- character(0); png_lty <- integer(0)
+  if (show_mm_line && !is.na(mm_sp$Smax)) {
+    abline(h = mm_sp$Smax, col = "darkgreen", lwd = 1.5, lty = 2)
+    mtext(paste0("MM: ", mm_sp$Smax), side = 4, at = mm_sp$Smax,
+          col = "darkgreen", cex = 0.78, las = 1, line = 0.3)
+    png_labels <- c(png_labels, paste0("MM: ", mm_sp$Smax))
+    png_cols   <- c(png_cols, "darkgreen"); png_lty <- c(png_lty, 2L)
+  }
+  if (!mm_only && !is.na(chao1_sp$Chao1)) {
+    abline(h = chao1_sp$Chao1, col = "purple", lwd = 1.5, lty = 3)
+    mtext(paste0("Chao1: ", chao1_sp$Chao1), side = 4, at = chao1_sp$Chao1,
+          col = "purple", cex = 0.78, las = 1, line = 0.3)
+    png_labels <- c(png_labels, paste0("Chao1: ", chao1_sp$Chao1))
+    png_cols   <- c(png_cols, "purple"); png_lty <- c(png_lty, 3L)
+  }
+  if (!mm_only && !is.na(inext_sp$S_asymptote)) {
+    abline(h = inext_sp$S_asymptote, col = "darkorange", lwd = 1.5, lty = 4)
+    mtext(paste0("iNEXT: ", inext_sp$S_asymptote), side = 4,
+          at = inext_sp$S_asymptote, col = "darkorange",
+          cex = 0.78, las = 1, line = 0.3)
+    png_labels <- c(png_labels, paste0("iNEXT: ", inext_sp$S_asymptote))
+    png_cols   <- c(png_cols, "darkorange"); png_lty <- c(png_lty, 4L)
+  }
+
+  # Combined legend at bottom-right: asymptotic estimates on top, stacked-bar
+  # colour key below.
+  if (length(png_labels) > 0) {
+    leg_asy <- legend("bottomright", legend = png_labels, col = png_cols,
+                       lwd = 1.5, lty = png_lty, bty = "n", cex = 0.85,
+                       title = "Asymptotic richness estimates",
+                       inset = c(0.02, 0.02))
+    legend(x = leg_asy$rect$left, y = leg_asy$rect$top,
+           xjust = 0, yjust = 0,
+           legend = bar_legend$labels, fill = bar_legend$fills,
+           border = "white", bty = "n", cex = 0.85,
+           title = "Stacked bar")
+  } else {
+    legend("bottomright", legend = bar_legend$labels,
+           fill = bar_legend$fills, border = "white",
+           bty = "n", cex = 0.85, title = "Stacked bar",
+           inset = c(0.02, 0.02))
+  }
+
+  layout(1)
+  par(mar = c(5, 4, 4, 2), yaxs = "r")
+  dev.off()
 }
-if (!is.na(chao1_sp$Chao1)) {
-  abline(h = chao1_sp$Chao1, col = "purple", lwd = 1.5, lty = 3)
-  png_labels <- c(png_labels, paste0("Chao1: ", chao1_sp$Chao1))
-  png_cols   <- c(png_cols, "purple"); png_lty <- c(png_lty, 3L)
-}
-if (!is.na(inext_sp$S_asymptote)) {
-  abline(h = inext_sp$S_asymptote, col = "darkorange", lwd = 1.5, lty = 4)
-  png_labels <- c(png_labels, paste0("iNEXT: ", inext_sp$S_asymptote))
-  png_cols   <- c(png_cols, "darkorange"); png_lty <- c(png_lty, 4L)
-}
-if (length(png_labels) > 0) {
-  legend("bottomright", legend = png_labels, col = png_cols,
-         lwd = 1.5, lty = png_lty, bty = "n", cex = 0.85,
-         title = "Asymptotic richness estimates")
-}
-dev.off()
-par(mar = c(5, 4, 4, 2))
+
+# Canonical figure (titled, with predicted segment)
+render_species_panel("figures/SRK_allele_accumulation_species.png",
+                      show_predicted = TRUE, show_title = TRUE)
 cat("PNG written: figures/SRK_allele_accumulation_species.png\n")
+
+# Presentation build-up frames (no title, MM-only, slide-friendly).
+# Frame 1: bar with just the observed segment + y-axis, no curve, no MM line.
+# Frame 2: full bar + curve + MM dashed line (no Chao1/iNEXT).
+dir.create("figures/presentation", recursive = TRUE, showWarnings = FALSE)
+render_species_panel(
+  "figures/presentation/SRK_allele_accumulation_species_observed.png",
+  show_predicted = FALSE, show_title = FALSE, mm_only = TRUE,
+  show_curve = FALSE, show_mm_line = FALSE)
+cat("PNG written: figures/presentation/SRK_allele_accumulation_species_observed.png\n")
+
+render_species_panel(
+  "figures/presentation/SRK_allele_accumulation_species_predicted.png",
+  show_predicted = TRUE, show_title = FALSE, mm_only = TRUE,
+  show_curve = TRUE, show_mm_line = TRUE)
+cat("PNG written: figures/presentation/SRK_allele_accumulation_species_predicted.png\n")
 
 ############################################################
 # 7. Group-level analysis (EO and BL)
@@ -724,9 +858,9 @@ eo_df$lost_to_drift   <- pmax(0, species_MM      - eo_df$mm_eo)
 # want EOs grouped by their parent BL so the BL strip below the bars is
 # visually contiguous).
 
-col_observed  <- "#2166ac"   # dark blue  — detected
-col_predicted <- "#92c5de"   # light blue — predicted undetected
-col_lost      <- "#d73027"   # red        — lost to genetic drift
+# col_observed / col_predicted / col_lost are defined once near the species
+# panel (section 6c) and reused here so the species and BL/EO bars share an
+# identical colour key.
 
 png("figures/SRK_allele_accumulation_drift_erosion.png",
     width = 7, height = 6, units = "in", res = 200)

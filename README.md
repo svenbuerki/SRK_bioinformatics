@@ -93,7 +93,7 @@ The pipeline consists of **23 main steps organized into four phases**, progressi
 14. **Population Genetics Statistics** – Estimation of population-level diversity metrics, including heterozygosity, mean alleles per individual, total allele counts, and effective allele numbers. Allele frequencies are based on copy counts summed across individuals (from the count matrix), giving a proper tetraploid frequency estimate.
 15. **Allele Accumulation Curves** – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators. Outputs an empirical species optimum used as a baseline in steps 16 and 17.
 16. **Allele Frequency Analysis** – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under NFDS. The estimated species allele richness from step 15 is used as the optimum, quantifying how many alleles each population is missing relative to the species pool.
-17. **TP1 — Mating-pool functionality** – Reframed diagnostic: evenness J (Shannon H / ln k) on the x axis × the **compatible-pair fraction** P_compat (the fraction of random plant pairs that are cross-compatible under tetraploid sporophytic SI) on the y axis. Depletion against the species optimum is shown by the Step 16 erosion barplots; TP1 now asks the complementary question — *given that a population is depleted, is its mating pool still functioning, and what intervention does the data support?* Quadrants map directly to conservation actions (MONITOR / AUGMENT-evenness / AUGMENT-richness urgently / BIOBANK + RESTORE). Rendered as four panels (EO vs BL × strict SI L=0 vs leaky SI L=0.25); the leaky panel reflects empirical SI breakdown estimated from observed AAAA proportions (L̂ ≈ 0.18, the C3 Stage 5 signature). Compatible with `SRK_TP1_compatibility_metrics.py` (computes metrics) and `SRK_TP1_compatibility.R` (renders the four panels).
+17. **TP1 — Mating-pool functionality** – Reframed diagnostic: evenness J (Shannon H / ln k) on the x axis × the **compatible-pair fraction** P_compat (the fraction of random plant pairs that are cross-compatible under tetraploid sporophytic SI) on the y axis. Depletion against the species optimum is shown by the Step 16 erosion barplots; TP1 now asks the complementary question — *given that a population is depleted, is its mating pool still functioning, and what intervention does the data support?* Quadrants map directly to conservation actions (MONITOR / AUGMENT-evenness / AUGMENT-richness urgently / BIOBANK + RESTORE). Rendered as four panels (EO vs BL × strict SI L=0 vs leaky SI L=0.25); the leaky panel reflects empirical SI breakdown estimated from observed AAAA proportions (L̂ ≈ 0.18, the C3 Stage 5 signature). Compatible with `SRK_TP1_compatibility_metrics.py` (computes metrics, including the **Depletion Index** `DI = 1 − k_group / k_species` against the MM consensus species optimum `k_species = 59`), `SRK_TP1_compatibility.R` (four diagnostic panels), `SRK_P_compat_traffic_light.R` (stakeholder traffic-light figure), and `SRK_depletion_ranking.R` (P_compat × DI conservation-ranking figure; quadrants HEALTHY / INFORMED BREEDING (frequency skew) / INFORMED BREEDING + ALLELE INJECTION (preventive / urgent), with `_observed` and `_predicted` panels and `_blank` / `_EOs` / `_all` variants per panel for layered presentation builds). Reference table `Tables/SRK_breeding_strategies.csv` defines the three breeding strategies used as quadrant labels.
 18. **Allele Composition Comparison Across Element Occurrences** – UpSet plot and pairwise sharing heatmap quantifying how S-allele sets partition across Element Occurrences, identifying private alleles and alleles shared across all populations. Requires only standard Python dependencies (pandas, numpy, matplotlib).
 19. **Individual Genotypic Fitness Score (GFS)** – Per-individual metric quantifying the proportion of heterozygous diploid gametes a tetraploid can produce. Differentiates dosage-imbalanced genotypes (AABB vs AAAB) invisible to zygosity analysis alone. Outputs per-individual GFS values and ranked seed parent lists per EO.
 20. **TP2 Tipping Point Analysis** – EO-level assessment placing mean GFS and proportion of AAAA individuals in interaction. EOs breaching both thresholds simultaneously (mean GFS < 0.667; proportion AAAA > 30%) are flagged CRITICAL, AT RISK, or OK.
@@ -253,12 +253,17 @@ Rscript SRK_allele_accumulation_analysis.R
 # Step 16: Allele frequency analysis (reads SRK_species_richness_estimates.tsv)
 Rscript SRK_chisq_species_population.R
 
-# Step 17: TP1 — mating-pool functionality (two scripts)
+# Step 17: TP1 — mating-pool functionality (three scripts)
 #   metrics.py computes per-EO + per-BL evenness J, P_compat (L=0..0.5),
-#   L_hat, k_rarefied30, and writes Tables/SRK_EO_allele_richness.tsv;
-#   compatibility.R renders the four diagnostic panels.
+#   bootstrap 95% CIs on P_compat, L_hat, k_rarefied30, and writes
+#   Tables/SRK_EO_allele_richness.tsv;
+#   compatibility.R renders the four diagnostic panels (EO + BL,
+#   strict + leaky), each with bootstrap-CI whiskers;
+#   traffic_light.R renders the stakeholder-facing red/amber/green
+#   priority figure (full + blank variants).
 python SRK_TP1_compatibility_metrics.py
 Rscript SRK_TP1_compatibility.R
+Rscript SRK_P_compat_traffic_light.R
 
 # Step 18: Allele composition comparison across Element Occurrences
 #   Python UpSet plots + pairwise heatmaps (EO + BL); R companion produces
@@ -304,6 +309,34 @@ python3 srk_cross_plan.py
 # Step 23: Cross result analysis
 # Set CROSS_TSV = "<your_cross_results_file>" in the script, then re-run:
 python srk_allele_hypotheses.py
+
+# Step 25: per-individual SI system status (SI / pSI / SC / Insufficient_data)
+# Answers: "What is the status of the SI system?" at individual, BL, and EO levels.
+# Re-aggregates per-haplotype OK/REMOVED calls from the Step-7 stop-codon logs
+# (which Phase 1-2 drops before genotyping) without invalidating the canonical
+# 49-allele catalogue. Applies a Canu-noise filter (n_REMOVED < 2 → SI) and a
+# pSI confidence flag (high if frac_NF ≥ 0.25).
+python3 SRK_individual_SI_status.py
+Rscript SRK_SI_status_figures.R
+
+# Step 26: null-aware tetraploid genotype rebuild + downstream reruns
+# Propagates Step 25 SI status into the genotype tables: pSI_high gets explicit
+# Allele_NULL copies, SC included with all-null genotype, Insufficient_data
+# flagged for re-sequencing. Original Phase 1-2 tables stay frozen.
+python3 SRK_genotype_null_alleles.py
+Rscript SRK_population_genetic_summary_with_nulls.R       # Step 14b
+/Users/sven/anaconda3/bin/python SRK_TP1_compatibility_metrics_with_nulls.py  # Step 17b
+Rscript SRK_individual_GFS_with_nulls.R                   # Steps 19b + 20b
+Rscript SRK_P_compat_traffic_light_with_nulls.R           # stakeholder traffic-light figure
+Rscript SRK_depletion_ranking_with_nulls.R                # DI x P_compat ranking
+
+# Step 27: forward-time inheritance simulator + figures.
+# Answers: "Where is each BL heading on the SI→SC erosion axis under
+# current conditions, and what conservation lever stops the trajectory?"
+# Tetraploid Wright-Fisher with NULL-aware sporophytic SI; 4 scenarios
+# (baseline, rescue_low, rescue_high, high_drift) × 5 BLs × 30 replicates.
+/Users/sven/anaconda3/bin/python SRK_inheritance_simulator.py --n_generations 100 --n_replicates 30
+Rscript SRK_inheritance_figures.R
 ```
 
 ### Detailed Usage
@@ -388,7 +421,8 @@ EO_group_BL_summary.csv  (EO → BL, Drift_index)
 #### Step 15 — Allele accumulation
 
 -   `SRK_allele_accumulation_curves.pdf` - Species + per-EO + per-BL pages with MM/Chao1/iNEXT asymptote reference lines
--   `figures/SRK_allele_accumulation_species.png` - Standalone species curve (current dataset 2026-05-11: 49 alleles observed in 335 ingroup individuals; MM = 59, Chao1 = 61, consensus = 60)
+-   `figures/SRK_allele_accumulation_species.png` - Two-panel species figure: stacked bar (observed + predicted-undetected = MM) on the left, rarefaction curve with MM/Chao1 asymptote reference lines on the right; both panels share the bar's y-axis. Same colour key (dark blue = observed, light blue = predicted undetected) as the BL/EO drift-erosion bars. Current dataset 2026-05-11: 49 observed + 10 predicted = MM 59, Chao1 = 61, consensus = 60
+-   `figures/presentation/SRK_allele_accumulation_species_observed.png` / `_predicted.png` - **NEW**. Slide build-up frames: frame 1 shows the bar with only the observed segment (no curve, no MM line); frame 2 shows the full bar + curve + MM dashed line (no Chao1/iNEXT). Same canvas size across both frames for clean animation
 -   `figures/SRK_allele_accumulation_combined.png` - All qualifying EO curves on shared axes, **colored by parent BL**
 -   `figures/SRK_allele_accumulation_BL_combined.png` - **NEW**. The 5 BL aggregate curves on shared axes
 -   `figures/SRK_allele_accumulation_drift_erosion.png` - EO stacked bars sorted by BL with BL color strip on the x-axis baseline
@@ -409,6 +443,8 @@ EO_group_BL_summary.csv  (EO → BL, Drift_index)
 -   `figures/SRK_TP1_compatibility_BL_strict.png` - **BL panel, strict SI**. Triangles, same conventions. BL1 and BL2 in BIOBANK; BL3 borderline; BL4/BL5 in MONITOR.
 -   `figures/SRK_TP1_compatibility_BL_leaky.png` - **BL panel, leaky SI**. BL3 rescued into MONITOR; BL1, BL2 remain non-MONITOR.
 -   `figures/SRK_TP1_compatibility_*_blank.png` - Empty zones (no points) for presentation overlays.
+-   `figures/SRK_P_compat_traffic_light_EO.{png,pdf}` - **NEW (2026-05-22)**, stakeholder-facing traffic-light figure: six focal EOs ranked worst-to-best by strict-SI P_compat, coloured red (< 0.20, failed) / amber (0.20–0.40, struggling) / green (≥ 0.40, sustainable), with bootstrap 95 % CIs as horizontal error bars and BL colour squares on the left edge. Headline result drops out at a glance: EO70 (BL2) is the only RED population. Produced by `SRK_P_compat_traffic_light.R`.
+-   `figures/SRK_P_compat_traffic_light_EO_blank.{png,pdf}` - Same framework with no data drawn — for predictions slide; reveal the full figure after explaining the threshold logic.
 -   Legacy `SRK_TP1_tipping_point.R` archived under `archive/`.
 
 #### Step 18 — Allele composition / sharing
@@ -462,6 +498,33 @@ PNGs land in `figures/`; PDFs in the project root. **Headline finding (2026-05-1
 -   `SRK_cross_plan_H0_SI_validation.tsv` / `..._H1a_within_class_baseline.tsv` / `..._H1b_between_class_baseline.tsv` / `..._H2_synonymy_tests.tsv` / `..._H3_hidden_bin_tests.tsv` - Phased hypothesis-testing cross plan with mother / father IDs, predicted compatibility, replicate counts, and decision rules (Step 22e)
 -   `SRK_cross_plan_summary.tsv` / `SRK_cross_plan_summary.{pdf,png}` - Per-phase cross counts + decision-tree figure (Step 22e)
 -   `SRK_cross_result_analysis_HV.pdf` - Seed yield distributions and success rates by cross category, with Kruskal-Wallis and Mann-Whitney U tests (Step 23; requires cross data)
+
+### Phase 5 Outputs (Per-Individual SI System Status — Step 25)
+
+> Answers the question: *"What is the status of the SI system?"* at the individual, BL, and EO levels.
+
+-   `Tables/SRK_individual_SI_status.tsv` — One row per ingroup individual: `n_haps_OK`, `n_haps_REMOVED`, `frac_nonfunctional`, `copies_functional`, `copies_nonfunctional`, `SI_status` (SI / pSI / SC / Insufficient_data), `pSI_confidence` (high / low). Re-aggregates per-haplotype OK/REMOVED calls from the Step-7 `_frame1_stopcodon_log.tsv` files **without** invalidating the canonical 49-allele catalogue (Step 25)
+-   `figures/SRK_SI_status_species_{full,robust}.png` — Species-level stacked bar. `_full` = all 401 ingroup (7-tier inc. pSI_low + Insufficient_data); `_robust` = 254 with defensible calls (5-tier SI/pSI_1nf/pSI_2nf/pSI_3nf/SC) (Step 25)
+-   `figures/SRK_SI_status_by_BL_{full,robust}.png` — Per-BL stacked %, BLs in `BL_ORDER`. Same full/robust split (Step 25)
+-   `figures/SRK_SI_status_by_EO_{full,robust}.png` — Per-EO stacked % faceted by BL, within-BL order by ascending drift index. Same full/robust split (Step 25)
+
+**Rule:** `copies_nonfunctional = round(4 × n_REMOVED / n_total)`. Canu-noise filter: `n_REMOVED < 2` → SI. `pSI_confidence = high` if `frac_NF ≥ 0.25`. **Snapshot (2026-06-11):** SI = 37, pSI = 232 (209 high / 23 low), SC = 8, Insufficient_data = 124 — only ~13 % of individuals with sufficient data carry a fully intact SI system.
+
+### Phase 5b Outputs (Null-Aware Genotype Rebuild — Step 26)
+
+> Propagates Step 25 SI status into the canonical genotype tables so downstream metrics (Step 14 pop-gen, Step 17 TP1, Steps 19+20 GFS/TP2) reflect the broken-copy reality. Phase 1–2 outputs stay frozen as the functional-only reference.
+
+-   `Tables/SRK_individual_allele_genotypes_with_nulls.tsv` — 342 individuals × 49 functional alleles + `Allele_NULL` + `Genotype_class_flag`. pSI_high gets explicit nulls (`copies_nonfunctional`); SC = 4 × NULL; rows sum to 4. pSI_low is promoted to SI (Canu-noise floor) (Step 26)
+-   `Tables/SRK_individual_zygosity_with_nulls.tsv` — Genotype labels like `AB00` (1 functional + 1 functional + 2 null) or `0000` (SC); 12-tier null-aware scheme (Step 26)
+-   `Tables/SRK_samples_for_redo.tsv` — 124 Insufficient_data individuals flagged for re-sequencing, with EO / BL / hap counts / priority (Step 26)
+-   `SRK_population_genetic_summary_with_nulls.tsv` / `_BL_with_nulls.tsv` / `.pdf` — Null-aware EO and BL pop-gen with new columns: `Frac_nonfunctional_alleles`, `Mean_null_copies`, `Prop_pSI`, `N_SC` (Step 14b)
+-   `Tables/SRK_EO_allele_richness_with_nulls.tsv` — Null-aware TP1 metrics (P_compat with Allele_NULL in the frequency vector); BL5 P_compat at L=0 drops 0.472 → 0.392 (Step 17b)
+-   `SRK_individual_GFS_with_nulls.tsv` / `SRK_EO_GFS_summary_with_nulls.tsv` / `SRK_BL_GFS_summary_with_nulls.tsv` — Null-aware GFS (`GFS_func × n_func/4`); all 5 BLs CRITICAL on TP2 (Steps 19b + 20b)
+-   `figures/SRK_GFS_with_nulls_composition.png` / `_TP2_scatter.png` — Stacked-bar genotype tiers per BL + null-aware TP2 scatter (Steps 19b + 20b)
+-   `figures/SRK_P_compat_traffic_light_EO_with_nulls.{png,pdf}` (and `_blank` for presentations) — Null-aware random-mating viability per EO. Headline shifts vs canonical: EO76 slips from green into amber (0.36), EO27 / EO25 sit right at the 0.40 floor (0.40 / 0.42), EO70 stays red (0.13). Script: `SRK_P_compat_traffic_light_with_nulls.R`
+-   `figures/SRK_depletion_ranking_observed_with_nulls_{all,EOs,blank}.{png,pdf}` / `SRK_depletion_ranking_predicted_with_nulls_*` — Null-aware DI × P_compat ranking (observed and MM-predicted). Every BL and every focal EO now sits in the right half (DI ≥ 0.5, severe depletion). Script: `SRK_depletion_ranking_with_nulls.R`
+
+**Headline finding:** functional-only P_compat overestimated mating-pool size by 0.03–0.08 across BL3–BL5; null-aware GFS shows 60–75 % of individuals in every BL fall to GFS = 0 (AAAA-equivalent or worse). The conclusion that LEPA is reproductively compromised is *strengthened*, not weakened, by the null-aware rebuild.
 
 ### Quality Control Reports
 

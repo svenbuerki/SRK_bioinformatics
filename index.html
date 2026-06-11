@@ -11,7 +11,7 @@
 
 <meta name="author" content="Sven Buerki - Boise State University" />
 
-<meta name="date" content="2026-05-22" />
+<meta name="date" content="2026-06-11" />
 
 <title>SRK Bioinformatics</title>
 
@@ -1469,7 +1469,7 @@ border-radius: 0px;
 <h1 class="title toc-ignore">SRK Bioinformatics</h1>
 <h3 class="subtitle">Nanopore-Based SRK Haplotype Reconstruction and Population Analysis Pipeline</h3>
 <h4 class="author">Sven Buerki - Boise State University</h4>
-<h4 class="date">2026-05-22</h4>
+<h4 class="date">2026-06-11</h4>
 
 </div>
 
@@ -7745,7 +7745,8 @@ n^* = \frac{S^* \cdot K}{S_{max} - S^*}
 <p>Each page also overlays MM, Chao1, and (optional) iNEXT asymptote reference lines.</p>
 <p><strong>Standalone PNGs (in <code>figures/</code>)</strong></p>
 <ul>
-<li><code>figures/SRK_allele_accumulation_species.png</code> — species curve with MM/Chao1 asymptotes (y-axis extended to accommodate the asymptotes).</li>
+<li><code>figures/SRK_allele_accumulation_species.png</code> — two-panel species figure: stacked bar (observed + predicted-undetected = MM) on the left, rarefaction curve with MM/Chao1/iNEXT asymptotes on the right, both sharing the bar’s y-axis. The bar uses the same dark-blue/light-blue colour key as the BL/EO drift-erosion bars, so the species, BL, and EO panels can be read together.</li>
+<li><code>figures/presentation/SRK_allele_accumulation_species_observed.png</code> / <code>_predicted.png</code> — slide build-up frames of the figure above: frame 1 shows only the bar’s observed segment (no curve, no MM line); frame 2 shows the full bar + curve + MM dashed line (Chao1/iNEXT suppressed). Same 12 × 6.5 in canvas across frames for clean animation.</li>
 <li><code>figures/SRK_allele_accumulation_combined.png</code> — all qualifying EO curves on shared axes, <strong>colored by parent BL</strong> (Set1 palette). End-of-curve labels show <code>EOXX (observed/MM)</code>. Legend grouped by BL.</li>
 <li><code>figures/SRK_allele_accumulation_BL_combined.png</code> — <strong>NEW</strong>. The 5 BL aggregate curves on shared axes; the headline visual test of “are independent bottleneck lineages approaching saturation independently?” Headline finding (current dataset 2026-05-11): BL4 climbs to 27 alleles toward MM=37 while BL2 plateaus at 8 alleles (MM=10).</li>
 <li><code>figures/SRK_allele_accumulation_drift_erosion.png</code> — stacked bars per EO (observed / predicted-undetected / lost-to-drift), with EOs sorted by parent BL and a thin BL color strip along the x-axis baseline grouping EOs visually.</li>
@@ -8057,7 +8058,8 @@ Late_fraction &lt; 0.10 → drift-dominated diversity</code></pre>
 <h4><span class="header-section-number">7.5.6.2</span> Output files</h4>
 <ul>
 <li><code>SRK_allele_accumulation_curves.pdf</code> — species + per-EO + per-BL pages</li>
-<li><code>figures/SRK_allele_accumulation_species.png</code></li>
+<li><code>figures/SRK_allele_accumulation_species.png</code> — bar (observed + predicted-undetected) + curve, shared y-axis</li>
+<li><code>figures/presentation/SRK_allele_accumulation_species_observed.png</code> / <code>_predicted.png</code> — slide build-up frames</li>
 <li><code>figures/SRK_allele_accumulation_combined.png</code> — EO curves colored by parent BL</li>
 <li><code>figures/SRK_allele_accumulation_BL_combined.png</code> — BL aggregate curves</li>
 <li><code>figures/SRK_allele_accumulation_drift_erosion.png</code> — EO stacked bars sorted by BL with BL color strip</li>
@@ -8470,12 +8472,16 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 </blockquote>
 <p><strong>Scripts:</strong></p>
 <ol style="list-style-type: decimal">
-<li><code>SRK_TP1_compatibility_metrics.py</code> — computes per-EO and per-BL metrics, writes <code>Tables/SRK_EO_allele_richness.tsv</code></li>
-<li><code>SRK_TP1_compatibility.R</code> — renders the four diagnostic panels</li>
+<li><code>SRK_TP1_compatibility_metrics.py</code> — computes per-EO and per-BL metrics (including bootstrap 95 % CIs on P_compat <strong>and the Depletion Index</strong> <code>DI = 1 − k / k_species</code>), writes <code>Tables/SRK_EO_allele_richness.tsv</code></li>
+<li><code>SRK_TP1_compatibility.R</code> — renders the four diagnostic panels (EO + BL × strict + leaky)</li>
+<li><code>SRK_P_compat_traffic_light.R</code> — stakeholder-facing red/amber/green priority figure (full + blank variants); the dedicated random-mating-viability diagnostic foregrounded in the conservation report and presentations</li>
+<li><code>SRK_depletion_ranking.R</code> — <strong>conservation-ranking figure</strong> placing each group on P_compat × DI axes with quadrants labelled by the three breeding strategies in <code>Tables/SRK_breeding_strategies.csv</code> (HEALTHY / INFORMED BREEDING (frequency skew) / INFORMED BREEDING + ALLELE INJECTION (preventive / urgent)). Two panels (<code>_observed</code> uses sample-size-corrected k; <code>_predicted</code> uses the MM asymptote) × three variants (<code>_blank</code> zones only, <code>_EOs</code> focal EOs only, <code>_all</code> BLs + EOs) = 6 figures for layered presentation builds</li>
 </ol>
 <p><strong>Command:</strong></p>
 <pre class="bash"><code>python3 SRK_TP1_compatibility_metrics.py
-Rscript SRK_TP1_compatibility.R</code></pre>
+Rscript SRK_TP1_compatibility.R
+Rscript SRK_P_compat_traffic_light.R
+Rscript SRK_depletion_ranking.R</code></pre>
 <p><strong>Inputs:</strong>
 - <code>Tables/SRK_individual_allele_genotypes.tsv</code> — Step 11 count matrix
 - <code>Tables/sampling_metadata.csv</code> — per-individual EO assignment
@@ -8490,7 +8496,7 @@ Rscript SRK_TP1_compatibility.R</code></pre>
 <p>Two axes diagnose mating-pool function:</p>
 <ul>
 <li><strong>x = evenness J (Shannon H / ln k)</strong> — <em>how evenly are the surviving alleles held?</em> J = 1 at NFDS equilibrium; J → 0 as one allele dominates (drift signature).</li>
-<li><strong>y = P_compat — the compatible-pair fraction</strong> — <em>what fraction of random plant pairs are mating-compatible under tetraploid sporophytic SI?</em> A value of 0.40 means roughly 40 % of random pairs in the population can produce seed. Computed exactly from the inferred allele frequencies (formula below). Directly demographic — translates to expected fraction of compatible crosses.</li>
+<li><strong>y = P_compat — the compatible-pair fraction</strong> — <em>what fraction of random plant pairs are mating-compatible under tetraploid sporophytic SI?</em> A value of 0.40 means roughly 40 % of random pairs in the population can produce seed. Computed exactly from the inferred allele frequencies (formula below) as a deterministic closed-form value; uncertainty is quantified by a bootstrap 95 % CI (1000 resamples of individuals with replacement) reported alongside each point estimate. Directly demographic — translates to expected fraction of compatible crosses.</li>
 </ul>
 <p>Point size encodes rarefied k (richness at N = 30, 1000 perms) so depletion remains visible without dominating the figure.</p>
 </div>
@@ -8626,19 +8632,79 @@ Rscript SRK_TP1_compatibility.R</code></pre>
 <li><code>figures/SRK_TP1_compatibility_EO_leaky.{png,pdf}</code> — EO panel, leaky SI (L = 0.25, close to empirical L̂ ≈ 0.18)</li>
 <li><code>figures/SRK_TP1_compatibility_BL_strict.{png,pdf}</code> — BL panel, strict SI</li>
 <li><code>figures/SRK_TP1_compatibility_BL_leaky.{png,pdf}</code> — BL panel, leaky SI</li>
+<li><code>figures/SRK_P_compat_traffic_light_EO.{png,pdf}</code> — <strong>stakeholder-facing red/amber/green priority figure</strong> built from the same TSV. Six focal EOs ranked worst-to-best by strict-SI P_compat, with bootstrap 95 % CIs as horizontal error bars and BL colour squares on the left edge. The dedicated answer to <em>“is random mating still viable?”</em> — used in the LEPA report and in conservation presentations.</li>
+<li><code>figures/SRK_P_compat_traffic_light_EO_blank.{png,pdf}</code> — companion blank variant (zones + EO labels + BL strip + legend; no data drawn) for the predictions slide.</li>
 </ul>
-<p>Each panel ships with a <code>_blank.png</code> companion (empty quadrants, no points) for presentation overlays.</p>
+<p>Each four-panel figure ships with a <code>_blank.png</code> companion (empty quadrants, no points) for presentation overlays.</p>
 </div>
-<div id="outputs" class="section level3" number="7.7.8">
-<h3><span class="header-section-number">7.7.8</span> Outputs</h3>
+<div id="depletion-index-and-the-conservation-ranking-figure" class="section level3" number="7.7.8">
+<h3><span class="header-section-number">7.7.8</span> Depletion Index and the conservation-ranking figure</h3>
+<p><code>SRK_depletion_ranking.R</code> produces a second 2D figure that complements the J × P_compat scatter — and aligns more directly with the conservation decision the team has to make. Axes:</p>
 <ul>
-<li><code>Tables/SRK_EO_allele_richness.tsv</code> — 5 BL rows + 6 EO rows × 17 metric columns (<code>level</code>, <code>group</code>, <code>BL</code>, <code>N</code>, <code>geno_mix</code>, <code>prop_AAAA</code>, <code>L_hat_from_AAAA</code>, <code>raw_copy_recovery</code>, <code>k_observed</code>, <code>k_rarefied30_mean/sd</code>, <code>shannon_H</code>, <code>evenness_J</code>, <code>chi2_uniform_p</code>, <code>P_compat_uniform_4x</code>, <code>P_compat_L0/L0.10/L0.25/L0.50</code>)</li>
-<li>Four PNG + four PDF panels (above)</li>
+<li><strong>x = Depletion Index (DI)</strong> = <code>1 − k / k_species</code>, where <code>k_species = 59</code> (Step 15 MM consensus). DI = 0 means at species equilibrium; DI = 1 means no alleles retained. Two flavours are written to the metrics TSV:
+<ul>
+<li><code>DI_observed</code> uses <code>k_rarefied30</code> (sample-size-corrected), so EOs / BLs with different N are directly comparable. The conservative read.</li>
+<li><code>DI_predicted</code> uses the per-group MM asymptote <code>k_predicted_MM</code> from Step 15. It represents the upper bound on richness achievable from existing sampling without further intervention — gaps between observed and predicted DI flag populations where additional sampling would likely recover more alleles.</li>
+</ul></li>
+<li><strong>y = compatible-pair fraction</strong> under strict tetraploid SI (<code>P_compat_L0</code>), with the bootstrap 95 % CI drawn as a vertical whisker.</li>
+</ul>
+<p>Quadrants are labelled with the three breeding strategies defined in <code>Tables/SRK_breeding_strategies.csv</code>:</p>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>DI</th>
+<th>P_compat</th>
+<th>Strategy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>&lt; 0.50</td>
+<td>≥ 0.40</td>
+<td><strong>HEALTHY</strong> — random pollination</td>
+</tr>
+<tr class="even">
+<td>≥ 0.50</td>
+<td>≥ 0.40</td>
+<td><strong>INFORMED BREEDING + ALLELE INJECTION</strong> (preventive)</td>
+</tr>
+<tr class="odd">
+<td>&lt; 0.50</td>
+<td>&lt; 0.40</td>
+<td><strong>INFORMED BREEDING</strong> (frequency skew)</td>
+</tr>
+<tr class="even">
+<td>≥ 0.50</td>
+<td>&lt; 0.40</td>
+<td><strong>INFORMED BREEDING + ALLELE INJECTION</strong> (urgent)</td>
+</tr>
+</tbody>
+</table>
+<p>Two panels are rendered (<code>_observed</code> and <code>_predicted</code>), each in three layered variants for stakeholder presentations:</p>
+<ul>
+<li><code>figures/SRK_depletion_ranking_{observed,predicted}_blank.{png,pdf}</code> — zones + labels only (predictions slide)</li>
+<li><code>figures/SRK_depletion_ranking_{observed,predicted}_EOs.{png,pdf}</code> — focal EOs only (mid-build; EOs are the management units)</li>
+<li><code>figures/SRK_depletion_ranking_{observed,predicted}_all.{png,pdf}</code> — BLs + EOs together (final reveal)</li>
+</ul>
+<p>In the current dataset every group except EO27 falls in one of the two ALLELE INJECTION quadrants. EO27 sits in the INFORMED BREEDING (frequency skew) quadrant on the <code>_predicted</code> panel and at the threshold on <code>_observed</code>. The observed-vs-predicted gap is largest for EO27 and BL4 (substantial sampling-driven contribution to apparent depletion) and smallest for EO70 (near-asymptote — depletion is real).</p>
+</div>
+<div id="outputs" class="section level3" number="7.7.9">
+<h3><span class="header-section-number">7.7.9</span> Outputs</h3>
+<ul>
+<li><code>Tables/SRK_EO_allele_richness.tsv</code> — 5 BL rows + 6 EO rows × 31 columns: identifiers (<code>level</code>, <code>group</code>, <code>BL</code>, <code>N</code>), depletion (<code>k_species</code>, <code>k_predicted_MM</code>, <code>DI_observed</code>, <code>DI_predicted</code>), genotype mix (<code>geno_mix</code>, <code>prop_AAAA</code>, <code>L_hat_from_AAAA</code>, <code>raw_copy_recovery</code>), richness (<code>k_observed</code>, <code>k_rarefied30_mean/sd</code>), evenness (<code>shannon_H</code>, <code>evenness_J</code>, <code>chi2_uniform_p</code>, <code>P_compat_uniform_4x</code>), and the leakage ladder (<code>P_compat_L0/L0.10/L0.25/L0.50</code> each with <code>_lo/_hi</code> bootstrap CIs)</li>
+<li><code>Tables/SRK_breeding_strategies.csv</code> — three-row reference table (Random pollination / Informed breeding / Informed breeding + allele injection) describing how parents are paired and what each strategy produces; provides the vocabulary used in the depletion-ranking quadrants</li>
+<li>Four PNG + four PDF panels (J × P_compat, above)</li>
 <li>Four <code>_blank.png</code> zone-only variants</li>
+<li>Six PNG + six PDF depletion-ranking panels (observed/predicted × blank/BL/all)</li>
 </ul>
 </div>
-<div id="headline-result-current-dataset-2026-05-22" class="section level3" number="7.7.9">
-<h3><span class="header-section-number">7.7.9</span> Headline result (current dataset, 2026-05-22)</h3>
+<div id="headline-result-current-dataset-2026-05-22" class="section level3" number="7.7.10">
+<h3><span class="header-section-number">7.7.10</span> Headline result (current dataset, 2026-05-22)</h3>
 <ul>
 <li><strong>Strict SI (L = 0):</strong> EO70 sits alone in BIOBANK + RESTORE (P_compat = 0.08, J = 0.67, k_rare30 = 4.9 against a species optimum ≈ 58). EO67 also BIOBANK (P_compat = 0.23). EO18, EO76 in AUGMENT URGENTLY. EO25, EO27 in MONITOR. BL1 + BL2 in BIOBANK; BL3 borderline AUGMENT URGENTLY; BL4 + BL5 in MONITOR.</li>
 <li><strong>Leaky SI (L = 0.25):</strong> EO18, EO76, BL3 rescued into MONITOR (the C3 Stage 5 signature). <strong>EO70 and BL2 stay in BIOBANK under both views</strong> — the cleanest signal that SI leakage cannot rescue these populations and seed banking is the priority intervention. EO67 and BL1 partially rescue into AUGMENT URGENTLY.</li>
@@ -10297,6 +10363,534 @@ python3 srk_allele_hypotheses.py</code></pre>
 <li><strong>SI breakdown documentation</strong>: Incompatible crosses yielding seeds identify individuals where the polyploid competitive interaction mechanism has enabled self-fertilisation — Stage 5 Compatibility Collapse Cascade events</li>
 <li><strong>Proposal preliminary data</strong>: even a small initial crossing experiment (n = 20–30 crosses) covering W, N, and Compatible_within categories provides sufficient preliminary evidence to justify the full Objective 2 crossing design in the NSF proposal</li>
 </ul>
+</div>
+</div>
+<div id="sistatus" class="section level2" number="8.5">
+<h2><span class="header-section-number">8.5</span> Per-Individual SI System Status (Step 25)</h2>
+<blockquote>
+<p><strong>Question answered:</strong> <em>What is the status of the SI system?</em> — at the individual, bottleneck-lineage (BL), and population (EO) levels.</p>
+</blockquote>
+<div id="overview-25" class="section level3" number="8.5.1">
+<h3><span class="header-section-number">8.5.1</span> Overview</h3>
+<p>Step 25 reconstructs, for every ingroup individual, how many of the four expected tetraploid SRK copies produce a functional protein vs. carry a premature stop codon. It re-aggregates the per-haplotype <code>OK</code> / <code>REMOVED</code> calls that Step 7 (<code>translate_filter_align_AA.py</code>) writes to the per-library <code>_frame1_stopcodon_log.tsv</code> files and that the rest of the pipeline drops before genotyping. <strong>Phase 1–2 outputs (canonical 49-allele catalogue, zygosity, allele matrix) are unchanged</strong>; Step 25 sits at the start of Phase 5 and reads existing files only.</p>
+</div>
+<div id="biological-rationale-4" class="section level3" number="8.5.2">
+<h3><span class="header-section-number">8.5.2</span> Biological Rationale</h3>
+<p>Sporophytic SI in tetraploid <em>Lepidium papilliferum</em> requires at least one functional SRK haplotype to participate in pollen rejection. With four copies of the locus, an individual carrying:</p>
+<ul>
+<li><strong>4 functional copies → SI</strong> (fully self-incompatible)</li>
+<li><strong>1–3 non-functional copies → pSI</strong> (partially SI / leaky)</li>
+<li><strong>4 non-functional copies → SC</strong> (self-compatible escape; same population biology as the seven candidates in <code>SRK_SI_escape_candidates.csv</code>)</li>
+</ul>
+<p>Distinguishing these states at the population level is the <strong>first question</strong> in the workflow that links molecular SRK variation to the demographic / reproductive-success outcomes being explored in the LEPA report.</p>
+</div>
+<div id="categorisation-rule" class="section level3" number="8.5.3">
+<h3><span class="header-section-number">8.5.3</span> Categorisation rule</h3>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><code>SI_status</code></th>
+<th>Criterion</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>SI</strong></td>
+<td><code>copies_NF == 0</code> OR <code>n_REMOVED &lt; 2</code></td>
+<td>Single-REMOVED haps treated as Canu assembly noise.</td>
+</tr>
+<tr class="even">
+<td><strong>pSI</strong></td>
+<td><code>1 ≤ copies_NF ≤ 3</code> AND <code>n_REMOVED ≥ 2</code></td>
+<td><code>pSI_confidence = high</code> if <code>frac_NF ≥ 0.25</code>, <code>low</code> otherwise.</td>
+</tr>
+<tr class="odd">
+<td><strong>SC</strong></td>
+<td><code>copies_NF == 4</code></td>
+<td>Robust — every haplotype independently carries a stop.</td>
+</tr>
+<tr class="even">
+<td><strong>Insufficient_data</strong></td>
+<td><code>n_OK + n_REMOVED &lt; 4</code></td>
+<td>Mostly individuals that never produced a Canu assembly.</td>
+</tr>
+</tbody>
+</table>
+<p><code>copies_NF = round(4 × n_REMOVED / (n_OK + n_REMOVED))</code> after excluding the <code>SRK_BEA</code> Brassica reference haplotypes.</p>
+</div>
+<div id="assembly-noise-caveat" class="section level3" number="8.5.4">
+<h3><span class="header-section-number">8.5.4</span> Assembly-noise caveat</h3>
+<p>Canu can emit N &gt; 4 haplotypes per individual (chimeric assemblies splice two real alleles and introduce spurious frameshifts; indel-rich low-coverage contigs shift the reading frame; allele-specific over-clustering yields multiple near-identical contigs). A single <code>REMOVED</code> call in an otherwise clean set is exactly what an assembly chimera produces, so the <code>n_REMOVED ≥ 2</code> filter reassigns those individuals to SI. The <strong>SC class is unchanged and biologically robust</strong> because every haplotype must independently carry a stop. The pSI class is reported with a confidence flag (<code>pSI_high</code> / <code>pSI_low</code>) so downstream users can filter.</p>
+</div>
+<div id="bioinformatics-24" class="section level3" number="8.5.5">
+<h3><span class="header-section-number">8.5.5</span> Bioinformatics</h3>
+<ul>
+<li>Script (aggregator): <code>SRK_individual_SI_status.py</code></li>
+<li>Script (figures): <code>SRK_SI_status_figures.R</code> (uses <code>srk_bl_constants.R</code> for <code>BL_ORDER</code> and <code>get_eo_order_within_bl()</code>)</li>
+</ul>
+<div id="input-files-9" class="section level4" number="8.5.5.1">
+<h4><span class="header-section-number">8.5.5.1</span> Input Files</h4>
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>all_Library*_*_frame1_stopcodon_log.tsv</code> (×9)</td>
+<td>Per-haplotype OK/REMOVED calls from Step 7 (<code>translate_filter_align_AA.py</code>).</td>
+</tr>
+<tr class="even">
+<td><code>Tables/SRK_data_quality_categories.tsv</code></td>
+<td><code>Ingroup</code> flag + <code>EO_normalised</code> + <code>BL_inferred</code> (from Step 12c).</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="output-files-24" class="section level4" number="8.5.5.2">
+<h4><span class="header-section-number">8.5.5.2</span> Output Files</h4>
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Tables/SRK_individual_SI_status.tsv</code></td>
+<td>One row per ingroup individual: <code>n_haps_OK</code>, <code>n_haps_REMOVED</code>, <code>n_haps_total</code>, <code>frac_nonfunctional</code>, <code>copies_functional</code>, <code>copies_nonfunctional</code>, <code>SI_status</code> (SI / pSI / SC / Insufficient_data), <code>pSI_confidence</code> (high / low / blank).</td>
+</tr>
+<tr class="even">
+<td><code>figures/SRK_SI_status_species_full.png</code> / <code>_robust.png</code></td>
+<td>Species-level stacked bar — <code>_full</code> (n = 401, 7-tier including pSI · low confidence and Insufficient_data) and <code>_robust</code> (n = 254, 5-tier SI / pSI_1nf / pSI_2nf / pSI_3nf / SC for biological-process readings).</td>
+</tr>
+<tr class="odd">
+<td><code>figures/SRK_SI_status_by_BL_full.png</code> / <code>_robust.png</code></td>
+<td>Per-BL stacked %, BLs in <code>BL_ORDER</code> (area-then-connectivity sort key). Same <code>_full</code> / <code>_robust</code> split.</td>
+</tr>
+<tr class="even">
+<td><code>figures/SRK_SI_status_by_EO_full.png</code> / <code>_robust.png</code></td>
+<td>Per-EO stacked %, facet-grouped by BL with within-BL ordering by ascending drift index. Same <code>_full</code> / <code>_robust</code> split.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="current-snapshot-2026-06-11" class="section level4" number="8.5.5.3">
+<h4><span class="header-section-number">8.5.5.3</span> Current Snapshot (2026-06-11)</h4>
+<table>
+<thead>
+<tr class="header">
+<th>Category</th>
+<th align="right">n</th>
+<th align="right">% of 401</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SI</td>
+<td align="right">37</td>
+<td align="right">9.2 %</td>
+</tr>
+<tr class="even">
+<td>pSI · high conf.</td>
+<td align="right">209</td>
+<td align="right">52.1 %</td>
+</tr>
+<tr class="odd">
+<td>pSI · low conf.</td>
+<td align="right">23</td>
+<td align="right">5.7 %</td>
+</tr>
+<tr class="even">
+<td>SC</td>
+<td align="right">8</td>
+<td align="right">2.0 %</td>
+</tr>
+<tr class="odd">
+<td>Insufficient data</td>
+<td align="right">124</td>
+<td align="right">30.9 %</td>
+</tr>
+</tbody>
+</table>
+<p>Only ~13 % of individuals with sufficient data carry a fully intact SI system. The species-wide dominance of high-confidence pSI is the headline result and likely contributes to the reproductive-success deficit observed at the demographic level. The eight SC individuals — clustered in EO76 (n = 3), EO29 (n = 2), EO18, EO70, EO97 (one each) — are the most biologically robust signal of ongoing SI breakdown.</p>
+</div>
+</div>
+</div>
+<div id="nullaware" class="section level2" number="8.6">
+<h2><span class="header-section-number">8.6</span> Null-Aware Tetraploid Genotype Rebuild (Step 26)</h2>
+<blockquote>
+<p>Propagates Step 25 SI status into the canonical genotype tables so every downstream population-genetic metric reflects the broken-copy reality.</p>
+</blockquote>
+<div id="overview-26" class="section level3" number="8.6.1">
+<h3><span class="header-section-number">8.6.1</span> Overview</h3>
+<p>Step 26 rebuilds the per-individual tetraploid genotypes so that <strong>partial-SI (pSI) individuals carry explicit <code>Allele_NULL</code> copies</strong> and <strong>SC individuals appear in the canonical set with all-null genotypes</strong>. The original Phase-1–2 tables stay frozen as a functional-only reference; the null-aware tables sit alongside with a <code>_with_nulls</code> suffix.</p>
+</div>
+<div id="biological-motivation" class="section level3" number="8.6.2">
+<h3><span class="header-section-number">8.6.2</span> Biological motivation</h3>
+<p>The canonical genotype table counts only functional SRK copies and pads under-recovered individuals to four slots by homozygosity assumption (Step 12). For an SI individual this is correct. For a pSI individual the padding <em>fabricates</em> functional copies that biologically do not exist — apparent homozygosity is inflated, allele-frequency tails are depressed, and downstream metrics (P_compat, GFS, TP1, TP2) are biased optimistic. SC individuals are excluded from the canonical 335-individual set entirely.</p>
+</div>
+<div id="categorisation-rule-sven-2026-06-11" class="section level3" number="8.6.3">
+<h3><span class="header-section-number">8.6.3</span> Categorisation rule (Sven, 2026-06-11)</h3>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Source SI_status</th>
+<th>Action</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SI</code> (n = 37)</td>
+<td>Pad to 4 functional copies; <code>Allele_NULL = 0</code>.</td>
+<td>Truly SI — no nulls.</td>
+</tr>
+<tr class="even">
+<td><code>pSI</code> + <code>pSI_confidence == low</code> (n = 23)</td>
+<td>Promote to SI; pad as above.</td>
+<td><code>frac_NF &lt; 0.25</code> too dilute to commit nulls.</td>
+</tr>
+<tr class="odd">
+<td><code>pSI</code> + <code>pSI_confidence == high</code> (n = 209)</td>
+<td>Scale functional counts down to <code>copies_functional</code>; <code>Allele_NULL = copies_nonfunctional</code>.</td>
+<td>Genuine partial SI — broken copies must appear in allele-frequency denominators.</td>
+</tr>
+<tr class="even">
+<td><code>SC</code> (n = 8)</td>
+<td>All four slots → <code>Allele_NULL</code>. Adds 7 individuals to canonical set.</td>
+<td>Self-compatible escape — robust under Canu noise.</td>
+</tr>
+<tr class="odd">
+<td><code>Insufficient_data</code> (n = 124)</td>
+<td>Keep in canonical set if reached genotyping; flag for re-sequencing either way.</td>
+<td>Genotype call is data-thin but not nonsense.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="null-aware-gfs-formula" class="section level3" number="8.6.4">
+<h3><span class="header-section-number">8.6.4</span> Null-aware GFS formula</h3>
+<p><span class="math display">\[
+\mathrm{GFS}_{\text{null-aware}} = \mathrm{GFS}_{\text{func}} \times \frac{n_{\text{func}}}{4}, \qquad
+\mathrm{GFS}_{\text{func}} = 1 - \frac{\sum_k n_k(n_k - 1)}{n_{\text{func}}(n_{\text{func}} - 1)}
+\]</span></p>
+<p>with <span class="math inline">\(n_{\text{func}} = 4 - N_{\text{null}}\)</span>. Produces a 12-tier ordering: <code>0000 / A000 / AA00 / AAA0 / AAAA → 0.000</code>; <code>AAAB / AB00 / AAB0 → 0.500</code>; <code>AABB → 0.667</code>; <code>ABC0 → 0.750</code>; <code>AABC → 0.833</code>; <code>ABCD → 1.000</code>.</p>
+</div>
+<div id="scripts-1" class="section level3" number="8.6.5">
+<h3><span class="header-section-number">8.6.5</span> Scripts</h3>
+<ul>
+<li><code>SRK_genotype_null_alleles.py</code> — builds the null-aware genotype + zygosity tables and the redo list.</li>
+<li><code>SRK_population_genetic_summary_with_nulls.R</code> — Step 14b: null-aware pop-gen with new columns <code>Frac_nonfunctional_alleles</code>, <code>Mean_null_copies</code>, <code>Prop_pSI</code>, <code>N_SC</code>.</li>
+<li><code>SRK_TP1_compatibility_metrics_with_nulls.py</code> — Step 17b: null-aware P_compat (<code>Allele_NULL</code> enters the frequency vector; heuristic but conservative).</li>
+<li><code>SRK_individual_GFS_with_nulls.R</code> — Steps 19b + 20b: null-aware GFS with the formula above.</li>
+</ul>
+</div>
+<div id="outputs-1" class="section level3" number="8.6.6">
+<h3><span class="header-section-number">8.6.6</span> Outputs</h3>
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Tables/SRK_individual_allele_genotypes_with_nulls.tsv</code></td>
+<td>342 individuals × 49 functional alleles + Allele_NULL + Genotype_class_flag. Rows sum to 4.</td>
+</tr>
+<tr class="even">
+<td><code>Tables/SRK_individual_zygosity_with_nulls.tsv</code></td>
+<td>12-tier genotype labels (<code>AB00</code>, <code>0000</code>, …) + N_distinct_functional + N_null_copies + SI_status.</td>
+</tr>
+<tr class="odd">
+<td><code>Tables/SRK_samples_for_redo.tsv</code></td>
+<td>124 Insufficient_data individuals, prioritised by <code>n_haps_total</code>.</td>
+</tr>
+<tr class="even">
+<td><code>SRK_population_genetic_summary_with_nulls.tsv</code> / <code>_BL_with_nulls.tsv</code> / <code>.pdf</code></td>
+<td>Step 14b outputs.</td>
+</tr>
+<tr class="odd">
+<td><code>Tables/SRK_EO_allele_richness_with_nulls.tsv</code></td>
+<td>Step 17b: null-aware TP1 metrics with bootstrap CIs at L ∈ {0, 0.10, 0.25, 0.50}.</td>
+</tr>
+<tr class="even">
+<td><code>SRK_individual_GFS_with_nulls.tsv</code> / <code>SRK_EO_GFS_summary_with_nulls.tsv</code> / <code>SRK_BL_GFS_summary_with_nulls.tsv</code></td>
+<td>Steps 19b + 20b.</td>
+</tr>
+<tr class="odd">
+<td><code>figures/SRK_GFS_with_nulls_composition.png</code> / <code>_TP2_scatter.png</code></td>
+<td>Stacked-bar tier composition per BL + null-aware TP2 scatter.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="bias-correction-summary-2026-06-11" class="section level3" number="8.6.7">
+<h3><span class="header-section-number">8.6.7</span> Bias correction summary (2026-06-11)</h3>
+<table>
+<thead>
+<tr class="header">
+<th>BL</th>
+<th align="right">Canonical P_compat (L=0)</th>
+<th align="right">Null-aware P_compat (L=0)</th>
+<th align="right">Δ</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>BL1</td>
+<td align="right">0.068</td>
+<td align="right">0.084</td>
+<td align="right">+0.02</td>
+</tr>
+<tr class="even">
+<td>BL2</td>
+<td align="right">0.106</td>
+<td align="right">0.137</td>
+<td align="right">+0.03</td>
+</tr>
+<tr class="odd">
+<td>BL3</td>
+<td align="right">0.394</td>
+<td align="right">0.367</td>
+<td align="right">-0.03</td>
+</tr>
+<tr class="even">
+<td>BL4</td>
+<td align="right">0.417</td>
+<td align="right">0.358</td>
+<td align="right"><strong>-0.06</strong></td>
+</tr>
+<tr class="odd">
+<td>BL5</td>
+<td align="right">0.472</td>
+<td align="right">0.392</td>
+<td align="right"><strong>-0.08</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The functional-only baseline <strong>overestimated</strong> the mating-pool size for the larger BLs (BL3–BL5) by 0.03–0.08. Null-aware GFS shows <strong>all five BLs CRITICAL</strong> on TP2 (mean GFS &lt; 0.667 AND prop_zero &gt; 30 %), with 60–75 % of individuals in every BL falling to GFS = 0. The conclusion that LEPA is reproductively compromised at the molecular level is <em>strengthened</em>, not weakened, by the null-aware rebuild.</p>
+</div>
+</div>
+<div id="inheritance" class="section level2" number="8.7">
+<h2><span class="header-section-number">8.7</span> Forward-Time Inheritance Simulator (Step 27)</h2>
+<blockquote>
+<p>Tetraploid Wright–Fisher simulator that projects each BL forward in generation time from its empirical Step 26 state. The dynamic companion to Step 25’s snapshot — answers <em>where</em> the species is heading on the SI → SC erosion axis.</p>
+</blockquote>
+<div id="overview-27" class="section level3" number="8.7.1">
+<h3><span class="header-section-number">8.7.1</span> Overview</h3>
+<p>A two-layer model for the SI → pSI → SC process: Step 25 + the binomial-snapshot fit (Bin(4, p_BL) explains the within-BL distribution of broken copies; per-BL p̂ = 0.39–0.57) gives the <strong>static</strong> picture; Step 27 simulates the <strong>dynamic</strong> trajectory under drift, mutation, sporophytic SI rejection, selfing, inbreeding depression, and optional inter-BL migration.</p>
+</div>
+<div id="model" class="section level3" number="8.7.2">
+<h3><span class="header-section-number">8.7.2</span> Model</h3>
+<p>Each individual = vector of 4 SRK haplotypes encoded as integers, with 0 = <code>Allele_NULL</code> and positive integers indexing functional alleles. Per generation:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Mutation</strong> — each copy → NULL with probability μ (default 1 × 10⁻⁴).</li>
+<li><strong>Mate selection</strong> — pick a mother uniformly at random; if she has ≥ 3 NULL stigma copies AND <code>U(0,1) &lt; s</code>, she selfs (default <code>s = 0.5</code>). Otherwise she attempts outcrossing for up to 20 attempts.</li>
+<li><strong>Sporophytic SI rejection</strong> — pollen rejected if any functional pollen S-allele matches any functional stigma S-allele. <strong>NULL alleles never trigger rejection</strong>; NULL stigma copies never reject.</li>
+<li><strong>Gamete formation</strong> — tetrasomic random pairing with double-reduction probability α = 0.10.</li>
+<li><strong>Inbreeding depression</strong> — selfed offspring fitness = 1 − δ (default δ = 0.5); Wright–Fisher resampling weighted by fitness.</li>
+<li><strong>Optional migration</strong> — with probability <em>m</em> per individual, replace it with a random individual drawn from the other BLs’ current populations.</li>
+</ol>
+</div>
+<div id="scenarios" class="section level3" number="8.7.3">
+<h3><span class="header-section-number">8.7.3</span> Scenarios</h3>
+<table style="width:100%;">
+<colgroup>
+<col width="14%" />
+<col width="14%" />
+<col width="14%" />
+<col width="14%" />
+<col width="14%" />
+<col width="14%" />
+<col width="14%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Scenario</th>
+<th>μ</th>
+<th>s</th>
+<th>δ</th>
+<th>m</th>
+<th>Ne_scaling</th>
+<th>Conservation reading</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>baseline</td>
+<td>1e-4</td>
+<td>0.5</td>
+<td>0.5</td>
+<td>0</td>
+<td>1.0</td>
+<td>Current isolated state — no intervention.</td>
+</tr>
+<tr class="even">
+<td>rescue_low</td>
+<td>1e-4</td>
+<td>0.5</td>
+<td>0.5</td>
+<td>0.001</td>
+<td>1.0</td>
+<td>Light passive inter-BL gene flow.</td>
+</tr>
+<tr class="odd">
+<td>rescue_high</td>
+<td>1e-4</td>
+<td>0.5</td>
+<td>0.5</td>
+<td>0.01</td>
+<td>1.0</td>
+<td>10× rescue_low.</td>
+</tr>
+<tr class="even">
+<td>high_drift</td>
+<td>1e-4</td>
+<td>0.5</td>
+<td>0.5</td>
+<td>0</td>
+<td>0.5</td>
+<td>Further habitat loss stress test.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="bioinformatics-25" class="section level3" number="8.7.4">
+<h3><span class="header-section-number">8.7.4</span> Bioinformatics</h3>
+<ul>
+<li><code>SRK_inheritance_simulator.py</code> — runs all scenarios × all BLs × <code>--n_replicates</code> × <code>--n_generations</code>. CLI flags: <code>--n_generations</code>, <code>--n_replicates</code>, <code>--mu</code>, <code>--scenarios</code>, <code>--seed</code>, <code>--quick</code>. Default 200 gens × 50 reps; production runs use 100 gens × 30 reps for tractable runtime.</li>
+<li><code>SRK_inheritance_figures.R</code> — renders three figures from the trajectories TSV.</li>
+</ul>
+<div id="input-files-10" class="section level4" number="8.7.4.1">
+<h4><span class="header-section-number">8.7.4.1</span> Input Files</h4>
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Tables/SRK_individual_allele_genotypes_with_nulls.tsv</code></td>
+<td>Step 26 augmented genotype matrix — initial state per BL.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="output-files-25" class="section level4" number="8.7.4.2">
+<h4><span class="header-section-number">8.7.4.2</span> Output Files</h4>
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Tables/SRK_inheritance_trajectories.tsv</code></td>
+<td>Per (scenario × BL × replicate × generation): n_SI, n_pSI1, n_pSI2, n_pSI3, n_SC, mean_p_NULL.</td>
+</tr>
+<tr class="even">
+<td><code>Tables/SRK_inheritance_time_to_sc.tsv</code></td>
+<td>First-passage time to 50 % SC frequency per (scenario × BL × replicate).</td>
+</tr>
+<tr class="odd">
+<td><code>figures/SRK_inheritance_pNULL_trajectories.png</code></td>
+<td>Per-BL p_NULL trajectories.</td>
+</tr>
+<tr class="even">
+<td><code>figures/SRK_inheritance_SC_progression.png</code></td>
+<td>SC-frequency trajectories with IQR ribbons.</td>
+</tr>
+<tr class="odd">
+<td><code>figures/SRK_inheritance_time_to_sc.png</code></td>
+<td>Median + IQR time-to-50%-SC bars per BL × scenario.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="headline-results-100-gens-30-reps-2026-06-11" class="section level4" number="8.7.4.3">
+<h4><span class="header-section-number">8.7.4.3</span> Headline Results (100 gens × 30 reps, 2026-06-11)</h4>
+<p>Median generations to 50 % SC frequency:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Scenario</th>
+<th align="right">BL5</th>
+<th align="right">BL4</th>
+<th align="right">BL3</th>
+<th align="right">BL2</th>
+<th align="right">BL1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>baseline</td>
+<td align="right">21.5</td>
+<td align="right">22</td>
+<td align="right">20</td>
+<td align="right">9</td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td>rescue_high (m=0.01)</td>
+<td align="right">23</td>
+<td align="right">28</td>
+<td align="right">24.5</td>
+<td align="right">10</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td>high_drift (N × 0.5)</td>
+<td align="right">15.5</td>
+<td align="right">17</td>
+<td align="right">17</td>
+<td align="right">7.5</td>
+<td align="right">2.5</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Three biological readings.</strong> (1) Every BL crosses the 50 % SC threshold within ~25 generations under baseline — <em>L. papilliferum</em> is on a rapid SI → SC trajectory in the absence of intervention. (2) Halving effective N (high_drift) accelerates collapse by 4–7 generations for BL3–BL5. (3) <strong>Passive inter-BL migration alone cannot rescue</strong>, because donor BLs themselves carry high p_NULL — random migrants just average a partially-broken state across the species. <strong>Targeted SI-mother / SI-father crosses (Step 22e cross plan filtered through the Step 25 SI table)</strong> are the conservation lever that must be modelled in future scenario extensions (<code>rescue_targeted</code>, <code>rescue_targeted_seed</code>, <code>biobank_pause</code>).</p>
+</div>
 </div>
 </div>
 </div>
