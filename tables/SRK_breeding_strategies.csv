@@ -1,0 +1,4 @@
+Strategy,How parents are paired,What it produces
+Random (natural) pollination,Pollinators move pollen between any two co-flowering plants,Compatibility = compatible-pair fraction x visitation rate; most pollen wasted at low compatible-pair fraction
+Informed breeding,Researchers/managers select parent pairs using genotype data,Compatibility approaches the upper bound set by current allele richness k
+Informed breeding + allele injection,As above plus introducing parents from another bottleneck lineage,Compatibility ceiling itself rises as k grows

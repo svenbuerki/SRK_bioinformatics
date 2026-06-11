@@ -1,0 +1,17 @@
+# macOS Finder metadata
+.DS_Store
+**/.DS_Store
+
+# RStudio project state
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
