@@ -34,7 +34,20 @@ MIN_MEAN_COV="${MIN_MEAN_COV:-20}"
 MIN_UNIFORMITY="${MIN_UNIFORMITY:-0.2}"
 CHIMERA_WINDOW="${CHIMERA_WINDOW:-200}"
 CHIMERA_FILTER_SCRIPT="$orig_dir/chimera_coverage_filter.py"
-PYTHON_BIN="${PYTHON_BIN:-/Users/sven/anaconda3/bin/python}"
+
+# Auto-detect a working Python interpreter (override via `export PYTHON_BIN=...`).
+if [[ -z "${PYTHON_BIN:-}" ]]; then
+    if command -v python3 &>/dev/null; then
+        PYTHON_BIN="$(command -v python3)"
+    elif command -v python &>/dev/null; then
+        PYTHON_BIN="$(command -v python)"
+    elif [[ -x /Users/sven/anaconda3/bin/python ]]; then
+        PYTHON_BIN="/Users/sven/anaconda3/bin/python"
+    else
+        echo "ERROR: no python3 or python found on PATH; set PYTHON_BIN explicitly" >&2
+        exit 1
+    fi
+fi
 
 # Canu resume logic: by default, if CANU_rep<N>/*.contigs.fasta exists and is
 # non-empty for a given rep, that rep is skipped (re-running with new chimera
@@ -59,6 +72,7 @@ echo "Chimera filter     : mode=$CHIMERA_FILTER_MODE  "\
 "min_mean_cov=$MIN_MEAN_COV  min_uniformity=$MIN_UNIFORMITY  window=${CHIMERA_WINDOW}bp"
 echo "Canu resume        : FORCE_CANU=$FORCE_CANU"\
 " (skips reps with existing CANU_rep<N>/*.contigs.fasta unless forced)"
+echo "Python interpreter : $PYTHON_BIN"
 echo ""
 
 # Run one pipeline step, capturing stdout+stderr to the per-sample log.
