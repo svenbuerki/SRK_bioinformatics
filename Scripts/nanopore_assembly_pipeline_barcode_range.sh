@@ -36,6 +36,12 @@ CHIMERA_WINDOW="${CHIMERA_WINDOW:-200}"
 CHIMERA_FILTER_SCRIPT="$orig_dir/chimera_coverage_filter.py"
 PYTHON_BIN="${PYTHON_BIN:-/Users/sven/anaconda3/bin/python}"
 
+# Canu resume logic: by default, if CANU_rep<N>/*.contigs.fasta exists and is
+# non-empty for a given rep, that rep is skipped (re-running with new chimera
+# thresholds or restarting from an interrupted run is then much faster).
+# Override with FORCE_CANU=1 to wipe and re-run every Canu rep from scratch.
+FORCE_CANU="${FORCE_CANU:-0}"
+
 # ==========================================
 # Logging setup
 # ==========================================
@@ -51,6 +57,8 @@ echo "Per-sample logs    : $log_dir/${library}_${run_id}_<barcode>.log"
 echo "Run summary table  : $summary_log"
 echo "Chimera filter     : mode=$CHIMERA_FILTER_MODE  "\
 "min_mean_cov=$MIN_MEAN_COV  min_uniformity=$MIN_UNIFORMITY  window=${CHIMERA_WINDOW}bp"
+echo "Canu resume        : FORCE_CANU=$FORCE_CANU"\
+" (skips reps with existing CANU_rep<N>/*.contigs.fasta unless forced)"
 echo ""
 
 # Run one pipeline step, capturing stdout+stderr to the per-sample log.
@@ -147,6 +155,14 @@ for n in $(seq "$start_num" "$end_num"); do
     # ==========================================
     if [[ -z "$failed_step" ]]; then
         for rep in $(seq 1 $REPS); do
+            # Resume check — skip this Canu rep if a non-empty contigs.fasta
+            # already exists in CANU_rep<rep>/, unless FORCE_CANU=1.
+            existing_contigs=$(ls "CANU_rep${rep}"/*.contigs.fasta 2>/dev/null | head -1 || true)
+            if [[ "$FORCE_CANU" != "1" && -n "$existing_contigs" && -s "$existing_contigs" ]]; then
+                echo "[SKIP] canu_rep${rep} — found existing $existing_contigs" \
+                    | tee -a "$sample_log"
+                continue
+            fi
             echo "Running CANU replicate $rep" | tee -a "$sample_log"
             if ! try_step "canu_rep${rep}" "$sample_log" canu \
                 -p "${library}_${sample}_rep${rep}" \
