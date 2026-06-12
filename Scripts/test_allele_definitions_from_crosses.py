@@ -60,14 +60,14 @@ from Bio import SeqIO
 
 # Input files (paths relative to Canu_amplicon/)
 REPS_FASTA   = "SRK_protein_allele_representatives.fasta"  # one seq per allele bin
-GFS_TSV      = "SRK_individual_GFS.tsv"          # individual GFS and genotype pattern
+ZYGO_TSV     = "SRK_individual_zygosity.tsv"      # per-individual tetraploid genotype pattern
 ALLELE_TABLE = "SRK_individual_allele_table.tsv"  # individual → protein → allele → count
 CROSS_TSV    = None   # set to "SRK_cross_compatibility.tsv" when ready to analyse results
 
 # Super-group clustering
 # Choose N_SUPERGROUPS (fixed count) OR SUPERGROUP_THRESHOLD (distance cutoff).
 # N_SUPERGROUPS takes priority when set to an integer.
-N_SUPERGROUPS        = 8     # target number of super-groups; set to None to use threshold
+N_SUPERGROUPS        = 25    # target number of super-groups; set to None to use threshold
 SUPERGROUP_THRESHOLD = 0.10  # p-distance used only when N_SUPERGROUPS is None
 
 # S-domain region for distance calculation (1-based, inclusive).
@@ -172,8 +172,8 @@ allele_to_supergroup = {allele_names[i]: f"SG{labels[i]:02d}"
 
 # ── 1e. Load AAAA individual data ─────────────────────────────────────────────
 
-df_gfs = pd.read_csv(GFS_TSV, sep="\t")
-aaaa_individuals = set(df_gfs.loc[df_gfs["Genotype_Pattern"] == "AAAA", "Individual"])
+df_zyg = pd.read_csv(ZYGO_TSV, sep="\t")
+aaaa_individuals = set(df_zyg.loc[df_zyg["Genotype"] == "AAAA", "Individual"])
 print(f"\nAAA individuals in GFS data: {len(aaaa_individuals)}")
 
 # Map each AAAA individual to their single allele bin

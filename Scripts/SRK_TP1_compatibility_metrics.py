@@ -80,9 +80,22 @@ Columns:
   chi2_uniform_p           p-value, chi-square vs uniform 1/k expectation
   P_compat_uniform_4x      1 - 8/k_observed (tetraploid equal-freq benchmark)
   P_compat_L0              strict SI: exact formula, L = 0
+  P_compat_L0_lo           bootstrap 2.5th percentile (N_BOOT = 1000)
+  P_compat_L0_hi           bootstrap 97.5th percentile
   P_compat_L0.10           with mild leakage, L = 0.10
+  P_compat_L0.10_lo / _hi  bootstrap CI at L = 0.10
   P_compat_L0.25           with substantial leakage, L = 0.25
+  P_compat_L0.25_lo / _hi  bootstrap CI at L = 0.25
   P_compat_L0.50           with heavy leakage, L = 0.50
+  P_compat_L0.50_lo / _hi  bootstrap CI at L = 0.50
+
+Bootstrap CI method:
+  Resample N individuals with replacement from the group; recompute the
+  inferred allele copy vector, frequencies, and the exact tetraploid
+  P_compat for each resample; apply the leakage transform
+  P(L) = P_strict + L*(1 - P_strict) per resample; repeat N_BOOT = 1000
+  times; report the 2.5th and 97.5th percentiles as the 95% CI. Captures
+  sampling uncertainty in the EO's allele-frequency estimate.
 """
 
 from __future__ import annotations
@@ -101,11 +114,19 @@ TABLES = REPO / "Tables"
 GENOTYPES = TABLES / "SRK_individual_allele_genotypes.tsv"
 METADATA = TABLES / "sampling_metadata.csv"
 BL_FILE = REPO / "SRK_individual_BL_assignments.tsv"
+ACC_STATS = REPO / "SRK_allele_accumulation_stats.tsv"
 OUT = TABLES / "SRK_EO_allele_richness.tsv"
+
+# Species S-allele optimum used for the Depletion Index (DI). Matches the
+# MM consensus reported in the LEPA report and presentation.
+K_SPECIES = 59
 
 MIN_N = 15
 RAREFY_N = 30
 N_PERMS = 1000
+N_BOOT = 1000          # bootstrap iterations for P_compat CIs
+CI_LO = 0.025          # lower percentile for 95% CI
+CI_HI = 0.975          # upper percentile for 95% CI
 SEED = 20260522
 
 SUBCODE_POOL = {"27pv": "27", "27rt": "27"}
@@ -127,6 +148,31 @@ def load_metadata() -> dict[str, str]:
             if not eo:
                 continue
             out[sid] = SUBCODE_POOL.get(eo, eo)
+    return out
+
+
+def load_mm_estimates() -> dict[tuple[str, str], float]:
+    """Read MM-extrapolated k per EO and per BL from Step 15 output.
+
+    Returns {(level, group): MM_estimate} where level is "EO" or "BL".
+    EO names in the accumulation file are prefixed (e.g. "EO27"); strip
+    the prefix so the key matches the rest of this pipeline.
+    """
+    out: dict[tuple[str, str], float] = {}
+    if not ACC_STATS.exists():
+        return out
+    with ACC_STATS.open(encoding="utf-8-sig", newline="") as fh:
+        for row in csv.DictReader(fh, delimiter="\t"):
+            level = row["Level"].strip()
+            pop = row["Population"].strip()
+            mm = row.get("MM_estimate", "").strip()
+            try:
+                mm_val = float(mm)
+            except (TypeError, ValueError):
+                continue
+            if level == "EO" and pop.startswith("EO"):
+                pop = pop[2:]
+            out[(level, pop)] = mm_val
     return out
 
 
@@ -217,6 +263,43 @@ def shannon(freqs: list[float]) -> float:
     return -sum(p * math.log(p) for p in freqs if p > 0)
 
 
+def bootstrap_p_compat(samples: list[str],
+                        inferred: dict[str, dict[str, int]],
+                        leak_ladder: list[float],
+                        n_boot: int,
+                        rng: random.Random) -> dict[float, tuple[float, float]]:
+    """Bootstrap 95% CIs for P_compat at each leakage level.
+
+    Resamples N individuals with replacement, recomputes inferred allele
+    frequencies and the exact tetraploid P_compat from scratch each time,
+    then applies the leakage transform for L > 0. Returns {L: (lo, hi)}
+    using CI_LO / CI_HI percentiles.
+    """
+    n = len(samples)
+    boot_p = {L: [] for L in leak_ladder}
+    for _ in range(n_boot):
+        resampled = [rng.choice(samples) for _ in range(n)]
+        copies = copy_vector(resampled, inferred)
+        total = sum(copies.values())
+        if total == 0:
+            continue
+        freqs = [c / total for c in copies.values()]
+        p_strict = p_compat_tetraploid(freqs)
+        for L in leak_ladder:
+            boot_p[L].append(p_strict + L * (1 - p_strict))
+    out: dict[float, tuple[float, float]] = {}
+    for L, vals in boot_p.items():
+        if not vals:
+            out[L] = (float("nan"), float("nan"))
+            continue
+        vals_sorted = sorted(vals)
+        m = len(vals_sorted)
+        lo = vals_sorted[max(0, int(CI_LO * m))]
+        hi = vals_sorted[min(m - 1, int(CI_HI * m))]
+        out[L] = (lo, hi)
+    return out
+
+
 def p_compat_tetraploid(freqs: list[float]) -> float:
     """Exact tetraploid sporophytic SI compatibility under multinomial sampling.
 
@@ -247,6 +330,7 @@ def compute_row(level: str,
                  inferred: dict[str, dict[str, int]],
                  klass: dict[str, str],
                  raw_copies: dict[str, int],
+                 mm_estimates: dict[tuple[str, str], float],
                  rng: random.Random) -> dict:
     n = len(sids)
     copies = copy_vector(sids, inferred)
@@ -266,6 +350,8 @@ def compute_row(level: str,
     p_uni = max(0.0, 1 - 8 / k_obs) if k_obs >= 2 else 0.0
     p_strict = p_compat_tetraploid(freqs)
 
+    boot_ci = bootstrap_p_compat(sids, inferred, LEAK_LADDER, N_BOOT, rng)
+
     mix_counter = Counter(klass[s] for s in sids)
     mix_str = ":".join(str(mix_counter.get(g, 0)) for g in GENOTYPE_CLASSES)
     prop_aaaa = mix_counter.get("AAAA", 0) / n
@@ -273,11 +359,25 @@ def compute_row(level: str,
 
     mean_raw = sum(raw_copies[s] for s in sids) / n
 
+    # MM-predicted k for this group (from Step 15). DI is depletion against
+    # the species optimum k_species. DI_observed uses the sample-size-
+    # corrected k_rarefied30 so groups with different N are comparable;
+    # DI_predicted uses the MM asymptote so the figure is the upper bound
+    # on achievable richness without further intervention.
+    mm_k = mm_estimates.get((level, group), float("nan"))
+    di_obs = 1 - (k_mean / K_SPECIES) if K_SPECIES > 0 else float("nan")
+    di_pred = 1 - (mm_k / K_SPECIES) if (K_SPECIES > 0 and not math.isnan(mm_k)) \
+              else float("nan")
+
     row = {
         "level": level,
         "group": group,
         "BL": bl_label,
         "N": n,
+        "k_species": K_SPECIES,
+        "k_predicted_MM": f"{mm_k:.1f}" if not math.isnan(mm_k) else "NA",
+        "DI_observed": f"{di_obs:.3f}",
+        "DI_predicted": f"{di_pred:.3f}" if not math.isnan(di_pred) else "NA",
         "geno_mix": mix_str,
         "prop_AAAA": f"{prop_aaaa:.3f}",
         "L_hat_from_AAAA": f"{l_hat:.3f}",
@@ -293,6 +393,9 @@ def compute_row(level: str,
     for L in LEAK_LADDER:
         tag = "L0" if L == 0.0 else f"L{L:.2f}"
         row[f"P_compat_{tag}"] = f"{p_strict + L * (1 - p_strict):.3f}"
+        lo, hi = boot_ci[L]
+        row[f"P_compat_{tag}_lo"] = f"{lo:.3f}"
+        row[f"P_compat_{tag}_hi"] = f"{hi:.3f}"
     return row
 
 
@@ -300,7 +403,11 @@ def main() -> None:
     rng = random.Random(SEED)
     meta = load_metadata()
     bl = load_bl()
+    mm_estimates = load_mm_estimates()
     _, inferred, klass, raw_copies = load_inferred_genotypes(meta)
+    if not mm_estimates:
+        print(f"WARNING: {ACC_STATS.name} not found; DI_predicted will be NA. "
+              "Run Step 15 first.")
 
     # EO-level grouping (parent EO, sub-codes already pooled in meta)
     eo_to_samples: dict[str, list[str]] = {}
@@ -324,14 +431,16 @@ def main() -> None:
     # BL rows first (top of table); sorted alphanumerically for now
     for b in sorted(bl_to_samples):
         sids = bl_to_samples[b]
-        rows.append(compute_row("BL", b, b, sids, inferred, klass, raw_copies, rng))
+        rows.append(compute_row("BL", b, b, sids, inferred, klass, raw_copies,
+                                mm_estimates, rng))
 
     # EO rows; sorted by N desc within EO block
     for eo in sorted(focal_eo, key=lambda x: -len(focal_eo[x])):
         sids = focal_eo[eo]
         bls = [bl.get(s, "") for s in sids if bl.get(s, "") and bl.get(s) != "Unassigned"]
         bl_modal = Counter(bls).most_common(1)[0][0] if bls else ""
-        rows.append(compute_row("EO", eo, bl_modal, sids, inferred, klass, raw_copies, rng))
+        rows.append(compute_row("EO", eo, bl_modal, sids, inferred, klass,
+                                raw_copies, mm_estimates, rng))
 
     with OUT.open("w", encoding="utf-8", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()), delimiter="\t")
