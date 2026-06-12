@@ -11,7 +11,7 @@
 
 <meta name="author" content="Sven Buerki - Boise State University" />
 
-<meta name="date" content="2026-06-11" />
+<meta name="date" content="2026-06-12" />
 
 <title>SRK Bioinformatics</title>
 
@@ -1469,7 +1469,7 @@ border-radius: 0px;
 <h1 class="title toc-ignore">SRK Bioinformatics</h1>
 <h3 class="subtitle">Nanopore-Based SRK Haplotype Reconstruction and Population Analysis Pipeline</h3>
 <h4 class="author">Sven Buerki - Boise State University</h4>
-<h4 class="date">2026-06-11</h4>
+<h4 class="date">2026-06-12</h4>
 
 </div>
 
@@ -8473,13 +8473,11 @@ cat(&quot;Allele bins:&quot;, length(allele_cols), &quot;\n&quot;)</code></pre>
 <p><strong>Scripts:</strong></p>
 <ol style="list-style-type: decimal">
 <li><code>SRK_TP1_compatibility_metrics.py</code> — computes per-EO and per-BL metrics (including bootstrap 95 % CIs on P_compat <strong>and the Depletion Index</strong> <code>DI = 1 − k / k_species</code>), writes <code>Tables/SRK_EO_allele_richness.tsv</code></li>
-<li><code>SRK_TP1_compatibility.R</code> — renders the four diagnostic panels (EO + BL × strict + leaky)</li>
 <li><code>SRK_P_compat_traffic_light.R</code> — stakeholder-facing red/amber/green priority figure (full + blank variants); the dedicated random-mating-viability diagnostic foregrounded in the conservation report and presentations</li>
 <li><code>SRK_depletion_ranking.R</code> — <strong>conservation-ranking figure</strong> placing each group on P_compat × DI axes with quadrants labelled by the three breeding strategies in <code>Tables/SRK_breeding_strategies.csv</code> (HEALTHY / INFORMED BREEDING (frequency skew) / INFORMED BREEDING + ALLELE INJECTION (preventive / urgent)). Two panels (<code>_observed</code> uses sample-size-corrected k; <code>_predicted</code> uses the MM asymptote) × three variants (<code>_blank</code> zones only, <code>_EOs</code> focal EOs only, <code>_all</code> BLs + EOs) = 6 figures for layered presentation builds</li>
 </ol>
 <p><strong>Command:</strong></p>
 <pre class="bash"><code>python3 SRK_TP1_compatibility_metrics.py
-Rscript SRK_TP1_compatibility.R
 Rscript SRK_P_compat_traffic_light.R
 Rscript SRK_depletion_ranking.R</code></pre>
 <p><strong>Inputs:</strong>
@@ -8624,22 +8622,16 @@ Rscript SRK_depletion_ranking.R</code></pre>
 </table>
 <p>Per-EO inclusion threshold is <strong>N ≥ 15 individuals</strong> (smaller EOs lack power for k_rarefied). All five BL aggregates are always plotted.</p>
 </div>
-<div id="four-diagnostic-panels" class="section level3" number="7.7.7">
-<h3><span class="header-section-number">7.7.7</span> Four diagnostic panels</h3>
-<p>To keep the figures readable for stakeholder presentations, EO and BL points are placed on separate panels, each at two leakage levels:</p>
+<div id="random-mating-viability-traffic-light-figure" class="section level3" number="7.7.7">
+<h3><span class="header-section-number">7.7.7</span> Random-mating viability — traffic-light figure</h3>
 <ul>
-<li><code>figures/SRK_TP1_compatibility_EO_strict.{png,pdf}</code> — EO panel, strict SI (L = 0)</li>
-<li><code>figures/SRK_TP1_compatibility_EO_leaky.{png,pdf}</code> — EO panel, leaky SI (L = 0.25, close to empirical L̂ ≈ 0.18)</li>
-<li><code>figures/SRK_TP1_compatibility_BL_strict.{png,pdf}</code> — BL panel, strict SI</li>
-<li><code>figures/SRK_TP1_compatibility_BL_leaky.{png,pdf}</code> — BL panel, leaky SI</li>
-<li><code>figures/SRK_P_compat_traffic_light_EO.{png,pdf}</code> — <strong>stakeholder-facing red/amber/green priority figure</strong> built from the same TSV. Six focal EOs ranked worst-to-best by strict-SI P_compat, with bootstrap 95 % CIs as horizontal error bars and BL colour squares on the left edge. The dedicated answer to <em>“is random mating still viable?”</em> — used in the LEPA report and in conservation presentations.</li>
+<li><code>figures/SRK_P_compat_traffic_light_EO.{png,pdf}</code> — <strong>stakeholder-facing red/amber/green priority figure</strong>. Six focal EOs ranked worst-to-best by strict-SI P_compat, with bootstrap 95 % CIs as horizontal error bars and BL colour squares on the left edge. The dedicated answer to <em>“is random mating still viable?”</em> — used in the LEPA report and in conservation presentations.</li>
 <li><code>figures/SRK_P_compat_traffic_light_EO_blank.{png,pdf}</code> — companion blank variant (zones + EO labels + BL strip + legend; no data drawn) for the predictions slide.</li>
 </ul>
-<p>Each four-panel figure ships with a <code>_blank.png</code> companion (empty quadrants, no points) for presentation overlays.</p>
 </div>
 <div id="depletion-index-and-the-conservation-ranking-figure" class="section level3" number="7.7.8">
 <h3><span class="header-section-number">7.7.8</span> Depletion Index and the conservation-ranking figure</h3>
-<p><code>SRK_depletion_ranking.R</code> produces a second 2D figure that complements the J × P_compat scatter — and aligns more directly with the conservation decision the team has to make. Axes:</p>
+<p><code>SRK_depletion_ranking.R</code> produces a second 2D figure that aligns directly with the conservation decision the team has to make. Axes:</p>
 <ul>
 <li><strong>x = Depletion Index (DI)</strong> = <code>1 − k / k_species</code>, where <code>k_species = 59</code> (Step 15 MM consensus). DI = 0 means at species equilibrium; DI = 1 means no alleles retained. Two flavours are written to the metrics TSV:
 <ul>
@@ -8698,18 +8690,13 @@ Rscript SRK_depletion_ranking.R</code></pre>
 <ul>
 <li><code>Tables/SRK_EO_allele_richness.tsv</code> — 5 BL rows + 6 EO rows × 31 columns: identifiers (<code>level</code>, <code>group</code>, <code>BL</code>, <code>N</code>), depletion (<code>k_species</code>, <code>k_predicted_MM</code>, <code>DI_observed</code>, <code>DI_predicted</code>), genotype mix (<code>geno_mix</code>, <code>prop_AAAA</code>, <code>L_hat_from_AAAA</code>, <code>raw_copy_recovery</code>), richness (<code>k_observed</code>, <code>k_rarefied30_mean/sd</code>), evenness (<code>shannon_H</code>, <code>evenness_J</code>, <code>chi2_uniform_p</code>, <code>P_compat_uniform_4x</code>), and the leakage ladder (<code>P_compat_L0/L0.10/L0.25/L0.50</code> each with <code>_lo/_hi</code> bootstrap CIs)</li>
 <li><code>Tables/SRK_breeding_strategies.csv</code> — three-row reference table (Random pollination / Informed breeding / Informed breeding + allele injection) describing how parents are paired and what each strategy produces; provides the vocabulary used in the depletion-ranking quadrants</li>
-<li>Four PNG + four PDF panels (J × P_compat, above)</li>
-<li>Four <code>_blank.png</code> zone-only variants</li>
-<li>Six PNG + six PDF depletion-ranking panels (observed/predicted × blank/BL/all)</li>
+<li>Six PNG + six PDF depletion-ranking panels (observed/predicted × blank/EOs/all)</li>
+<li>One PNG + one PDF traffic-light figure (<code>SRK_P_compat_traffic_light_EO</code>) + matching <code>_blank</code> variant</li>
 </ul>
 </div>
-<div id="headline-result-current-dataset-2026-05-22" class="section level3" number="7.7.10">
-<h3><span class="header-section-number">7.7.10</span> Headline result (current dataset, 2026-05-22)</h3>
-<ul>
-<li><strong>Strict SI (L = 0):</strong> EO70 sits alone in BIOBANK + RESTORE (P_compat = 0.08, J = 0.67, k_rare30 = 4.9 against a species optimum ≈ 58). EO67 also BIOBANK (P_compat = 0.23). EO18, EO76 in AUGMENT URGENTLY. EO25, EO27 in MONITOR. BL1 + BL2 in BIOBANK; BL3 borderline AUGMENT URGENTLY; BL4 + BL5 in MONITOR.</li>
-<li><strong>Leaky SI (L = 0.25):</strong> EO18, EO76, BL3 rescued into MONITOR (the C3 Stage 5 signature). <strong>EO70 and BL2 stay in BIOBANK under both views</strong> — the cleanest signal that SI leakage cannot rescue these populations and seed banking is the priority intervention. EO67 and BL1 partially rescue into AUGMENT URGENTLY.</li>
-</ul>
-<p>The rescue effect visible across the leaky-vs-strict comparison <strong>is</strong> C3 Stage 5: populations that look catastrophic under strict SI are demographically alive only because SI is leaky. The cost is homozygosity accumulation (prop_AAAA ranges 0.55–0.73 across the six focal EOs), which feeds Stage 2 of the cascade via the self-reinforcing loop.</p>
+<div id="headline-result-current-dataset" class="section level3" number="7.7.10">
+<h3><span class="header-section-number">7.7.10</span> Headline result (current dataset)</h3>
+<p>Traffic-light: <strong>EO70 is the only RED population</strong> (P_compat ≈ 0.08, well below the 0.20 failure threshold); EO67 / EO18 / EO76 are AMBER; EO25 / EO27 sit at the GREEN border. Depletion ranking: every group except EO27 falls in one of the two ALLELE INJECTION quadrants. EO27 sits in the INFORMED BREEDING (frequency skew) quadrant on the <code>_predicted</code> panel and at the threshold on <code>_observed</code>; the observed-vs-predicted gap is largest for EO27 and BL4 (further sampling would likely recover more alleles) and smallest for EO70 (near-asymptote — depletion is real).</p>
 <p><strong>Legacy:</strong> the prior implementation <code>SRK_TP1_tipping_point.R</code> is archived under <code>archive/</code>.</p>
 <hr />
 </div>
@@ -8811,7 +8798,7 @@ Rscript SRK_allele_eulerr_BLs.R</code></pre>
 <li><code>figures/SRK_allele_eulerr_BLs.{png,pdf}</code> — <strong>NEW (2026-05-22)</strong>, area-proportional 5-set Euler diagram of BL allele sets. Same data as the BL UpSet but rendered as familiar Venn-style ellipses for stakeholder presentations. Produced by the R companion script (<code>SRK_allele_eulerr_BLs.R</code>).</li>
 </ul>
 </div>
-<div id="headline-result-current-dataset" class="section level4" number="7.8.3.4">
+<div id="headline-result-current-dataset-1" class="section level4" number="7.8.3.4">
 <h4><span class="header-section-number">7.8.3.4</span> Headline Result (Current Dataset)</h4>
 <p>The BL-level UpSet is the direct test of independent bottlenecks. Out of 54 observed alleles:</p>
 <table>
