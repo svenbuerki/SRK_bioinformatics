@@ -58,17 +58,60 @@ augustus --species=arabidopsis --strand=both --genemodel=partial --protein=on \
 
 ---
 
+### Pipeline wrapper (recommended) — `run_within_library_suite.sh`
+
+**Script:** `run_within_library_suite.sh`
+
+Steps 2 → 8 form a strictly sequential within-library suite. The wrapper runs them in order for every library in a config TSV, feeds each script's prompted inputs automatically, captures per-library logs, and continues past failures.
+
+**Command:**
+```bash
+./run_within_library_suite.sh                       # report-mode chimera survey
+CHIMERA_FILTER_MODE=filter ./run_within_library_suite.sh   # production
+```
+
+**Config file (`libraries.tsv`)** — tab-separated `library<TAB>start_barcode<TAB>end_barcode`. If absent, the wrapper auto-generates it by scanning `Library*/barcode??` and listing each library with its first/last barcode. Lines starting with `#` are skipped (use to disable a library on a given run).
+
+**Resume / idempotency:**
+
+| Granularity | Default behaviour | Override |
+|---|---|---|
+| Per-step (Steps 3–8 outputs) | Skip if expected output file exists and is non-empty | `FORCE=1` |
+| Per-sample (Step 2 `*_Phased_haplotypes.fasta`) | Skip whole barcode if final FASTA exists | `FORCE_SAMPLE=1` |
+| Per-Canu-rep (inside Step 2) | Skip rep if `CANU_rep<N>/*.contigs.fasta` exists | `FORCE_CANU=1` |
+
+Together these let an interrupted run resume cleanly: just re-invoke the wrapper, and only the missing outputs are computed.
+
+**Env vars:**
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `CHIMERA_FILTER_MODE` | `report` | `report` = pass-through + per-contig stats TSV; `filter` = drop chimeric contigs |
+| `MIN_MEAN_COV` | `20` | mean depth floor for chimera filter |
+| `MIN_UNIFORMITY` | `0.2` | `min_window_cov / median_cov` floor (calibrated 2026-06-12 on Library 005) |
+| `CHIMERA_WINDOW` | `200` | sliding-window size (bp) for `min_window_cov` |
+| `START_AT_STEP` / `STOP_AT_STEP` | `2` / `8` | restrict the step range |
+| `FORCE`, `FORCE_SAMPLE`, `FORCE_CANU` | `0` | bypass the respective skip layers |
+
+**Outputs (per run):**
+- `logs/wrapper_<timestamp>/<Library>.log` — full per-library log capturing every step's stdout/stderr
+- `logs/wrapper_<timestamp>/master_summary.tsv` — `library / status / last_completed_step / failed_step / log_file`
+
+Step-by-step descriptions below remain authoritative; Step 2's "Key behaviours" block has been augmented with the chimera filter, Canu cache resume, and sample-skip logic.
+
+---
+
 ### Step 2 — Nanopore Amplicon Assembly and Phasing
 
 **Script:** `nanopore_assembly_pipeline_barcode_range.sh`
 
-**Command:**
+**Command (when running individually outside the wrapper):**
 ```bash
 ./nanopore_assembly_pipeline_barcode_range.sh
-# Prompted inputs: LibraryID (e.g. Library0001), start barcode, end barcode
+# Prompted inputs: LibraryID (e.g. Library001), start barcode, end barcode
 ```
 
-> **Important:** LibraryID format must be `Library0001` (no underscores).
+> **Important:** LibraryID format must be `Library001` (no underscores).
 
 **Expected directory structure:**
 ```
@@ -87,8 +130,34 @@ Library001/
 - WhatsHap polyphase with `--ploidy 4`
 - Up to 4 phased haplotypes exported per individual via `bcftools consensus`
 
+**Embedded coverage-based chimera filter** (helper: `chimera_coverage_filter.py`)
+
+After Canu rep merging + `seqkit rmdup` and before RACON polishing, all unique contigs are reference-aligned with minimap2, per-base depth is read with `samtools depth -a`, and per-contig statistics are computed:
+
+| Metric | Definition |
+|---|---|
+| `mean_cov` | mean read depth across the contig |
+| `median_cov` | median read depth |
+| `min_window_cov` | minimum of the mean depth across overlapping 200 bp sliding windows |
+| `uniformity` | `min_window_cov / median_cov` — chimeric contigs collapse at a junction, depressing this value |
+
+A contig is **DROP** when `mean_cov < MIN_MEAN_COV` OR `uniformity < MIN_UNIFORMITY`.
+
+In `report` mode (default during calibration) every contig is retained and the per-contig TSV is written to `logs/${library}_${run_id}_${barcode}.chimera_stats.tsv`. In `filter` mode DROP contigs are removed before RACON.
+
+Library 005 calibration (2026-06-12): 5 barcodes, 54 contigs, 14 DROP (26 %). Uniformity values form a clean gap at 0.20 (lowest KEEP = 0.202, highest DROP = 0.182), validating the default threshold. Two extreme DROPs (uniformity < 0.10) showed textbook depth-crash signatures at the chimeric junction.
+
+**Failure tolerance:**
+The script wraps every per-sample command in a `try_step` helper that captures stdout / stderr to a per-sample log and stops only the affected sample on failure — the loop continues with the next barcode. A summary TSV (`logs/${library}_${start}-${end}_${run_id}.summary.tsv`) records `sample / status / failed_step / log_file`.
+
+**Resume layers:**
+- **Per-sample skip** — if `${library}_${barcode}_Phased_haplotypes.fasta` already exists, the whole barcode is skipped (override with `FORCE_SAMPLE=1`).
+- **Canu cache** — each `CANU_rep<N>` directory is reused if its `*.contigs.fasta` exists (override with `FORCE_CANU=1`).
+
 **Outputs per barcode:**
 - `combined_unique_contigs.fasta` — deduplicated contigs from all 4 CANU runs
+- `combined_unique_contigs_chimera_filtered.fasta` — chimera filter output (identical to input in `report` mode)
+- `chimera_depth.tsv` — per-base depth for the chimera filter
 - `polished_r3.fasta` — final polished assembly
 - `aligned.bam` / `.bai` — read alignments
 - `variants.vcf.gz` / `phased.vcf.gz` — variants and phased variants

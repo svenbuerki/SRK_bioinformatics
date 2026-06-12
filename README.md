@@ -172,9 +172,23 @@ project/
 
 2.  **Phase 1 — SRK Amplicon Sequence Assembly (Steps 1–8):**
 
+> **Recommended:** run the wrapper `run_within_library_suite.sh`, which
+> chains Steps 2 → 8 for every library listed in `libraries.tsv` (auto-generated
+> from `Library*/barcode??` if absent), feeds each script's prompts automatically,
+> skips already-completed samples / steps, and continues past per-library failures.
+> See `Bioinformatics_pipeline.md` for env vars and resume semantics.
+>
+> ```bash
+> ./run_within_library_suite.sh                         # report-mode chimera survey
+> CHIMERA_FILTER_MODE=filter ./run_within_library_suite.sh   # production
+> ```
+
+The individual scripts (below) are still callable directly if you prefer to run a single step.
+
 ``` bash
-# Step 2: Assembly and phasing
-./scripts/01_nanopore_assembly_phasing.sh
+# Step 2: Assembly and phasing (now failure-tolerant, with embedded
+#   coverage-based chimera filter, Canu cache resume, and per-sample skip)
+./nanopore_assembly_pipeline_barcode_range.sh
 
 # Step 3: Orientation
 ./scripts/02_haplotype_orientation.sh

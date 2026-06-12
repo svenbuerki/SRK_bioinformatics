@@ -354,8 +354,9 @@ This multi-replicate approach addresses the stochastic nature of long-read assem
 ### Bioinformatics
 
 - Load environment first by `conda activate nanopore_pipeline`.
-- LibraryID MUST be e.g. `Library0001`. Avoid underscore to support downstream analyses.
-- **Script:**  `./nanopore_assembly_pipeline_barcode_range.sh` and enter info when prompted (LibraryID and range of barcodes).
+- LibraryID MUST be e.g. `Library001`. Avoid underscore to support downstream analyses.
+- **Recommended end-to-end driver:** `./run_within_library_suite.sh` chains Steps 2 → 8 for every library in `libraries.tsv` (auto-generated from `Library*/barcode??`), pipes each step's prompts automatically, skips already-completed samples / steps, and continues past per-library failures. See `Bioinformatics_pipeline.md` for env vars (`CHIMERA_FILTER_MODE`, `FORCE`, `FORCE_SAMPLE`, `FORCE_CANU`, `START_AT_STEP`, `STOP_AT_STEP`) and resume semantics.
+- **Step 2 (this script) when run individually:**  `./nanopore_assembly_pipeline_barcode_range.sh` and enter info when prompted (LibraryID and range of barcodes). Failure-tolerant (per-sample isolation), with an embedded coverage-based chimera filter (`chimera_coverage_filter.py`) between Canu rep merging and RACON polishing, Canu cache resume, and per-sample skip when `${Library}_${barcode}_Phased_haplotypes.fasta` already exists.
 - Run CANU 4 times on large read subsets to detect low frequency haplotypes, combine outputs and perform the rest of the analyses on this file.
 
 ```python

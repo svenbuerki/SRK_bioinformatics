@@ -24,7 +24,7 @@ end_num=$((10#$end_barcode))
 # Number of CANU replicates
 REPS=4
 
-# Coverage-based chimera filter (Step 4a) — see chimera_coverage_filter.py.
+# Embedded coverage-based chimera filter — see chimera_coverage_filter.py.
 # Default mode is "report" so a calibration run on Library 005 produces
 # the per-contig stats TSV without removing anything. Override via env vars:
 #   CHIMERA_FILTER_MODE=filter MIN_MEAN_COV=20 MIN_UNIFORMITY=0.2 \
@@ -115,6 +115,15 @@ for n in $(seq "$start_num" "$end_num"); do
     if ! cd "$orig_dir/$library/$sample" 2>>"$sample_log"; then
         echo "Directory $library/$sample not found — skipping" | tee -a "$sample_log"
         printf "%s\tFAIL\tenter_directory\t%s\n" "$sample" "$sample_log" >> "$summary_log"
+        cd "$orig_dir"
+        continue
+    fi
+
+    # --- skip sample if final output already exists (override with FORCE_SAMPLE=1) ---
+    final_out="${library}_${sample}_Phased_haplotypes.fasta"
+    if [[ "${FORCE_SAMPLE:-0}" != "1" && -s "$final_out" ]]; then
+        echo "[SKIP] $library / $sample — $final_out already exists" | tee -a "$sample_log"
+        printf "%s\tSKIP\texisting_output\t%s\n" "$sample" "$sample_log" >> "$summary_log"
         cd "$orig_dir"
         continue
     fi
@@ -234,7 +243,7 @@ for n in $(seq "$start_num" "$end_num"); do
     assembly="combined_unique_contigs.fasta"
 
     # ==========================================
-    # Coverage-based chimera filter (Step 4a)
+    # Embedded coverage-based chimera filter (see chimera_coverage_filter.py)
     # ==========================================
     # Align reads to the Canu contigs, compute per-contig coverage stats, then
     # (report mode) write the stats TSV / (filter mode) drop chimeric contigs.
