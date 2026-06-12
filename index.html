@@ -10386,6 +10386,7 @@ python3 srk_allele_hypotheses.py</code></pre>
 </div>
 <div id="categorisation-rule" class="section level3" number="8.5.3">
 <h3><span class="header-section-number">8.5.3</span> Categorisation rule</h3>
+<p>Step 25 has two sub-steps. <strong>Step 25a</strong> (<code>SRK_null_allele_assignment.py</code>) aligns every <code>REMOVED</code> haplotype’s AA sequence to the 49 canonical functional allele representatives via <code>mafft --add --keeplength</code> and computes p-distance. Confidence flag: <code>high</code> if <code>AA_distance ≤ 0.005</code> AND <code>n_stops ≤ 3</code>; <code>medium</code> if <code>AA_distance ≤ 0.05</code> AND <code>n_stops ≤ 10</code>; <code>low</code> otherwise (chimeric Canu artefact, no biological signal). <strong>Step 25b</strong> (<code>SRK_individual_SI_status.py</code>) then counts only the high+medium confidence broken haplotypes against the four-copy tetraploid expectation:</p>
 <table>
 <colgroup>
 <col width="33%" />
@@ -10402,40 +10403,37 @@ python3 srk_allele_hypotheses.py</code></pre>
 <tbody>
 <tr class="odd">
 <td><strong>SI</strong></td>
-<td><code>copies_NF == 0</code> OR <code>n_REMOVED &lt; 2</code></td>
-<td>Single-REMOVED haps treated as Canu assembly noise.</td>
+<td><code>copies_NF == 0</code> OR <code>n_REMOVED_real &lt; 2</code></td>
+<td>Real broken haplotypes only; chimeric REMOVED haps excluded from the signal pool.</td>
 </tr>
 <tr class="even">
 <td><strong>pSI</strong></td>
-<td><code>1 ≤ copies_NF ≤ 3</code> AND <code>n_REMOVED ≥ 2</code></td>
+<td><code>1 ≤ copies_NF ≤ 3</code> AND <code>n_REMOVED_real ≥ 2</code></td>
 <td><code>pSI_confidence = high</code> if <code>frac_NF ≥ 0.25</code>, <code>low</code> otherwise.</td>
 </tr>
 <tr class="odd">
 <td><strong>SC</strong></td>
 <td><code>copies_NF == 4</code></td>
-<td>Robust — every haplotype independently carries a stop.</td>
+<td>Every functional slot is a confidently-assigned broken allele.</td>
 </tr>
 <tr class="even">
 <td><strong>Insufficient_data</strong></td>
-<td><code>n_OK + n_REMOVED &lt; 4</code></td>
-<td>Mostly individuals that never produced a Canu assembly.</td>
+<td><code>n_OK + n_REMOVED_real &lt; 4</code></td>
+<td>Most haplotypes were chimeric or the individual produced no Canu assembly — flagged for re-sequencing.</td>
 </tr>
 </tbody>
 </table>
-<p><code>copies_NF = round(4 × n_REMOVED / (n_OK + n_REMOVED))</code> after excluding the <code>SRK_BEA</code> Brassica reference haplotypes.</p>
+<p><code>copies_NF = round(4 × n_REMOVED_real / (n_OK + n_REMOVED_real))</code> after excluding the <code>SRK_BEA</code> Brassica reference haplotypes.</p>
 </div>
-<div id="assembly-noise-caveat" class="section level3" number="8.5.4">
-<h3><span class="header-section-number">8.5.4</span> Assembly-noise caveat</h3>
-<p>Canu can emit N &gt; 4 haplotypes per individual (chimeric assemblies splice two real alleles and introduce spurious frameshifts; indel-rich low-coverage contigs shift the reading frame; allele-specific over-clustering yields multiple near-identical contigs). A single <code>REMOVED</code> call in an otherwise clean set is exactly what an assembly chimera produces, so the <code>n_REMOVED ≥ 2</code> filter reassigns those individuals to SI. The <strong>SC class is unchanged and biologically robust</strong> because every haplotype must independently carry a stop. The pSI class is reported with a confidence flag (<code>pSI_high</code> / <code>pSI_low</code>) so downstream users can filter.</p>
-</div>
-<div id="bioinformatics-24" class="section level3" number="8.5.5">
-<h3><span class="header-section-number">8.5.5</span> Bioinformatics</h3>
+<div id="bioinformatics-24" class="section level3" number="8.5.4">
+<h3><span class="header-section-number">8.5.4</span> Bioinformatics</h3>
 <ul>
-<li>Script (aggregator): <code>SRK_individual_SI_status.py</code></li>
-<li>Script (figures): <code>SRK_SI_status_figures.R</code> (uses <code>srk_bl_constants.R</code> for <code>BL_ORDER</code> and <code>get_eo_order_within_bl()</code>)</li>
+<li>Script (Step 25a — broken-allele identity): <code>SRK_null_allele_assignment.py</code></li>
+<li>Script (Step 25b — SI categorisation): <code>SRK_individual_SI_status.py</code></li>
+<li>Script (figures): <code>SRK_SI_status_figures.R</code></li>
 </ul>
-<div id="input-files-9" class="section level4" number="8.5.5.1">
-<h4><span class="header-section-number">8.5.5.1</span> Input Files</h4>
+<div id="input-files-9" class="section level4" number="8.5.4.1">
+<h4><span class="header-section-number">8.5.4.1</span> Input Files</h4>
 <table>
 <colgroup>
 <col width="50%" />
@@ -10450,17 +10448,29 @@ python3 srk_allele_hypotheses.py</code></pre>
 <tbody>
 <tr class="odd">
 <td><code>all_Library*_*_frame1_stopcodon_log.tsv</code> (×9)</td>
-<td>Per-haplotype OK/REMOVED calls from Step 7 (<code>translate_filter_align_AA.py</code>).</td>
+<td>Per-haplotype OK/REMOVED calls from Step 7.</td>
 </tr>
 <tr class="even">
+<td><code>all_Library*_*_frame1_AA_raw.fasta</code> (×9)</td>
+<td>AA sequences for every haplotype (Step 25a).</td>
+</tr>
+<tr class="odd">
+<td><code>all_Library*_*_aligned_exons_backfilled.fasta</code> (×9)</td>
+<td>Aligned DNA — used for the DNA codon at the first stop position (Step 25a).</td>
+</tr>
+<tr class="even">
+<td><code>SRK_protein_allele_representatives.fasta</code></td>
+<td>49 canonical functional allele reps (Step 25a).</td>
+</tr>
+<tr class="odd">
 <td><code>Tables/SRK_data_quality_categories.tsv</code></td>
-<td><code>Ingroup</code> flag + <code>EO_normalised</code> + <code>BL_inferred</code> (from Step 12c).</td>
+<td><code>Ingroup</code> flag + <code>EO_normalised</code> + <code>BL_inferred</code> (Step 12c).</td>
 </tr>
 </tbody>
 </table>
 </div>
-<div id="output-files-24" class="section level4" number="8.5.5.2">
-<h4><span class="header-section-number">8.5.5.2</span> Output Files</h4>
+<div id="output-files-24" class="section level4" number="8.5.4.2">
+<h4><span class="header-section-number">8.5.4.2</span> Output Files</h4>
 <table>
 <colgroup>
 <col width="50%" />
@@ -10474,26 +10484,30 @@ python3 srk_allele_hypotheses.py</code></pre>
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>Tables/SRK_individual_SI_status.tsv</code></td>
-<td>One row per ingroup individual: <code>n_haps_OK</code>, <code>n_haps_REMOVED</code>, <code>n_haps_total</code>, <code>frac_nonfunctional</code>, <code>copies_functional</code>, <code>copies_nonfunctional</code>, <code>SI_status</code> (SI / pSI / SC / Insufficient_data), <code>pSI_confidence</code> (high / low / blank).</td>
+<td><code>Tables/SRK_null_allele_assignments.tsv</code></td>
+<td>One row per REMOVED haplotype: assigned functional allele, AA distance, first stop position + DNA codon, confidence.</td>
 </tr>
 <tr class="even">
-<td><code>figures/SRK_SI_status_species_full.png</code> / <code>_robust.png</code></td>
-<td>Species-level stacked bar — <code>_full</code> (n = 401, 7-tier including pSI · low confidence and Insufficient_data) and <code>_robust</code> (n = 254, 5-tier SI / pSI_1nf / pSI_2nf / pSI_3nf / SC for biological-process readings).</td>
+<td><code>Tables/SRK_individual_SI_status.tsv</code></td>
+<td>One row per ingroup individual: <code>n_haps_OK</code>, <code>n_haps_REMOVED</code>, <code>n_haps_chimeric</code>, <code>n_haps_total</code>, <code>frac_nonfunctional</code>, <code>copies_functional</code>, <code>copies_nonfunctional</code>, <code>SI_status</code>, <code>pSI_confidence</code>.</td>
 </tr>
 <tr class="odd">
-<td><code>figures/SRK_SI_status_by_BL_full.png</code> / <code>_robust.png</code></td>
-<td>Per-BL stacked %, BLs in <code>BL_ORDER</code> (area-then-connectivity sort key). Same <code>_full</code> / <code>_robust</code> split.</td>
+<td><code>figures/SRK_SI_status_species_full.png</code> / <code>_robust.png</code></td>
+<td>Species-level stacked bar — <code>_full</code> (all 401 ingroup, 7-tier incl. pSI_low + Insufficient_data) and <code>_robust</code> (drops Insufficient_data + pSI_low).</td>
 </tr>
 <tr class="even">
+<td><code>figures/SRK_SI_status_by_BL_full.png</code> / <code>_robust.png</code></td>
+<td>Per-BL stacked %. Same <code>_full</code> / <code>_robust</code> split.</td>
+</tr>
+<tr class="odd">
 <td><code>figures/SRK_SI_status_by_EO_full.png</code> / <code>_robust.png</code></td>
 <td>Per-EO stacked %, facet-grouped by BL with within-BL ordering by ascending drift index. Same <code>_full</code> / <code>_robust</code> split.</td>
 </tr>
 </tbody>
 </table>
 </div>
-<div id="current-snapshot-2026-06-11" class="section level4" number="8.5.5.3">
-<h4><span class="header-section-number">8.5.5.3</span> Current Snapshot (2026-06-11)</h4>
+<div id="current-snapshot" class="section level4" number="8.5.4.3">
+<h4><span class="header-section-number">8.5.4.3</span> Current Snapshot</h4>
 <table>
 <thead>
 <tr class="header">
@@ -10505,32 +10519,32 @@ python3 srk_allele_hypotheses.py</code></pre>
 <tbody>
 <tr class="odd">
 <td>SI</td>
-<td align="right">37</td>
-<td align="right">9.2 %</td>
+<td align="right">247</td>
+<td align="right">61.6 %</td>
 </tr>
 <tr class="even">
 <td>pSI · high conf.</td>
-<td align="right">209</td>
-<td align="right">52.1 %</td>
+<td align="right">10</td>
+<td align="right">2.5 %</td>
 </tr>
 <tr class="odd">
 <td>pSI · low conf.</td>
-<td align="right">23</td>
-<td align="right">5.7 %</td>
+<td align="right">5</td>
+<td align="right">1.2 %</td>
 </tr>
 <tr class="even">
 <td>SC</td>
-<td align="right">8</td>
-<td align="right">2.0 %</td>
+<td align="right">1</td>
+<td align="right">0.2 %</td>
 </tr>
 <tr class="odd">
 <td>Insufficient data</td>
-<td align="right">124</td>
-<td align="right">30.9 %</td>
+<td align="right">138</td>
+<td align="right">34.4 %</td>
 </tr>
 </tbody>
 </table>
-<p>Only ~13 % of individuals with sufficient data carry a fully intact SI system. The species-wide dominance of high-confidence pSI is the headline result and likely contributes to the reproductive-success deficit observed at the demographic level. The eight SC individuals — clustered in EO76 (n = 3), EO29 (n = 2), EO18, EO70, EO97 (one each) — are the most biologically robust signal of ongoing SI breakdown.</p>
+<p>The molecular SI machinery is broadly intact across the species. pSI carriers are sparse and geographically diffuse across all five BLs. <strong>The single confirmed SC individual is <code>Library010_barcode53</code> in EO76 / BL3</strong>, the same population that also carries the heaviest Insufficient_data load (n = 56 of EO76’s 99 samples — flagged for re-sequencing in <code>Tables/SRK_samples_for_redo.tsv</code>). EO76 remains the SI → SC transitional hotspot.</p>
 </div>
 </div>
 </div>
@@ -10545,10 +10559,10 @@ python3 srk_allele_hypotheses.py</code></pre>
 </div>
 <div id="biological-motivation" class="section level3" number="8.6.2">
 <h3><span class="header-section-number">8.6.2</span> Biological motivation</h3>
-<p>The canonical genotype table counts only functional SRK copies and pads under-recovered individuals to four slots by homozygosity assumption (Step 12). For an SI individual this is correct. For a pSI individual the padding <em>fabricates</em> functional copies that biologically do not exist — apparent homozygosity is inflated, allele-frequency tails are depressed, and downstream metrics (P_compat, GFS, TP1, TP2) are biased optimistic. SC individuals are excluded from the canonical 335-individual set entirely.</p>
+<p>The canonical genotype table counts only functional SRK copies and pads under-recovered individuals to four slots by homozygosity assumption (Step 12). For SI individuals this is correct. For pSI individuals the padding fabricates functional copies that biologically do not exist; for SC individuals the genotype is missing entirely because they fail at Step 9. Step 26 propagates Step 25’s per-individual SI status into a parallel null-aware genotype matrix so downstream Phase-3 metrics can be recomputed with explicit broken alleles. The original Phase-1–2 tables stay frozen as a functional-only reference; the null-aware tables sit alongside with a <code>_with_nulls</code> suffix.</p>
 </div>
-<div id="categorisation-rule-sven-2026-06-11" class="section level3" number="8.6.3">
-<h3><span class="header-section-number">8.6.3</span> Categorisation rule (Sven, 2026-06-11)</h3>
+<div id="categorisation-rule-1" class="section level3" number="8.6.3">
+<h3><span class="header-section-number">8.6.3</span> Categorisation rule</h3>
 <table>
 <colgroup>
 <col width="33%" />
@@ -10564,29 +10578,29 @@ python3 srk_allele_hypotheses.py</code></pre>
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>SI</code> (n = 37)</td>
+<td><code>SI</code> (n = 247)</td>
 <td>Pad to 4 functional copies; <code>Allele_NULL = 0</code>.</td>
 <td>Truly SI — no nulls.</td>
 </tr>
 <tr class="even">
-<td><code>pSI</code> + <code>pSI_confidence == low</code> (n = 23)</td>
+<td><code>pSI</code> + <code>pSI_confidence == low</code> (n = 5)</td>
 <td>Promote to SI; pad as above.</td>
-<td><code>frac_NF &lt; 0.25</code> too dilute to commit nulls.</td>
+<td><code>frac_NF &lt; 0.25</code> too dilute to commit nulls confidently.</td>
 </tr>
 <tr class="odd">
-<td><code>pSI</code> + <code>pSI_confidence == high</code> (n = 209)</td>
+<td><code>pSI</code> + <code>pSI_confidence == high</code> (n = 10)</td>
 <td>Scale functional counts down to <code>copies_functional</code>; <code>Allele_NULL = copies_nonfunctional</code>.</td>
-<td>Genuine partial SI — broken copies must appear in allele-frequency denominators.</td>
+<td>Genuine partial SI — broken copies enter allele-frequency denominators.</td>
 </tr>
 <tr class="even">
-<td><code>SC</code> (n = 8)</td>
-<td>All four slots → <code>Allele_NULL</code>. Adds 7 individuals to canonical set.</td>
-<td>Self-compatible escape — robust under Canu noise.</td>
+<td><code>SC</code> (n = 1)</td>
+<td>All four slots → <code>Allele_NULL</code>.</td>
+<td>Library010_barcode53, EO76 / BL3.</td>
 </tr>
 <tr class="odd">
-<td><code>Insufficient_data</code> (n = 124)</td>
+<td><code>Insufficient_data</code> (n = 138)</td>
 <td>Keep in canonical set if reached genotyping; flag for re-sequencing either way.</td>
-<td>Genotype call is data-thin but not nonsense.</td>
+<td>Genotype call is data-thin.</td>
 </tr>
 </tbody>
 </table>
@@ -10624,7 +10638,7 @@ python3 srk_allele_hypotheses.py</code></pre>
 <tbody>
 <tr class="odd">
 <td><code>Tables/SRK_individual_allele_genotypes_with_nulls.tsv</code></td>
-<td>342 individuals × 49 functional alleles + Allele_NULL + Genotype_class_flag. Rows sum to 4.</td>
+<td>336 individuals × 49 functional alleles + Allele_NULL + Genotype_class_flag. Rows sum to 4.</td>
 </tr>
 <tr class="even">
 <td><code>Tables/SRK_individual_zygosity_with_nulls.tsv</code></td>
@@ -10632,7 +10646,7 @@ python3 srk_allele_hypotheses.py</code></pre>
 </tr>
 <tr class="odd">
 <td><code>Tables/SRK_samples_for_redo.tsv</code></td>
-<td>124 Insufficient_data individuals, prioritised by <code>n_haps_total</code>.</td>
+<td>138 Insufficient_data individuals, prioritised by <code>n_haps_total</code>.</td>
 </tr>
 <tr class="even">
 <td><code>SRK_population_genetic_summary_with_nulls.tsv</code> / <code>_BL_with_nulls.tsv</code> / <code>.pdf</code></td>
@@ -10653,8 +10667,8 @@ python3 srk_allele_hypotheses.py</code></pre>
 </tbody>
 </table>
 </div>
-<div id="bias-correction-summary-2026-06-11" class="section level3" number="8.6.7">
-<h3><span class="header-section-number">8.6.7</span> Bias correction summary (2026-06-11)</h3>
+<div id="canonical-vs-null-aware-deltas" class="section level3" number="8.6.7">
+<h3><span class="header-section-number">8.6.7</span> Canonical vs null-aware deltas</h3>
 <table>
 <thead>
 <tr class="header">
@@ -10668,36 +10682,36 @@ python3 srk_allele_hypotheses.py</code></pre>
 <tr class="odd">
 <td>BL1</td>
 <td align="right">0.068</td>
-<td align="right">0.084</td>
-<td align="right">+0.02</td>
+<td align="right">0.091</td>
+<td align="right">+0.023</td>
 </tr>
 <tr class="even">
 <td>BL2</td>
 <td align="right">0.106</td>
-<td align="right">0.137</td>
-<td align="right">+0.03</td>
+<td align="right">0.112</td>
+<td align="right">+0.006</td>
 </tr>
 <tr class="odd">
 <td>BL3</td>
 <td align="right">0.394</td>
-<td align="right">0.367</td>
-<td align="right">-0.03</td>
+<td align="right">0.406</td>
+<td align="right">+0.012</td>
 </tr>
 <tr class="even">
 <td>BL4</td>
 <td align="right">0.417</td>
-<td align="right">0.358</td>
-<td align="right"><strong>-0.06</strong></td>
+<td align="right">0.422</td>
+<td align="right">+0.005</td>
 </tr>
 <tr class="odd">
 <td>BL5</td>
 <td align="right">0.472</td>
-<td align="right">0.392</td>
-<td align="right"><strong>-0.08</strong></td>
+<td align="right">0.481</td>
+<td align="right">+0.009</td>
 </tr>
 </tbody>
 </table>
-<p>The functional-only baseline <strong>overestimated</strong> the mating-pool size for the larger BLs (BL3–BL5) by 0.03–0.08. Null-aware GFS shows <strong>all five BLs CRITICAL</strong> on TP2 (mean GFS &lt; 0.667 AND prop_zero &gt; 30 %), with 60–75 % of individuals in every BL falling to GFS = 0. The conclusion that LEPA is reproductively compromised at the molecular level is <em>strengthened</em>, not weakened, by the null-aware rebuild.</p>
+<p>Per-BL broken-allele frequencies are small (<code>frac_null</code> = 0.005 – 0.05), so the null-aware metrics <strong>corroborate</strong> the canonical Phase-3 conclusions rather than revise them. All five BLs remain CRITICAL on TP2 in both views.</p>
 </div>
 </div>
 <div id="inheritance" class="section level2" number="8.7">
@@ -10707,7 +10721,7 @@ python3 srk_allele_hypotheses.py</code></pre>
 </blockquote>
 <div id="overview-27" class="section level3" number="8.7.1">
 <h3><span class="header-section-number">8.7.1</span> Overview</h3>
-<p>A two-layer model for the SI → pSI → SC process: Step 25 + the binomial-snapshot fit (Bin(4, p_BL) explains the within-BL distribution of broken copies; per-BL p̂ = 0.39–0.57) gives the <strong>static</strong> picture; Step 27 simulates the <strong>dynamic</strong> trajectory under drift, mutation, sporophytic SI rejection, selfing, inbreeding depression, and optional inter-BL migration.</p>
+<p>Step 27 simulates the <strong>dynamic</strong> SI → pSI → SC trajectory of each BL under drift, mutation, sporophytic SI rejection, selfing, inbreeding depression, and optional inter-BL migration, from the empirical Step 26 initial state.</p>
 </div>
 <div id="model" class="section level3" number="8.7.2">
 <h3><span class="header-section-number">8.7.2</span> Model</h3>
@@ -10848,8 +10862,8 @@ python3 srk_allele_hypotheses.py</code></pre>
 </tbody>
 </table>
 </div>
-<div id="headline-results-100-gens-30-reps-2026-06-11" class="section level4" number="8.7.4.3">
-<h4><span class="header-section-number">8.7.4.3</span> Headline Results (100 gens × 30 reps, 2026-06-11)</h4>
+<div id="headline-results-100-gens-30-reps" class="section level4" number="8.7.4.3">
+<h4><span class="header-section-number">8.7.4.3</span> Headline Results (100 gens × 30 reps)</h4>
 <p>Median generations to 50 % SC frequency:</p>
 <table>
 <thead>
@@ -10865,31 +10879,31 @@ python3 srk_allele_hypotheses.py</code></pre>
 <tbody>
 <tr class="odd">
 <td>baseline</td>
-<td align="right">21.5</td>
-<td align="right">22</td>
-<td align="right">20</td>
-<td align="right">9</td>
-<td align="right">4</td>
+<td align="right">62</td>
+<td align="right">66</td>
+<td align="right">41</td>
+<td align="right">26</td>
+<td align="right">&gt; 100</td>
 </tr>
 <tr class="even">
 <td>rescue_high (m=0.01)</td>
-<td align="right">23</td>
-<td align="right">28</td>
-<td align="right">24.5</td>
-<td align="right">10</td>
-<td align="right">4</td>
+<td align="right">&gt; 100</td>
+<td align="right">72</td>
+<td align="right">54</td>
+<td align="right">41</td>
+<td align="right">13</td>
 </tr>
 <tr class="odd">
 <td>high_drift (N × 0.5)</td>
-<td align="right">15.5</td>
-<td align="right">17</td>
-<td align="right">17</td>
-<td align="right">7.5</td>
-<td align="right">2.5</td>
+<td align="right">&gt; 100</td>
+<td align="right">94</td>
+<td align="right">41</td>
+<td align="right">65</td>
+<td align="right">&gt; 100</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Three biological readings.</strong> (1) Every BL crosses the 50 % SC threshold within ~25 generations under baseline — <em>L. papilliferum</em> is on a rapid SI → SC trajectory in the absence of intervention. (2) Halving effective N (high_drift) accelerates collapse by 4–7 generations for BL3–BL5. (3) <strong>Passive inter-BL migration alone cannot rescue</strong>, because donor BLs themselves carry high p_NULL — random migrants just average a partially-broken state across the species. <strong>Targeted SI-mother / SI-father crosses (Step 22e cross plan filtered through the Step 25 SI table)</strong> are the conservation lever that must be modelled in future scenario extensions (<code>rescue_targeted</code>, <code>rescue_targeted_seed</code>, <code>biobank_pause</code>).</p>
+<p><strong>Three biological readings.</strong> (1) Erosion is real but slow — the fastest BL (BL2) crosses 50 % SC in ~26 generations under baseline, the larger BLs take 40 – 65, and BL1 (n = 7) is dominated by stochasticity. (2) Migration does not behave as a uniform rescue: it accelerates or decelerates the trajectory depending on whether the donor pool’s broken-allele frequency is above or below the recipient’s. (3) <strong>The simulator-endorsed rescue lever is targeted SI-mother / SI-father crosses</strong> (Step 22e cross plan, filtered through the Step 25 SI status table), not random inter-BL migration.</p>
 </div>
 </div>
 </div>
