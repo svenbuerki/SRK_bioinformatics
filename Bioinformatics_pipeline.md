@@ -811,14 +811,12 @@ Rscript SRK_chisq_species_population.R
 
 **Scripts (run in order):**
 1. `SRK_TP1_compatibility_metrics.py` — computes per-EO + per-BL metrics (including bootstrap 95 % CIs on P_compat **and the Depletion Index** `DI = 1 − k / k_species`, both observed and MM-predicted flavours) and writes `Tables/SRK_EO_allele_richness.tsv`
-2. `SRK_TP1_compatibility.R` — renders four diagnostic panels from the TSV (EO + BL, strict + leaky)
-3. `SRK_P_compat_traffic_light.R` — stakeholder-facing red/amber/green priority figure (full + blank variants); essential for the conservation message and for presentations because it answers the single most important question (*is random mating still viable in this population?*) at a glance
-4. `SRK_depletion_ranking.R` — **conservation-ranking figure** placing each group on P_compat × DI axes with quadrants labelled by the three breeding strategies in `Tables/SRK_breeding_strategies.csv` (HEALTHY / INFORMED BREEDING (frequency skew) / INFORMED BREEDING + ALLELE INJECTION (preventive / urgent)). Two panels (`_observed`, `_predicted`) × three variants (`_blank`, `_EOs`, `_all`) = 6 figures for layered presentation builds
+2. `SRK_P_compat_traffic_light.R` — stakeholder-facing red/amber/green priority figure (full + blank variants); answers the question *is random mating still viable in this population?* at a glance
+3. `SRK_depletion_ranking.R` — **conservation-ranking figure** placing each group on P_compat × DI axes with quadrants labelled by the three breeding strategies in `Tables/SRK_breeding_strategies.csv` (HEALTHY / INFORMED BREEDING (frequency skew) / INFORMED BREEDING + ALLELE INJECTION (preventive / urgent)). Two panels (`_observed`, `_predicted`) × three variants (`_blank`, `_EOs`, `_all`) = 6 figures for layered presentation builds
 
 **Command:**
 ```bash
 python3 SRK_TP1_compatibility_metrics.py
-Rscript SRK_TP1_compatibility.R
 Rscript SRK_P_compat_traffic_light.R
 Rscript SRK_depletion_ranking.R
 ```
@@ -877,11 +875,7 @@ In the current dataset every group except EO27 falls in one of the two ALLELE IN
 **Outputs:**
 - `Tables/SRK_EO_allele_richness.tsv` — 5 BL rows + 6 EO rows × 31 columns (identifiers + depletion + genotype mix + richness + evenness + leakage ladder with bootstrap CIs)
 - `Tables/SRK_breeding_strategies.csv` — 3-row reference table (Random pollination / Informed breeding / Informed breeding + allele injection) describing how parents are paired and what each strategy produces; supplies the vocabulary used in the depletion-ranking quadrants
-- `figures/SRK_TP1_compatibility_EO_strict.{png,pdf}` — EO panel, strict SI (L = 0)
-- `figures/SRK_TP1_compatibility_EO_leaky.{png,pdf}` — EO panel, leaky SI (L = 0.25)
-- `figures/SRK_TP1_compatibility_BL_strict.{png,pdf}` — BL panel, strict SI
-- `figures/SRK_TP1_compatibility_BL_leaky.{png,pdf}` — BL panel, leaky SI
-- `figures/SRK_TP1_compatibility_*_blank.png` — empty quadrants for presentation overlays
+(P_compat traffic-light + DI ranking figures listed below — no separate J × P_compat scatter is produced.)
 - `figures/SRK_P_compat_traffic_light_EO.{png,pdf}` — **NEW (2026-05-22)**, stakeholder-facing traffic-light figure: six focal EOs ranked by strict-SI P_compat, coloured red / amber / green against the 0.20 and 0.40 thresholds, with bootstrap 95 % CIs as horizontal error bars and BL colour squares on the left edge. The dedicated random-mating-viability diagnostic; foregrounded in the conservation report and any stakeholder presentation
 - `figures/SRK_P_compat_traffic_light_EO_blank.{png,pdf}` — companion blank variant (zones + EO labels + BL strip + legend, no data drawn); use as the predictions slide before revealing the full figure
 - `figures/SRK_depletion_ranking_observed_{blank,EOs,all}.{png,pdf}` — P_compat × DI conservation-ranking figure using `DI_observed` (sample-size-corrected k). Three variants (zones only / focal EOs only / BLs + EOs together) for layered presentation builds.

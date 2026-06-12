@@ -93,7 +93,7 @@ The pipeline consists of **23 main steps organized into four phases**, progressi
 14. **Population Genetics Statistics** – Estimation of population-level diversity metrics, including heterozygosity, mean alleles per individual, total allele counts, and effective allele numbers. Allele frequencies are based on copy counts summed across individuals (from the count matrix), giving a proper tetraploid frequency estimate.
 15. **Allele Accumulation Curves** – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators. Outputs an empirical species optimum used as a baseline in steps 16 and 17.
 16. **Allele Frequency Analysis** – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under NFDS. The estimated species allele richness from step 15 is used as the optimum, quantifying how many alleles each population is missing relative to the species pool.
-17. **TP1 — Mating-pool functionality** – Reframed diagnostic: evenness J (Shannon H / ln k) on the x axis × the **compatible-pair fraction** P_compat (the fraction of random plant pairs that are cross-compatible under tetraploid sporophytic SI) on the y axis. Depletion against the species optimum is shown by the Step 16 erosion barplots; TP1 now asks the complementary question — *given that a population is depleted, is its mating pool still functioning, and what intervention does the data support?* Quadrants map directly to conservation actions (MONITOR / AUGMENT-evenness / AUGMENT-richness urgently / BIOBANK + RESTORE). Rendered as four panels (EO vs BL × strict SI L=0 vs leaky SI L=0.25); the leaky panel reflects empirical SI breakdown estimated from observed AAAA proportions (L̂ ≈ 0.18, the C3 Stage 5 signature). Compatible with `SRK_TP1_compatibility_metrics.py` (computes metrics, including the **Depletion Index** `DI = 1 − k_group / k_species` against the MM consensus species optimum `k_species = 59`), `SRK_TP1_compatibility.R` (four diagnostic panels), `SRK_P_compat_traffic_light.R` (stakeholder traffic-light figure), and `SRK_depletion_ranking.R` (P_compat × DI conservation-ranking figure; quadrants HEALTHY / INFORMED BREEDING (frequency skew) / INFORMED BREEDING + ALLELE INJECTION (preventive / urgent), with `_observed` and `_predicted` panels and `_blank` / `_EOs` / `_all` variants per panel for layered presentation builds). Reference table `Tables/SRK_breeding_strategies.csv` defines the three breeding strategies used as quadrant labels.
+17. **TP1 — Mating-pool functionality** – Reframed diagnostic answering two complementary conservation questions: (i) *is random mating still viable in this population?* via the **compatible-pair fraction** P_compat (the fraction of random plant pairs that are cross-compatible under tetraploid sporophytic SI), rendered as a red/amber/green traffic-light figure per focal EO with bootstrap 95 % CIs; and (ii) *which intervention does the data support?* via P_compat × Depletion Index (DI = 1 − k_group / k_species, against the MM consensus species optimum k_species = 59) with quadrants labelled by the three breeding strategies in `Tables/SRK_breeding_strategies.csv` (HEALTHY / INFORMED BREEDING (frequency skew) / INFORMED BREEDING + ALLELE INJECTION (preventive / urgent)). Scripts: `SRK_TP1_compatibility_metrics.py` (computes per-EO + per-BL metrics with bootstrap CIs), `SRK_P_compat_traffic_light.R` (stakeholder traffic-light figure), `SRK_depletion_ranking.R` (P_compat × DI conservation-ranking figure with `_observed` / `_predicted` panels and `_blank` / `_EOs` / `_all` variants for layered presentation builds).
 18. **Allele Composition Comparison Across Element Occurrences** – UpSet plot and pairwise sharing heatmap quantifying how S-allele sets partition across Element Occurrences, identifying private alleles and alleles shared across all populations. Requires only standard Python dependencies (pandas, numpy, matplotlib).
 19. **Individual Genotypic Fitness Score (GFS)** – Per-individual metric quantifying the proportion of heterozygous diploid gametes a tetraploid can produce. Differentiates dosage-imbalanced genotypes (AABB vs AAAB) invisible to zygosity analysis alone. Outputs per-individual GFS values and ranked seed parent lists per EO.
 20. **TP2 Tipping Point Analysis** – EO-level assessment placing mean GFS and proportion of AAAA individuals in interaction. EOs breaching both thresholds simultaneously (mean GFS < 0.667; proportion AAAA > 30%) are flagged CRITICAL, AT RISK, or OK.
@@ -253,17 +253,17 @@ Rscript SRK_allele_accumulation_analysis.R
 # Step 16: Allele frequency analysis (reads SRK_species_richness_estimates.tsv)
 Rscript SRK_chisq_species_population.R
 
-# Step 17: TP1 — mating-pool functionality (three scripts)
+# Step 17: TP1 — mating-pool functionality (two scripts)
 #   metrics.py computes per-EO + per-BL evenness J, P_compat (L=0..0.5),
 #   bootstrap 95% CIs on P_compat, L_hat, k_rarefied30, and writes
 #   Tables/SRK_EO_allele_richness.tsv;
-#   compatibility.R renders the four diagnostic panels (EO + BL,
-#   strict + leaky), each with bootstrap-CI whiskers;
 #   traffic_light.R renders the stakeholder-facing red/amber/green
-#   priority figure (full + blank variants).
+#   priority figure (full + blank variants);
+#   depletion_ranking.R renders the P_compat × DI conservation-ranking
+#   figure (observed + predicted, blank / EOs / all variants).
 python SRK_TP1_compatibility_metrics.py
-Rscript SRK_TP1_compatibility.R
 Rscript SRK_P_compat_traffic_light.R
+Rscript SRK_depletion_ranking.R
 
 # Step 18: Allele composition comparison across Element Occurrences
 #   Python UpSet plots + pairwise heatmaps (EO + BL); R companion produces
@@ -399,7 +399,6 @@ EO_group_BL_summary.csv  (EO → BL, Drift_index)
 -   `SRK_self_compatible_candidates.txt` - Potentially self-compatible individuals
 
 -   `Tables/SRK_EO_allele_richness.tsv` - Per-EO + per-BL evenness J, rarefied k (N=30, 1000 perms), P_compat at L ∈ {0, 0.10, 0.25, 0.50}, L̂_from_AAAA, geno_mix (AAAA:AAAB:AABB:AABC:ABCD), raw amplicon copy recovery
--   `figures/SRK_TP1_compatibility_{EO,BL}_{strict,leaky}.pdf` - Four TP1 diagnostic panels (mating-pool functionality)
 
 ### Population Genetic Outputs (Phase 3)
 
@@ -438,13 +437,9 @@ EO_group_BL_summary.csv  (EO → BL, Drift_index)
 #### Step 17 — TP1 mating-pool functionality
 
 -   `Tables/SRK_EO_allele_richness.tsv` - Per-EO (6 rows, N ≥ 15) + per-BL (5 rows) metric table: `level`, `group`, `BL`, `N`, `geno_mix`, `prop_AAAA`, `L_hat_from_AAAA`, `raw_copy_recovery`, `k_observed`, `k_rarefied30_mean/sd`, `shannon_H`, `evenness_J`, `chi2_uniform_p`, `P_compat_uniform_4x`, `P_compat_L0/L0.10/L0.25/L0.50`. Inferred tetraploid genotypes from `SRK_zygosity_from_genotype.R` (every individual filled to 4 S-allele copies). Exact P_compat formula assumes tetrasomic inheritance.
--   `figures/SRK_TP1_compatibility_EO_strict.png` - **EO panel, strict SI (L = 0)**. Circles coloured by parent BL, sized by rarefied k. Quadrants → MONITOR / AUGMENT-evenness / AUGMENT URGENTLY (too few mates) / BIOBANK + RESTORE.
--   `figures/SRK_TP1_compatibility_EO_leaky.png` - **EO panel, leaky SI (L = 0.25)**. Same axes; rescue effect of SI breakdown visible. EO70 stays in BIOBANK under both views — the headline conservation-priority signal.
--   `figures/SRK_TP1_compatibility_BL_strict.png` - **BL panel, strict SI**. Triangles, same conventions. BL1 and BL2 in BIOBANK; BL3 borderline; BL4/BL5 in MONITOR.
--   `figures/SRK_TP1_compatibility_BL_leaky.png` - **BL panel, leaky SI**. BL3 rescued into MONITOR; BL1, BL2 remain non-MONITOR.
--   `figures/SRK_TP1_compatibility_*_blank.png` - Empty zones (no points) for presentation overlays.
--   `figures/SRK_P_compat_traffic_light_EO.{png,pdf}` - **NEW (2026-05-22)**, stakeholder-facing traffic-light figure: six focal EOs ranked worst-to-best by strict-SI P_compat, coloured red (< 0.20, failed) / amber (0.20–0.40, struggling) / green (≥ 0.40, sustainable), with bootstrap 95 % CIs as horizontal error bars and BL colour squares on the left edge. Headline result drops out at a glance: EO70 (BL2) is the only RED population. Produced by `SRK_P_compat_traffic_light.R`.
+-   `figures/SRK_P_compat_traffic_light_EO.{png,pdf}` - Stakeholder-facing traffic-light figure: six focal EOs ranked worst-to-best by strict-SI P_compat, coloured red (< 0.20, failed) / amber (0.20–0.40, struggling) / green (≥ 0.40, sustainable), with bootstrap 95 % CIs as horizontal error bars and BL colour squares on the left edge. Headline result drops out at a glance: EO70 (BL2) is the only RED population. Produced by `SRK_P_compat_traffic_light.R`.
 -   `figures/SRK_P_compat_traffic_light_EO_blank.{png,pdf}` - Same framework with no data drawn — for predictions slide; reveal the full figure after explaining the threshold logic.
+-   `figures/SRK_depletion_ranking_{observed,predicted}_{all,EOs,blank}.{png,pdf}` - P_compat × Depletion Index conservation-ranking figures with quadrants labelled HEALTHY / INFORMED BREEDING (frequency skew) / INFORMED BREEDING + ALLELE INJECTION (preventive / urgent). `_observed` uses `k_rarefied30` (conservative); `_predicted` uses the MM asymptote. `_all` plots both BLs and EOs; `_EOs` is EO-only; `_blank` has zones only. Produced by `SRK_depletion_ranking.R`.
 -   Legacy `SRK_TP1_tipping_point.R` archived under `archive/`.
 
 #### Step 18 — Allele composition / sharing
