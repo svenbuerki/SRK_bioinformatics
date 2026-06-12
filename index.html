@@ -1786,8 +1786,9 @@ done</code></pre>
 <h3><span class="header-section-number">5.2.6</span> Bioinformatics</h3>
 <ul>
 <li>Load environment first by <code>conda activate nanopore_pipeline</code>.</li>
-<li>LibraryID MUST be e.g. <code>Library0001</code>. Avoid underscore to support downstream analyses.</li>
-<li><strong>Script:</strong> <code>./nanopore_assembly_pipeline_barcode_range.sh</code> and enter info when prompted (LibraryID and range of barcodes).</li>
+<li>LibraryID MUST be e.g. <code>Library001</code>. Avoid underscore to support downstream analyses.</li>
+<li><strong>Recommended end-to-end driver:</strong> <code>./run_within_library_suite.sh</code> chains Steps 2 → 8 for every library in <code>libraries.tsv</code> (auto-generated from <code>Library*/barcode??</code>), pipes each step’s prompts automatically, skips already-completed samples / steps, and continues past per-library failures. See <code>Bioinformatics_pipeline.md</code> for env vars (<code>CHIMERA_FILTER_MODE</code>, <code>FORCE</code>, <code>FORCE_SAMPLE</code>, <code>FORCE_CANU</code>, <code>START_AT_STEP</code>, <code>STOP_AT_STEP</code>) and resume semantics.</li>
+<li><strong>Step 2 (this script) when run individually:</strong> <code>./nanopore_assembly_pipeline_barcode_range.sh</code> and enter info when prompted (LibraryID and range of barcodes). Failure-tolerant (per-sample isolation), with an embedded coverage-based chimera filter (<code>chimera_coverage_filter.py</code>) between Canu rep merging and RACON polishing, Canu cache resume, and per-sample skip when <code>${Library}_${barcode}_Phased_haplotypes.fasta</code> already exists.</li>
 <li>Run CANU 4 times on large read subsets to detect low frequency haplotypes, combine outputs and perform the rest of the analyses on this file.</li>
 </ul>
 <pre class="python"><code>#!/bin/bash
