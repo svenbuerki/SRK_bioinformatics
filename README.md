@@ -508,7 +508,7 @@ PNGs land in `figures/`; PDFs in the project root. **Headline finding (2026-05-1
 -   `figures/SRK_SI_status_by_BL_{full,robust}.png` — Per-BL stacked %, BLs in `BL_ORDER`. Same full/robust split (Step 25)
 -   `figures/SRK_SI_status_by_EO_{full,robust}.png` — Per-EO stacked % faceted by BL, within-BL order by ascending drift index. Same full/robust split (Step 25)
 
-**Rule:** `copies_nonfunctional = round(4 × n_REMOVED / n_total)`. Canu-noise filter: `n_REMOVED < 2` → SI. `pSI_confidence = high` if `frac_NF ≥ 0.25`. **Snapshot (2026-06-11):** SI = 37, pSI = 232 (209 high / 23 low), SC = 8, Insufficient_data = 124 — only ~13 % of individuals with sufficient data carry a fully intact SI system.
+**Rule:** Step 25a aligns every Step-7 REMOVED haplotype to the 49 functional reps and flags chimeric Canu artefacts (`AA_distance > 0.05` or `n_stops > 10`). Step 25b counts only real broken haplotypes: `copies_nonfunctional = round(4 × n_REMOVED_real / (n_OK + n_REMOVED_real))`. **Snapshot (n = 401 ingroup):** SI = 247 (62 %), pSI = 15 (10 high / 5 low), SC = 1 (Library010_barcode53, EO76), Insufficient_data = 138 (heavily concentrated in EO76, flagged for re-sequencing).
 
 ### Phase 5b Outputs (Null-Aware Genotype Rebuild — Step 26)
 

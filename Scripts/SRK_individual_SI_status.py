@@ -1,66 +1,51 @@
 #!/usr/bin/env python3
 """
-SRK_individual_SI_status.py — Step 25
+SRK_individual_SI_status.py — Step 25b (per-individual SI categorisation)
 
-Reconstruct per-individual self-incompatibility (SI) status by re-aggregating
-the per-haplotype OK / REMOVED calls from every
-`all_Library*_frame1_stopcodon_log.tsv` produced by Step 7 (translate_filter_align_AA.py).
+Reconstruct per-individual self-incompatibility (SI) status from the
+per-haplotype OK / REMOVED calls produced by Step 7
+(`translate_filter_align_AA.py`) and the per-haplotype broken-allele
+identity assignments produced by Step 25a (`SRK_null_allele_assignment.py`).
 
-Rationale
-─────────
-Step 7 tags every Canu-assembled haplotype as `OK` (no internal stop) or
-`REMOVED` (premature stop → non-functional SRK protein) before dropping the
-REMOVED records ahead of the collapse + genotyping steps. The functional
-information is preserved in the stop-codon logs, but it never reaches the
-per-individual genotype calls — those count only functional copies.
+Method
+──────
+Step 7 tags every Canu-assembled haplotype as `OK` (functional protein) or
+`REMOVED` (premature stop). Canu also produces many chimeric / indel-rich
+extra contigs per individual that fail the stop filter without representing
+real broken SRK copies — these are quantitatively distinguishable from
+genuine broken alleles by their high AA-distance from every functional
+allele in the catalogue (Step 25a). Step 25b therefore:
 
-For a tetraploid species with sporophytic SI at the SRK locus the biologically
-meaningful question is: of the four expected SRK copies, how many produce a
-functional protein? An individual carrying 4 non-functional copies is fully
-self-compatible (SC); 4 functional copies is self-incompatible (SI); 1-3
-non-functional copies is partially SI (pSI). This script reconstructs that
-counter without invalidating the canonical 49-allele catalog or Phase 1-2
-outputs.
+  1. Counts OK haplotypes per individual (n_haps_OK).
+  2. Counts REMOVED haplotypes that Step 25a assigned to a functional allele
+     with `high` or `medium` confidence (n_haps_REMOVED) — these are real
+     broken alleles.
+  3. Counts REMOVED haplotypes flagged as chimeric / unassignable in
+     Step 25a (n_haps_chimeric) — recorded for data-quality transparency
+     but excluded from the tetraploid-copy signal pool.
+  4. Tetraploid copy estimate uses only the clean signal pool:
 
-Categorisation rule (per Sven, 2026-06-11)
-──────────────────────────────────────────
-    copies_nonfunctional = round(4 × n_REMOVED / (n_OK + n_REMOVED))
-    copies_functional    = 4 - copies_nonfunctional
+        n_total              = n_haps_OK + n_haps_REMOVED
+        copies_nonfunctional = round(4 × n_haps_REMOVED / n_total)
+        copies_functional    = 4 − copies_nonfunctional
 
-    SI_status:
-        SI                    copies_nonfunctional == 0  OR  n_REMOVED < 2
-                              (fully SI, or single stop call treated as
-                              chimeric-assembly noise — see assembly caveat
-                              below)
-        pSI                   1 ≤ copies_nonfunctional ≤ 3 AND n_REMOVED ≥ 2
-                              (partially SI — leaky)
-        SC                    copies_nonfunctional == 4   (self-compatible
-                              escape; robust because every haplotype must
-                              independently carry a stop)
-        Insufficient_data     n_OK + n_REMOVED < 4
-
-    pSI_confidence (only set when SI_status == "pSI"):
-        high                  frac_nonfunctional ≥ 0.25
-        low                   frac_nonfunctional < 0.25
-
-Assembly caveat
-───────────────
-Canu can produce N > 4 haplotypes per individual (chimeras, indel-rich
-low-coverage contigs, allele-specific over-clustering). A single REMOVED
-haplotype in an otherwise clean set is exactly what an assembly chimera
-produces, so we treat n_REMOVED == 1 as noise and call those individuals SI.
-The SC class is unchanged and robust because EVERY haplotype must
-independently carry a stop (very hard to explain by chance).
-The pSI class is reported with a confidence flag so downstream users can
-filter on high-confidence pSI (n_REMOVED ≥ 2 AND frac_NF ≥ 0.25).
+  5. SI_status classification:
+        SI                copies_nonfunctional == 0
+                          OR n_haps_REMOVED < 2  (single real broken hap
+                          treated as residual noise — see floor below)
+        pSI               1 ≤ copies_nonfunctional ≤ 3 AND n_haps_REMOVED ≥ 2
+                          pSI_confidence: high if frac_NF ≥ 0.25, low otherwise
+        SC                copies_nonfunctional == 4
+        Insufficient_data n_total < 4
 
 The `SRK_BEA` Brassica reference haplotypes are excluded before aggregation
-(outgroup, not part of the LEPA SI question).
+(outgroup).
 
 Inputs
 ──────
-    all_Library*_frame1_stopcodon_log.tsv   one per library (Sequence_ID, Status)
-    Tables/SRK_data_quality_categories.tsv  EO / BL / Ingroup metadata
+    all_Library*_frame1_stopcodon_log.tsv   one per library (Step 7)
+    Tables/SRK_null_allele_assignments.tsv  per-haplotype identity + confidence (Step 25a)
+    Tables/SRK_data_quality_categories.tsv  EO / BL / Ingroup metadata (Step 12c)
 
 Outputs
 ───────
@@ -69,7 +54,6 @@ Outputs
 from __future__ import annotations
 
 import glob
-import os
 import sys
 from pathlib import Path
 
@@ -79,18 +63,37 @@ import pandas as pd
 HERE          = Path(__file__).resolve().parent
 TABLES_DIR    = HERE / "Tables"
 QC_TSV        = TABLES_DIR / "SRK_data_quality_categories.tsv"
+ASSIGN_TSV    = TABLES_DIR / "SRK_null_allele_assignments.tsv"
 OUT_TSV       = TABLES_DIR / "SRK_individual_SI_status.tsv"
 STOPLOG_GLOB  = "all_Library*_frame1_stopcodon_log.tsv"
 OUTGROUP_TAG  = "SRK_BEA"
 
+# Classification thresholds
+PSI_HIGH_FRAC            = 0.25
+NOISE_FILTER_MIN_REMOVED = 2   # n_real_broken < this → call SI
+
 # ─── Load metadata (EO / BL / Ingroup) ────────────────────────────────────────
 if not QC_TSV.exists():
     sys.exit(f"ERROR: missing {QC_TSV} — run evaluate_data_quality.py first")
+if not ASSIGN_TSV.exists():
+    sys.exit(f"ERROR: missing {ASSIGN_TSV} — run "
+             "SRK_null_allele_assignment.py (Step 25a) first")
 
 qc = pd.read_csv(QC_TSV, sep="\t", encoding="utf-8-sig", dtype=str).fillna("")
 qc = qc[qc["Ingroup"] == "1"].copy()
 meta = qc.set_index("Sample_ID")[["EO_normalised", "BL_inferred"]].to_dict("index")
 print(f"Loaded metadata for {len(meta)} ingroup individuals from {QC_TSV.name}")
+
+# ─── Load Step 25a assignments — split REMOVED haps into real vs chimeric ────
+assign = pd.read_csv(ASSIGN_TSV, sep="\t", encoding="utf-8-sig")
+real_set = set(assign.loc[
+    assign["confidence"].isin(["high", "medium"]), "Sequence_ID"
+])
+chimeric_set = set(assign.loc[
+    assign["confidence"] == "low", "Sequence_ID"
+])
+print(f"Step 25a assignments: {len(real_set)} real broken + "
+      f"{len(chimeric_set)} chimeric")
 
 # ─── Aggregate stop-codon logs ────────────────────────────────────────────────
 log_paths = sorted(glob.glob(str(HERE / STOPLOG_GLOB)))
@@ -105,23 +108,21 @@ for path in log_paths:
     df = df[~df["Sequence_ID"].str.startswith(OUTGROUP_TAG)].copy()
     df["Individual"] = df["Sequence_ID"].str.split("_").str[:2].str.join("_")
     for ind, sub in df.groupby("Individual"):
-        rec = counts.setdefault(ind, {"n_OK": 0, "n_REMOVED": 0})
-        rec["n_OK"]      += int((sub["Status"] == "OK").sum())
-        rec["n_REMOVED"] += int((sub["Status"] == "REMOVED").sum())
+        rec = counts.setdefault(ind, {"n_OK": 0, "n_REMOVED": 0, "n_chimeric": 0})
+        rec["n_OK"] += int((sub["Status"] == "OK").sum())
+        rm_sub = sub[sub["Status"] == "REMOVED"]
+        n_real = int(rm_sub["Sequence_ID"].isin(real_set).sum())
+        n_chim = int(rm_sub["Sequence_ID"].isin(chimeric_set).sum())
+        # REMOVED haps not in either set (unlikely — should be 0) are not counted
+        rec["n_REMOVED"]  += n_real
+        rec["n_chimeric"] += n_chim
 
-print(f"Found {len(counts)} individuals across all libraries (before metadata filter)")
-
-# ─── Build per-individual table ───────────────────────────────────────────────
-PSI_HIGH_FRAC = 0.25
-NOISE_FILTER_MIN_REMOVED = 2  # n_REMOVED < this → call SI (assembly noise)
+print(f"Found {len(counts)} individuals across all libraries (pre-metadata)")
 
 
+# ─── Classifier ───────────────────────────────────────────────────────────────
 def classify(n_ok: int, n_rm: int):
-    """Return (copies_functional, copies_nonfunctional, SI_status, pSI_confidence).
-
-    copies_* are empty strings when n_OK + n_REMOVED < 4 (Insufficient_data).
-    pSI_confidence is set only for SI_status == "pSI" (else empty string).
-    """
+    """Return (copies_functional, copies_nonfunctional, SI_status, pSI_confidence)."""
     n_total = n_ok + n_rm
     if n_total < 4:
         return ("", "", "Insufficient_data", "")
@@ -130,18 +131,19 @@ def classify(n_ok: int, n_rm: int):
     frac  = n_rm / n_total
     if cp_nf == 4:
         return (cp_f, cp_nf, "SC", "")
-    # Assembly-noise filter: single REMOVED hap → call SI, not pSI
     if cp_nf == 0 or n_rm < NOISE_FILTER_MIN_REMOVED:
         return (cp_f, cp_nf, "SI", "")
-    # 1 ≤ cp_nf ≤ 3 AND n_REMOVED ≥ 2 → genuine pSI
     conf = "high" if frac >= PSI_HIGH_FRAC else "low"
     return (cp_f, cp_nf, "pSI", conf)
 
 
+# ─── Build per-individual table ───────────────────────────────────────────────
 rows = []
 for ind, m in meta.items():
-    c = counts.get(ind, {"n_OK": 0, "n_REMOVED": 0})
-    n_ok, n_rm = c["n_OK"], c["n_REMOVED"]
+    c = counts.get(ind, {"n_OK": 0, "n_REMOVED": 0, "n_chimeric": 0})
+    n_ok = c["n_OK"]
+    n_rm = c["n_REMOVED"]
+    n_ch = c["n_chimeric"]
     cp_f, cp_nf, status, conf = classify(n_ok, n_rm)
     n_total = n_ok + n_rm
     rows.append({
@@ -150,6 +152,7 @@ for ind, m in meta.items():
         "BL_inferred":           m["BL_inferred"],
         "n_haps_OK":             n_ok,
         "n_haps_REMOVED":        n_rm,
+        "n_haps_chimeric":       n_ch,
         "n_haps_total":          n_total,
         "frac_nonfunctional":    round(n_rm / n_total, 4) if n_total else "",
         "copies_functional":     cp_f,

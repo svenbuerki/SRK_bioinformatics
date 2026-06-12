@@ -6799,51 +6799,54 @@ Distinguishing these states at the population level is the **first question** in
 
 ### Categorisation rule
 
+Step 25 has two sub-steps. **Step 25a** (`SRK_null_allele_assignment.py`) aligns every `REMOVED` haplotype's AA sequence to the 49 canonical functional allele representatives via `mafft --add --keeplength` and computes p-distance. Confidence flag: `high` if `AA_distance ≤ 0.005` AND `n_stops ≤ 3`; `medium` if `AA_distance ≤ 0.05` AND `n_stops ≤ 10`; `low` otherwise (chimeric Canu artefact, no biological signal). **Step 25b** (`SRK_individual_SI_status.py`) then counts only the high+medium confidence broken haplotypes against the four-copy tetraploid expectation:
+
 | `SI_status` | Criterion | Notes |
 |---|---|---|
-| **SI**   | `copies_NF == 0`  OR  `n_REMOVED < 2`        | Single-REMOVED haps treated as Canu assembly noise. |
-| **pSI**  | `1 ≤ copies_NF ≤ 3`  AND  `n_REMOVED ≥ 2`    | `pSI_confidence = high` if `frac_NF ≥ 0.25`, `low` otherwise. |
-| **SC**   | `copies_NF == 4`                              | Robust — every haplotype independently carries a stop. |
-| **Insufficient_data** | `n_OK + n_REMOVED < 4`           | Mostly individuals that never produced a Canu assembly. |
+| **SI**   | `copies_NF == 0`  OR  `n_REMOVED_real < 2`  | Real broken haplotypes only; chimeric REMOVED haps excluded from the signal pool. |
+| **pSI**  | `1 ≤ copies_NF ≤ 3`  AND  `n_REMOVED_real ≥ 2` | `pSI_confidence = high` if `frac_NF ≥ 0.25`, `low` otherwise. |
+| **SC**   | `copies_NF == 4`                            | Every functional slot is a confidently-assigned broken allele. |
+| **Insufficient_data** | `n_OK + n_REMOVED_real < 4`        | Most haplotypes were chimeric or the individual produced no Canu assembly — flagged for re-sequencing. |
 
-`copies_NF = round(4 × n_REMOVED / (n_OK + n_REMOVED))` after excluding the `SRK_BEA` Brassica reference haplotypes.
-
-### Assembly-noise caveat
-
-Canu can emit N > 4 haplotypes per individual (chimeric assemblies splice two real alleles and introduce spurious frameshifts; indel-rich low-coverage contigs shift the reading frame; allele-specific over-clustering yields multiple near-identical contigs). A single `REMOVED` call in an otherwise clean set is exactly what an assembly chimera produces, so the `n_REMOVED ≥ 2` filter reassigns those individuals to SI. The **SC class is unchanged and biologically robust** because every haplotype must independently carry a stop. The pSI class is reported with a confidence flag (`pSI_high` / `pSI_low`) so downstream users can filter.
+`copies_NF = round(4 × n_REMOVED_real / (n_OK + n_REMOVED_real))` after excluding the `SRK_BEA` Brassica reference haplotypes.
 
 ### Bioinformatics
 
-* Script (aggregator): `SRK_individual_SI_status.py`
-* Script (figures): `SRK_SI_status_figures.R` (uses `srk_bl_constants.R` for `BL_ORDER` and `get_eo_order_within_bl()`)
+* Script (Step 25a — broken-allele identity): `SRK_null_allele_assignment.py`
+* Script (Step 25b — SI categorisation): `SRK_individual_SI_status.py`
+* Script (figures): `SRK_SI_status_figures.R`
 
 #### Input Files
 
 | File | Description |
 |---|---|
-| `all_Library*_*_frame1_stopcodon_log.tsv` (×9) | Per-haplotype OK/REMOVED calls from Step 7 (`translate_filter_align_AA.py`). |
-| `Tables/SRK_data_quality_categories.tsv` | `Ingroup` flag + `EO_normalised` + `BL_inferred` (from Step 12c). |
+| `all_Library*_*_frame1_stopcodon_log.tsv` (×9) | Per-haplotype OK/REMOVED calls from Step 7. |
+| `all_Library*_*_frame1_AA_raw.fasta` (×9) | AA sequences for every haplotype (Step 25a). |
+| `all_Library*_*_aligned_exons_backfilled.fasta` (×9) | Aligned DNA — used for the DNA codon at the first stop position (Step 25a). |
+| `SRK_protein_allele_representatives.fasta` | 49 canonical functional allele reps (Step 25a). |
+| `Tables/SRK_data_quality_categories.tsv` | `Ingroup` flag + `EO_normalised` + `BL_inferred` (Step 12c). |
 
 #### Output Files
 
 | File | Content |
 |---|---|
-| `Tables/SRK_individual_SI_status.tsv` | One row per ingroup individual: `n_haps_OK`, `n_haps_REMOVED`, `n_haps_total`, `frac_nonfunctional`, `copies_functional`, `copies_nonfunctional`, `SI_status` (SI / pSI / SC / Insufficient_data), `pSI_confidence` (high / low / blank). |
-| `figures/SRK_SI_status_species_full.png` / `_robust.png` | Species-level stacked bar — `_full` (n = 401, 7-tier including pSI · low confidence and Insufficient_data) and `_robust` (n = 254, 5-tier SI / pSI_1nf / pSI_2nf / pSI_3nf / SC for biological-process readings). |
-| `figures/SRK_SI_status_by_BL_full.png` / `_robust.png` | Per-BL stacked %, BLs in `BL_ORDER` (area-then-connectivity sort key). Same `_full` / `_robust` split. |
+| `Tables/SRK_null_allele_assignments.tsv` | One row per REMOVED haplotype: assigned functional allele, AA distance, first stop position + DNA codon, confidence. |
+| `Tables/SRK_individual_SI_status.tsv` | One row per ingroup individual: `n_haps_OK`, `n_haps_REMOVED`, `n_haps_chimeric`, `n_haps_total`, `frac_nonfunctional`, `copies_functional`, `copies_nonfunctional`, `SI_status`, `pSI_confidence`. |
+| `figures/SRK_SI_status_species_full.png` / `_robust.png` | Species-level stacked bar — `_full` (all 401 ingroup, 7-tier incl. pSI_low + Insufficient_data) and `_robust` (drops Insufficient_data + pSI_low). |
+| `figures/SRK_SI_status_by_BL_full.png` / `_robust.png` | Per-BL stacked %. Same `_full` / `_robust` split. |
 | `figures/SRK_SI_status_by_EO_full.png` / `_robust.png` | Per-EO stacked %, facet-grouped by BL with within-BL ordering by ascending drift index. Same `_full` / `_robust` split. |
 
-#### Current Snapshot (2026-06-11)
+#### Current Snapshot
 
 | Category | n | % of 401 |
 |---|---:|---:|
-| SI                | 37  | 9.2 % |
-| pSI · high conf.  | 209 | 52.1 % |
-| pSI · low conf.   | 23  | 5.7 % |
-| SC                | 8   | 2.0 % |
-| Insufficient data | 124 | 30.9 % |
+| SI                | 247 | 61.6 % |
+| pSI · high conf.  | 10  | 2.5 % |
+| pSI · low conf.   | 5   | 1.2 % |
+| SC                | 1   | 0.2 % |
+| Insufficient data | 138 | 34.4 % |
 
-Only ~13 % of individuals with sufficient data carry a fully intact SI system. The species-wide dominance of high-confidence pSI is the headline result and likely contributes to the reproductive-success deficit observed at the demographic level. The eight SC individuals — clustered in EO76 (n = 3), EO29 (n = 2), EO18, EO70, EO97 (one each) — are the most biologically robust signal of ongoing SI breakdown.
+The molecular SI machinery is broadly intact across the species. pSI carriers are sparse and geographically diffuse across all five BLs. **The single confirmed SC individual is `Library010_barcode53` in EO76 / BL3**, the same population that also carries the heaviest Insufficient_data load (n = 56 of EO76's 99 samples — flagged for re-sequencing in `Tables/SRK_samples_for_redo.tsv`). EO76 remains the SI → SC transitional hotspot.
 
 ## Null-Aware Tetraploid Genotype Rebuild (Step 26) {#nullaware}
 
@@ -6855,17 +6858,17 @@ Step 26 rebuilds the per-individual tetraploid genotypes so that **partial-SI (p
 
 ### Biological motivation
 
-The canonical genotype table counts only functional SRK copies and pads under-recovered individuals to four slots by homozygosity assumption (Step 12). For an SI individual this is correct. For a pSI individual the padding *fabricates* functional copies that biologically do not exist — apparent homozygosity is inflated, allele-frequency tails are depressed, and downstream metrics (P_compat, GFS, TP1, TP2) are biased optimistic. SC individuals are excluded from the canonical 335-individual set entirely.
+The canonical genotype table counts only functional SRK copies and pads under-recovered individuals to four slots by homozygosity assumption (Step 12). For SI individuals this is correct. For pSI individuals the padding fabricates functional copies that biologically do not exist; for SC individuals the genotype is missing entirely because they fail at Step 9. Step 26 propagates Step 25's per-individual SI status into a parallel null-aware genotype matrix so downstream Phase-3 metrics can be recomputed with explicit broken alleles. The original Phase-1–2 tables stay frozen as a functional-only reference; the null-aware tables sit alongside with a `_with_nulls` suffix.
 
-### Categorisation rule (Sven, 2026-06-11)
+### Categorisation rule
 
 | Source SI_status | Action | Rationale |
 |---|---|---|
-| `SI` (n = 37) | Pad to 4 functional copies; `Allele_NULL = 0`. | Truly SI — no nulls. |
-| `pSI` + `pSI_confidence == low` (n = 23) | Promote to SI; pad as above. | `frac_NF < 0.25` too dilute to commit nulls. |
-| `pSI` + `pSI_confidence == high` (n = 209) | Scale functional counts down to `copies_functional`; `Allele_NULL = copies_nonfunctional`. | Genuine partial SI — broken copies must appear in allele-frequency denominators. |
-| `SC` (n = 8) | All four slots → `Allele_NULL`. Adds 7 individuals to canonical set. | Self-compatible escape — robust under Canu noise. |
-| `Insufficient_data` (n = 124) | Keep in canonical set if reached genotyping; flag for re-sequencing either way. | Genotype call is data-thin but not nonsense. |
+| `SI` (n = 247) | Pad to 4 functional copies; `Allele_NULL = 0`. | Truly SI — no nulls. |
+| `pSI` + `pSI_confidence == low` (n = 5) | Promote to SI; pad as above. | `frac_NF < 0.25` too dilute to commit nulls confidently. |
+| `pSI` + `pSI_confidence == high` (n = 10) | Scale functional counts down to `copies_functional`; `Allele_NULL = copies_nonfunctional`. | Genuine partial SI — broken copies enter allele-frequency denominators. |
+| `SC` (n = 1) | All four slots → `Allele_NULL`. | Library010_barcode53, EO76 / BL3. |
+| `Insufficient_data` (n = 138) | Keep in canonical set if reached genotyping; flag for re-sequencing either way. | Genotype call is data-thin. |
 
 ### Null-aware GFS formula
 
@@ -6887,25 +6890,25 @@ with $n_{\text{func}} = 4 - N_{\text{null}}$. Produces a 12-tier ordering: `0000
 
 | File | Content |
 |---|---|
-| `Tables/SRK_individual_allele_genotypes_with_nulls.tsv` | 342 individuals × 49 functional alleles + Allele_NULL + Genotype_class_flag. Rows sum to 4. |
+| `Tables/SRK_individual_allele_genotypes_with_nulls.tsv` | 336 individuals × 49 functional alleles + Allele_NULL + Genotype_class_flag. Rows sum to 4. |
 | `Tables/SRK_individual_zygosity_with_nulls.tsv` | 12-tier genotype labels (`AB00`, `0000`, …) + N_distinct_functional + N_null_copies + SI_status. |
-| `Tables/SRK_samples_for_redo.tsv` | 124 Insufficient_data individuals, prioritised by `n_haps_total`. |
+| `Tables/SRK_samples_for_redo.tsv` | 138 Insufficient_data individuals, prioritised by `n_haps_total`. |
 | `SRK_population_genetic_summary_with_nulls.tsv` / `_BL_with_nulls.tsv` / `.pdf` | Step 14b outputs. |
 | `Tables/SRK_EO_allele_richness_with_nulls.tsv` | Step 17b: null-aware TP1 metrics with bootstrap CIs at L ∈ {0, 0.10, 0.25, 0.50}. |
 | `SRK_individual_GFS_with_nulls.tsv` / `SRK_EO_GFS_summary_with_nulls.tsv` / `SRK_BL_GFS_summary_with_nulls.tsv` | Steps 19b + 20b. |
 | `figures/SRK_GFS_with_nulls_composition.png` / `_TP2_scatter.png` | Stacked-bar tier composition per BL + null-aware TP2 scatter. |
 
-### Bias correction summary (2026-06-11)
+### Canonical vs null-aware deltas
 
 | BL | Canonical P_compat (L=0) | Null-aware P_compat (L=0) | Δ |
 |---|---:|---:|---:|
-| BL1 | 0.068 | 0.084 | +0.02 |
-| BL2 | 0.106 | 0.137 | +0.03 |
-| BL3 | 0.394 | 0.367 | -0.03 |
-| BL4 | 0.417 | 0.358 | **-0.06** |
-| BL5 | 0.472 | 0.392 | **-0.08** |
+| BL1 | 0.068 | 0.091 | +0.023 |
+| BL2 | 0.106 | 0.112 | +0.006 |
+| BL3 | 0.394 | 0.406 | +0.012 |
+| BL4 | 0.417 | 0.422 | +0.005 |
+| BL5 | 0.472 | 0.481 | +0.009 |
 
-The functional-only baseline **overestimated** the mating-pool size for the larger BLs (BL3–BL5) by 0.03–0.08. Null-aware GFS shows **all five BLs CRITICAL** on TP2 (mean GFS < 0.667 AND prop_zero > 30 %), with 60–75 % of individuals in every BL falling to GFS = 0. The conclusion that LEPA is reproductively compromised at the molecular level is *strengthened*, not weakened, by the null-aware rebuild.
+Per-BL broken-allele frequencies are small (`frac_null` = 0.005 – 0.05), so the null-aware metrics **corroborate** the canonical Phase-3 conclusions rather than revise them. All five BLs remain CRITICAL on TP2 in both views.
 
 ## Forward-Time Inheritance Simulator (Step 27) {#inheritance}
 
@@ -6913,7 +6916,7 @@ The functional-only baseline **overestimated** the mating-pool size for the larg
 
 ### Overview
 
-A two-layer model for the SI → pSI → SC process: Step 25 + the binomial-snapshot fit (Bin(4, p_BL) explains the within-BL distribution of broken copies; per-BL p̂ = 0.39–0.57) gives the **static** picture; Step 27 simulates the **dynamic** trajectory under drift, mutation, sporophytic SI rejection, selfing, inbreeding depression, and optional inter-BL migration.
+Step 27 simulates the **dynamic** SI → pSI → SC trajectory of each BL under drift, mutation, sporophytic SI rejection, selfing, inbreeding depression, and optional inter-BL migration, from the empirical Step 26 initial state.
 
 ### Model
 
@@ -6956,14 +6959,14 @@ Each individual = vector of 4 SRK haplotypes encoded as integers, with 0 = `Alle
 | `figures/SRK_inheritance_SC_progression.png` | SC-frequency trajectories with IQR ribbons. |
 | `figures/SRK_inheritance_time_to_sc.png` | Median + IQR time-to-50%-SC bars per BL × scenario. |
 
-#### Headline Results (100 gens × 30 reps, 2026-06-11)
+#### Headline Results (100 gens × 30 reps)
 
 Median generations to 50 % SC frequency:
 
 | Scenario | BL5 | BL4 | BL3 | BL2 | BL1 |
 |---|---:|---:|---:|---:|---:|
-| baseline | 21.5 | 22 | 20 | 9 | 4 |
-| rescue_high (m=0.01) | 23 | 28 | 24.5 | 10 | 4 |
-| high_drift (N × 0.5) | 15.5 | 17 | 17 | 7.5 | 2.5 |
+| baseline | 62 | 66 | 41 | 26 | > 100 |
+| rescue_high (m=0.01) | > 100 | 72 | 54 | 41 | 13 |
+| high_drift (N × 0.5) | > 100 | 94 | 41 | 65 | > 100 |
 
-**Three biological readings.** (1) Every BL crosses the 50 % SC threshold within ~25 generations under baseline — *L. papilliferum* is on a rapid SI → SC trajectory in the absence of intervention. (2) Halving effective N (high_drift) accelerates collapse by 4–7 generations for BL3–BL5. (3) **Passive inter-BL migration alone cannot rescue**, because donor BLs themselves carry high p_NULL — random migrants just average a partially-broken state across the species. **Targeted SI-mother / SI-father crosses (Step 22e cross plan filtered through the Step 25 SI table)** are the conservation lever that must be modelled in future scenario extensions (`rescue_targeted`, `rescue_targeted_seed`, `biobank_pause`).
+**Three biological readings.** (1) Erosion is real but slow — the fastest BL (BL2) crosses 50 % SC in ~26 generations under baseline, the larger BLs take 40 – 65, and BL1 (n = 7) is dominated by stochasticity. (2) Migration does not behave as a uniform rescue: it accelerates or decelerates the trajectory depending on whether the donor pool's broken-allele frequency is above or below the recipient's. (3) **The simulator-endorsed rescue lever is targeted SI-mother / SI-father crosses** (Step 22e cross plan, filtered through the Step 25 SI status table), not random inter-BL migration.

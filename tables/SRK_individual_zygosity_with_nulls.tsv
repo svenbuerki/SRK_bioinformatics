@@ -1,192 +1,192 @@
 Individual	N_distinct_functional_alleles	N_total_copies	N_null_copies	Genotype	Allele_composition	SI_status	pSI_confidence	Genotype_class_flag	EO_normalised	BL_inferred
-Library001_barcode02	3	4	1	ABC0	Allele_018(1)+Allele_049(1)+Allele_050(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO67	BL4
-Library001_barcode03	1	4	2	AA00	Allele_017(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO96	Unassigned
+Library001_barcode02	3	4	0	AABC	Allele_049(2)+Allele_018(1)+Allele_050(1)	pSI	low	SI_promoted_from_pSI_low	EO67	BL4
+Library001_barcode03	1	4	0	AAAA	Allele_017(4)	SI		SI_canonical	EO96	Unassigned
 Library001_barcode04	1	4	0	AAAA	Allele_023(4)	SI		SI_canonical	EO702	Unassigned
 Library001_barcode05	1	4	0	AAAA	Allele_016(4)	SI		SI_canonical	EO712	Unassigned
 Library001_barcode06	1	4	0	AAAA	Allele_014(4)	SI		SI_canonical	EO38	BL3
-Library001_barcode07	1	4	2	AA00	Allele_050(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO61	BL1
+Library001_barcode07	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO61	BL1
 Library001_barcode08	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO70	BL2
-Library001_barcode09	2	4	2	AB00	Allele_026(1)+Allele_051(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO76	BL3
-Library001_barcode10	1	4	1	AAA0	Allele_044(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO25	BL5
-Library001_barcode11	2	4	2	AB00	Allele_023(1)+Allele_046(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO709	Unassigned
-Library001_barcode12	1	4	3	A000	Allele_038(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO18	BL5
-Library001_barcode14	2	4	2	AB00	Allele_034(1)+Allele_051(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO118	BL3
-Library001_barcode16	1	4	3	A000	Allele_050(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO27	BL4
-Library001_barcode17	1	4	3	A000	Allele_022(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO76	BL3
-Library001_barcode18	2	4	2	AB00	Allele_045(1)+Allele_050(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO26	BL1
-Library001_barcode19	1	4	1	AAA0	Allele_017(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO27	BL4
-Library001_barcode20	1	4	1	AAA0	Allele_020(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO18	BL5
-Library001_barcode21	2	4	2	AB00	Allele_017(1)+Allele_051(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO08	BL1
-Library002_barcode23	1	4	1	AAA0	Allele_023(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO96	Unassigned
-Library002_barcode28	1	4	2	AA00	Allele_044(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO27	BL4
-Library002_barcode29	2	4	2	AB00	Allele_002(1)+Allele_058(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO405	Unassigned
-Library002_barcode31	2	4	2	AB00	Allele_013(1)+Allele_043(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO25	BL5
-Library002_barcode32	2	4	1	AAB0	Allele_050(2)+Allele_033(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO48	BL5
-Library002_barcode34	2	4	2	AB00	Allele_009(1)+Allele_016(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO84	Unassigned
-Library002_barcode35	2	4	2	AB00	Allele_024(1)+Allele_051(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO52	BL3
-Library002_barcode36	1	4	2	AA00	Allele_023(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO704	Unassigned
-Library002_barcode37	1	4	2	AA00	Allele_045(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO18	BL5
-Library002_barcode38	1	4	1	AAA0	Allele_050(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO18	BL5
+Library001_barcode09	2	4	0	AABB	Allele_026(2)+Allele_051(2)	SI		SI_canonical	EO76	BL3
+Library001_barcode10	1	4	0	AAAA	Allele_044(4)	SI		SI_canonical	EO25	BL5
+Library001_barcode11	2	4	0	AABB	Allele_023(2)+Allele_046(2)	SI		SI_canonical	EO709	Unassigned
+Library001_barcode12	1	4	0	AAAA	Allele_038(4)	SI		SI_canonical	EO18	BL5
+Library001_barcode14	2	4	0	AAAB	Allele_034(3)+Allele_051(1)	SI		SI_canonical	EO118	BL3
+Library001_barcode16	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO27	BL4
+Library001_barcode17	2	4	0	AABB	Allele_022(2)+Allele_025(2)	SI		SI_canonical	EO76	BL3
+Library001_barcode18	2	4	1	AAB0	Allele_050(2)+Allele_045(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO26	BL1
+Library001_barcode19	1	4	0	AAAA	Allele_017(4)	SI		SI_canonical	EO27	BL4
+Library001_barcode20	1	4	0	AAAA	Allele_020(4)	SI		SI_canonical	EO18	BL5
+Library001_barcode21	2	4	0	AABB	Allele_017(2)+Allele_051(2)	SI		SI_canonical	EO08	BL1
+Library002_barcode23	1	4	0	AAAA	Allele_023(4)	SI		SI_canonical	EO96	Unassigned
+Library002_barcode28	1	4	1	AAA0	Allele_044(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO27	BL4
+Library002_barcode29	2	4	0	AABB	Allele_002(2)+Allele_058(2)	SI		SI_canonical	EO405	Unassigned
+Library002_barcode31	2	4	0	AABB	Allele_013(2)+Allele_043(2)	SI		SI_canonical	EO25	BL5
+Library002_barcode32	2	4	0	AAAB	Allele_050(3)+Allele_033(1)	SI		SI_canonical	EO48	BL5
+Library002_barcode34	2	4	0	AAAB	Allele_009(3)+Allele_016(1)	SI		SI_canonical	EO84	Unassigned
+Library002_barcode35	2	4	0	AAAB	Allele_051(3)+Allele_024(1)	SI		SI_canonical	EO52	BL3
+Library002_barcode36	1	4	0	AAAA	Allele_023(4)	SI		SI_canonical	EO704	Unassigned
+Library002_barcode37	1	4	0	AAAA	Allele_045(4)	SI		SI_canonical	EO18	BL5
+Library002_barcode38	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO18	BL5
 Library002_barcode39	2	4	0	AAAB	Allele_051(3)+Allele_047(1)	SI		SI_canonical	EO70	BL2
-Library002_barcode42	2	4	0	AABB	Allele_050(2)+Allele_051(2)	pSI	low	SI_promoted_from_pSI_low	EO29	BL1
-Library002_barcode43	3	4	0	AABC	Allele_050(2)+Allele_014(1)+Allele_046(1)	pSI	low	SI_promoted_from_pSI_low	EO118	BL3
-Library002_barcode44	1	4	3	A000	Allele_050(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO67	BL4
-Library002_barcode45	1	4	3	A000	Allele_030(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO52	BL3
-Library002_barcode46	1	4	2	AA00	Allele_020(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO68	BL2
-Library002_barcode47	1	4	1	AAA0	Allele_051(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO08	BL1
-Library002_barcode48	1	4	2	AA00	Allele_051(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO118	BL3
-Library002_barcode50	1	4	2	AA00	Allele_049(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO24	BL5
-Library002_barcode51	3	4	1	ABC0	Allele_013(1)+Allele_044(1)+Allele_046(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO18	BL5
+Library002_barcode42	2	4	0	AABB	Allele_050(2)+Allele_051(2)	SI		SI_canonical	EO29	BL1
+Library002_barcode43	3	4	0	AABC	Allele_050(2)+Allele_014(1)+Allele_046(1)	SI		SI_canonical	EO118	BL3
+Library002_barcode44	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO67	BL4
+Library002_barcode45	1	4	0	AAAA	Allele_030(4)	SI		SI_canonical	EO52	BL3
+Library002_barcode46	1	4	0	AAAA	Allele_020(4)	SI		SI_canonical	EO68	BL2
+Library002_barcode47	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO08	BL1
+Library002_barcode48	2	4	0	AAAB	Allele_051(3)+Allele_054(1)	SI		SI_canonical	EO118	BL3
+Library002_barcode50	1	4	0	AAAA	Allele_049(4)	SI		SI_canonical	EO24	BL5
+Library002_barcode51	3	4	0	AABC	Allele_013(2)+Allele_044(1)+Allele_046(1)	SI		SI_canonical	EO18	BL5
 Library002_barcode52	1	4	0	AAAA	Allele_023(4)	SI		SI_canonical	EO702	Unassigned
-Library002_barcode53	2	4	1	AAB0	Allele_023(2)+Allele_046(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO715	Unassigned
-Library002_barcode57	1	4	2	AA00	Allele_044(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO68	BL2
-Library002_barcode58	1	4	3	A000	Allele_020(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO68	BL2
-Library003_barcode60	1	4	2	AA00	Allele_051(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO67	BL4
-Library003_barcode61	2	4	0	AAAB	Allele_013(3)+Allele_051(1)	pSI	low	SI_promoted_from_pSI_low	EO25	BL5
-Library003_barcode62	2	4	2	AB00	Allele_044(1)+Allele_045(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO25	BL5
-Library003_barcode63	2	4	2	AB00	Allele_036(1)+Allele_050(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO67	BL4
-Library003_barcode64	1	4	1	AAA0	Allele_050(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO67	BL4
-Library003_barcode65	2	4	1	AAB0	Allele_020(2)+Allele_051(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO25	BL5
-Library003_barcode66	2	4	2	AB00	Allele_022(1)+Allele_026(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO76	BL3
+Library002_barcode53	2	4	0	AABB	Allele_023(2)+Allele_046(2)	SI		SI_canonical	EO715	Unassigned
+Library002_barcode57	1	4	0	AAAA	Allele_044(4)	SI		SI_canonical	EO68	BL2
+Library002_barcode58	1	4	0	AAAA	Allele_020(4)	SI		SI_canonical	EO68	BL2
+Library003_barcode60	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO67	BL4
+Library003_barcode61	2	4	0	AAAB	Allele_013(3)+Allele_051(1)	SI		SI_canonical	EO25	BL5
+Library003_barcode62	2	4	0	AAAB	Allele_045(3)+Allele_044(1)	SI		SI_canonical	EO25	BL5
+Library003_barcode63	2	4	0	AABB	Allele_036(2)+Allele_050(2)	SI		SI_canonical	EO67	BL4
+Library003_barcode64	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO67	BL4
+Library003_barcode65	2	4	0	AABB	Allele_020(2)+Allele_051(2)	SI		SI_canonical	EO25	BL5
+Library003_barcode66	2	4	0	AABB	Allele_022(2)+Allele_026(2)	SI		SI_canonical	EO76	BL3
 Library003_barcode67	1	4	0	AAAA	Allele_020(4)	SI		SI_canonical	EO25	BL5
-Library003_barcode68	1	4	2	AA00	Allele_020(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO67	BL4
-Library003_barcode69	1	4	2	AA00	Allele_044(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO25	BL5
-Library003_barcode70	1	4	1	AAA0	Allele_020(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO25	BL5
-Library003_barcode71	1	4	1	AAA0	Allele_020(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO25	BL5
+Library003_barcode68	1	4	0	AAAA	Allele_020(4)	SI		SI_canonical	EO67	BL4
+Library003_barcode69	1	4	0	AAAA	Allele_044(4)	SI		SI_canonical	EO25	BL5
+Library003_barcode70	1	4	0	AAAA	Allele_020(4)	SI		SI_canonical	EO25	BL5
+Library003_barcode71	1	4	0	AAAA	Allele_020(4)	SI		SI_canonical	EO25	BL5
 Library003_barcode72	1	4	0	AAAA	Allele_032(4)	SI		SI_canonical	EO25	BL5
-Library003_barcode73	1	4	2	AA00	Allele_044(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO25	BL5
-Library003_barcode74	2	4	0	AAAB	Allele_051(3)+Allele_039(1)	pSI	low	SI_promoted_from_pSI_low	EO25	BL5
-Library003_barcode76	2	4	2	AB00	Allele_042(1)+Allele_050(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO76	BL3
-Library003_barcode77	1	4	3	A000	Allele_051(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO67	BL4
-Library003_barcode78	1	4	3	A000	Allele_049(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO67	BL4
+Library003_barcode73	1	4	0	AAAA	Allele_044(4)	SI		SI_canonical	EO25	BL5
+Library003_barcode74	2	4	0	AAAB	Allele_051(3)+Allele_039(1)	SI		SI_canonical	EO25	BL5
+Library003_barcode76	2	4	0	AAAB	Allele_042(3)+Allele_050(1)	SI		SI_canonical	EO76	BL3
+Library003_barcode77	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO67	BL4
+Library003_barcode78	2	4	0	AABB	Allele_049(2)+Allele_051(2)	SI		SI_canonical	EO67	BL4
 Library004_barcode79	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO25	BL5
-Library004_barcode80	1	4	0	AAAA	Allele_051(4)	pSI	low	SI_promoted_from_pSI_low	EO67	BL4
-Library004_barcode81	2	4	1	AAB0	Allele_020(2)+Allele_045(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO25	BL5
-Library004_barcode82	2	4	0	AABB	Allele_014(2)+Allele_041(2)	pSI	low	SI_promoted_from_pSI_low	EO25	BL5
+Library004_barcode80	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO67	BL4
+Library004_barcode81	2	4	0	AABB	Allele_020(2)+Allele_045(2)	SI		SI_canonical	EO25	BL5
+Library004_barcode82	2	4	0	AABB	Allele_014(2)+Allele_041(2)	SI		SI_canonical	EO25	BL5
 Library004_barcode83	1	4	0	AAAA	Allele_044(4)	SI		SI_canonical	EO25	BL5
-Library004_barcode84	1	4	3	A000	Allele_024(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO76	BL3
-Library004_barcode85	2	4	2	AB00	Allele_028(1)+Allele_050(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO67	BL4
-Library004_barcode86	1	4	3	A000	Allele_036(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO67	BL4
-Library004_barcode87	2	4	0	AAAB	Allele_022(3)+Allele_024(1)	pSI	low	SI_promoted_from_pSI_low	EO76	BL3
-Library004_barcode88	1	4	2	AA00	Allele_049(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO67	BL4
-Library004_barcode89	1	4	1	AAA0	Allele_028(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO67	BL4
-Library005_barcode01	1	4	1	AAA0	Allele_050(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO76	BL3
+Library004_barcode84	1	4	0	AAAA	Allele_024(4)	SI		SI_canonical	EO76	BL3
+Library004_barcode85	2	4	0	AABB	Allele_028(2)+Allele_050(2)	SI		SI_canonical	EO67	BL4
+Library004_barcode86	1	4	0	AAAA	Allele_036(4)	SI		SI_canonical	EO67	BL4
+Library004_barcode87	2	4	0	AAAB	Allele_022(3)+Allele_024(1)	SI		SI_canonical	EO76	BL3
+Library004_barcode88	1	4	0	AAAA	Allele_049(4)	SI		SI_canonical	EO67	BL4
+Library004_barcode89	1	4	0	AAAA	Allele_028(4)	SI		SI_canonical	EO67	BL4
+Library005_barcode01	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO76	BL3
 Library005_barcode02	2	4	0	AABB	Allele_050(2)+Allele_051(2)	pSI	low	SI_promoted_from_pSI_low	EO76	BL3
-Library005_barcode03	2	4	1	AAB0	Allele_024(2)+Allele_050(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO76	BL3
-Library005_barcode05	1	4	2	AA00	Allele_051(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO76	BL3
-Library005_barcode08	1	4	2	AA00	Allele_024(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO76	BL3
-Library005_barcode09	1	4	0	AAAA	Allele_024(4)	pSI	low	SI_promoted_from_pSI_low	EO76	BL3
-Library005_barcode10	2	4	0	AABB	Allele_024(2)+Allele_050(2)	pSI	low	SI_promoted_from_pSI_low	EO76	BL3
+Library005_barcode03	2	4	0	AAAB	Allele_024(3)+Allele_050(1)	SI		SI_canonical	EO76	BL3
+Library005_barcode05	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO76	BL3
+Library005_barcode08	1	4	0	AAAA	Allele_024(4)	SI		SI_canonical	EO76	BL3
+Library005_barcode09	1	4	0	AAAA	Allele_024(4)	SI		SI_canonical	EO76	BL3
+Library005_barcode10	2	4	0	AABB	Allele_024(2)+Allele_050(2)	SI		SI_canonical	EO76	BL3
 Library005_barcode11	1	4	0	AAAA	Allele_042(4)	SI		SI_canonical	EO76	BL3
-Library005_barcode12	2	4	2	AB00	Allele_042(1)+Allele_050(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO76	BL3
-Library005_barcode13	1	4	2	AA00	Allele_040(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO76	BL3
-Library005_barcode14	2	4	2	AB00	Allele_017(1)+Allele_050(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO76	BL3
+Library005_barcode12	2	4	0	AAAB	Allele_042(3)+Allele_050(1)	SI		SI_canonical	EO76	BL3
+Library005_barcode13	1	4	0	AAAA	Allele_040(4)	Insufficient_data		Insufficient_kept_existing	EO76	BL3
+Library005_barcode14	2	4	0	AAAB	Allele_050(3)+Allele_017(1)	SI		SI_canonical	EO76	BL3
 Library005_barcode15	1	4	0	AAAA	Allele_024(4)	SI		SI_canonical	EO76	BL3
 Library005_barcode16	1	4	0	AAAA	Allele_040(4)	SI		SI_canonical	EO76	BL3
-Library005_barcode17	2	4	2	AB00	Allele_024(1)+Allele_050(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO76	BL3
+Library005_barcode17	2	4	0	AABB	Allele_024(2)+Allele_050(2)	SI		SI_canonical	EO76	BL3
 Library005_barcode18	1	4	0	AAAA	Allele_022(4)	SI		SI_canonical	EO76	BL3
 Library005_barcode19	1	4	0	AAAA	Allele_042(4)	SI		SI_canonical	EO76	BL3
-Library005_barcode20	2	4	0	AAAB	Allele_022(3)+Allele_026(1)	pSI	low	SI_promoted_from_pSI_low	EO76	BL3
-Library005_barcode21	2	4	0	AAAB	Allele_024(3)+Allele_050(1)	pSI	low	SI_promoted_from_pSI_low	EO76	BL3
-Library005_barcode22	2	4	1	AAB0	Allele_043(2)+Allele_047(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO25	BL5
-Library005_barcode23	2	4	2	AB00	Allele_020(1)+Allele_032(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO25	BL5
-Library005_barcode24	2	4	1	AAB0	Allele_032(2)+Allele_039(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO25	BL5
-Library005_barcode25	2	4	2	AB00	Allele_032(1)+Allele_039(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO25	BL5
-Library005_barcode26	1	4	2	AA00	Allele_032(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO25	BL5
+Library005_barcode20	2	4	0	AAAB	Allele_022(3)+Allele_026(1)	SI		SI_canonical	EO76	BL3
+Library005_barcode21	2	4	0	AAAB	Allele_024(3)+Allele_050(1)	SI		SI_canonical	EO76	BL3
+Library005_barcode22	2	4	0	AABB	Allele_043(2)+Allele_047(2)	SI		SI_canonical	EO25	BL5
+Library005_barcode23	2	4	0	AAAB	Allele_020(3)+Allele_032(1)	pSI	low	SI_promoted_from_pSI_low	EO25	BL5
+Library005_barcode24	2	4	0	AABB	Allele_032(2)+Allele_039(2)	SI		SI_canonical	EO25	BL5
+Library005_barcode25	2	4	0	AABB	Allele_032(2)+Allele_039(2)	SI		SI_canonical	EO25	BL5
+Library005_barcode26	1	4	0	AAAA	Allele_032(4)	SI		SI_canonical	EO25	BL5
 Library005_barcode27	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO25	BL5
-Library005_barcode28	1	4	2	AA00	Allele_044(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO25	BL5
-Library005_barcode29	1	4	1	AAA0	Allele_051(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO25	BL5
-Library005_barcode30	1	4	1	AAA0	Allele_051(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO25	BL5
-Library005_barcode31	1	4	0	AAAA	Allele_044(4)	pSI	low	SI_promoted_from_pSI_low	EO25	BL5
+Library005_barcode28	1	4	0	AAAA	Allele_044(4)	SI		SI_canonical	EO25	BL5
+Library005_barcode29	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO25	BL5
+Library005_barcode30	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO25	BL5
+Library005_barcode31	1	4	0	AAAA	Allele_044(4)	SI		SI_canonical	EO25	BL5
 Library005_barcode32	2	4	0	AAAB	Allele_049(3)+Allele_020(1)	SI		SI_canonical	EO25	BL5
-Library005_barcode33	1	4	2	AA00	Allele_049(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO25	BL5
+Library005_barcode33	1	4	0	AAAA	Allele_049(4)	SI		SI_canonical	EO25	BL5
 Library005_barcode34	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO25	BL5
-Library005_barcode35	1	4	2	AA00	Allele_050(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO25	BL5
-Library005_barcode36	1	4	3	A000	Allele_043(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO25	BL5
-Library006_barcode37	2	4	2	AB00	Allele_044(1)+Allele_045(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO27	BL4
-Library006_barcode38	2	4	0	AABB	Allele_015(2)+Allele_044(2)	pSI	low	SI_promoted_from_pSI_low	EO27	BL4
-Library006_barcode40	2	4	0	AAAB	Allele_044(3)+Allele_035(1)	pSI	low	SI_promoted_from_pSI_low	EO27	BL4
-Library006_barcode41	3	4	1	ABC0	Allele_034(1)+Allele_035(1)+Allele_044(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO27	BL4
+Library005_barcode35	1	4	1	AAA0	Allele_050(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO25	BL5
+Library005_barcode36	2	4	0	AABB	Allele_043(2)+Allele_047(2)	SI		SI_canonical	EO25	BL5
+Library006_barcode37	3	4	0	AABC	Allele_044(2)+Allele_045(1)+Allele_050(1)	SI		SI_canonical	EO27	BL4
+Library006_barcode38	2	4	0	AABB	Allele_015(2)+Allele_044(2)	SI		SI_canonical	EO27	BL4
+Library006_barcode40	2	4	0	AAAB	Allele_044(3)+Allele_035(1)	SI		SI_canonical	EO27	BL4
+Library006_barcode41	3	4	0	AABC	Allele_034(2)+Allele_035(1)+Allele_044(1)	SI		SI_canonical	EO27	BL4
 Library006_barcode42	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO25	BL5
-Library006_barcode43	1	4	1	AAA0	Allele_040(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO76	BL3
-Library006_barcode44	2	4	2	AB00	Allele_038(1)+Allele_044(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO27	BL4
-Library006_barcode46	1	4	2	AA00	Allele_050(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO27	BL4
-Library006_barcode47	1	4	1	AAA0	Allele_023(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO27	BL4
-Library006_barcode48	1	4	2	AA00	Allele_050(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO27	BL4
-Library006_barcode49	1	4	2	AA00	Allele_044(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO27	BL4
-Library006_barcode50	1	4	2	AA00	Allele_051(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO27	BL4
-Library006_barcode51	1	4	1	AAA0	Allele_050(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO27	BL4
-Library006_barcode52	2	4	2	AB00	Allele_044(1)+Allele_049(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO27	BL4
-Library006_barcode53	1	4	2	AA00	Allele_044(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO27	BL4
+Library006_barcode43	1	4	0	AAAA	Allele_040(4)	SI		SI_canonical	EO76	BL3
+Library006_barcode44	2	4	0	AABB	Allele_038(2)+Allele_044(2)	SI		SI_canonical	EO27	BL4
+Library006_barcode46	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO27	BL4
+Library006_barcode47	1	4	0	AAAA	Allele_023(4)	SI		SI_canonical	EO27	BL4
+Library006_barcode48	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO27	BL4
+Library006_barcode49	1	4	0	AAAA	Allele_044(4)	SI		SI_canonical	EO27	BL4
+Library006_barcode50	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO27	BL4
+Library006_barcode51	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO27	BL4
+Library006_barcode52	2	4	1	AAB0	Allele_044(2)+Allele_049(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO27	BL4
+Library006_barcode53	1	4	0	AAAA	Allele_044(4)	SI		SI_canonical	EO27	BL4
 Library006_barcode54	2	4	0	AABB	Allele_037(2)+Allele_038(2)	SI		SI_canonical	EO27	BL4
-Library006_barcode55	1	4	2	AA00	Allele_023(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO27	BL4
-Library006_barcode56	2	4	2	AB00	Allele_049(1)+Allele_051(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO67	BL4
+Library006_barcode55	1	4	1	AAA0	Allele_023(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO27	BL4
+Library006_barcode56	2	4	0	AAAB	Allele_049(3)+Allele_051(1)	SI		SI_canonical	EO67	BL4
 Library006_barcode57	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO67	BL4
-Library006_barcode58	1	4	3	A000	Allele_049(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO67	BL4
-Library006_barcode59	3	4	1	ABC0	Allele_049(1)+Allele_050(1)+Allele_051(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO67	BL4
+Library006_barcode58	1	4	0	AAAA	Allele_049(4)	SI		SI_canonical	EO67	BL4
+Library006_barcode59	3	4	0	AABC	Allele_049(2)+Allele_050(1)+Allele_051(1)	SI		SI_canonical	EO67	BL4
 Library006_barcode60	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO67	BL4
-Library006_barcode61	1	4	2	AA00	Allele_050(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO67	BL4
-Library006_barcode62	1	4	0	AAAA	Allele_050(4)	pSI	low	SI_promoted_from_pSI_low	EO67	BL4
-Library006_barcode63	1	4	1	AAA0	Allele_045(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO67	BL4
-Library006_barcode64	2	4	1	AAB0	Allele_028(2)+Allele_051(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO67	BL4
-Library006_barcode65	1	4	3	A000	Allele_051(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO67	BL4
-Library006_barcode66	2	4	1	AAB0	Allele_050(2)+Allele_051(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO67	BL4
-Library007_barcode67	1	4	2	AA00	Allele_044(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO27	BL4
-Library007_barcode68	1	4	2	AA00	Allele_044(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO27	BL4
-Library007_barcode69	2	4	0	AAAB	Allele_044(3)+Allele_057(1)	pSI	low	SI_promoted_from_pSI_low	EO27	BL4
-Library007_barcode70	2	4	1	AAB0	Allele_038(2)+Allele_050(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO27	BL4
-Library007_barcode71	1	4	3	A000	Allele_043(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO27	BL4
+Library006_barcode61	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO67	BL4
+Library006_barcode62	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO67	BL4
+Library006_barcode63	1	4	0	AAAA	Allele_045(4)	SI		SI_canonical	EO67	BL4
+Library006_barcode64	2	4	0	AABB	Allele_028(2)+Allele_051(2)	SI		SI_canonical	EO67	BL4
+Library006_barcode65	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO67	BL4
+Library006_barcode66	2	4	0	AABB	Allele_050(2)+Allele_051(2)	SI		SI_canonical	EO67	BL4
+Library007_barcode67	1	4	0	AAAA	Allele_044(4)	SI		SI_canonical	EO27	BL4
+Library007_barcode68	1	4	0	AAAA	Allele_044(4)	SI		SI_canonical	EO27	BL4
+Library007_barcode69	2	4	0	AAAB	Allele_044(3)+Allele_057(1)	SI		SI_canonical	EO27	BL4
+Library007_barcode70	2	4	0	AAAB	Allele_038(3)+Allele_050(1)	SI		SI_canonical	EO27	BL4
+Library007_barcode71	1	4	0	AAAA	Allele_043(4)	SI		SI_canonical	EO27	BL4
 Library007_barcode72	1	4	0	AAAA	Allele_049(4)	SI		SI_canonical	EO27	BL4
-Library007_barcode73	2	4	1	AAB0	Allele_023(2)+Allele_045(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO27	BL4
-Library007_barcode77	1	4	3	A000	Allele_050(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO27	BL4
-Library007_barcode78	2	4	1	AAB0	Allele_012(2)+Allele_045(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO27	BL4
-Library007_barcode80	1	4	0	AAAA	Allele_020(4)	pSI	low	SI_promoted_from_pSI_low	EO27	BL4
-Library007_barcode81	1	4	1	AAA0	Allele_050(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO67	BL4
-Library007_barcode82	3	4	1	ABC0	Allele_028(1)+Allele_029(1)+Allele_051(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO67	BL4
-Library007_barcode83	2	4	2	AB00	Allele_027(1)+Allele_028(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO67	BL4
-Library007_barcode84	2	4	2	AB00	Allele_028(1)+Allele_051(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO67	BL4
-Library007_barcode85	1	4	2	AA00	Allele_051(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO67	BL4
-Library007_barcode86	2	4	2	AB00	Allele_045(1)+Allele_050(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO67	BL4
-Library007_barcode87	2	4	2	AB00	Allele_045(1)+Allele_050(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO67	BL4
-Library007_barcode88	1	4	2	AA00	Allele_036(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO67	BL4
-Library008_barcode01	3	4	1	ABC0	Allele_049(1)+Allele_050(1)+Allele_051(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO70	BL2
+Library007_barcode73	2	4	0	AAAB	Allele_023(3)+Allele_045(1)	SI		SI_canonical	EO27	BL4
+Library007_barcode77	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO27	BL4
+Library007_barcode78	2	4	0	AABB	Allele_012(2)+Allele_045(2)	SI		SI_canonical	EO27	BL4
+Library007_barcode80	1	4	0	AAAA	Allele_020(4)	SI		SI_canonical	EO27	BL4
+Library007_barcode81	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO67	BL4
+Library007_barcode82	3	4	0	AABC	Allele_051(2)+Allele_028(1)+Allele_029(1)	SI		SI_canonical	EO67	BL4
+Library007_barcode83	3	4	0	AABC	Allele_027(2)+Allele_028(1)+Allele_041(1)	SI		SI_canonical	EO67	BL4
+Library007_barcode84	2	4	0	AABB	Allele_028(2)+Allele_051(2)	SI		SI_canonical	EO67	BL4
+Library007_barcode85	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO67	BL4
+Library007_barcode86	2	4	0	AAAB	Allele_050(3)+Allele_045(1)	SI		SI_canonical	EO67	BL4
+Library007_barcode87	2	4	0	AAAB	Allele_045(3)+Allele_050(1)	SI		SI_canonical	EO67	BL4
+Library007_barcode88	1	4	0	AAAA	Allele_036(4)	SI		SI_canonical	EO67	BL4
+Library008_barcode01	3	4	0	AABC	Allele_049(2)+Allele_050(1)+Allele_051(1)	SI		SI_canonical	EO70	BL2
 Library008_barcode02	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO70	BL2
-Library008_barcode03	2	4	2	AB00	Allele_049(1)+Allele_050(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode04	2	4	1	AAB0	Allele_049(2)+Allele_053(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO70	BL2
+Library008_barcode03	2	4	0	AABB	Allele_049(2)+Allele_050(2)	SI		SI_canonical	EO70	BL2
+Library008_barcode04	2	4	0	AABB	Allele_049(2)+Allele_053(2)	SI		SI_canonical	EO70	BL2
 Library008_barcode05	1	4	0	AAAA	Allele_049(4)	SI		SI_canonical	EO70	BL2
-Library008_barcode06	1	4	3	A000	Allele_049(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode07	2	4	2	AB00	Allele_049(1)+Allele_051(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode08	2	4	1	AAB0	Allele_051(2)+Allele_055(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode09	1	4	0	AAAA	Allele_050(4)	pSI	low	SI_promoted_from_pSI_low	EO70	BL2
-Library008_barcode10	1	4	2	AA00	Allele_050(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode11	2	4	2	AB00	Allele_050(1)+Allele_051(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode12	3	4	1	ABC0	Allele_047(1)+Allele_050(1)+Allele_051(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode13	1	4	2	AA00	Allele_051(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode14	1	4	2	AA00	Allele_049(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode15	1	4	1	AAA0	Allele_051(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode16	2	4	2	AB00	Allele_050(1)+Allele_051(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode17	1	4	2	AA00	Allele_051(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode19	1	4	3	A000	Allele_051(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode20	2	4	2	AB00	Allele_049(1)+Allele_051(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode21	1	4	2	AA00	Allele_051(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode22	2	4	1	AAB0	Allele_049(2)+Allele_051(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode23	2	4	2	AB00	Allele_050(1)+Allele_051(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode24	2	4	2	AB00	Allele_049(1)+Allele_050(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
+Library008_barcode06	1	4	0	AAAA	Allele_049(4)	SI		SI_canonical	EO70	BL2
+Library008_barcode07	2	4	0	AAAB	Allele_049(3)+Allele_051(1)	SI		SI_canonical	EO70	BL2
+Library008_barcode08	2	4	0	AABB	Allele_051(2)+Allele_055(2)	SI		SI_canonical	EO70	BL2
+Library008_barcode09	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO70	BL2
+Library008_barcode10	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO70	BL2
+Library008_barcode11	2	4	0	AABB	Allele_050(2)+Allele_051(2)	Insufficient_data		Insufficient_kept_existing	EO70	BL2
+Library008_barcode12	3	4	0	AABC	Allele_051(2)+Allele_047(1)+Allele_050(1)	SI		SI_canonical	EO70	BL2
+Library008_barcode13	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO70	BL2
+Library008_barcode14	1	4	0	AAAA	Allele_049(4)	Insufficient_data		Insufficient_kept_existing	EO70	BL2
+Library008_barcode15	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO70	BL2
+Library008_barcode16	2	4	0	AAAB	Allele_050(3)+Allele_051(1)	SI		SI_canonical	EO70	BL2
+Library008_barcode17	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO70	BL2
+Library008_barcode19	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO70	BL2
+Library008_barcode20	2	4	1	AAB0	Allele_049(2)+Allele_051(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO70	BL2
+Library008_barcode21	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO70	BL2
+Library008_barcode22	2	4	0	AABB	Allele_049(2)+Allele_051(2)	SI		SI_canonical	EO70	BL2
+Library008_barcode23	2	4	0	AABB	Allele_050(2)+Allele_051(2)	SI		SI_canonical	EO70	BL2
+Library008_barcode24	2	4	0	AABB	Allele_049(2)+Allele_050(2)	pSI	low	SI_promoted_from_pSI_low	EO70	BL2
 Library008_barcode25	2	4	0	AABB	Allele_050(2)+Allele_051(2)	SI		SI_canonical	EO70	BL2
-Library008_barcode26	1	4	3	A000	Allele_051(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode27	1	4	2	AA00	Allele_049(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode28	1	4	1	AAA0	Allele_049(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO70	BL2
+Library008_barcode26	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO70	BL2
+Library008_barcode27	1	4	0	AAAA	Allele_049(4)	SI		SI_canonical	EO70	BL2
+Library008_barcode28	1	4	0	AAAA	Allele_049(4)	SI		SI_canonical	EO70	BL2
 Library008_barcode29	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO70	BL2
-Library008_barcode30	1	4	2	AA00	Allele_051(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode31	1	4	1	AAA0	Allele_049(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode32	1	4	3	A000	Allele_051(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode33	1	4	2	AA00	Allele_051(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode34	1	4	2	AA00	Allele_051(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
+Library008_barcode30	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO70	BL2
+Library008_barcode31	1	4	0	AAAA	Allele_049(4)	SI		SI_canonical	EO70	BL2
+Library008_barcode32	1	4	1	AAA0	Allele_051(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO70	BL2
+Library008_barcode33	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO70	BL2
+Library008_barcode34	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO70	BL2
 Library008_barcode35	2	4	0	AAAB	Allele_050(3)+Allele_051(1)	SI		SI_canonical	EO70	BL2
-Library008_barcode36	2	4	1	AAB0	Allele_049(2)+Allele_051(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode89	1	4	2	AA00	Allele_050(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode90	1	4	2	AA00	Allele_050(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
-Library008_barcode91	1	4	2	AA00	Allele_050(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
+Library008_barcode36	2	4	0	AABB	Allele_049(2)+Allele_051(2)	SI		SI_canonical	EO70	BL2
+Library008_barcode89	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO70	BL2
+Library008_barcode90	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO70	BL2
+Library008_barcode91	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO70	BL2
 Library009_barcode01	1	4	0	AAAA	Allele_050(4)	Insufficient_data		Insufficient_kept_existing	EO76	BL3
 Library009_barcode02	1	4	0	AAAA	Allele_050(4)	Insufficient_data		Insufficient_kept_existing	EO76	BL3
 Library009_barcode03	1	4	0	AAAA	Allele_020(4)	Insufficient_data		Insufficient_kept_existing	EO76	BL3
@@ -269,75 +269,69 @@ Library009_barcode93	1	4	0	AAAA	Allele_050(4)	Insufficient_data		Insufficient_ke
 Library009_barcode94	2	4	0	AAAB	Allele_020(3)+Allele_023(1)	Insufficient_data		Insufficient_kept_existing	EO27	BL4
 Library009_barcode95	1	4	0	AAAA	Allele_042(4)	Insufficient_data		Insufficient_kept_existing	EO27	BL4
 Library009_barcode96	2	4	0	AABB	Allele_023(2)+Allele_050(2)	Insufficient_data		Insufficient_kept_existing	EO27	BL4
-Library010_barcode01	1	4	2	AA00	Allele_050(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode02	1	4	2	AA00	Allele_050(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode03	2	4	2	AB00	Allele_023(1)+Allele_050(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode05	1	4	2	AA00	Allele_050(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode06	2	4	2	AB00	Allele_005(1)+Allele_031(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode07	2	4	1	AAB0	Allele_031(2)+Allele_049(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode08	1	4	1	AAA0	Allele_005(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode09	1	4	2	AA00	Allele_006(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode10	1	4	2	AA00	Allele_050(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode11	1	4	1	AAA0	Allele_023(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode13	2	4	2	AB00	Allele_049(1)+Allele_051(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode14	1	4	1	AAA0	Allele_051(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode15	1	4	2	AA00	Allele_050(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode16	1	4	2	AA00	Allele_051(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode17	1	4	3	A000	Allele_050(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode18	1	4	2	AA00	Allele_050(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO18	BL5
+Library010_barcode01	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO18	BL5
+Library010_barcode02	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO18	BL5
+Library010_barcode03	2	4	0	AAAB	Allele_050(3)+Allele_023(1)	SI		SI_canonical	EO18	BL5
+Library010_barcode05	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO18	BL5
+Library010_barcode06	2	4	0	AABB	Allele_005(2)+Allele_031(2)	SI		SI_canonical	EO18	BL5
+Library010_barcode07	2	4	0	AABB	Allele_031(2)+Allele_049(2)	SI		SI_canonical	EO18	BL5
+Library010_barcode08	1	4	0	AAAA	Allele_005(4)	SI		SI_canonical	EO18	BL5
+Library010_barcode09	1	4	0	AAAA	Allele_006(4)	SI		SI_canonical	EO18	BL5
+Library010_barcode10	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO18	BL5
+Library010_barcode11	1	4	0	AAAA	Allele_023(4)	SI		SI_canonical	EO18	BL5
+Library010_barcode13	2	4	0	AAAB	Allele_051(3)+Allele_049(1)	SI		SI_canonical	EO18	BL5
+Library010_barcode14	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO18	BL5
+Library010_barcode15	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO18	BL5
+Library010_barcode16	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO18	BL5
+Library010_barcode17	1	4	2	AA00	Allele_050(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO18	BL5
+Library010_barcode18	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO18	BL5
 Library010_barcode19	1	4	0	AAAA	Allele_020(4)	SI		SI_canonical	EO18	BL5
-Library010_barcode20	2	4	2	AB00	Allele_006(1)+Allele_020(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode21	2	4	0	AAAB	Allele_050(3)+Allele_037(1)	pSI	low	SI_promoted_from_pSI_low	EO18	BL5
-Library010_barcode22	1	4	3	A000	Allele_049(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode24	1	4	2	AA00	Allele_050(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode25	1	4	3	A000	Allele_051(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode26	1	4	3	A000	Allele_006(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode27	1	4	2	AA00	Allele_005(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode28	2	4	2	AB00	Allele_049(1)+Allele_051(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode29	2	4	1	AAB0	Allele_048(2)+Allele_046(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode30	1	4	2	AA00	Allele_051(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode32	1	4	2	AA00	Allele_045(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode33	1	4	1	AAA0	Allele_045(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO76	BL3
+Library010_barcode20	2	4	0	AAAB	Allele_020(3)+Allele_006(1)	SI		SI_canonical	EO18	BL5
+Library010_barcode21	2	4	0	AAAB	Allele_050(3)+Allele_037(1)	SI		SI_canonical	EO18	BL5
+Library010_barcode22	1	4	0	AAAA	Allele_049(4)	SI		SI_canonical	EO18	BL5
+Library010_barcode24	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO18	BL5
+Library010_barcode25	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO18	BL5
+Library010_barcode26	1	4	0	AAAA	Allele_006(4)	SI		SI_canonical	EO18	BL5
+Library010_barcode27	1	4	0	AAAA	Allele_005(4)	SI		SI_canonical	EO18	BL5
+Library010_barcode28	3	4	0	AABC	Allele_051(2)+Allele_049(1)+Allele_050(1)	SI		SI_canonical	EO18	BL5
+Library010_barcode29	2	4	0	AAAB	Allele_048(3)+Allele_046(1)	SI		SI_canonical	EO18	BL5
+Library010_barcode30	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO18	BL5
+Library010_barcode32	1	4	0	AAAA	Allele_045(4)	SI		SI_canonical	EO18	BL5
+Library010_barcode33	1	4	0	AAAA	Allele_045(4)	SI		SI_canonical	EO76	BL3
 Library010_barcode34	1	4	2	AA00	Allele_045(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO76	BL3
 Library010_barcode36	1	4	0	AAAA	Allele_020(4)	SI		SI_canonical	EO27	BL4
-Library010_barcode37	2	4	2	AB00	Allele_038(1)+Allele_051(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode38	2	4	2	AB00	Allele_034(1)+Allele_038(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode39	2	4	1	AAB0	Allele_045(2)+Allele_049(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO18	BL5
-Library010_barcode40	0	4	4	0000	Allele_NULL(4)	SC		SC_all_null_from_genotype_table	EO18	BL5
-Library010_barcode41	1	4	3	A000	Allele_051(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO76	BL3
-Library010_barcode43	1	4	3	A000	Allele_045(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO76	BL3
-Library010_barcode44	2	4	1	AAB0	Allele_050(2)+Allele_045(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO76	BL3
-Library010_barcode45	1	4	3	A000	Allele_045(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO76	BL3
-Library010_barcode49	1	4	2	AA00	Allele_022(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO76	BL3
+Library010_barcode37	2	4	0	AABB	Allele_038(2)+Allele_051(2)	SI		SI_canonical	EO18	BL5
+Library010_barcode38	3	4	0	AABC	Allele_034(2)+Allele_038(1)+Allele_050(1)	SI		SI_canonical	EO18	BL5
+Library010_barcode39	2	4	0	AAAB	Allele_045(3)+Allele_049(1)	SI		SI_canonical	EO18	BL5
+Library010_barcode40	1	4	0	AAAA	Allele_038(4)	Insufficient_data		Insufficient_kept_existing	EO18	BL5
+Library010_barcode41	1	4	0	AAAA	Allele_051(4)	SI		SI_canonical	EO76	BL3
+Library010_barcode43	1	4	0	AAAA	Allele_045(4)	Insufficient_data		Insufficient_kept_existing	EO76	BL3
+Library010_barcode44	2	4	0	AAAB	Allele_050(3)+Allele_045(1)	SI		SI_canonical	EO76	BL3
+Library010_barcode45	1	4	0	AAAA	Allele_045(4)	SI		SI_canonical	EO76	BL3
+Library010_barcode49	1	4	0	AAAA	Allele_022(4)	SI		SI_canonical	EO76	BL3
 Library010_barcode52	1	4	0	AAAA	Allele_020(4)	SI		SI_canonical	EO76	BL3
-Library010_barcode56	1	4	1	AAA0	Allele_022(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO76	BL3
-Library010_barcode57	1	4	1	AAA0	Allele_049(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO70	BL2
-Library010_barcode59	1	4	3	A000	Allele_049(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO70	BL2
-Library010_barcode60	1	4	3	A000	Allele_022(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO76	BL3
-Library010_barcode62	1	4	1	AAA0	Allele_050(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO76	BL3
-Library010_barcode63	1	4	3	A000	Allele_017(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO76	BL3
-Library010_barcode64	1	4	2	AA00	Allele_022(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO76	BL3
-Library010_barcode66	1	4	3	A000	Allele_049(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO70	BL2
-Library010_barcode71	1	4	3	A000	Allele_049(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO70	BL2
+Library010_barcode56	1	4	0	AAAA	Allele_022(4)	SI		SI_canonical	EO76	BL3
+Library010_barcode57	1	4	0	AAAA	Allele_049(4)	SI		SI_canonical	EO70	BL2
+Library010_barcode59	1	4	0	AAAA	Allele_049(4)	SI		SI_canonical	EO70	BL2
+Library010_barcode60	1	4	0	AAAA	Allele_022(4)	SI		SI_canonical	EO76	BL3
+Library010_barcode62	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO76	BL3
+Library010_barcode63	1	4	0	AAAA	Allele_017(4)	SI		SI_canonical	EO76	BL3
+Library010_barcode64	1	4	0	AAAA	Allele_022(4)	SI		SI_canonical	EO76	BL3
+Library010_barcode66	1	4	0	AAAA	Allele_049(4)	SI		SI_canonical	EO70	BL2
+Library010_barcode71	1	4	0	AAAA	Allele_049(4)	SI		SI_canonical	EO70	BL2
 Library010_barcode73	1	4	0	AAAA	Allele_050(4)	SI		SI_canonical	EO27	BL4
-Library010_barcode74	2	4	1	AAB0	Allele_033(2)+Allele_050(1)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO27	BL4
+Library010_barcode74	2	4	0	AABB	Allele_033(2)+Allele_050(2)	SI		SI_canonical	EO27	BL4
 Library010_barcode75	3	4	0	AABC	Allele_033(2)+Allele_046(1)+Allele_050(1)	SI		SI_canonical	EO27	BL4
-Library010_barcode76	1	4	2	AA00	Allele_049(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
-Library010_barcode77	2	4	2	AB00	Allele_049(1)+Allele_050(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
-Library010_barcode79	1	4	2	AA00	Allele_051(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
-Library010_barcode80	1	4	2	AA00	Allele_049(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO70	BL2
-Library010_barcode81	2	4	0	AAAB	Allele_045(3)+Allele_023(1)	pSI	low	SI_promoted_from_pSI_low	EO27	BL4
-Library010_barcode82	2	4	2	AB00	Allele_023(1)+Allele_042(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO27	BL4
-Library010_barcode83	1	4	1	AAA0	Allele_037(3)+Allele_NULL(1)	pSI	high	pSI_null_introduced	EO27	BL4
-Library010_barcode84	2	4	0	AAAB	Allele_050(3)+Allele_043(1)	pSI	low	SI_promoted_from_pSI_low	EO27	BL4
-Library010_barcode86	1	4	2	AA00	Allele_044(2)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO27	BL4
-Library010_barcode87	1	4	3	A000	Allele_034(1)+Allele_NULL(3)	pSI	high	pSI_null_introduced	EO27	BL4
-Library010_barcode88	2	4	2	AB00	Allele_033(1)+Allele_050(1)+Allele_NULL(2)	pSI	high	pSI_null_introduced	EO27	BL4
+Library010_barcode76	1	4	0	AAAA	Allele_049(4)	SI		SI_canonical	EO70	BL2
+Library010_barcode77	2	4	0	AABB	Allele_049(2)+Allele_050(2)	SI		SI_canonical	EO70	BL2
+Library010_barcode79	1	4	0	AAAA	Allele_051(4)	Insufficient_data		Insufficient_kept_existing	EO70	BL2
+Library010_barcode80	1	4	0	AAAA	Allele_049(4)	SI		SI_canonical	EO70	BL2
+Library010_barcode81	2	4	0	AAAB	Allele_045(3)+Allele_023(1)	SI		SI_canonical	EO27	BL4
+Library010_barcode82	2	4	0	AABB	Allele_023(2)+Allele_042(2)	pSI	low	SI_promoted_from_pSI_low	EO27	BL4
+Library010_barcode83	1	4	0	AAAA	Allele_037(4)	SI		SI_canonical	EO27	BL4
+Library010_barcode84	2	4	0	AAAB	Allele_050(3)+Allele_043(1)	SI		SI_canonical	EO27	BL4
+Library010_barcode86	1	4	0	AAAA	Allele_044(4)	SI		SI_canonical	EO27	BL4
+Library010_barcode87	1	4	0	AAAA	Allele_034(4)	SI		SI_canonical	EO27	BL4
+Library010_barcode88	2	4	0	AABB	Allele_033(2)+Allele_050(2)	SI		SI_canonical	EO27	BL4
 Library010_barcode94	1	4	0	AAAA	Allele_042(4)	SI		SI_canonical	EO27	BL4
-Library001_barcode22	0	4	4	0000	Allele_NULL(4)	SC		SC_added_from_SI_status	EO29	BL1
-Library002_barcode49	0	4	4	0000	Allele_NULL(4)	SC		SC_added_from_SI_status	EO29	BL1
-Library010_barcode72	0	4	4	0000	Allele_NULL(4)	SC		SC_added_from_SI_status	EO70	BL2
-Library005_barcode06	0	4	4	0000	Allele_NULL(4)	SC		SC_added_from_SI_status	EO76	BL3
 Library010_barcode53	0	4	4	0000	Allele_NULL(4)	SC		SC_added_from_SI_status	EO76	BL3
-Library010_barcode55	0	4	4	0000	Allele_NULL(4)	SC		SC_added_from_SI_status	EO76	BL3
-Library002_barcode33	0	4	4	0000	Allele_NULL(4)	SC		SC_added_from_SI_status	EO97	Unassigned
