@@ -11,7 +11,7 @@
 
 <meta name="author" content="Sven Buerki - Boise State University" />
 
-<meta name="date" content="2026-06-12" />
+<meta name="date" content="2026-06-14" />
 
 <title>SRK Bioinformatics</title>
 
@@ -1469,7 +1469,7 @@ border-radius: 0px;
 <h1 class="title toc-ignore">SRK Bioinformatics</h1>
 <h3 class="subtitle">Nanopore-Based SRK Haplotype Reconstruction and Population Analysis Pipeline</h3>
 <h4 class="author">Sven Buerki - Boise State University</h4>
-<h4 class="date">2026-06-12</h4>
+<h4 class="date">2026-06-14</h4>
 
 </div>
 
@@ -1503,8 +1503,21 @@ border-radius: 0px;
 <div id="pipeline-overview" class="section level1" number="4">
 <h1><span class="header-section-number">4</span> Pipeline Overview</h1>
 <p>The pipeline consists of <strong>23 main steps organized into four phases</strong>, progressing from within-library sequence assembly to cross-library integration, population genetic analyses, and experimental validation of S-allele hypotheses through controlled crosses.</p>
-<div id="phase-1-srk-amplicon-sequence-assembly" class="section level2" number="4.1">
-<h2><span class="header-section-number">4.1</span> <a href="#phase1">Phase 1: SRK amplicon sequence assembly</a></h2>
+<div id="output-organisation-2026-06-14-refactor-all-5-phases" class="section level2" number="4.1">
+<h2><span class="header-section-number">4.1</span> Output organisation (2026-06-14 refactor — all 5 phases)</h2>
+<p>Every pipeline script reads/writes from a Phase- and step-prefixed path:</p>
+<ul>
+<li><strong>Tables</strong>: <code>Tables/Phase{2,3,4,5}/stepXX_*.{tsv,csv,fasta}</code></li>
+<li><strong>Figures</strong>: <code>figures/Phase{2,3,4,5}/stepXX_*.{pdf,png}</code> — every plot now produces <strong>both PDF and PNG</strong> (vector + raster) except inherently multi-page PDFs (Step 15 curves, Step 16 frequency, Step 19 GFS, Step 16 chisq) where the page-level PNGs are companions.</li>
+<li><strong>External reference FASTAs</strong> (Brassica, Arabidopsis SRK references for Step 22) live in <code>FASTA/</code>.</li>
+<li><code>Tables/sampling_metadata.csv</code> is the single canonical metadata file (symlink at <code>./sampling_metadata.csv</code> for legacy scripts).</li>
+</ul>
+<p><strong>Phase 4 (Step 22) update:</strong> <code>pad_representatives.py</code> now restricts LEPA representatives to ingroup-observed alleles only (49 of 55), removing outgroup contamination from the cross-Brassicaceae variability landscape analysis.</p>
+<p><strong>Phase 5 (Steps 25–28 + null-aware 14b/17b/19b/20b reruns)</strong> writes to <code>Tables/Phase5/</code> and <code>figures/Phase5/</code> with <code>step25a/25b/26/14b/17b/19b/20b/27/28_*</code> prefixes.</p>
+<p>See <code>Bioinformatics_pipeline.md</code> for the full directory tree.</p>
+</div>
+<div id="phase-1-srk-amplicon-sequence-assembly" class="section level2" number="4.2">
+<h2><span class="header-section-number">4.2</span> <a href="#phase1">Phase 1: SRK amplicon sequence assembly</a></h2>
 <ol style="list-style-type: decimal">
 <li><a href="#prepcanseq">Prepare Canonical Sequences</a> – Preparation of reference SRK sequences used for downstream assembly and validation.</li>
 <li><a href="#nanampassphas">Nanopore Amplicon Assembly and Phasing Pipeline</a> – Multi-CANU assembly of Nanopore amplicons followed by haplotype phasing to reconstruct allelic sequences.</li>
@@ -1519,19 +1532,19 @@ border-radius: 0px;
 <strong>Note:</strong> This step is optional and may be skipped if protein sequences are not required.</li>
 </ol>
 </div>
-<div id="phase-2-functional-proteins-s-alleles-and-genotyping" class="section level2" number="4.2">
-<h2><span class="header-section-number">4.2</span> <a href="#phase2">Phase 2: Functional proteins, S alleles and genotyping</a></h2>
+<div id="phase-2-functional-proteins-s-alleles-and-genotyping" class="section level2" number="4.3">
+<h2><span class="header-section-number">4.3</span> <a href="#phase2">Phase 2: Functional proteins, S alleles and genotyping</a></h2>
 <ol start="9" style="list-style-type: decimal">
 <li><a href="#SRKprotandfilter">SRK Protein Translation, Alignment, and Abundance Filtering Pipeline</a> – Translation of SRK alleles into proteins, alignment, and filtering based on abundance thresholds to retain functional candidates.</li>
 <li><a href="#SRKalleledist">Distance-Based SRK S-Allele Definition</a> – Grouping of functional proteins into allele bins using pairwise amino acid p-distance on the S-domain ectodomain, with sensitivity analysis and amino acid variation heatmaps.</li>
 <li><a href="#SRKfunctionalprotgenotype">SRK S-Allele Genotyping Pipeline</a> – Assignment of distance-defined S-allele bins to individuals, producing long-format allele tables (with allele copy counts) and count-based genotype matrices for population genetic analysis.</li>
 <li><a href="#zygosity">SRK Zygosity Analysis Pipeline for Tetraploid Species</a> – Classification of individuals as homozygous or heterozygous and estimation of population-level zygosity statistics in tetraploid species.</li>
 </ol>
-<p><strong>Step 12c — <a href="#sampleaudit">Data Quality Evaluation</a></strong> (end of Phase 2). A formal data-quality gate that asks three sequential questions before Phase 3 begins: (i) is there a library effect impacting interpretation? (<code>test_library_effect.py</code>); (ii) which samples need lab follow-up? (<code>audit_sample_exclusions.py</code> + <code>evaluate_data_quality.py</code> → <strong><code>Tables/SRK_samples_redo.csv</code></strong> with a <code>Lab_action</code> column distinguishing Re-PCR (existing DNA OK, re-amplify) from Re-DNA-extraction (DNA contaminated, re-isolate tissue)); (iii) which samples have non-functional SRK proteins and may have escaped SI? (→ <code>Tables/SRK_SI_escape_candidates.csv</code>). Visualises outcome-category proportions per BL and per focus EO so populations with elevated lab-follow-up or SI-escape rates are obvious at a glance.</p>
+<p><strong>Step 12c — <a href="#sampleaudit">Data Quality Evaluation</a></strong> (Phase 3 QC gate). A formal data-quality gate that asks three sequential questions: (i) is there a library effect impacting interpretation? (<code>test_library_effect.py</code>); (ii) which samples need lab follow-up? (<code>audit_sample_exclusions.py</code> + <code>evaluate_data_quality.py</code> → <strong><code>Tables/SRK_samples_redo.csv</code></strong> with a <code>Lab_action</code> column distinguishing Re-PCR (existing DNA OK, re-amplify) from Re-DNA-extraction (DNA contaminated, re-isolate tissue)); (iii) which samples have non-functional SRK proteins and may have escaped SI? (→ <code>Tables/SRK_SI_escape_candidates.csv</code>). Visualises outcome-category proportions per BL and per focus EO so populations with elevated lab-follow-up or SI-escape rates are obvious at a glance. <strong>Execution order (revised 2026-06-13):</strong> 12c.ii + 12c.iii run after Step 13 (BL integration) so per-BL stratification is available; 12c.i (library effect) runs after Step 19 (GFS) since it consumes <code>SRK_individual_GFS.tsv</code>.</p>
 <p><strong>⚠️ In Progress — Step 12b:</strong> <a href="#SRKclasses">SRK Class Assignment and Dominance Prediction Pipeline</a> – Phylogenetic classification of SRK proteins into Class I (dominant) or Class II (recessive) using IQ-TREE3, with per-individual dominance prediction for conservation breeding decisions. <strong>This analysis is under active development and may not function correctly on all datasets.</strong></p>
 </div>
-<div id="phase-3-data-analyses" class="section level2" number="4.3">
-<h2><span class="header-section-number">4.3</span> <a href="#phase3">Phase 3: Data Analyses</a></h2>
+<div id="phase-3-data-analyses" class="section level2" number="4.4">
+<h2><span class="header-section-number">4.4</span> <a href="#phase3">Phase 3: Data Analyses</a></h2>
 <ol start="13" style="list-style-type: decimal">
 <li><a href="#BLintegration">Element Occurrence and Bottleneck Lineage Integration</a> – Bridges the SRK individual-level dataset to the spatial framework defined in the sibling project <a href="https://github.com/svenbuerki/LEPA_EO_spatial_clustering">LEPA_EO_spatial_clustering</a>. For each post-QC individual, joins EO label, geographic group, bottleneck lineage (BL1–BL5), and drift index from <code>EO_group_BL_summary.csv</code>. Produces <code>SRK_individual_BL_assignments.tsv</code>, the join key used by all subsequent Phase 3 steps to add BL stratification (EO sorted within BL for management; BL aggregated for inferential power on small localities).
 13b. <a href="#samplingmap">Sampling Overview Map</a> – Single-panel geographic map plotting every catalogued population against its parent BL. Filled triangles = sampled by the SRK pipeline; filled circles = not yet sampled. Recommended first visual in any presentation or report.</li>
@@ -1545,8 +1558,8 @@ border-radius: 0px;
 <li><a href="#reproeffort">Reproductive Effort Support per Element Occurrence</a> – Horizontal proportional bar chart showing the fraction of individuals at each GFS tier per EO, quantifying the proportion of the population capable of contributing allelic diversity to compatible crosses.</li>
 </ol>
 </div>
-<div id="phase-4-testing-s-allele-hypotheses" class="section level2" number="4.4">
-<h2><span class="header-section-number">4.4</span> <a href="#phase4">Phase 4: Testing S-allele Hypotheses</a></h2>
+<div id="phase-4-testing-s-allele-hypotheses" class="section level2" number="4.5">
+<h2><span class="header-section-number">4.5</span> <a href="#phase4">Phase 4: Testing S-allele Hypotheses</a></h2>
 <ol start="22" style="list-style-type: decimal">
 <li><a href="#alleleclusters">Hypervariable-Position Allele Hypothesis Testing and Crossing Design</a> – Cross-Brassicaceae sliding-window Shannon-entropy scan identifies 66 canonical HV columns (anchored structurally by 11 of the 12 mappable Ma 2016 SCR9-contact residues; cross-genus permutation overlap with Brassica + Arabidopsis is no longer significant in the current post-QC dataset — interpreted as drift-eroded standing variation, see Step 22d); UPGMA auto-threshold clustering detects the Class I / Class II phylogenetic split (Class II = single allele, Allele_055); generates a sequence-based cross design for AAAA × AAAA pairs with four categories (Incompatible, Synonymy_test, Compatible_within, Compatible_cross). Optional diagnostics 22c (Synonymy group collapse test) and 22d (per-BL entropy decomposition) test alternative mechanisms underlying LEPA’s low entropy. <strong>Step 22e</strong> (<a href="#crossplan">Hypothesis-Testing Cross Plan</a>) translates the sequence-based categories into a phased experimental protocol with explicit AAAA / AAAB / AABB genotype constraints (H0 SI validation, H1a within-Class baseline, H1b between-Class baseline, H2 synonymy bin boundaries, H3 hidden bins via heterozygous donors + paired controls).</li>
 <li><a href="#crossresults">Cross Result Analysis</a> – Statistical comparison of seed yield across Incompatible / Synonymy_test / Compatible_within / Compatible_cross cross categories to test whether HV-based allele bin boundaries predict functional recognition specificity.</li>
@@ -6455,10 +6468,10 @@ cat(&quot;SRK_zygosity_distribution.pdf\n&quot;)</code></pre>
 </div>
 </div>
 <div id="sampleaudit" class="section level2" number="6.6">
-<h2><span class="header-section-number">6.6</span> Step 12c — Data Quality Evaluation (end of Phase 2)</h2>
+<h2><span class="header-section-number">6.6</span> Step 12c — Data Quality Evaluation (Phase 3 QC gate)</h2>
 <div id="overview-13" class="section level3" number="6.6.1">
 <h3><span class="header-section-number">6.6.1</span> Overview</h3>
-<p>A formal data-quality gate at the end of Phase 2 that runs after Step 12 (zygosity) completes and before Step 13 (BL integration) begins. It asks <strong>three sequential questions</strong> and produces deliverables for both the bioinformatics record and the wet-lab team.</p>
+<p>A formal data-quality gate that runs as part of Phase 3 — specifically after Step 13 (BL integration) for the audit + categorisation sub-scripts (12c.ii, 12c.iii) and after Step 19 (GFS) for the library-effect tests (12c.i). It asks <strong>three sequential questions</strong> and produces deliverables for both the bioinformatics record and the wet-lab team.</p>
 <ol style="list-style-type: decimal">
 <li><strong>Q1 — Is there a library effect impacting data interpretation?</strong> (<code>test_library_effect.py</code>)</li>
 <li><strong>Q2 — Which samples failed sequencing/assembly and need to be re-sequenced?</strong> (<code>audit_sample_exclusions.py</code> + <code>evaluate_data_quality.py</code> → <code>SRK_resequencing_priorities.csv</code>)</li>
