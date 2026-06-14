@@ -20,14 +20,16 @@ import re
 # When both files exist for the same library, the _Nfilt version is used
 # and the legacy file is shadowed (skipped).
 patterns = ("*_exons_backfilled.fasta", "*_exons_backfilled_Nfilt.fasta")
-raw_fasta = "SRK_proteins_raw.fasta"
-aligned_fasta = "SRK_proteins_aligned.fasta"
-final_fasta = "SRK_functional_proteins.fasta"
-repr_aligned_fasta = "SRK_functional_proteins_aligned.fasta"
-key_file = "SRK_functional_protein_key.tsv"
-report_file = "SRK_individual_status_report.tsv"
-sc_file = "SRK_self_compatible_candidates.txt"
-too_many_file = "SRK_too_many_alleles.txt"
+raw_fasta = "Tables/Phase2/step9_proteins_raw.fasta"
+aligned_fasta = "Tables/Phase2/step9_proteins_aligned.fasta"
+final_fasta = "Tables/Phase2/step9_functional_proteins.fasta"
+repr_aligned_fasta = "Tables/Phase2/step9_functional_proteins_aligned.fasta"
+key_file = "Tables/Phase2/step9_functional_protein_key.tsv"
+report_file = "Tables/Phase2/step9_individual_status_report.tsv"
+sc_file = "Tables/Phase2/step9_self_compatible_candidates.txt"
+too_many_file = "Tables/Phase2/step9_too_many_alleles.txt"
+
+os.makedirs("Tables/Phase2", exist_ok=True)
 
 OUTPUT_FILES = [raw_fasta, aligned_fasta, final_fasta, repr_aligned_fasta,
                 key_file, report_file, sc_file, too_many_file]

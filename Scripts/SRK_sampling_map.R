@@ -47,14 +47,14 @@ source("srk_bl_constants.R")  # BL_COLORS, BL_ORDER
 # -----------------------------------------------------------------------------
 # 1. Load canonical sources
 # -----------------------------------------------------------------------------
-geno <- read.csv("Tables/SRK_individual_allele_genotypes.tsv", sep = "\t",
+geno <- read.csv("Tables/Phase2/step11_individual_allele_genotypes.tsv", sep = "\t",
                  fileEncoding = "UTF-8-BOM", check.names = FALSE,
                  stringsAsFactors = FALSE)
 successful <- geno[[names(geno)[1]]]
 n_total <- length(successful)
 cat(sprintf("[geno]  %d successful samples in allele matrix\n", n_total))
 
-bla <- read.csv("SRK_individual_BL_assignments.tsv", sep = "\t",
+bla <- read.csv("Tables/Phase3/step13_individual_BL_assignments.tsv", sep = "\t",
                 fileEncoding = "UTF-8-BOM", stringsAsFactors = FALSE)
 bla <- bla[bla$Individual %in% successful, ]
 df_in  <- bla[bla$BL_status %in% c("Assigned", "Inferred"), ]
@@ -352,13 +352,13 @@ p <- ggplot() +
 # 9. Save (regular + presentation variant)
 # -----------------------------------------------------------------------------
 if (!dir.exists("figures")) dir.create("figures", recursive = TRUE)
-cairo_pdf("SRK_sampling_map.pdf", width = 13, height = 10); print(p); dev.off()
-png("figures/SRK_sampling_map.png", width = 13, height = 10,
+cairo_pdf("figures/Phase3/step13b_sampling_map.pdf", width = 13, height = 10); print(p); dev.off()
+png("figures/Phase3/step13b_sampling_map.png", width = 13, height = 10,
     units = "in", res = 300, type = "cairo"); print(p); dev.off()
 
 p_pres <- p + labs(title = NULL, subtitle = NULL, caption = NULL)
-cairo_pdf("SRK_sampling_map_presentation.pdf", width = 13, height = 9); print(p_pres); dev.off()
-png("figures/SRK_sampling_map_presentation.png", width = 13, height = 9,
+cairo_pdf("figures/Phase3/step13b_sampling_map_presentation.pdf", width = 13, height = 9); print(p_pres); dev.off()
+png("figures/Phase3/step13b_sampling_map_presentation.png", width = 13, height = 9,
     units = "in", res = 300, type = "cairo"); print(p_pres); dev.off()
 
 cat("\nDone.\n")
