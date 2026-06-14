@@ -32,20 +32,20 @@ from collections import defaultdict, OrderedDict, Counter
 # User settings
 # ─────────────────────────────────────────────────────────────────────────────
 
-PROTEIN_KEY_FILE  = "SRK_functional_protein_key.tsv"
-ALLELE_TSV_FILE   = "SRK_protein_allele_assignments.tsv"
+PROTEIN_KEY_FILE  = "Tables/Phase2/step9_functional_protein_key.tsv"
+ALLELE_TSV_FILE   = "Tables/Phase2/step10a_protein_allele_assignments.tsv"
 
 # Optional metadata file with an 'Ingroup' column (1 = ingroup, 0 = outgroup).
 # Set to None to skip metadata filtering entirely.
-METADATA_FILE     = "sampling_metadata.csv"
+METADATA_FILE     = "Tables/sampling_metadata.csv"
 
 # If True (and METADATA_FILE is set), restrict genotyping to ingroup samples
 # (Ingroup == 1). Set to False to include all Library* individuals regardless
 # of ingroup status.
 INGROUP_ONLY      = True
 
-LONG_OUT  = "SRK_individual_allele_table.tsv"
-WIDE_OUT  = "SRK_individual_allele_genotypes.tsv"
+LONG_OUT  = "Tables/Phase2/step11_individual_allele_table.tsv"
+WIDE_OUT  = "Tables/Phase2/step11_individual_allele_genotypes.tsv"
 
 # Only process individuals whose parsed ID starts with this prefix.
 # Reference sequences (e.g. SRK_BEA_*) are excluded.

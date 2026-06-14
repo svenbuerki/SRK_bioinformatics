@@ -60,6 +60,21 @@ Key innovations include multi-replicate assembly strategies for maximizing allel
 
 The pipeline consists of **23 main steps organized into four phases**, progressing from within-library sequence assembly to cross-library integration, population genetic analyses, and experimental validation of S-allele hypotheses through controlled crosses.
 
+## Output organisation (2026-06-14 refactor — all 5 phases)
+
+Every pipeline script reads/writes from a Phase- and step-prefixed path:
+
+- **Tables**: `Tables/Phase{2,3,4,5}/stepXX_*.{tsv,csv,fasta}`
+- **Figures**: `figures/Phase{2,3,4,5}/stepXX_*.{pdf,png}` — every plot now produces **both PDF and PNG** (vector + raster) except inherently multi-page PDFs (Step 15 curves, Step 16 frequency, Step 19 GFS, Step 16 chisq) where the page-level PNGs are companions.
+- **External reference FASTAs** (Brassica, Arabidopsis SRK references for Step 22) live in `FASTA/`.
+- `Tables/sampling_metadata.csv` is the single canonical metadata file (symlink at `./sampling_metadata.csv` for legacy scripts).
+
+**Phase 4 (Step 22) update:** `pad_representatives.py` now restricts LEPA representatives to ingroup-observed alleles only (49 of 55), removing outgroup contamination from the cross-Brassicaceae variability landscape analysis.
+
+**Phase 5 (Steps 25–28 + null-aware 14b/17b/19b/20b reruns)** writes to `Tables/Phase5/` and `figures/Phase5/` with `step25a/25b/26/14b/17b/19b/20b/27/28_*` prefixes.
+
+See `Bioinformatics_pipeline.md` for the full directory tree.
+
 ## [Phase 1: SRK amplicon sequence assembly](#phase1)
 
 1. [Prepare Canonical Sequences](#prepcanseq) – Preparation of reference SRK sequences used for downstream assembly and validation.
@@ -81,7 +96,7 @@ The pipeline consists of **23 main steps organized into four phases**, progressi
 11. [SRK S-Allele Genotyping Pipeline](#SRKfunctionalprotgenotype) – Assignment of distance-defined S-allele bins to individuals, producing long-format allele tables (with allele copy counts) and count-based genotype matrices for population genetic analysis.
 12. [SRK Zygosity Analysis Pipeline for Tetraploid Species](#zygosity) – Classification of individuals as homozygous or heterozygous and estimation of population-level zygosity statistics in tetraploid species.
 
-**Step 12c — [Data Quality Evaluation](#sampleaudit)** (end of Phase 2). A formal data-quality gate that asks three sequential questions before Phase 3 begins: (i) is there a library effect impacting interpretation? (`test_library_effect.py`); (ii) which samples need lab follow-up? (`audit_sample_exclusions.py` + `evaluate_data_quality.py` → **`Tables/SRK_samples_redo.csv`** with a `Lab_action` column distinguishing Re-PCR (existing DNA OK, re-amplify) from Re-DNA-extraction (DNA contaminated, re-isolate tissue)); (iii) which samples have non-functional SRK proteins and may have escaped SI? (→ `Tables/SRK_SI_escape_candidates.csv`). Visualises outcome-category proportions per BL and per focus EO so populations with elevated lab-follow-up or SI-escape rates are obvious at a glance.
+**Step 12c — [Data Quality Evaluation](#sampleaudit)** (Phase 3 QC gate). A formal data-quality gate that asks three sequential questions: (i) is there a library effect impacting interpretation? (`test_library_effect.py`); (ii) which samples need lab follow-up? (`audit_sample_exclusions.py` + `evaluate_data_quality.py` → **`Tables/SRK_samples_redo.csv`** with a `Lab_action` column distinguishing Re-PCR (existing DNA OK, re-amplify) from Re-DNA-extraction (DNA contaminated, re-isolate tissue)); (iii) which samples have non-functional SRK proteins and may have escaped SI? (→ `Tables/SRK_SI_escape_candidates.csv`). Visualises outcome-category proportions per BL and per focus EO so populations with elevated lab-follow-up or SI-escape rates are obvious at a glance. **Execution order (revised 2026-06-13):** 12c.ii + 12c.iii run after Step 13 (BL integration) so per-BL stratification is available; 12c.i (library effect) runs after Step 19 (GFS) since it consumes `SRK_individual_GFS.tsv`.
 
 **⚠️ In Progress — Step 12b:** [SRK Class Assignment and Dominance Prediction Pipeline](#SRKclasses) – Phylogenetic classification of SRK proteins into Class I (dominant) or Class II (recessive) using IQ-TREE3, with per-individual dominance prediction for conservation breeding decisions. **This analysis is under active development and may not function correctly on all datasets.**
 
@@ -4659,11 +4674,11 @@ cat("SRK_zygosity_distribution.pdf\n")
 
 ---
 
-## Step 12c — Data Quality Evaluation (end of Phase 2) {#sampleaudit}
+## Step 12c — Data Quality Evaluation (Phase 3 QC gate) {#sampleaudit}
 
 ### Overview
 
-A formal data-quality gate at the end of Phase 2 that runs after Step 12 (zygosity) completes and before Step 13 (BL integration) begins. It asks **three sequential questions** and produces deliverables for both the bioinformatics record and the wet-lab team.
+A formal data-quality gate that runs as part of Phase 3 — specifically after Step 13 (BL integration) for the audit + categorisation sub-scripts (12c.ii, 12c.iii) and after Step 19 (GFS) for the library-effect tests (12c.i). It asks **three sequential questions** and produces deliverables for both the bioinformatics record and the wet-lab team.
 
 1. **Q1 — Is there a library effect impacting data interpretation?** (`test_library_effect.py`)
 2. **Q2 — Which samples failed sequencing/assembly and need to be re-sequenced?** (`audit_sample_exclusions.py` + `evaluate_data_quality.py` → `SRK_resequencing_priorities.csv`)

@@ -34,19 +34,19 @@ BL_UNASSIGNED_COLOR <- "#999999"
 ############################
 
 geno <- read.table(
-  "SRK_individual_allele_genotypes.tsv",
+  "Tables/Phase2/step11_individual_allele_genotypes.tsv",
   header = TRUE, sep = "\t",
   check.names = FALSE, stringsAsFactors = FALSE
 )
 
 zyg <- read.table(
-  "SRK_individual_zygosity.tsv",
+  "Tables/Phase2/step12_individual_zygosity.tsv",
   header = TRUE, sep = "\t",
   stringsAsFactors = FALSE
 )
 
 bl_assign <- read.table(
-  "SRK_individual_BL_assignments.tsv",
+  "Tables/Phase3/step13_individual_BL_assignments.tsv",
   header = TRUE, sep = "\t",
   stringsAsFactors = FALSE
 )
@@ -222,7 +222,7 @@ eo_results$Population <- eo_results$EO
 
 write.table(
   eo_results,
-  "SRK_population_genetic_summary.tsv",
+  "Tables/Phase3/step14_population_genetic_summary.tsv",
   sep = "\t", quote = FALSE, row.names = FALSE
 )
 cat("\nWritten EO summary -> SRK_population_genetic_summary.tsv (",
@@ -257,7 +257,7 @@ bl_results <- bl_results[, c(
 
 write.table(
   bl_results,
-  "SRK_population_genetic_summary_BL.tsv",
+  "Tables/Phase3/step14_population_genetic_summary_BL.tsv",
   sep = "\t", quote = FALSE, row.names = FALSE
 )
 cat("Written BL summary -> SRK_population_genetic_summary_BL.tsv (",
@@ -297,39 +297,41 @@ bar_panel <- function(values, labels, fill, ylab, main) {
   invisible(bp)
 }
 
-pdf("SRK_population_genetic_summary.pdf", width = 14, height = 9)
+dir.create("figures/Phase3", recursive = TRUE, showWarnings = FALSE)
 
-# ---- Page 1: EO bars sorted by BL, colored by BL ----
-par(mfrow = c(2, 2), mar = c(6, 4, 3, 1), oma = c(0, 0, 3, 0))
-bar_panel(eo_results$Effective_alleles_Ne, eo_results$EO, eo_colors,
-          "Effective number of alleles (Ne)", "Effective Allele Diversity")
-# Numerical legend order (BL1..BL5) — easier to read than the connectivity
-# axis order used for the bars themselves.
-legend("topleft", legend = BL_ORDER_NUMERIC,
-       fill   = unname(BL_PALETTE[BL_ORDER_NUMERIC]),
-       bty = "n", cex = 0.85, ncol = 1, title = "BL", title.font = 2)
-bar_panel(eo_results$Prop_heterozygous,    eo_results$EO, eo_colors,
-          "Proportion heterozygous",         "Heterozygosity")
-bar_panel(eo_results$N_alleles,            eo_results$EO, eo_colors,
-          "Number of alleles",               "Allele Richness")
-bar_panel(eo_results$N_individuals,        eo_results$EO, eo_colors,
-          "Number of individuals",           "Sample Sizes")
-mtext("EO-level statistics  bars sorted by BL, colored by parent BL",
-      side = 3, outer = TRUE, line = 0.8, cex = 1.05, font = 2)
+draw_plot <- function() {
+  # Page 1: EO bars sorted by BL, colored by BL
+  par(mfrow = c(2, 2), mar = c(6, 4, 3, 1), oma = c(0, 0, 3, 0))
+  bar_panel(eo_results$Effective_alleles_Ne, eo_results$EO, eo_colors,
+            "Effective number of alleles (Ne)", "Effective Allele Diversity")
+  legend("topleft", legend = BL_ORDER_NUMERIC,
+         fill   = unname(BL_PALETTE[BL_ORDER_NUMERIC]),
+         bty = "n", cex = 0.85, ncol = 1, title = "BL", title.font = 2)
+  bar_panel(eo_results$Prop_heterozygous,    eo_results$EO, eo_colors,
+            "Proportion heterozygous",         "Heterozygosity")
+  bar_panel(eo_results$N_alleles,            eo_results$EO, eo_colors,
+            "Number of alleles",               "Allele Richness")
+  bar_panel(eo_results$N_individuals,        eo_results$EO, eo_colors,
+            "Number of individuals",           "Sample Sizes")
+  mtext("EO-level statistics  bars sorted by BL, colored by parent BL",
+        side = 3, outer = TRUE, line = 0.8, cex = 1.05, font = 2)
 
-# ---- Page 2: BL aggregate bars ----
-par(mfrow = c(2, 2), mar = c(5, 4, 3, 1), oma = c(0, 0, 3, 0))
-bar_panel(bl_results$Effective_alleles_Ne, bl_results$BL, bl_colors,
-          "Effective number of alleles (Ne)", "Effective Allele Diversity")
-bar_panel(bl_results$Prop_heterozygous,    bl_results$BL, bl_colors,
-          "Proportion heterozygous",         "Heterozygosity")
-bar_panel(bl_results$N_alleles,            bl_results$BL, bl_colors,
-          "Number of alleles",               "Allele Richness")
-bar_panel(bl_results$N_individuals,        bl_results$BL, bl_colors,
-          "Number of individuals",           "Sample Sizes")
-mtext("BL-level aggregates  five independent bottleneck lineages",
-      side = 3, outer = TRUE, line = 0.8, cex = 1.05, font = 2)
+  # Page 2: BL aggregate bars
+  par(mfrow = c(2, 2), mar = c(5, 4, 3, 1), oma = c(0, 0, 3, 0))
+  bar_panel(bl_results$Effective_alleles_Ne, bl_results$BL, bl_colors,
+            "Effective number of alleles (Ne)", "Effective Allele Diversity")
+  bar_panel(bl_results$Prop_heterozygous,    bl_results$BL, bl_colors,
+            "Proportion heterozygous",         "Heterozygosity")
+  bar_panel(bl_results$N_alleles,            bl_results$BL, bl_colors,
+            "Number of alleles",               "Allele Richness")
+  bar_panel(bl_results$N_individuals,        bl_results$BL, bl_colors,
+            "Number of individuals",           "Sample Sizes")
+  mtext("BL-level aggregates  five independent bottleneck lineages",
+        side = 3, outer = TRUE, line = 0.8, cex = 1.05, font = 2)
+}
 
-dev.off()
-cat("\nPlots saved -> SRK_population_genetic_summary.pdf\n")
+pdf("figures/Phase3/step14_population_genetic_summary.pdf", width = 14, height = 9); draw_plot(); dev.off()
+# PNG: only render page 1 (EO bars) — Page 2 BL bars get their own panel below.
+png("figures/Phase3/step14_population_genetic_summary.png", width = 2800, height = 1800, res = 200); draw_plot(); dev.off()
+cat("\nPlots saved -> figures/SRK_population_genetic_summary.{pdf,png}\n")
 cat("\nStep 14 complete.\n")

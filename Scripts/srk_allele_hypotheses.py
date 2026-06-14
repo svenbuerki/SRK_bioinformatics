@@ -59,9 +59,9 @@ from Bio import SeqIO
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Input files
-REPS_FASTA   = "SRK_protein_allele_representatives.fasta"
-ZYGO_TSV     = "SRK_individual_zygosity.tsv"
-ALLELE_TABLE = "SRK_individual_allele_table.tsv"
+REPS_FASTA   = "Tables/Phase2/step10a_protein_allele_representatives.fasta"
+ZYGO_TSV     = "Tables/Phase2/step12_individual_zygosity.tsv"
+ALLELE_TABLE = "Tables/Phase2/step11_individual_allele_table.tsv"
 CROSS_TSV    = None   # set to cross results TSV to activate Part 4
 
 # Brassica HV-region annotation (Ma et al. 2016, Cell Research; PDB 5GYY).
@@ -70,7 +70,7 @@ CROSS_TSV    = None   # set to cross results TSV to activate Part 4
 # minimum-spanning band per Brassica HV region. Generate the TSV with
 # `python3 srk_brassica_hv_mapping.py` after a one-time mafft --add of
 # brassica_rapa_SRK9.fasta to the LEPA representative alignment.
-BRASSICA_HV_TSV = "SRK_brassica_hv_mapping.tsv"
+BRASSICA_HV_TSV = "Tables/Phase4/step22a_brassica_hv_mapping.tsv"
 
 # Canonical LEPA HV columns produced by srk_variability_landscape.py
 # (Shannon-entropy based, validated by cross-Brassicaceae comparison).
@@ -78,7 +78,7 @@ BRASSICA_HV_TSV = "SRK_brassica_hv_mapping.tsv"
 # Part 1 — Parts 2-5 (HV-distance matrix, UPGMA classes, cross design,
 # synonymy network) then operate on the same HV columns that were
 # statistically validated against Brassica and Arabidopsis.
-LEPA_HV_POSITIONS_FILE = "SRK_LEPA_HV_positions.tsv"
+LEPA_HV_POSITIONS_FILE = "Tables/Phase4/step22a_LEPA_HV_positions.tsv"
 
 # S-domain region (1-based, inclusive) — must match Step 10
 DOMAIN_REGION = (31, 430)
@@ -108,15 +108,15 @@ CAT_COMPATIBLE_WITHIN = "Compatible_within"   # same class, substantial HV diffe
 CAT_COMPATIBLE_CROSS  = "Compatible_cross"    # different class — guaranteed positive control
 
 # Output files
-OUT_VARIABILITY  = "SRK_variability_landscape.pdf"
-OUT_HV_DISTS     = "SRK_HV_allele_distances.tsv"
-OUT_FUNC_GROUPS  = "SRK_functional_allele_groups.tsv"
-OUT_SYNONYMY     = "SRK_synonymy_candidates.tsv"
-OUT_CROSS_DESIGN = "SRK_AAAA_cross_design_HV.tsv"
-OUT_CLUSTER_FIG  = "SRK_HV_cluster_figure.pdf"
-OUT_RESULTS_FIG  = "SRK_cross_result_analysis_HV.pdf"
+OUT_VARIABILITY  = "figures/Phase4/step22a_variability_landscape.pdf"
+OUT_HV_DISTS     = "Tables/Phase4/step22b_HV_allele_distances.tsv"
+OUT_FUNC_GROUPS  = "Tables/Phase4/step22b_functional_allele_groups.tsv"
+OUT_SYNONYMY     = "Tables/Phase4/step22b_synonymy_candidates.tsv"
+OUT_CROSS_DESIGN = "Tables/Phase4/step22b_AAAA_cross_design_HV.tsv"
+OUT_CLUSTER_FIG  = "figures/Phase4/step22b_HV_cluster_figure.pdf"
+OUT_RESULTS_FIG  = "figures/Phase4/step23_cross_result_analysis_HV.pdf"
 
-os.makedirs("figures", exist_ok=True)
+os.makedirs("figures/Phase4", exist_ok=True); os.makedirs("Tables/Phase4", exist_ok=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PART 1 — Variability landscape and HV position identification
@@ -315,7 +315,7 @@ if not skip_variability_figure:
     ax.set_xlim(positions[0], positions[-1])
     plt.tight_layout()
     plt.savefig(OUT_VARIABILITY, format="pdf", dpi=150, bbox_inches="tight")
-    plt.savefig(os.path.join("figures", OUT_VARIABILITY.replace(".pdf", ".png")),
+    plt.savefig(OUT_VARIABILITY.replace(".pdf", ".png"),
                 format="png", dpi=200, bbox_inches="tight")
     plt.close()
     print(f"Saved {OUT_VARIABILITY}")
@@ -434,7 +434,7 @@ leaf_order_names = [allele_names[i] for i in leaf_order_idx]
 # PART 2b — Allele similarity heatmap
 # ─────────────────────────────────────────────────────────────────────────────
 
-OUT_HEATMAP = "SRK_allele_similarity_heatmap.pdf"
+OUT_HEATMAP = "figures/Phase4/step22b_allele_similarity_heatmap.pdf"
 print(f"\nWriting allele similarity heatmap to {OUT_HEATMAP} ...")
 
 # Reorder distance matrix by UPGMA leaf order
@@ -540,7 +540,7 @@ ax_hm.set_title(
     fontsize=10, pad=8)
 
 plt.savefig(OUT_HEATMAP, format="pdf", dpi=150, bbox_inches="tight")
-plt.savefig(os.path.join("figures", OUT_HEATMAP.replace(".pdf", ".png")),
+plt.savefig(OUT_HEATMAP.replace(".pdf", ".png"),
             format="png", dpi=200, bbox_inches="tight")
 plt.close()
 print(f"Saved {OUT_HEATMAP}")
@@ -728,7 +728,7 @@ print(f"  Total                                              : {len(df_cross):5d
 # PART 3b — Cross design summary figure
 # ─────────────────────────────────────────────────────────────────────────────
 
-OUT_SUMMARY_FIG = "SRK_cross_design_summary.pdf"
+OUT_SUMMARY_FIG = "figures/Phase4/step22b_cross_design_summary.pdf"
 print(f"\nWriting cross design summary figure to {OUT_SUMMARY_FIG} ...")
 
 from matplotlib.patches import FancyBboxPatch
@@ -930,7 +930,7 @@ fig.suptitle("SRK allele hypothesis testing — cross design framework",
 
 plt.tight_layout()
 plt.savefig(OUT_SUMMARY_FIG, format="pdf", dpi=150, bbox_inches="tight")
-plt.savefig(os.path.join("figures", OUT_SUMMARY_FIG.replace(".pdf", ".png")),
+plt.savefig(OUT_SUMMARY_FIG.replace(".pdf", ".png"),
             format="png", dpi=200, bbox_inches="tight")
 plt.close()
 print(f"Saved {OUT_SUMMARY_FIG}")
@@ -955,9 +955,9 @@ except ImportError:
     print("  Install with: pip install networkx")
     _HAS_NX = False
 
-OUT_NET_GROUPS        = "SRK_synonymy_network_groups.pdf"
-OUT_NET_TESTS        = "SRK_synonymy_network_tests.pdf"
-OUT_SYN_GROUPS   = "SRK_synonymy_groups.csv"
+OUT_NET_GROUPS        = "figures/Phase4/step22b_synonymy_network_groups.pdf"
+OUT_NET_TESTS        = "figures/Phase4/step22b_synonymy_network_tests.pdf"
+OUT_SYN_GROUPS   = "Tables/Phase4/step22b_synonymy_groups.csv"
 
 if _HAS_NX:
     print(f"\nBuilding synonymy network ...")
@@ -1174,7 +1174,7 @@ if _HAS_NX:
 
     plt.tight_layout()
     plt.savefig(OUT_NET_GROUPS, format="pdf", dpi=150, bbox_inches="tight")
-    plt.savefig(os.path.join("figures", OUT_NET_GROUPS.replace(".pdf", ".png")),
+    plt.savefig(OUT_NET_GROUPS.replace(".pdf", ".png"),
                 format="png", dpi=200, bbox_inches="tight")
     plt.close()
     print(f"Saved {OUT_NET_GROUPS}")
@@ -1292,7 +1292,7 @@ if _HAS_NX:
 
     plt.tight_layout()
     plt.savefig(OUT_NET_TESTS, format="pdf", dpi=150, bbox_inches="tight")
-    plt.savefig(os.path.join("figures", OUT_NET_TESTS.replace(".pdf", ".png")),
+    plt.savefig(OUT_NET_TESTS.replace(".pdf", ".png"),
                 format="png", dpi=200, bbox_inches="tight")
     plt.close()
     print(f"Saved {OUT_NET_TESTS}")
@@ -1403,7 +1403,7 @@ ax_bar.set_xlim(0, max(counts_ordered) * 1.15 if counts_ordered else 5)
 
 plt.tight_layout()
 plt.savefig(OUT_CLUSTER_FIG, format="pdf", dpi=150, bbox_inches="tight")
-plt.savefig(os.path.join("figures", OUT_CLUSTER_FIG.replace(".pdf", ".png")),
+plt.savefig(OUT_CLUSTER_FIG.replace(".pdf", ".png"),
             format="png", dpi=200, bbox_inches="tight")
 plt.close()
 print(f"Saved {OUT_CLUSTER_FIG}")

@@ -76,13 +76,13 @@ def parse_allele_composition(comp_str: str) -> list[tuple[str, int]]:
 # =============================================================================
 # Settings
 # =============================================================================
-CROSS_DESIGN_TSV  = "SRK_AAAA_cross_design_HV.tsv"
-SYN_GROUPS_CSV    = "SRK_synonymy_groups.csv"
-HV_DIST_TSV       = "SRK_HV_allele_distances.tsv"
-FUNC_GROUPS_TSV   = "SRK_functional_allele_groups.tsv"
-BL_TSV            = "SRK_individual_BL_assignments.tsv"
-ZYGO_TSV          = "SRK_individual_zygosity.tsv"
-ALLELE_TSV        = "SRK_individual_allele_table.tsv"
+CROSS_DESIGN_TSV  = "Tables/Phase4/step22b_AAAA_cross_design_HV.tsv"
+SYN_GROUPS_CSV    = "Tables/Phase4/step22b_synonymy_groups.csv"
+HV_DIST_TSV       = "Tables/Phase4/step22b_HV_allele_distances.tsv"
+FUNC_GROUPS_TSV   = "Tables/Phase4/step22b_functional_allele_groups.tsv"
+BL_TSV            = "Tables/Phase3/step13_individual_BL_assignments.tsv"
+ZYGO_TSV          = "Tables/Phase2/step12_individual_zygosity.tsv"
+ALLELE_TSV        = "Tables/Phase2/step11_individual_allele_table.tsv"
 
 WITHIN_CLASS_THRESHOLD = 0.04   # must match Step 22b
 
@@ -112,15 +112,15 @@ from srk_bl_constants import BL_ORDER, BL_ORDER_NUMERIC, BL_COLORS
 BL_PALETTE = BL_COLORS
 
 OUT_TSVS = {
-    "H0":  "SRK_cross_plan_H0_SI_validation.tsv",
-    "H1a": "SRK_cross_plan_H1a_within_class_baseline.tsv",
-    "H1b": "SRK_cross_plan_H1b_between_class_baseline.tsv",
-    "H2":  "SRK_cross_plan_H2_synonymy_tests.tsv",
-    "H3":  "SRK_cross_plan_H3_hidden_bin_tests.tsv",
+    "H0":  "Tables/Phase4/step22e_cross_plan_H0_SI_validation.tsv",
+    "H1a": "Tables/Phase4/step22e_cross_plan_H1a_within_class_baseline.tsv",
+    "H1b": "Tables/Phase4/step22e_cross_plan_H1b_between_class_baseline.tsv",
+    "H2":  "Tables/Phase4/step22e_cross_plan_H2_synonymy_tests.tsv",
+    "H3":  "Tables/Phase4/step22e_cross_plan_H3_hidden_bin_tests.tsv",
 }
-OUT_SUMMARY_TSV = "SRK_cross_plan_summary.tsv"
-OUT_FIG_PDF     = "SRK_cross_plan_summary.pdf"
-OUT_FIG_PNG     = os.path.join("figures", "SRK_cross_plan_summary.png")
+OUT_SUMMARY_TSV = "Tables/Phase4/step22e_cross_plan_summary.tsv"
+OUT_FIG_PDF     = "figures/Phase4/step22e_cross_plan_summary.pdf"
+OUT_FIG_PNG     = "figures/Phase4/step22e_cross_plan_summary.png"
 
 CROSS_PLAN_COLS = [
     "Hypothesis", "Cross_id", "Priority",
@@ -133,7 +133,7 @@ CROSS_PLAN_COLS = [
     "Paired_control", "Notes",
 ]
 
-os.makedirs("figures", exist_ok=True)
+os.makedirs("figures/Phase4", exist_ok=True); os.makedirs("Tables/Phase4", exist_ok=True)
 
 # =============================================================================
 # 1. Load inputs and build per-individual lookups

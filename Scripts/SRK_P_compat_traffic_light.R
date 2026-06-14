@@ -46,7 +46,7 @@ LIGHT_COLS <- c(
 # 1. LOAD
 # =============================================================================
 cat("Loading SRK_EO_allele_richness.tsv ...\n")
-dat <- read_tsv("Tables/SRK_EO_allele_richness.tsv", show_col_types = FALSE) %>%
+dat <- read_tsv("Tables/Phase3/step17_EO_allele_richness.tsv", show_col_types = FALSE) %>%
   filter(level == "EO") %>%
   mutate(
     P_compat = P_compat_L0,
@@ -129,15 +129,15 @@ p_base <- ggplot(dat, aes(x = P_compat, y = label_y, fill = light)) +
     axis.text.y        = element_text(face = "bold", size = 12)
   )
 
-# Full plot = base + bars + error bars + numeric labels
+# Full plot = base + bars + error bars + numeric labels (with N)
 p_full <- p_base +
   geom_col(width = 0.65, colour = "grey15", linewidth = 0.4) +
   geom_errorbarh(aes(xmin = P_lo, xmax = P_hi),
                  height = 0.25, colour = "grey20", linewidth = 0.6) +
   geom_text(aes(x = P_hi,
-                label = sprintf("%.2f  [%.2f, %.2f]",
-                                P_compat, P_lo, P_hi)),
-            hjust = -0.05, fontface = "bold", size = 3.8)
+                label = sprintf("%.2f  [%.2f, %.2f]  n=%d",
+                                P_compat, P_lo, P_hi, N)),
+            hjust = -0.05, fontface = "bold", size = 3.6)
 
 # Blank plot for presentations — zones + threshold lines + EO labels + BL
 # strip, but no data drawn. The legend is forced via a fully transparent
@@ -149,18 +149,18 @@ p_blank <- p_base +
 # =============================================================================
 # 3. SAVE
 # =============================================================================
-dir.create("figures", showWarnings = FALSE)
+dir.create("figures/Phase3", recursive = TRUE, showWarnings = FALSE)
 
 # Full figure
-ggsave("figures/SRK_P_compat_traffic_light_EO.png", plot = p_full,
+ggsave("figures/Phase3/step17_P_compat_traffic_light_EO.png", plot = p_full,
        width = 10, height = 5.5, dpi = 200)
-ggsave("figures/SRK_P_compat_traffic_light_EO.pdf", plot = p_full,
+ggsave("figures/Phase3/step17_P_compat_traffic_light_EO.pdf", plot = p_full,
        width = 10, height = 5.5)
 
 # Blank figure (zones + threshold lines + EO labels + BL strip; no data)
-ggsave("figures/SRK_P_compat_traffic_light_EO_blank.png", plot = p_blank,
+ggsave("figures/Phase3/step17_P_compat_traffic_light_EO_blank.png", plot = p_blank,
        width = 10, height = 5.5, dpi = 200)
-ggsave("figures/SRK_P_compat_traffic_light_EO_blank.pdf", plot = p_blank,
+ggsave("figures/Phase3/step17_P_compat_traffic_light_EO_blank.pdf", plot = p_blank,
        width = 10, height = 5.5)
 
 cat("\nWritten:\n")

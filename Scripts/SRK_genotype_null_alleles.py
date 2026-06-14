@@ -55,12 +55,12 @@ import pandas as pd
 
 HERE       = Path(__file__).resolve().parent
 TAB        = HERE / "Tables"
-GENO_TSV   = TAB / "SRK_individual_allele_genotypes.tsv"
-ZYG_TSV    = TAB / "SRK_individual_zygosity.tsv"
-SI_TSV     = TAB / "SRK_individual_SI_status.tsv"
-OUT_GENO   = TAB / "SRK_individual_allele_genotypes_with_nulls.tsv"
-OUT_ZYG    = TAB / "SRK_individual_zygosity_with_nulls.tsv"
-OUT_REDO   = TAB / "SRK_samples_for_redo.tsv"
+GENO_TSV   = TAB / "Phase2" / "step11_individual_allele_genotypes.tsv"
+ZYG_TSV    = TAB / "Phase2" / "step12_individual_zygosity.tsv"
+SI_TSV     = TAB / "Phase5" / "step25b_individual_SI_status.tsv"
+OUT_GENO   = TAB / "Phase5" / "step26_individual_allele_genotypes_with_nulls.tsv"
+OUT_ZYG    = TAB / "Phase5" / "step26_individual_zygosity_with_nulls.tsv"
+OUT_REDO   = TAB / "Phase5" / "step26_samples_for_redo.tsv"
 
 
 def scale_to_target(counts: dict[str, int], target: int) -> dict[str, int]:

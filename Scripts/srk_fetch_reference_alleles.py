@@ -45,16 +45,16 @@ QUERIES = {
 # A. lyrata + A. halleri are pooled because they share the same SRK system
 # and most published S-haplotypes come from a mix of the two species
 SPECIES_TO_FILE = {
-    "Brassica_rapa":       "brassica_SRK_alleles.fasta",
-    "Brassica_oleracea":   "brassica_SRK_alleles.fasta",       # combined Brassica
-    "Arabidopsis_lyrata":  "arabidopsis_SRK_alleles.fasta",
-    "Arabidopsis_halleri": "arabidopsis_SRK_alleles.fasta",    # combined Arabidopsis
+    "Brassica_rapa":       "FASTA/brassica_SRK_alleles.fasta",
+    "Brassica_oleracea":   "FASTA/brassica_SRK_alleles.fasta",       # combined Brassica
+    "Arabidopsis_lyrata":  "FASTA/arabidopsis_SRK_alleles.fasta",
+    "Arabidopsis_halleri": "FASTA/arabidopsis_SRK_alleles.fasta",    # combined Arabidopsis
 }
 
 # Max representatives per species (to avoid bias from over-sampled species)
 MAX_PER_SPECIES = 20
 
-LOG_TSV = "reference_SRK_fetch_log.tsv"
+LOG_TSV = "Tables/Phase4/step22a_i_reference_SRK_fetch_log.tsv"
 
 
 def s_haplotype_label(title: str) -> str:

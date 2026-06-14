@@ -111,11 +111,11 @@ from scipy.stats import chisquare
 REPO = Path(__file__).resolve().parent
 TABLES = REPO / "Tables"
 
-GENOTYPES = TABLES / "SRK_individual_allele_genotypes.tsv"
+GENOTYPES = TABLES / "Phase2" / "step11_individual_allele_genotypes.tsv"
 METADATA = TABLES / "sampling_metadata.csv"
-BL_FILE = REPO / "SRK_individual_BL_assignments.tsv"
-ACC_STATS = REPO / "SRK_allele_accumulation_stats.tsv"
-OUT = TABLES / "SRK_EO_allele_richness.tsv"
+BL_FILE = TABLES / "Phase3" / "step13_individual_BL_assignments.tsv"
+ACC_STATS = TABLES / "Phase3" / "step15_allele_accumulation_stats.tsv"
+OUT = TABLES / "Phase3" / "step17_EO_allele_richness.tsv"
 
 # Species S-allele optimum used for the Depletion Index (DI). Matches the
 # MM consensus reported in the LEPA report and presentation.

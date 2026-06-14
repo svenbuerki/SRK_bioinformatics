@@ -60,9 +60,9 @@ from Bio import SeqIO
 # =============================================================================
 # Settings — must match srk_variability_landscape.py for apples-to-apples test
 # =============================================================================
-COMBINED_ALN     = "SRK_combined_alignment.fasta"
-SYN_GROUPS_CSV   = "SRK_synonymy_groups.csv"
-LEPA_HV_TSV      = "SRK_LEPA_HV_positions.tsv"
+COMBINED_ALN     = "Tables/Phase4/step22a_combined_alignment.fasta"
+SYN_GROUPS_CSV   = "Tables/Phase4/step22b_synonymy_groups.csv"
+LEPA_HV_TSV      = "Tables/Phase4/step22a_LEPA_HV_positions.tsv"
 DOMAIN_REGION    = (31, 430)
 WINDOW_SIZE      = 20
 PEAK_SD_FACTOR   = 1.0
@@ -82,12 +82,12 @@ SPECIES_COLOURS = {
     "Arabidopsis":  "#2ca02c",
 }
 
-OUT_REP_TSV   = "SRK_LEPA_synonymy_group_representatives.tsv"
-OUT_PDF       = "SRK_variability_landscape_wgroup_collapsed.pdf"
-OUT_PNG       = os.path.join("figures", "SRK_variability_landscape_wgroup_collapsed.png")
-OUT_SUMMARY   = "SRK_wgroup_collapse_entropy_summary.tsv"
+OUT_REP_TSV   = "Tables/Phase4/step22c_LEPA_synonymy_group_representatives.tsv"
+OUT_PDF       = "figures/Phase4/step22c_variability_landscape_wgroup_collapsed.pdf"
+OUT_PNG       = "figures/Phase4/step22c_variability_landscape_wgroup_collapsed.png"
+OUT_SUMMARY   = "Tables/Phase4/step22c_wgroup_collapse_entropy_summary.tsv"
 
-os.makedirs("figures", exist_ok=True)
+os.makedirs("figures/Phase4", exist_ok=True); os.makedirs("Tables/Phase4", exist_ok=True)
 
 # =============================================================================
 # 1. Sanity-check inputs and choose Synonymy group representatives

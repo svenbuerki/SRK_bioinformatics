@@ -63,12 +63,12 @@ def parse_args():
     )
     p.add_argument(
         "--genotypes",
-        default="SRK_individual_allele_genotypes.tsv",
+        default="Tables/Phase2/step11_individual_allele_genotypes.tsv",
         help="Allele count matrix TSV",
     )
     p.add_argument(
         "--bl-assignments",
-        default="SRK_individual_BL_assignments.tsv",
+        default="Tables/Phase3/step13_individual_BL_assignments.tsv",
         help="Per-individual EO/BL bridge table from Step 13",
     )
     p.add_argument(
@@ -434,8 +434,8 @@ def main():
                    "(UpSet, EOs sorted by parent BL)"),
             level_name="EO",
             save_to=[
-                os.path.join(args.pdf_dir, "SRK_allele_upset_EOs.pdf"),
-                os.path.join(args.png_dir, "SRK_allele_upset_EOs.png"),
+                os.path.join(args.pdf_dir, "step18_allele_upset_EOs.pdf"),
+                os.path.join(args.png_dir, "step18_allele_upset_EOs.png"),
             ],
         )
         plot_heatmap(
@@ -443,8 +443,8 @@ def main():
             title="Pairwise S-allele sharing between Element Occurrences",
             level_name="Element Occurrence",
             save_to=[
-                os.path.join(args.pdf_dir, "SRK_allele_sharing_heatmap_EOs.pdf"),
-                os.path.join(args.png_dir, "SRK_allele_sharing_heatmap_EOs.png"),
+                os.path.join(args.pdf_dir, "step18_allele_sharing_heatmap_EOs.pdf"),
+                os.path.join(args.png_dir, "step18_allele_sharing_heatmap_EOs.png"),
             ],
         )
     else:
@@ -465,8 +465,8 @@ def main():
             title="S-allele sharing among Bottleneck Lineages (UpSet)",
             level_name="BL",
             save_to=[
-                os.path.join(args.pdf_dir, "SRK_allele_upset_BLs.pdf"),
-                os.path.join(args.png_dir, "SRK_allele_upset_BLs.png"),
+                os.path.join(args.pdf_dir, "step18_allele_upset_BLs.pdf"),
+                os.path.join(args.png_dir, "step18_allele_upset_BLs.png"),
             ],
         )
         plot_heatmap(
@@ -474,8 +474,8 @@ def main():
             title="Pairwise S-allele sharing between Bottleneck Lineages",
             level_name="Bottleneck Lineage",
             save_to=[
-                os.path.join(args.pdf_dir, "SRK_allele_sharing_heatmap_BLs.pdf"),
-                os.path.join(args.png_dir, "SRK_allele_sharing_heatmap_BLs.png"),
+                os.path.join(args.pdf_dir, "step18_allele_sharing_heatmap_BLs.pdf"),
+                os.path.join(args.png_dir, "step18_allele_sharing_heatmap_BLs.png"),
             ],
         )
     else:

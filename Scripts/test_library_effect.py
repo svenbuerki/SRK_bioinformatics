@@ -63,13 +63,13 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 
-AUDIT_TSV   = "SRK_sample_exclusion_audit.tsv"
-ZYG_TSV     = "SRK_individual_zygosity.tsv"
-GFS_TSV     = "SRK_individual_GFS.tsv"
-BL_TSV      = "SRK_individual_BL_assignments.tsv"
+AUDIT_TSV   = "Tables/Phase2/step12c_sample_exclusion_audit.tsv"
+ZYG_TSV     = "Tables/Phase2/step12_individual_zygosity.tsv"
+GFS_TSV     = "Tables/Phase3/step19_individual_GFS.tsv"
+BL_TSV      = "Tables/Phase3/step13_individual_BL_assignments.tsv"
 
-OUT_TSV     = "SRK_library_effect_tests.tsv"
-OUT_PDF     = "SRK_library_effect_summary.pdf"
+OUT_TSV     = "Tables/Phase2/step12c_library_effect_tests.tsv"
+OUT_PDF     = "figures/Phase2/step12c_library_effect_summary.pdf"
 
 ALPHA = 0.05    # significance threshold for printed callouts
 

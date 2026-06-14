@@ -54,10 +54,10 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent
 TABLES = REPO / "Tables"
 
-GENOTYPES = TABLES / "SRK_individual_allele_genotypes.tsv"
+GENOTYPES = TABLES / "Phase2" / "step11_individual_allele_genotypes.tsv"
 METADATA = TABLES / "sampling_metadata.csv"
-BL_FILE = REPO / "SRK_individual_BL_assignments.tsv"
-OUT = TABLES / "SRK_injection_donor_ranking.tsv"
+BL_FILE = TABLES / "Phase3" / "step13_individual_BL_assignments.tsv"
+OUT = TABLES / "Phase5" / "step28_injection_donor_ranking.tsv"
 
 K_SPECIES = 59
 MIN_N = 15

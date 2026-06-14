@@ -28,7 +28,7 @@ BL_UNASSIGNED_COLOR <- "#999999"
 
 species_optimum <- 50L  # fallback default
 
-est_file <- "SRK_species_richness_estimates.tsv"
+est_file <- "Tables/Phase3/step15_species_richness_estimates.tsv"
 if (file.exists(est_file)) {
   est_df <- read.table(est_file, header = TRUE, sep = "\t",
                        stringsAsFactors = FALSE)
@@ -56,13 +56,13 @@ if (file.exists(est_file)) {
 ###############################
 
 geno_all <- read.table(
-  "SRK_individual_allele_genotypes.tsv",
+  "Tables/Phase2/step11_individual_allele_genotypes.tsv",
   header = TRUE, sep = "\t",
   stringsAsFactors = FALSE, check.names = FALSE
 )
-meta_df   <- read.csv("sampling_metadata.csv", stringsAsFactors = FALSE)
+meta_df   <- read.csv("Tables/sampling_metadata.csv", stringsAsFactors = FALSE)
 bl_assign <- read.table(
-  "SRK_individual_BL_assignments.tsv",
+  "Tables/Phase3/step13_individual_BL_assignments.tsv",
   header = TRUE, sep = "\t", stringsAsFactors = FALSE
 )
 
@@ -189,7 +189,7 @@ final_results <- final_results[ord, ]
 rownames(final_results) <- NULL
 
 write.table(
-  final_results, "SRK_chisq_species_population.tsv",
+  final_results, "Tables/Phase3/step16_chisq_species_population.tsv",
   sep = "\t", quote = FALSE, row.names = FALSE
 )
 cat("Wrote SRK_chisq_species_population.tsv (",
@@ -201,7 +201,8 @@ print(final_results, row.names = FALSE)
 # 6. Frequency plots
 ###############################
 
-pdf("SRK_chisq_species_population_frequency_plots.pdf", width = 10, height = 6)
+dir.create("figures/Phase3", recursive = TRUE, showWarnings = FALSE)
+pdf("figures/Phase3/step16_chisq_species_population_frequency_plots.pdf", width = 10, height = 6)
 
 plot_one <- function(meta_entry, allele_counts, n_alleles_plot, p_value) {
   level <- meta_entry$level
@@ -307,7 +308,7 @@ for (key in plot_keys) {
 }
 
 dev.off()
-cat("Wrote SRK_chisq_species_population_frequency_plots.pdf (",
+cat("Wrote figures/SRK_chisq_species_population_frequency_plots.pdf (",
     length(plot_keys), " pages)\n", sep = "")
 
 cat("\nStep 16 complete.\n")

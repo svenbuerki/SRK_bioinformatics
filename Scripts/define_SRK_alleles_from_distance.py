@@ -35,14 +35,14 @@ from scipy.spatial.distance import squareform
 # User settings
 # ─────────────────────────────────────────────────────────────────────────────
 
-INPUT_FASTA    = "SRK_functional_proteins_aligned.fasta"
+INPUT_FASTA    = "Tables/Phase2/step9_functional_proteins_aligned.fasta"
 
 # ── Clustering mode: choose ONE of the two options below ──────────────────
 #
 # Option A — fix the NUMBER OF ALLELES (recommended when you can see an elbow
 #             on the sensitivity curve but cannot read the exact distance).
 #             Set N_ALLELES to the desired count; DIST_THRESHOLD is ignored.
-N_ALLELES = 58   # e.g. 50  — set to None to use Option B instead
+N_ALLELES = 55   # e.g. 50  — set to None to use Option B instead
 #
 # Option B — fix the DISTANCE THRESHOLD (p-distance = fraction of differing AA).
 #             Used only when N_ALLELES is None.
@@ -60,9 +60,10 @@ DIST_THRESHOLD = 0.01   # e.g. 0.01 = 1 %
 # Set to None to use the full alignment.
 DOMAIN_REGION  = (31, 430)   # (start, end) 1-based inclusive
 
-OUT_TSV        = "SRK_protein_allele_assignments.tsv"
-OUT_FASTA      = "SRK_protein_allele_representatives.fasta"
-OUT_PDF        = "SRK_protein_distance_analysis.pdf"
+OUT_TSV        = "Tables/Phase2/step10a_protein_allele_assignments.tsv"
+OUT_FASTA      = "Tables/Phase2/step10a_protein_allele_representatives.fasta"
+OUT_PDF        = "figures/Phase2/step10a_protein_distance_analysis.pdf"
+OUT_PNG        = "figures/Phase2/step10a_protein_distance_analysis.png"
 
 # Sensitivity analysis range.
 # Start at 0 so the curve shows the full picture from exact duplicates upward.
@@ -292,9 +293,13 @@ ax.set_xlabel(f"{n} proteins ordered by allele cluster", fontsize=10)
 ax.set_ylabel(f"{n} proteins ordered by allele cluster", fontsize=10)
 
 plt.tight_layout()
+import os
+os.makedirs(os.path.dirname(OUT_PDF), exist_ok=True)
 plt.savefig(OUT_PDF, format="pdf", dpi=150, bbox_inches="tight")
+plt.savefig(OUT_PNG, format="png", dpi=200, bbox_inches="tight")
 plt.close()
 print(f"Distance analysis plot saved to {OUT_PDF}")
+print(f"Distance analysis PNG  saved to {OUT_PNG}")
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Summary to stdout

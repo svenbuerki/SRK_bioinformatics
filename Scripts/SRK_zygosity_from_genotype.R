@@ -9,7 +9,7 @@ cat("\nStarting SRK zygosity analysis from allele count matrix\n")
 ############################################################
 
 geno <- read.table(
-  "SRK_individual_allele_genotypes.tsv",
+  "Tables/Phase2/step11_individual_allele_genotypes.tsv",
   header = TRUE,
   sep = "\t",
   stringsAsFactors = FALSE,
@@ -91,7 +91,7 @@ zyg <- data.frame(
 
 write.table(
   zyg,
-  "SRK_individual_zygosity.tsv",
+  "Tables/Phase2/step12_individual_zygosity.tsv",
   sep = "\t",
   quote = FALSE,
   row.names = FALSE
@@ -116,20 +116,24 @@ print(table(zyg$Genotype))
 # Plot
 ############################################################
 
-pdf("SRK_zygosity_distribution.pdf")
+dir.create("figures/Phase2", recursive = TRUE, showWarnings = FALSE)
 
-barplot(
-  table(zyg$N_distinct_alleles),
-  main = "SRK genotype diversity (tetraploid)",
-  xlab = "Number of distinct SRK alleles",
-  ylab = "Number of individuals",
-  col = "gray70"
-)
+draw_plot <- function() {
+  barplot(
+    table(zyg$N_distinct_alleles),
+    main = "SRK genotype diversity (tetraploid)",
+    xlab = "Number of distinct SRK alleles",
+    ylab = "Number of individuals",
+    col = "gray70"
+  )
+}
 
-dev.off()
+pdf("figures/Phase2/step12_zygosity_distribution.pdf"); draw_plot(); dev.off()
+png("figures/Phase2/step12_zygosity_distribution.png", width = 1600, height = 1200, res = 200); draw_plot(); dev.off()
 
 cat("\nOutput files created:\n")
-cat("SRK_individual_zygosity.tsv\n")
-cat("SRK_zygosity_distribution.pdf\n\n")
+cat("Tables/Phase2/step12_individual_zygosity.tsv\n")
+cat("figures/Phase2/step12_zygosity_distribution.pdf\n")
+cat("figures/Phase2/step12_zygosity_distribution.png\n\n")
 
 cat("Analysis complete\n")

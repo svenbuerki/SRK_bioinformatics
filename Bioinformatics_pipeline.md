@@ -20,6 +20,86 @@ source srk_env/bin/activate
 
 ---
 
+## Output organisation (refactored 2026-06-14)
+
+Every Phase 2 and Phase 3 script reads and writes from a fixed Phase- and step-prefixed path. This makes every input/output unambiguously traceable to the step that produced it, eliminates root-level clutter, and avoids stale-copy bugs.
+
+```
+Tables/
+├── sampling_metadata.csv          ← canonical metadata (symlinked from root)
+├── Phase2/
+│   ├── step9_*.{fasta,tsv,txt}    ← functional protein outputs
+│   ├── step10a_*.tsv,fasta        ← allele clustering
+│   ├── step10b_*.tsv              ← variable positions
+│   ├── step11_*.tsv               ← genotyping
+│   ├── step12_*.tsv               ← zygosity
+│   └── step12c_*.tsv,csv          ← data-quality audit + lab deliverables
+└── Phase3/
+    ├── step13_*.tsv               ← BL integration
+    ├── step14_*.tsv               ← population genetics
+    ├── step15_*.tsv               ← accumulation curves + species richness
+    ├── step16_*.tsv               ← χ² allele frequency
+    ├── step17_*.tsv               ← TP1 / P_compat / DI metrics
+    ├── step19_*.tsv               ← individual GFS
+    ├── step20_*.tsv               ← TP2 EO + BL summaries
+    └── step21_*.tsv               ← reproductive effort BL summary
+
+figures/
+├── Phase2/
+│   ├── step10a_protein_distance_analysis.{pdf,png}
+│   ├── step10b_AA_mutation_heatmap.{pdf,png}
+│   ├── step10b_AA_frequency_heatmap.{pdf,png}
+│   ├── step12_zygosity_distribution.{pdf,png}
+│   ├── step12c_library_effect_summary.{pdf,png}
+│   ├── step12c_data_quality_per_BL.{pdf,png}
+│   └── step12c_data_quality_per_EO.{pdf,png}
+└── Phase3/
+    ├── step14_population_genetic_summary.{pdf,png}
+    ├── step15_allele_accumulation_curves.pdf  (multi-page)
+    ├── step15_allele_accumulation_species.{pdf,png}
+    ├── step15_allele_accumulation_{combined,BL_combined,drift_erosion,BL_drift_erosion}.png
+    ├── step16_chisq_species_population_frequency_plots.pdf  (multi-page)
+    ├── step17_P_compat_traffic_light_EO{,_blank}.{pdf,png}
+    ├── step17_depletion_ranking_{observed,predicted}_{blank,EOs,all}.{pdf,png}
+    ├── step18_allele_{upset,sharing_heatmap}_{EOs,BLs}.{pdf,png}
+    ├── step18_allele_eulerr_BLs.{pdf,png}
+    ├── step19_GFS_plots.pdf + p1/p2/p4 PNGs
+    ├── step20_TP2_tipping_point{,_blank}.png
+    ├── step21_GFS_reproductive_effort{,_EO,_BL}.{pdf,png}
+    ├── step21_GFS_AAAA_allele_composition{,_EO,_BL}.{pdf,png}
+    └── presentation/
+        └── step15_allele_accumulation_species_{observed,predicted}.png
+```
+
+**Conventions:**
+- Every plot script produces BOTH `.pdf` and `.png` (vector + raster) except multi-page PDFs (Step 15 curves, Step 16 frequency, Step 19 GFS) where the page-level PNGs are companions.
+- Step prefix `stepN_` (lowercase, integer). Sub-step letters (`step10a`, `step12c`, etc.) retain their letter suffix.
+- Every script's READ path includes the upstream step's prefix; this makes the dependency chain visible directly in the source.
+- `Tables/sampling_metadata.csv` is the **single canonical metadata file**; a symlink at `./sampling_metadata.csv` preserves backward compatibility for legacy scripts.
+
+**Phase 4 (Steps 22a–22e) refactored 2026-06-14.** External reference FASTAs (Brassica + Arabidopsis SRK alleles) now live in **`FASTA/`** at the repo root. Intermediate Phase 4 FASTAs and step-prefixed TSVs land in `Tables/Phase4/`; figures in `figures/Phase4/`. `pad_representatives.py` now filters Step 10a representatives to LEPA-ingroup-observed alleles only (49 of 55) — eliminates outgroup contamination (*L. montanum* / *L. freemontii* / *L. philonitron*) from the variability-landscape analysis.
+
+```
+FASTA/                  ← external reference FASTAs (Brassica + Arabidopsis SRK)
+Tables/Phase4/          ← step22a_*.{fasta,tsv}, step22b_*.tsv,csv, step22c_*.tsv, step22d_*.tsv, step22e_*.tsv
+figures/Phase4/         ← step22a_variability_landscape.{pdf,png}, step22b_synonymy_networks/cluster/cross_design,
+                          step22c_*.{pdf,png}, step22d_*.{pdf,png}, step22e_cross_plan_summary.{pdf,png}, step23_cross_result_analysis.pdf
+```
+
+**Phase 5 (Steps 25–28 + Step 14b/17b/19b/20b null-aware reruns) refactored 2026-06-14.** Tables in `Tables/Phase5/`, figures in `figures/Phase5/`. Includes:
+- `step25a_null_allele_assignments.tsv` + intermediate FASTAs/alignments
+- `step25b_individual_SI_status.tsv` + `step25b_SI_status_{species,by_BL,by_EO}_{full,robust}.png`
+- `step26_individual_{allele_genotypes,zygosity}_with_nulls.tsv` + `step26_samples_for_redo.tsv`
+- `step14b_population_genetic_summary{,_BL}_with_nulls.tsv` + `step14b_population_genetic_summary_with_nulls.pdf`
+- `step17b_EO_allele_richness_with_nulls.tsv` + `step17b_P_compat_traffic_light_with_nulls{,_blank}.{pdf,png}` + `step17b_depletion_ranking_{observed,predicted}_with_nulls_{blank,EOs,all}.{pdf,png}`
+- `step19b_individual_GFS_with_nulls.tsv` + `step19b_GFS_with_nulls_composition.png` + `step20b_TP2_with_nulls_scatter.png`
+- `step27_inheritance_{trajectories,time_to_sc}.tsv` + `step27_inheritance_{pNULL_trajectories,SC_progression,time_to_sc}.png`
+- `step28_injection_donor_ranking.tsv` + `step28_donor_recovery_ladder.{pdf,png}`
+
+**Cascade dependency reminder.** The Phase 5 chain depends on Phase 3 outputs (`Tables/Phase3/step13_individual_BL_assignments.tsv`, `Tables/Phase2/step12_individual_zygosity.tsv`). Run order: 25b → 25a → 25b refresh → 25b figures → 26 → {14b, 17b, 19b/20b} → 27 → 27 figures → 28 → 28 figures.
+
+---
+
 ## Phase 1: SRK Amplicon Sequence Assembly
 
 ### Step 1 — Prepare Canonical Sequences
@@ -662,7 +742,13 @@ Reads the audit and library-effect outputs and categorises every metadata sample
 
 **Why this matters operationally:** the per-BL and per-EO proportion plots make it trivial to spot populations where Re-sequence + SI_escape_candidate categories are over-represented — the populations where conservation action is most urgent and where additional lab effort is best invested.
 
-**When to run:** after Step 12 (zygosity) completes, before Step 13 (BL integration). The full pipeline `audit_sample_exclusions.py → test_library_effect.py → evaluate_data_quality.py` takes < 5 s on the current dataset and is library-agnostic — it auto-detects per-library log files and adapts.
+**When to run (revised 2026-06-13):** the three sub-scripts now have hard dependencies on Phase 3 outputs that did not exist when this step was first written. The correct execution order is:
+
+1. **Step 12c.ii** (`audit_sample_exclusions.py`) — run **after Step 13** (BL integration) so the per-sample BL column is populated. Strictly the script tolerates a missing BL file, but the resulting audit is more useful with BL columns present.
+2. **Step 12c.iii** (`evaluate_data_quality.py`) — run **after Step 13** and after 12c.ii. The per-BL / per-EO stacked-bar plots require BL assignments; the script will run without them but with degraded output.
+3. **Step 12c.i** (`test_library_effect.py`) — run **after Step 19** (Individual GFS), since one of the four tests reads `SRK_individual_GFS.tsv`. This sub-step is therefore the last 12c sub-script to execute, not the first.
+
+The full chain `Step 13 → 12c.ii → 12c.iii → ... → Step 19 → 12c.i` is library-agnostic, auto-detects per-library log files, and the QC sub-steps themselves take < 5 s each.
 
 ---
 

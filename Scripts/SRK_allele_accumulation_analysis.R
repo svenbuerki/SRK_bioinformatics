@@ -26,15 +26,15 @@ BL_UNASSIGNED_COLOR <- "#999999"
 ############################################################
 
 geno_all <- read.table(
-  "SRK_individual_allele_genotypes.tsv",
+  "Tables/Phase2/step11_individual_allele_genotypes.tsv",
   header = TRUE, sep = "\t",
   check.names = FALSE, stringsAsFactors = FALSE
 )
 
-sample_info <- read.csv("sampling_metadata.csv", stringsAsFactors = FALSE)
+sample_info <- read.csv("Tables/sampling_metadata.csv", stringsAsFactors = FALSE)
 
 bl_assign <- read.table(
-  "SRK_individual_BL_assignments.tsv",
+  "Tables/Phase3/step13_individual_BL_assignments.tsv",
   header = TRUE, sep = "\t", stringsAsFactors = FALSE
 )
 
@@ -259,8 +259,9 @@ allele_accumulation <- function(mat, pop_name = "Unknown", n_perm = 1000, seed =
 # 5. Open PDF output
 ############################################################
 
+dir.create("figures/Phase3", recursive = TRUE, showWarnings = FALSE)
 pdf(
-  "SRK_allele_accumulation_curves.pdf",
+  "figures/Phase3/step15_allele_accumulation_curves.pdf",
   width = 8,
   height = 6
 )
@@ -539,22 +540,22 @@ render_species_panel <- function(out_path, show_predicted, show_title,
 }
 
 # Canonical figure (titled, with predicted segment)
-render_species_panel("figures/SRK_allele_accumulation_species.png",
+render_species_panel("figures/Phase3/step15_allele_accumulation_species.png",
                       show_predicted = TRUE, show_title = TRUE)
 cat("PNG written: figures/SRK_allele_accumulation_species.png\n")
 
 # Presentation build-up frames (no title, MM-only, slide-friendly).
 # Frame 1: bar with just the observed segment + y-axis, no curve, no MM line.
 # Frame 2: full bar + curve + MM dashed line (no Chao1/iNEXT).
-dir.create("figures/presentation", recursive = TRUE, showWarnings = FALSE)
+dir.create("figures/Phase3/presentation", recursive = TRUE, showWarnings = FALSE)
 render_species_panel(
-  "figures/presentation/SRK_allele_accumulation_species_observed.png",
+  "figures/Phase3/presentation/step15_allele_accumulation_species_observed.png",
   show_predicted = FALSE, show_title = FALSE, mm_only = TRUE,
   show_curve = FALSE, show_mm_line = FALSE)
 cat("PNG written: figures/presentation/SRK_allele_accumulation_species_observed.png\n")
 
 render_species_panel(
-  "figures/presentation/SRK_allele_accumulation_species_predicted.png",
+  "figures/Phase3/presentation/step15_allele_accumulation_species_predicted.png",
   show_predicted = TRUE, show_title = FALSE, mm_only = TRUE,
   show_curve = TRUE, show_mm_line = TRUE)
 cat("PNG written: figures/presentation/SRK_allele_accumulation_species_predicted.png\n")
@@ -702,7 +703,7 @@ max_eo_alleles <- max(sapply(valid_eos, function(p) eo_results[[p]]$true_alleles
 y_max <- max_eo_alleles * 1.25
 x_max <- max(sapply(valid_eos, function(p) length(eo_results[[p]]$mean_accum)))
 
-png("figures/SRK_allele_accumulation_combined.png", width = 9, height = 6,
+png("figures/Phase3/step15_allele_accumulation_combined.png", width = 9, height = 6,
     units = "in", res = 200)
 par(mar = c(5, 4, 4, 10))
 
@@ -771,7 +772,7 @@ max_bl_alleles <- max(sapply(valid_bls, function(b) bl_results[[b]]$true_alleles
 y_max_bl <- max_bl_alleles * 1.25
 x_max_bl <- max(sapply(valid_bls, function(b) length(bl_results[[b]]$mean_accum)))
 
-png("figures/SRK_allele_accumulation_BL_combined.png", width = 9, height = 6,
+png("figures/Phase3/step15_allele_accumulation_BL_combined.png", width = 9, height = 6,
     units = "in", res = 200)
 par(mar = c(5, 4, 4, 10))
 
@@ -862,7 +863,7 @@ eo_df$lost_to_drift   <- pmax(0, species_MM      - eo_df$mm_eo)
 # panel (section 6c) and reused here so the species and BL/EO bars share an
 # identical colour key.
 
-png("figures/SRK_allele_accumulation_drift_erosion.png",
+png("figures/Phase3/step15_allele_accumulation_drift_erosion.png",
     width = 7, height = 6, units = "in", res = 200)
 
 par(mar = c(5, 5, 7, 5))   # extra top margin for legend
@@ -954,7 +955,7 @@ bl_df <- data.frame(
 bl_df$predicted_extra <- pmax(0, bl_df$mm_bl  - bl_df$observed)
 bl_df$lost_to_drift   <- pmax(0, species_MM   - bl_df$mm_bl)
 
-png("figures/SRK_allele_accumulation_BL_drift_erosion.png",
+png("figures/Phase3/step15_allele_accumulation_BL_drift_erosion.png",
     width = 7, height = 6, units = "in", res = 200)
 par(mar = c(5, 5, 7, 5))
 
@@ -1067,7 +1068,7 @@ for (bl in valid_bls) {
 
 write.table(
   stats,
-  "SRK_allele_accumulation_stats.tsv",
+  "Tables/Phase3/step15_allele_accumulation_stats.tsv",
   sep="\t",
   quote=FALSE,
   row.names=FALSE
@@ -1102,7 +1103,7 @@ species_richness_est <- data.frame(
 
 write.table(
   species_richness_est,
-  "SRK_species_richness_estimates.tsv",
+  "Tables/Phase3/step15_species_richness_estimates.tsv",
   sep = "\t",
   quote = FALSE,
   row.names = FALSE

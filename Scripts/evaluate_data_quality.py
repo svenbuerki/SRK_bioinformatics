@@ -76,18 +76,18 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 
 
-AUDIT_TSV   = "SRK_sample_exclusion_audit.tsv"
-BL_TSV      = "SRK_individual_BL_assignments.tsv"
-LIB_TSV     = "SRK_library_effect_tests.tsv"
+AUDIT_TSV   = "Tables/Phase2/step12c_sample_exclusion_audit.tsv"
+BL_TSV      = "Tables/Phase3/step13_individual_BL_assignments.tsv"
+LIB_TSV     = "Tables/Phase2/step12c_library_effect_tests.tsv"
 
 TABLES_DIR    = "Tables"
 os.makedirs(TABLES_DIR, exist_ok=True)
 
-OUT_CAT_TSV   = "Tables/SRK_data_quality_categories.tsv"
-OUT_REDO_CSV  = "Tables/SRK_samples_redo.csv"
-OUT_SI_CSV    = "Tables/SRK_SI_escape_candidates.csv"
+OUT_CAT_TSV   = "Tables/Phase2/step12c_data_quality_categories.tsv"
+OUT_REDO_CSV  = "Tables/Phase2/step12c_samples_redo.csv"
+OUT_SI_CSV    = "Tables/Phase2/step12c_SI_escape_candidates.csv"
 
-FIG_DIR     = "figures"
+FIG_DIR     = "figures/Phase2"
 os.makedirs(FIG_DIR, exist_ok=True)
 
 # Shared BL ordering + colour palette (matches all Phase 3/4 plots and the
@@ -327,11 +327,16 @@ re_dna_df["Recommended_action"] = (
 # field-collection grouping.
 redo = pd.concat([re_dna_df, re_pcr_df], ignore_index=True)
 redo_cols = [
-    "Lab_action", "Sample_ID", "Library", "Barcode", "EO", "EO_normalised",
+    "Lab_action", "Sample_ID", "Tube_number",
+    "Library", "Barcode", "EO", "EO_normalised",
     "BL_inferred", "n_raw_haps", "Proteins_in_final_data", "Exclusion_stage",
     "Recommended_action",
 ]
 redo = redo[redo_cols].sort_values(["Lab_action", "EO_normalised", "Sample_ID"])
+# Tube_number can be float-coerced on read when blanks are present; rewrite as clean integer strings.
+redo["Tube_number"] = (
+    redo["Tube_number"].fillna("").astype(str).str.replace(r"\.0$", "", regex=True)
+)
 redo.to_csv(OUT_REDO_CSV, index=False)
 
 
@@ -442,8 +447,8 @@ stacked_bar(
     bl_props, bl_totals,
     title="Step 12c — Sample outcome categories per Bottleneck Lineage",
     xlabel="Bottleneck Lineage",
-    png_path=os.path.join(FIG_DIR, "SRK_data_quality_per_BL.png"),
-    pdf_path="SRK_data_quality_per_BL.pdf",
+    png_path=os.path.join(FIG_DIR, "step12c_data_quality_per_BL.png"),
+    pdf_path=os.path.join(FIG_DIR, "step12c_data_quality_per_BL.pdf"),
     category_counts=bl_data,
 )
 
@@ -457,8 +462,8 @@ stacked_bar(
     eo_props, eo_totals,
     title="Step 12c — Sample outcome categories per focus Element Occurrence",
     xlabel="Focus EO (label colour = parent BL)",
-    png_path=os.path.join(FIG_DIR, "SRK_data_quality_per_EO.png"),
-    pdf_path="SRK_data_quality_per_EO.pdf",
+    png_path=os.path.join(FIG_DIR, "step12c_data_quality_per_EO.png"),
+    pdf_path=os.path.join(FIG_DIR, "step12c_data_quality_per_EO.pdf"),
     category_counts=eo_data,
     bl_label_map=eo_to_bl_label,
 )

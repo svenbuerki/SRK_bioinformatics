@@ -47,11 +47,11 @@ import os
 # User settings
 # ─────────────────────────────────────────────────────────────────────────────
 
-INPUT_FASTA      = "SRK_functional_proteins_aligned.fasta"
+INPUT_FASTA      = "Tables/Phase2/step9_functional_proteins_aligned.fasta"
 
 # Allele assignment file produced by define_SRK_alleles_from_distance.py.
 # If present, rows are sorted by allele cluster. Set to None to sort by name.
-ALLELE_TSV       = "SRK_protein_allele_assignments.tsv"
+ALLELE_TSV       = "Tables/Phase2/step10a_protein_allele_assignments.tsv"
 
 # Minimum gap frequency allowed at a position to be included (0-1).
 # Positions where more than this fraction of sequences have a gap are excluded.
@@ -71,9 +71,11 @@ DOMAIN_REGIONS = [
     ("Kinase domain",   456, 848, "#d3a4d3"),    # light purple
 ]
 
-OUT_PDF          = "SRK_AA_mutation_heatmap.pdf"
-OUT_FREQ_PDF     = "SRK_AA_frequency_heatmap.pdf"
-OUT_VAR_TSV      = "SRK_AA_variable_positions.tsv"
+OUT_PDF          = "figures/Phase2/step10b_AA_mutation_heatmap.pdf"
+OUT_PNG          = "figures/Phase2/step10b_AA_mutation_heatmap.png"
+OUT_FREQ_PDF     = "figures/Phase2/step10b_AA_frequency_heatmap.pdf"
+OUT_FREQ_PNG     = "figures/Phase2/step10b_AA_frequency_heatmap.png"
+OUT_VAR_TSV      = "Tables/Phase2/step10b_AA_variable_positions.tsv"
 
 # Maximum number of variable positions to display (most variable first by entropy).
 # Increase if you want to see more; a very wide figure may become hard to read.
@@ -330,7 +332,10 @@ ax_heat.legend(handles=legend_handles, title="AA class",
                ncol=len(CLASS_ORDER), fontsize=7, title_fontsize=8,
                framealpha=0.9)
 
+import os
+os.makedirs(os.path.dirname(OUT_PDF), exist_ok=True)
 plt.savefig(OUT_PDF, format="pdf", dpi=150, bbox_inches="tight")
+plt.savefig(OUT_PNG, format="png", dpi=200, bbox_inches="tight")
 plt.close()
 print(f"Heatmap (Figure 1) saved to {OUT_PDF}")
 
@@ -437,8 +442,10 @@ ax2_entrop.set_ylabel("H (bits)", fontsize=7)
 ax2_entrop.tick_params(axis="y", labelsize=6)
 
 plt.savefig(OUT_FREQ_PDF, format="pdf", dpi=150, bbox_inches="tight")
+plt.savefig(OUT_FREQ_PNG, format="png", dpi=200, bbox_inches="tight")
 plt.close()
 print(f"Frequency heatmap (Figure 2) saved to {OUT_FREQ_PDF}")
+print(f"Frequency heatmap PNG saved to {OUT_FREQ_PNG}")
 
 print(f"\nDone. Figure 1: {n} proteins × {n_pos} positions. "
       f"Figure 2: {n_aa} AAs × {n_pos} positions.")

@@ -24,7 +24,7 @@ INPUT_FASTA  = "SRK_protein_allele_representatives.fasta"  (Step 10a output)
 
 Output
 ------
-OUTPUT_FASTA = "SRK_protein_allele_representatives_padded.fasta"
+OUTPUT_FASTA = "Tables/Phase4/step22a_protein_allele_representatives_padded.fasta"
                — same headers and sequences, all right-padded to the maximum
                  length with '-'.
 
@@ -36,15 +36,35 @@ re-executed with a new N_ALLELES value, or whenever the input dataset changes
 to the `mafft --add` step that rebuilds `SRK_combined_alignment.fasta`.
 """
 
+import csv
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
-INPUT_FASTA = "SRK_protein_allele_representatives.fasta"
-OUTPUT_FASTA = "SRK_protein_allele_representatives_padded.fasta"
+INPUT_FASTA   = "Tables/Phase2/step10a_protein_allele_representatives.fasta"
+ALLELE_TABLE  = "Tables/Phase2/step11_individual_allele_table.tsv"
+OUTPUT_FASTA  = "Tables/Phase4/step22a_protein_allele_representatives_padded.fasta"
 PAD_CHAR = "-"
 
-records = list(SeqIO.parse(INPUT_FASTA, "fasta"))
+# Restrict to alleles observed in at least one LEPA-ingroup individual (Step 11).
+# Step 10a clusters from the full Step 9 protein pool, which includes outgroup
+# species (L. montanum, L. freemontii, L. philonitron) — those carry their own
+# allele clusters that would contaminate the LEPA variability landscape.
+ingroup_alleles = set()
+with open(ALLELE_TABLE, encoding="utf-8-sig") as f:
+    reader = csv.DictReader(f, delimiter="\t")
+    for row in reader:
+        a = row.get("Allele", "").strip()
+        if a:
+            ingroup_alleles.add(a)
+
+records_all = list(SeqIO.parse(INPUT_FASTA, "fasta"))
+records = [r for r in records_all if r.id in ingroup_alleles]
+n_dropped = len(records_all) - len(records)
+if n_dropped > 0:
+    dropped = sorted({r.id for r in records_all} - ingroup_alleles)
+    print(f"Dropped {n_dropped} outgroup-only allele(s): {', '.join(dropped)}")
+
 max_len = max(len(r.seq) for r in records)
 
 padded = []
@@ -58,7 +78,7 @@ for r in records:
 
 SeqIO.write(padded, OUTPUT_FASTA, "fasta")
 
-print(f"Input  : {INPUT_FASTA}  ({len(records)} sequences)")
-print(f"Output : {OUTPUT_FASTA}")
+print(f"Input  : {INPUT_FASTA}  ({len(records_all)} sequences)")
+print(f"Output : {OUTPUT_FASTA}  ({len(records)} LEPA-ingroup sequences)")
 print(f"Target length: {max_len} aa")
 print(f"Padded {n_padded} sequence(s) with '{PAD_CHAR}' at C-terminus")

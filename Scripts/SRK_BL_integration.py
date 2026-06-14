@@ -45,15 +45,15 @@ from collections import Counter, defaultdict
 # Paths
 # ---------------------------------------------------------------------------
 HERE = os.path.dirname(os.path.abspath(__file__))
-SAMPLING_META = os.path.join(HERE, "sampling_metadata.csv")
-ZYGOSITY_TSV = os.path.join(HERE, "SRK_individual_zygosity.tsv")
+SAMPLING_META = os.path.join(HERE, "Tables", "sampling_metadata.csv")
+ZYGOSITY_TSV = os.path.join(HERE, "Tables", "Phase2", "step12_individual_zygosity.tsv")
 BL_SUMMARY = os.path.join(
     os.path.dirname(os.path.dirname(HERE)),
     "LEPA_EO_spatial_clustering",
     "data",
     "EO_group_BL_summary.csv",
 )
-OUT_TSV = os.path.join(HERE, "SRK_individual_BL_assignments.tsv")
+OUT_TSV = os.path.join(HERE, "Tables", "Phase3", "step13_individual_BL_assignments.tsv")
 
 # ---------------------------------------------------------------------------
 # Manual overrides for Pop codes that do not match an EO label directly.

@@ -63,8 +63,8 @@ if (!use_repel) {
 # USER SETTINGS
 # =============================================================================
 
-ZYG_FILE <- "SRK_individual_zygosity.tsv"
-BL_FILE  <- "SRK_individual_BL_assignments.tsv"
+ZYG_FILE <- "Tables/Phase2/step12_individual_zygosity.tsv"
+BL_FILE  <- "Tables/Phase3/step13_individual_BL_assignments.tsv"
 
 # Shared BL ordering + colour palette (matches Steps 14-18 and the sibling
 # LEPA_EO_spatial_clustering project).
@@ -78,7 +78,7 @@ EO_MIN_N <- 5
 TP2_MEAN_GFS  <- 0.667
 TP2_PROP_AAAA <- 0.30
 
-dir.create("figures", showWarnings = FALSE, recursive = TRUE)
+dir.create("figures/Phase3", recursive = TRUE, showWarnings = FALSE)
 
 # =============================================================================
 # 1. LOAD DATA
@@ -144,7 +144,7 @@ ind_out <- geno %>%
   select(Individual, Pop, EO, BL, Drift_index,
          Genotype_Pattern, GFS, GFS_class, Method)
 
-write_tsv(ind_out, "SRK_individual_GFS.tsv")
+write_tsv(ind_out, "Tables/Phase3/step19_individual_GFS.tsv")
 cat("  Written: SRK_individual_GFS.tsv\n")
 
 # =============================================================================
@@ -196,7 +196,7 @@ eo_summary <- eo_summary %>%
   ) %>%
   arrange(BL, EO)
 
-write_tsv(eo_summary, "SRK_EO_GFS_summary.tsv")
+write_tsv(eo_summary, "Tables/Phase3/step20_EO_GFS_summary.tsv")
 cat("  Written: SRK_EO_GFS_summary.tsv\n")
 
 cat("\n-- EO-level GFS / TP2 Summary (sorted by BL) --\n")
@@ -211,7 +211,7 @@ bl_summary <- summarise_group(geno, "BL") %>%
   mutate(BL = factor(BL, levels = BL_ORDER)) %>%
   arrange(BL)
 
-write_tsv(bl_summary, "SRK_BL_GFS_summary.tsv")
+write_tsv(bl_summary, "Tables/Phase3/step20_BL_GFS_summary.tsv")
 cat("  Written: SRK_BL_GFS_summary.tsv\n")
 
 cat("\n-- BL-level GFS / TP2 Summary --\n")
@@ -258,7 +258,8 @@ eo_label_colors <- BL_PALETTE[as.character(eo_plot$BL)]
 # =============================================================================
 cat("\nGenerating plots...\n")
 
-pdf("SRK_GFS_plots.pdf", width = 12, height = 9)
+dir.create("figures/Phase3", recursive = TRUE, showWarnings = FALSE)
+pdf("figures/Phase3/step19_GFS_plots.pdf", width = 12, height = 9)
 
 # ---- Plot 1: proportional stacked bar (EO sorted by BL) ----
 p1 <- ggplot(geno_plot, aes(x = EO, fill = GFS_class)) +
@@ -283,7 +284,7 @@ p1 <- ggplot(geno_plot, aes(x = EO, fill = GFS_class)) +
         axis.text.x = element_text(colour = eo_label_colors,
                                    face = "bold"))
 print(p1)
-ggsave("figures/SRK_GFS_plots_p1_composition_proportional.png", p1,
+ggsave("figures/Phase3/step19_GFS_plots_p1_composition_proportional.png", p1,
        width = 12, height = 7, dpi = 200)
 cat("  Written: figures/SRK_GFS_plots_p1_composition_proportional.png\n")
 
@@ -315,7 +316,7 @@ p2 <- ggplot(geno_plot, aes(x = EO, y = GFS, colour = GFS_class)) +
         axis.text.x = element_text(colour = eo_label_colors,
                                    face = "bold"))
 print(p2)
-ggsave("figures/SRK_GFS_plots_p2_individual_jitter.png", p2,
+ggsave("figures/Phase3/step19_GFS_plots_p2_individual_jitter.png", p2,
        width = 12, height = 7, dpi = 200)
 cat("  Written: figures/SRK_GFS_plots_p2_individual_jitter.png\n")
 
@@ -397,7 +398,7 @@ p3_base <- ggplot(tp2_combined,
   theme(legend.position = "right",
         legend.box = "vertical")
 
-ggsave("figures/SRK_GFS_plots_p3_TP2_tipping_point_blank.png", p3_base,
+ggsave("figures/Phase3/step20_TP2_tipping_point_blank.png", p3_base,
        width = 10, height = 8, dpi = 200)
 cat("  Written: figures/SRK_GFS_plots_p3_TP2_tipping_point_blank.png\n")
 
@@ -430,7 +431,7 @@ if (use_repel) {
 }
 
 print(p3)
-ggsave("figures/SRK_GFS_plots_p3_TP2_tipping_point.png", p3,
+ggsave("figures/Phase3/step20_TP2_tipping_point.png", p3,
        width = 11, height = 8, dpi = 200)
 cat("  Written: figures/SRK_GFS_plots_p3_TP2_tipping_point.png\n")
 
@@ -449,7 +450,7 @@ p4 <- ggplot(geno_plot, aes(x = EO, fill = GFS_class)) +
         axis.text.x = element_text(colour = eo_label_colors,
                                    face = "bold"))
 print(p4)
-ggsave("figures/SRK_GFS_plots_p4_composition_counts.png", p4,
+ggsave("figures/Phase3/step19_GFS_plots_p4_composition_counts.png", p4,
        width = 12, height = 7, dpi = 200)
 cat("  Written: figures/SRK_GFS_plots_p4_composition_counts.png\n")
 

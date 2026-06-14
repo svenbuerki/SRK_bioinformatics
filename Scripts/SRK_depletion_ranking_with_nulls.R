@@ -60,7 +60,7 @@ K_SPECIES <- 59              # MM consensus — for subtitle reference
 # 1. LOAD
 # =============================================================================
 cat("Loading SRK_EO_allele_richness_with_nulls.tsv ...\n")
-dat <- read_tsv("Tables/SRK_EO_allele_richness_with_nulls.tsv",
+dat <- read_tsv("Tables/Phase5/step17b_EO_allele_richness_with_nulls.tsv",
                 show_col_types = FALSE) %>%
   mutate(
     level = factor(level, levels = c("EO", "BL")),
@@ -183,14 +183,14 @@ build_panel <- function(di_col, title_tag, subtitle_extra, show = "all") {
 # =============================================================================
 # 3. RENDER
 # =============================================================================
-dir.create("figures", showWarnings = FALSE)
+dir.create("figures/Phase5", recursive = TRUE, showWarnings = FALSE)
 
 render_set <- function(di_col, title_tag, subtitle_extra, base_stem) {
   variants <- list(blank = "none", EOs = "EO", all = "all")
   for (label in names(variants)) {
     p <- build_panel(di_col, title_tag, subtitle_extra,
                       show = variants[[label]])
-    out_stem <- paste0("figures/", base_stem, "_with_nulls_", label)
+    out_stem <- paste0("figures/Phase5/", base_stem, "_", label)
     ggsave(paste0(out_stem, ".png"), plot = p,
            width = 11, height = 8, dpi = 200)
     ggsave(paste0(out_stem, ".pdf"), plot = p,
@@ -202,13 +202,13 @@ render_set <- function(di_col, title_tag, subtitle_extra, base_stem) {
 render_set(
   "DI_observed", "observed",
   "Observed Depletion Index uses k_rarefied30 (sample-size-corrected).",
-  "SRK_depletion_ranking_observed"
+  "step17b_depletion_ranking_observed_with_nulls"
 )
 render_set(
   "DI_predicted", "predicted",
   paste0("Predicted Depletion Index uses MM-extrapolated k per group ",
          "(Step 15 asymptote)."),
-  "SRK_depletion_ranking_predicted"
+  "step17b_depletion_ranking_predicted_with_nulls"
 )
 
 cat("\nStep 17 (depletion-ranking) complete.\n")

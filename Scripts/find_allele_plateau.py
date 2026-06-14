@@ -25,7 +25,7 @@ from scipy.spatial.distance import squareform
 from scipy.cluster.hierarchy import linkage, fcluster
 
 # ─── inputs / config ──────────────────────────────────────────────────────────
-INPUT_FASTA = "SRK_functional_proteins_aligned.fasta"
+INPUT_FASTA = "Tables/Phase2/step9_functional_proteins_aligned.fasta"
 DOMAIN_REGION = (31, 430)
 THRESH_MIN, THRESH_MAX, THRESH_STEP = 0.0, 0.05, 0.0005
 

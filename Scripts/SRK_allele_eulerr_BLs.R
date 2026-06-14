@@ -33,8 +33,8 @@ suppressPackageStartupMessages({
 
 source("srk_bl_constants.R")
 
-GENOTYPES <- "Tables/SRK_individual_allele_genotypes.tsv"
-BL_FILE   <- "SRK_individual_BL_assignments.tsv"
+GENOTYPES <- "Tables/Phase2/step11_individual_allele_genotypes.tsv"
+BL_FILE   <- "Tables/Phase3/step13_individual_BL_assignments.tsv"
 
 # =============================================================================
 # 1. LOAD + BUILD BL-LEVEL ALLELE SETS
@@ -109,10 +109,10 @@ grid::grid.text(
 # =============================================================================
 # 3. SAVE
 # =============================================================================
-dir.create("figures", showWarnings = FALSE)
+dir.create("figures/Phase3", recursive = TRUE, showWarnings = FALSE)
 
 # PNG
-png("figures/SRK_allele_eulerr_BLs.png",
+png("figures/Phase3/step18_allele_eulerr_BLs.png",
     width = 10, height = 8, units = "in", res = 200, bg = "white")
 print(p)
 grid::grid.text(subtitle, x = 0.5, y = 0.04,
@@ -121,7 +121,7 @@ dev.off()
 cat("  Written: figures/SRK_allele_eulerr_BLs.png\n")
 
 # PDF
-pdf("figures/SRK_allele_eulerr_BLs.pdf", width = 10, height = 8)
+pdf("figures/Phase3/step18_allele_eulerr_BLs.pdf", width = 10, height = 8)
 print(p)
 grid::grid.text(subtitle, x = 0.5, y = 0.04,
                 gp = grid::gpar(fontsize = 9, fontface = "italic", col = "grey25"))

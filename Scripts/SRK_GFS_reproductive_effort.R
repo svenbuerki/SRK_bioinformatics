@@ -50,8 +50,8 @@ suppressPackageStartupMessages({
 # SETTINGS
 # =============================================================================
 
-GFS_FILE   <- "SRK_individual_GFS.tsv"
-ZYGO_FILE  <- "SRK_individual_zygosity.tsv"
+GFS_FILE   <- "Tables/Phase3/step19_individual_GFS.tsv"
+ZYGO_FILE  <- "Tables/Phase2/step12_individual_zygosity.tsv"
 EO_MIN_N   <- 5     # matches Step 17 / Step 19 convention
 
 TP2_PROP_AAAA <- 0.30   # TP2 threshold: >30% AAAA = CRITICAL
@@ -74,7 +74,7 @@ GFS_LABELS <- c(
   "ABCD (1.000)" = "ABCD  GFS = 1.000\n(maximum diversity)"
 )
 
-dir.create("figures", showWarnings = FALSE)
+dir.create("figures/Phase3", recursive = TRUE, showWarnings = FALSE)
 
 # =============================================================================
 # 1. LOAD DATA
@@ -157,7 +157,7 @@ write_tsv(
   bl_ann %>%
     mutate(BL = as.character(BL)) %>%
     select(BL, n, n_supporting, prop_supporting, prop_AAAA, mean_GFS),
-  "SRK_BL_reproductive_effort_summary.tsv"
+  "Tables/Phase3/step21_BL_reproductive_effort_summary.tsv"
 )
 cat("  Written: SRK_BL_reproductive_effort_summary.tsv\n")
 
@@ -283,16 +283,17 @@ p_bl <- build_repro_plot(
   )
 )
 
-pdf("SRK_GFS_reproductive_effort.pdf", width = 11, height = 6)
+dir.create("figures/Phase3", recursive = TRUE, showWarnings = FALSE)
+pdf("figures/Phase3/step21_GFS_reproductive_effort.pdf", width = 11, height = 6)
 print(p_eo)
 print(p_bl)
 invisible(dev.off())
-cat("  Written: SRK_GFS_reproductive_effort.pdf\n")
+cat("  Written: figures/SRK_GFS_reproductive_effort.pdf\n")
 
-ggsave("figures/SRK_GFS_reproductive_effort_EO.png", plot = p_eo,
+ggsave("figures/Phase3/step21_GFS_reproductive_effort_EO.png", plot = p_eo,
        width = 11, height = 6, dpi = 200)
 cat("  Written: figures/SRK_GFS_reproductive_effort_EO.png\n")
-ggsave("figures/SRK_GFS_reproductive_effort_BL.png", plot = p_bl,
+ggsave("figures/Phase3/step21_GFS_reproductive_effort_BL.png", plot = p_bl,
        width = 11, height = 6, dpi = 200)
 cat("  Written: figures/SRK_GFS_reproductive_effort_BL.png\n")
 
@@ -475,16 +476,16 @@ p_aaaa_bl <- build_aaaa_plot(
   )
 )
 
-pdf("SRK_GFS_AAAA_allele_composition.pdf", width = 11, height = 6)
+pdf("figures/Phase3/step21_GFS_AAAA_allele_composition.pdf", width = 11, height = 6)
 print(p_aaaa_eo)
 print(p_aaaa_bl)
 invisible(dev.off())
-cat("  Written: SRK_GFS_AAAA_allele_composition.pdf\n")
+cat("  Written: figures/SRK_GFS_AAAA_allele_composition.pdf\n")
 
-ggsave("figures/SRK_GFS_AAAA_allele_composition_EO.png", plot = p_aaaa_eo,
+ggsave("figures/Phase3/step21_GFS_AAAA_allele_composition_EO.png", plot = p_aaaa_eo,
        width = 11, height = 6, dpi = 200)
 cat("  Written: figures/SRK_GFS_AAAA_allele_composition_EO.png\n")
-ggsave("figures/SRK_GFS_AAAA_allele_composition_BL.png", plot = p_aaaa_bl,
+ggsave("figures/Phase3/step21_GFS_AAAA_allele_composition_BL.png", plot = p_aaaa_bl,
        width = 11, height = 6, dpi = 200)
 cat("  Written: figures/SRK_GFS_AAAA_allele_composition_BL.png\n")
 
