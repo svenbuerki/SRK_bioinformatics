@@ -326,11 +326,65 @@ re_dna_df["Recommended_action"] = (
 # priority for scheduling), then Re-PCR; within each block, sort by EO for
 # field-collection grouping.
 redo = pd.concat([re_dna_df, re_pcr_df], ignore_index=True)
+redo["Redo_reason_SI"] = ""
+
+# ─── Augment with Step 25b Insufficient_data samples ──────────────────────────
+# Samples that reached Step 9 with functional proteins but had too many
+# chimeric haplotypes for Step 25b to call SI/pSI/SC reliably are flagged
+# here so the lab team gets ONE consolidated redo list.
+SI_TSV = "Tables/Phase5/step25b_individual_SI_status.tsv"
+if os.path.exists(SI_TSV):
+    si_df = pd.read_csv(SI_TSV, sep="\t")
+    insuf = si_df[si_df["SI_status"] == "Insufficient_data"].copy()
+    # Drop samples already in the lab redo list (avoid double-listing)
+    already_listed = set(redo["Sample_ID"])
+    new_rows = insuf[~insuf["Sample_ID"].isin(already_listed)].copy()
+    if len(new_rows) > 0:
+        meta_lookup = audit.set_index("Sample_ID").to_dict("index")
+
+        def build_si_row(r):
+            sid = r["Sample_ID"]
+            m = meta_lookup.get(sid, {})
+            return {
+                "Lab_action":               "Re-sequence (SI status uncertain)",
+                "Sample_ID":                sid,
+                "Tube_number":              m.get("Tube_number", ""),
+                "Library":                  m.get("Library", ""),
+                "Barcode":                  m.get("Barcode", ""),
+                "EO":                       m.get("EO", r.get("EO_normalised", "")),
+                "EO_normalised":            r.get("EO_normalised", ""),
+                "BL_inferred":              r.get("BL_inferred", ""),
+                "n_raw_haps":               m.get("n_raw_haps", ""),
+                "Proteins_in_final_data":   m.get("Proteins_in_final_data", ""),
+                "Exclusion_stage":          "Step 25b — SI status",
+                "Recommended_action": (
+                    "Re-sequence to recover enough functional haplotypes for SI "
+                    "status call. Chimera filter dropped too many haplotypes to "
+                    "reliably assign SI / pSI / SC. Higher-coverage Nanopore "
+                    "library or fresh PCR + sequencing recommended."
+                ),
+                "Redo_reason_SI": (
+                    f"Insufficient_data (n_haps_OK={r.get('n_haps_OK','?')}, "
+                    f"REMOVED={r.get('n_haps_REMOVED','?')}, "
+                    f"chimeric={r.get('n_haps_chimeric','?')})"
+                ),
+            }
+
+        si_rows = pd.DataFrame([build_si_row(r) for _, r in new_rows.iterrows()])
+        redo = pd.concat([redo, si_rows], ignore_index=True)
+        print(f"Q4 — Step 25b Insufficient_data augmentation: +{len(si_rows)} samples added to redo CSV "
+              f"(unique to SI status; not previously flagged by Step 9 / 4 / 4b / 7b)")
+    else:
+        print(f"Q4 — Step 25b: 0 Insufficient_data samples to add (all already in Step 9 lab redo)")
+else:
+    print(f"Q4 — Step 25b SI status TSV not found ({SI_TSV}); skipping SI augmentation. "
+          "Run SRK_individual_SI_status.py first.")
+
 redo_cols = [
     "Lab_action", "Sample_ID", "Tube_number",
     "Library", "Barcode", "EO", "EO_normalised",
     "BL_inferred", "n_raw_haps", "Proteins_in_final_data", "Exclusion_stage",
-    "Recommended_action",
+    "Recommended_action", "Redo_reason_SI",
 ]
 redo = redo[redo_cols].sort_values(["Lab_action", "EO_normalised", "Sample_ID"])
 # Tube_number can be float-coerced on read when blanks are present; rewrite as clean integer strings.
