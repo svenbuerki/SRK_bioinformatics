@@ -24,8 +24,8 @@ phases <- data.frame(
   steps   = c("Steps 1-8",
               "Steps 9-12c",
               "Steps 13-21",
-              "Steps 25-28",
-              "Steps 22-23"),
+              "Steps 22-25",
+              "Steps 26-27"),
   bullets = c(
     "- Multi-replicate\n  assembly (Canu)\n- Assembly polishing\n  (RACON)\n- Polyploid phasing\n  (WhatsHap)\n- Phased haplotypes\n  per individual",
     "- Translate &\n  abundance-filter\n  functional proteins\n- Distance-based\n  S-allele clustering\n- Tetraploid\n  genotyping\n  (AAAA -> ABCD)\n- Data-quality gate\n  -> lab redo CSV",

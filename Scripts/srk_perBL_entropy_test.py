@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-srk_perBL_entropy_test.py   (Step 22d — diagnostic, optional)
+srk_perBL_entropy_test.py   (Step 26d — diagnostic, optional)
 
 Per-BL Shannon entropy decomposition: drift vs selection at LEPA HV columns.
 
 Scientific question
 -------------------
 LEPA's per-column Shannon entropy is markedly lower than Brassica's even
-after collapsing Synonymy group redundancy (Step 22c). Two competing mechanisms
+after collapsing Synonymy group redundancy (Step 26c). Two competing mechanisms
 could explain the residual gap:
 
   (A) Independent drift per Bottleneck Lineage. Each BL has stochastically
@@ -35,13 +35,13 @@ column:
 
 Pipeline placement
 ------------------
-Run AFTER Step 22a (produces SRK_LEPA_HV_positions.tsv) and Step 13
-(produces SRK_individual_BL_assignments.tsv). Independent of Step 22b/c.
+Run AFTER Step 26a (produces SRK_LEPA_HV_positions.tsv) and Step 13
+(produces SRK_individual_BL_assignments.tsv). Independent of Step 26b/c.
 
 Inputs
 ------
-  SRK_combined_alignment.fasta            from Step 22a
-  SRK_LEPA_HV_positions.tsv               from Step 22a (canonical HV cols)
+  SRK_combined_alignment.fasta            from Step 26a
+  SRK_LEPA_HV_positions.tsv               from Step 26a (canonical HV cols)
   SRK_individual_BL_assignments.tsv       from Step 13
   SRK_individual_allele_table.tsv         from Step 11 (allele genotypes)
   SRK_individual_zygosity.tsv             from Step 12 (genotype patterns)
@@ -70,8 +70,8 @@ from Bio import SeqIO
 # =============================================================================
 # Settings
 # =============================================================================
-COMBINED_ALN  = "Tables/Phase5/step22a_combined_alignment.fasta"
-LEPA_HV_TSV   = "Tables/Phase5/step22a_LEPA_HV_positions.tsv"
+COMBINED_ALN  = "Tables/Phase5/step26a_combined_alignment.fasta"
+LEPA_HV_TSV   = "Tables/Phase5/step26a_LEPA_HV_positions.tsv"
 BL_TSV        = "Tables/Phase3/step13_individual_BL_assignments.tsv"
 ALLELE_TSV    = "Tables/Phase2/step11_individual_allele_table.tsv"
 ZYGO_TSV      = "Tables/Phase2/step12_individual_zygosity.tsv"
@@ -95,12 +95,12 @@ AA_COLOURS = {aa: c for aa, c in zip(
     plt.cm.tab20(np.linspace(0, 1, 20))
 )}
 
-OUT_RES_TSV  = "Tables/Phase5/step22d_perBL_HV_residue_table.tsv"
-OUT_SUMM_TSV = "Tables/Phase5/step22d_perBL_HV_concordance_summary.tsv"
-OUT_PDF      = "figures/Phase5/step22d_perBL_entropy_figure.pdf"
-OUT_PNG      = "figures/Phase5/step22d_perBL_entropy_figure.png"
+OUT_RES_TSV  = "Tables/Phase5/step26d_perBL_HV_residue_table.tsv"
+OUT_SUMM_TSV = "Tables/Phase5/step26d_perBL_HV_concordance_summary.tsv"
+OUT_PDF      = "figures/Phase5/step26d_perBL_entropy_figure.pdf"
+OUT_PNG      = "figures/Phase5/step26d_perBL_entropy_figure.png"
 
-os.makedirs("figures/Phase4", exist_ok=True); os.makedirs("Tables/Phase4", exist_ok=True)
+os.makedirs("figures/Phase5", exist_ok=True); os.makedirs("Tables/Phase5", exist_ok=True)
 
 # =============================================================================
 # 1. Load inputs

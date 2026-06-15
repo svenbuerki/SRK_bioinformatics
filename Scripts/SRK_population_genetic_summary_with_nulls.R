@@ -40,10 +40,10 @@ BL_UNASSIGNED_COLOR <- "#999999"
 ############################
 # 1. Load files
 ############################
-geno <- read.table("Tables/Phase4/step26_individual_allele_genotypes_with_nulls.tsv",
+geno <- read.table("Tables/Phase4/step23_individual_allele_genotypes_with_nulls.tsv",
                    header = TRUE, sep = "\t", check.names = FALSE,
                    stringsAsFactors = FALSE)
-zyg  <- read.table("Tables/Phase4/step26_individual_zygosity_with_nulls.tsv",
+zyg  <- read.table("Tables/Phase4/step23_individual_zygosity_with_nulls.tsv",
                    header = TRUE, sep = "\t",
                    stringsAsFactors = FALSE)
 

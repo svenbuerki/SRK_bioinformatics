@@ -61,9 +61,9 @@ import pandas as pd
 REPO    = Path(__file__).resolve().parent
 TABLES  = REPO / "Tables"
 
-GENO_TSV = TABLES / "Phase4" / "step26_individual_allele_genotypes_with_nulls.tsv"
-OUT_TRAJ = TABLES / "Phase4" / "step27_inheritance_trajectories.tsv"
-OUT_TTSC = TABLES / "Phase4" / "step27_inheritance_time_to_sc.tsv"
+GENO_TSV = TABLES / "Phase4" / "step23_individual_allele_genotypes_with_nulls.tsv"
+OUT_TRAJ = TABLES / "Phase4" / "step24_inheritance_trajectories.tsv"
+OUT_TTSC = TABLES / "Phase4" / "step24_inheritance_time_to_sc.tsv"
 
 # ─── Defaults ─────────────────────────────────────────────────────────────────
 DEFAULTS = dict(

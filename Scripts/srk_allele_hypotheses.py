@@ -67,7 +67,7 @@ ALLELE_TABLE = "Tables/Phase2/step11_individual_allele_table.tsv"
 # cannot serve as reliable compatibility-prediction parents; SC and
 # Insufficient_data individuals are excluded for the same reason. If the file
 # is missing (e.g., Phase 4 not yet run), the filter is skipped with a warning.
-SI_STATUS_TSV = "Tables/Phase4/step25b_individual_SI_status.tsv"
+SI_STATUS_TSV = "Tables/Phase4/step22b_individual_SI_status.tsv"
 CROSS_TSV    = None   # set to cross results TSV to activate Part 4
 
 # Brassica HV-region annotation (Ma et al. 2016, Cell Research; PDB 5GYY).
@@ -76,7 +76,7 @@ CROSS_TSV    = None   # set to cross results TSV to activate Part 4
 # minimum-spanning band per Brassica HV region. Generate the TSV with
 # `python3 srk_brassica_hv_mapping.py` after a one-time mafft --add of
 # brassica_rapa_SRK9.fasta to the LEPA representative alignment.
-BRASSICA_HV_TSV = "Tables/Phase5/step22a_brassica_hv_mapping.tsv"
+BRASSICA_HV_TSV = "Tables/Phase5/step26a_brassica_hv_mapping.tsv"
 
 # Canonical LEPA HV columns produced by srk_variability_landscape.py
 # (Shannon-entropy based, validated by cross-Brassicaceae comparison).
@@ -84,7 +84,7 @@ BRASSICA_HV_TSV = "Tables/Phase5/step22a_brassica_hv_mapping.tsv"
 # Part 1 — Parts 2-5 (HV-distance matrix, UPGMA classes, cross design,
 # synonymy network) then operate on the same HV columns that were
 # statistically validated against Brassica and Arabidopsis.
-LEPA_HV_POSITIONS_FILE = "Tables/Phase5/step22a_LEPA_HV_positions.tsv"
+LEPA_HV_POSITIONS_FILE = "Tables/Phase5/step26a_LEPA_HV_positions.tsv"
 
 # S-domain region (1-based, inclusive) — must match Step 10
 DOMAIN_REGION = (31, 430)
@@ -114,15 +114,15 @@ CAT_COMPATIBLE_WITHIN = "Compatible_within"   # same class, substantial HV diffe
 CAT_COMPATIBLE_CROSS  = "Compatible_cross"    # different class — guaranteed positive control
 
 # Output files
-OUT_VARIABILITY  = "figures/Phase5/step22a_variability_landscape.pdf"
-OUT_HV_DISTS     = "Tables/Phase5/step22b_HV_allele_distances.tsv"
-OUT_FUNC_GROUPS  = "Tables/Phase5/step22b_functional_allele_groups.tsv"
-OUT_SYNONYMY     = "Tables/Phase5/step22b_synonymy_candidates.tsv"
-OUT_CROSS_DESIGN = "Tables/Phase5/step22b_AAAA_cross_design_HV.tsv"
-OUT_CLUSTER_FIG  = "figures/Phase5/step22b_HV_cluster_figure.pdf"
-OUT_RESULTS_FIG  = "figures/Phase5/step23_cross_result_analysis_HV.pdf"
+OUT_VARIABILITY  = "figures/Phase5/step26a_variability_landscape.pdf"
+OUT_HV_DISTS     = "Tables/Phase5/step26b_HV_allele_distances.tsv"
+OUT_FUNC_GROUPS  = "Tables/Phase5/step26b_functional_allele_groups.tsv"
+OUT_SYNONYMY     = "Tables/Phase5/step26b_synonymy_candidates.tsv"
+OUT_CROSS_DESIGN = "Tables/Phase5/step26b_AAAA_cross_design_HV.tsv"
+OUT_CLUSTER_FIG  = "figures/Phase5/step26b_HV_cluster_figure.pdf"
+OUT_RESULTS_FIG  = "figures/Phase5/step27_cross_result_analysis_HV.pdf"
 
-os.makedirs("figures/Phase4", exist_ok=True); os.makedirs("Tables/Phase4", exist_ok=True)
+os.makedirs("figures/Phase5", exist_ok=True); os.makedirs("Tables/Phase5", exist_ok=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PART 1 — Variability landscape and HV position identification
@@ -440,7 +440,7 @@ leaf_order_names = [allele_names[i] for i in leaf_order_idx]
 # PART 2b — Allele similarity heatmap
 # ─────────────────────────────────────────────────────────────────────────────
 
-OUT_HEATMAP = "figures/Phase5/step22b_allele_similarity_heatmap.pdf"
+OUT_HEATMAP = "figures/Phase5/step26b_allele_similarity_heatmap.pdf"
 print(f"\nWriting allele similarity heatmap to {OUT_HEATMAP} ...")
 
 # Reorder distance matrix by UPGMA leaf order
@@ -578,7 +578,7 @@ if os.path.exists(SI_STATUS_TSV):
 else:
     print(f"WARNING: Phase 4 SI status file not found ({SI_STATUS_TSV}); "
           "cross design includes all AAAA individuals regardless of SI status. "
-          "Run SRK_individual_SI_status.py (Step 25b) first to enable the filter.")
+          "Run SRK_individual_SI_status.py (Step 22b) first to enable the filter.")
 
 df_allele_table = pd.read_csv(ALLELE_TABLE, sep="\t", encoding="utf-8-sig")
 
@@ -750,7 +750,7 @@ print(f"  Total                                              : {len(df_cross):5d
 # PART 3b — Cross design summary figure
 # ─────────────────────────────────────────────────────────────────────────────
 
-OUT_SUMMARY_FIG = "figures/Phase5/step22b_cross_design_summary.pdf"
+OUT_SUMMARY_FIG = "figures/Phase5/step26b_cross_design_summary.pdf"
 print(f"\nWriting cross design summary figure to {OUT_SUMMARY_FIG} ...")
 
 from matplotlib.patches import FancyBboxPatch
@@ -977,9 +977,9 @@ except ImportError:
     print("  Install with: pip install networkx")
     _HAS_NX = False
 
-OUT_NET_GROUPS        = "figures/Phase5/step22b_synonymy_network_groups.pdf"
-OUT_NET_TESTS        = "figures/Phase5/step22b_synonymy_network_tests.pdf"
-OUT_SYN_GROUPS   = "Tables/Phase5/step22b_synonymy_groups.csv"
+OUT_NET_GROUPS        = "figures/Phase5/step26b_synonymy_network_groups.pdf"
+OUT_NET_TESTS        = "figures/Phase5/step26b_synonymy_network_tests.pdf"
+OUT_SYN_GROUPS   = "Tables/Phase5/step26b_synonymy_groups.csv"
 
 if _HAS_NX:
     print(f"\nBuilding synonymy network ...")

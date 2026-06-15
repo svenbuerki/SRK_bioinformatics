@@ -328,11 +328,11 @@ re_dna_df["Recommended_action"] = (
 redo = pd.concat([re_dna_df, re_pcr_df], ignore_index=True)
 redo["Redo_reason_SI"] = ""
 
-# ─── Augment with Step 25b Insufficient_data samples ──────────────────────────
+# ─── Augment with Step 22b Insufficient_data samples ──────────────────────────
 # Samples that reached Step 9 with functional proteins but had too many
-# chimeric haplotypes for Step 25b to call SI/pSI/SC reliably are flagged
+# chimeric haplotypes for Step 22b to call SI/pSI/SC reliably are flagged
 # here so the lab team gets ONE consolidated redo list.
-SI_TSV = "Tables/Phase4/step25b_individual_SI_status.tsv"
+SI_TSV = "Tables/Phase4/step22b_individual_SI_status.tsv"
 if os.path.exists(SI_TSV):
     si_df = pd.read_csv(SI_TSV, sep="\t")
     insuf = si_df[si_df["SI_status"] == "Insufficient_data"].copy()
@@ -356,7 +356,7 @@ if os.path.exists(SI_TSV):
                 "BL_inferred":              r.get("BL_inferred", ""),
                 "n_raw_haps":               m.get("n_raw_haps", ""),
                 "Proteins_in_final_data":   m.get("Proteins_in_final_data", ""),
-                "Exclusion_stage":          "Step 25b — SI status",
+                "Exclusion_stage":          "Step 22b — SI status",
                 "Recommended_action": (
                     "Re-sequence to recover enough functional haplotypes for SI "
                     "status call. Chimera filter dropped too many haplotypes to "
@@ -372,12 +372,12 @@ if os.path.exists(SI_TSV):
 
         si_rows = pd.DataFrame([build_si_row(r) for _, r in new_rows.iterrows()])
         redo = pd.concat([redo, si_rows], ignore_index=True)
-        print(f"Q4 — Step 25b Insufficient_data augmentation: +{len(si_rows)} samples added to redo CSV "
+        print(f"Q4 — Step 22b Insufficient_data augmentation: +{len(si_rows)} samples added to redo CSV "
               f"(unique to SI status; not previously flagged by Step 9 / 4 / 4b / 7b)")
     else:
-        print(f"Q4 — Step 25b: 0 Insufficient_data samples to add (all already in Step 9 lab redo)")
+        print(f"Q4 — Step 22b: 0 Insufficient_data samples to add (all already in Step 9 lab redo)")
 else:
-    print(f"Q4 — Step 25b SI status TSV not found ({SI_TSV}); skipping SI augmentation. "
+    print(f"Q4 — Step 22b SI status TSV not found ({SI_TSV}); skipping SI augmentation. "
           "Run SRK_individual_SI_status.py first.")
 
 redo_cols = [

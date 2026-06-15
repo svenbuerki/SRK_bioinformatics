@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-srk_cross_plan.py   (Step 22e — hypothesis-testing cross plan generator)
+srk_cross_plan.py   (Step 26e — hypothesis-testing cross plan generator)
 
-Translates the Step 22b cross categorisation into a phased experimental
+Translates the Step 26b cross categorisation into a phased experimental
 protocol that tests S-allele specificity hypotheses with explicit
 genotype constraints. Generates one TSV per hypothesis level (H0, H1a,
 H1b, H2, H3) listing concrete maternal/paternal individual IDs, plus a
@@ -25,10 +25,10 @@ Compatible_within / Compatible_cross) with observed seed yield.
 
 Inputs
 ------
-  SRK_AAAA_cross_design_HV.tsv      Step 22b — pre-computed cross design for AAAA × AAAA pairs
-  SRK_synonymy_groups.csv            Step 22b — synonymy-group membership per allele
-  SRK_HV_allele_distances.tsv        Step 22b — HV distance matrix (for AAAB pairings)
-  SRK_functional_allele_groups.tsv   Step 22b — allele -> Class I / Class II
+  SRK_AAAA_cross_design_HV.tsv      Step 26b — pre-computed cross design for AAAA × AAAA pairs
+  SRK_synonymy_groups.csv            Step 26b — synonymy-group membership per allele
+  SRK_HV_allele_distances.tsv        Step 26b — HV distance matrix (for AAAB pairings)
+  SRK_functional_allele_groups.tsv   Step 26b — allele -> Class I / Class II
   SRK_individual_BL_assignments.tsv  Step 13 — BL per individual
   SRK_individual_zygosity.tsv        Step 12 — genotype patterns
   SRK_individual_allele_table.tsv    Step 11 — allele copies per individual
@@ -76,10 +76,10 @@ def parse_allele_composition(comp_str: str) -> list[tuple[str, int]]:
 # =============================================================================
 # Settings
 # =============================================================================
-CROSS_DESIGN_TSV  = "Tables/Phase5/step22b_AAAA_cross_design_HV.tsv"
-SYN_GROUPS_CSV    = "Tables/Phase5/step22b_synonymy_groups.csv"
-HV_DIST_TSV       = "Tables/Phase5/step22b_HV_allele_distances.tsv"
-FUNC_GROUPS_TSV   = "Tables/Phase5/step22b_functional_allele_groups.tsv"
+CROSS_DESIGN_TSV  = "Tables/Phase5/step26b_AAAA_cross_design_HV.tsv"
+SYN_GROUPS_CSV    = "Tables/Phase5/step26b_synonymy_groups.csv"
+HV_DIST_TSV       = "Tables/Phase5/step26b_HV_allele_distances.tsv"
+FUNC_GROUPS_TSV   = "Tables/Phase5/step26b_functional_allele_groups.tsv"
 BL_TSV            = "Tables/Phase3/step13_individual_BL_assignments.tsv"
 ZYGO_TSV          = "Tables/Phase2/step12_individual_zygosity.tsv"
 ALLELE_TSV        = "Tables/Phase2/step11_individual_allele_table.tsv"
@@ -87,9 +87,9 @@ ALLELE_TSV        = "Tables/Phase2/step11_individual_allele_table.tsv"
 # full SI. pSI individuals (1-3 broken copies) cannot serve as reliable
 # compatibility-prediction parents; SC and Insufficient_data individuals are
 # excluded for the same reason.
-SI_STATUS_TSV     = "Tables/Phase4/step25b_individual_SI_status.tsv"
+SI_STATUS_TSV     = "Tables/Phase4/step22b_individual_SI_status.tsv"
 
-WITHIN_CLASS_THRESHOLD = 0.04   # must match Step 22b
+WITHIN_CLASS_THRESHOLD = 0.04   # must match Step 26b
 
 # Per-phase replicate-count recommendations
 REPLICATES = {
@@ -117,15 +117,15 @@ from srk_bl_constants import BL_ORDER, BL_ORDER_NUMERIC, BL_COLORS
 BL_PALETTE = BL_COLORS
 
 OUT_TSVS = {
-    "H0":  "Tables/Phase5/step22e_cross_plan_H0_SI_validation.tsv",
-    "H1a": "Tables/Phase5/step22e_cross_plan_H1a_within_class_baseline.tsv",
-    "H1b": "Tables/Phase5/step22e_cross_plan_H1b_between_class_baseline.tsv",
-    "H2":  "Tables/Phase5/step22e_cross_plan_H2_synonymy_tests.tsv",
-    "H3":  "Tables/Phase5/step22e_cross_plan_H3_hidden_bin_tests.tsv",
+    "H0":  "Tables/Phase5/step26e_cross_plan_H0_SI_validation.tsv",
+    "H1a": "Tables/Phase5/step26e_cross_plan_H1a_within_class_baseline.tsv",
+    "H1b": "Tables/Phase5/step26e_cross_plan_H1b_between_class_baseline.tsv",
+    "H2":  "Tables/Phase5/step26e_cross_plan_H2_synonymy_tests.tsv",
+    "H3":  "Tables/Phase5/step26e_cross_plan_H3_hidden_bin_tests.tsv",
 }
-OUT_SUMMARY_TSV = "Tables/Phase5/step22e_cross_plan_summary.tsv"
-OUT_FIG_PDF     = "figures/Phase5/step22e_cross_plan_summary.pdf"
-OUT_FIG_PNG     = "figures/Phase5/step22e_cross_plan_summary.png"
+OUT_SUMMARY_TSV = "Tables/Phase5/step26e_cross_plan_summary.tsv"
+OUT_FIG_PDF     = "figures/Phase5/step26e_cross_plan_summary.pdf"
+OUT_FIG_PNG     = "figures/Phase5/step26e_cross_plan_summary.png"
 
 CROSS_PLAN_COLS = [
     "Hypothesis", "Cross_id", "Priority",
@@ -138,7 +138,7 @@ CROSS_PLAN_COLS = [
     "Paired_control", "Notes",
 ]
 
-os.makedirs("figures/Phase4", exist_ok=True); os.makedirs("Tables/Phase4", exist_ok=True)
+os.makedirs("figures/Phase5", exist_ok=True); os.makedirs("Tables/Phase5", exist_ok=True)
 
 # =============================================================================
 # 1. Load inputs and build per-individual lookups
@@ -185,7 +185,7 @@ if os.path.exists(SI_STATUS_TSV):
 else:
     print(f"  WARNING: Phase 4 SI status file not found ({SI_STATUS_TSV}); "
           "cross plan includes all individuals regardless of SI status. "
-          "Run SRK_individual_SI_status.py (Step 25b) first to enable the filter.")
+          "Run SRK_individual_SI_status.py (Step 22b) first to enable the filter.")
 
 print(f"  cross_design:  {len(cross_design)} AAAA×AAAA pairs")
 print(f"  syn_groups:    {len(syn_groups)} alleles, "
@@ -500,7 +500,7 @@ print(f"  H1a crosses: {len(h1a_rows)}")
 # =============================================================================
 # 4. H1b — between-Class compatible (max yield) via heterozygous Class II carrier
 # =============================================================================
-# Class II is identified as the minority functional group from Step 22b
+# Class II is identified as the minority functional group from Step 26b
 # (whichever FG does NOT contain the majority of alleles).
 fg_majority = max(set(allele_to_class.values()), key=lambda c: sum(1 for v in allele_to_class.values() if v == c))
 fg_class2 = next((c for c in set(allele_to_class.values()) if c != fg_majority), "FG02")
@@ -844,7 +844,7 @@ if si_excluded_df is not None and len(si_excluded_df) > 0:
             ["Canonical_Hypothesis", "Canonical_Cross_id",
              "Could_alternate_for_role", "Excluded_individual"]
         )
-        OUT_ALT_TSV = "Tables/Phase5/step22e_cross_plan_SI_excluded_candidates.tsv"
+        OUT_ALT_TSV = "Tables/Phase5/step26e_cross_plan_SI_excluded_candidates.tsv"
         alt_df.to_csv(OUT_ALT_TSV, sep="\t", index=False)
         n_unique_ind  = alt_df["Excluded_individual"].nunique()
         n_unique_cross = alt_df["Canonical_Cross_id"].nunique()
@@ -868,7 +868,7 @@ if si_excluded_df is not None and len(si_excluded_df) > 0:
                   .sort_values(["SI_status", "N_canonical_crosses_unlocked"],
                                ascending=[True, False])
         )
-        OUT_PRIORITY_TSV = "Tables/Phase5/step22e_cross_plan_SI_excluded_priority.tsv"
+        OUT_PRIORITY_TSV = "Tables/Phase5/step26e_cross_plan_SI_excluded_priority.tsv"
         summary.to_csv(OUT_PRIORITY_TSV, sep="\t", index=False)
         print(f"  Re-sequencing priority list: {len(summary)} individuals "
               f"→ {OUT_PRIORITY_TSV}")

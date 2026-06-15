@@ -107,25 +107,25 @@ The pipeline consists of **28 main steps organized into five phases**, progressi
 20. **TP2 Tipping Point Analysis** – EO-level assessment placing mean GFS and proportion of AAAA individuals in interaction. EOs breaching both thresholds simultaneously (mean GFS < 0.667; proportion AAAA > 30%) are flagged CRITICAL, AT RISK, or OK.
 21. **Reproductive Effort Support per Element Occurrence** – Horizontal proportional bar chart showing the fraction of individuals at each GFS tier per EO.
 
-## Phase 4: Per-individual SI status, null-aware genotypes, and forward simulation (Steps 25–28)
+## Phase 4: Per-individual SI status, null-aware genotypes, and forward simulation (Steps 22–25)
 
 *Phase 4 must precede Phase 5: cross design is only meaningful once we know each individual's SI status (full SI, partial SI, or self-compatible), because a broken-SI individual cannot serve as a reliable parent in a cross-compatibility prediction.*
 
-25. **Per-individual SI / pSI / SC reconstruction** – `SRK_individual_SI_status.py` (Step 25b) re-aggregates per-haplotype OK / REMOVED calls from the Step-7 `_frame1_stopcodon_log.tsv` files to classify each individual as **SI** (all 4 copies functional), **pSI** (1–3 copies broken — partial SI loss), **SC** (all 4 copies broken — full self-compatibility), or **Insufficient_data** (too few haplotypes after chimera filtering to call status). `SRK_null_allele_assignment.py` (Step 25a) optionally augments this by mapping REMOVED haplotypes to their nearest functional allele via AA-distance for chimera-aware identity assignment. `SRK_SI_status_figures.R` produces species-, BL-, and EO-level stacked-bar figures with `_full` (7-tier QC view) and `_robust` (5-tier defensible-call view) variants. **Current dataset: 247 SI / 15 pSI / 1 SC / 234 Insufficient_data.**
-26. **Null-aware genotype rebuild** – `SRK_genotype_null_alleles.py` rewrites the Step 11 allele × individual matrix so that pSI individuals carry explicit `Allele_NULL` copies (proportional to `copies_nonfunctional`) and the single SC individual is represented as `Allele_NULL × 4`; rows sum to 4 across the 49 functional alleles + NULL. Outputs `tables/Phase4/step26_individual_allele_genotypes_with_nulls.tsv` + a redo flag list (`step26_samples_for_redo.tsv`) for the 234 Insufficient_data individuals. Triggers the **null-aware cascade re-runs**: Step 14b (pop gen), Step 17b (TP1 P_compat + DI ranking), Step 19b + 20b (GFS + TP2) — same scripts as the canonical Steps 14/17/19/20 but reading the null-aware genotype matrix.
-27. **Forward-time tetraploid inheritance simulator** – `SRK_inheritance_simulator.py` runs a forward-time multi-replicate simulation per BL under multiple scenarios (baseline / high_drift / rescue_high / rescue_low) starting from the empirical Step 26 genotypes. Tracks per-copy NULL frequency, SC frequency, and time-to-50%-SC trajectories. `SRK_inheritance_figures.R` produces the trajectory + SC-progression + time-to-SC figures.
-28. **AA-distance null-allele assignment + donor ranking** – `SRK_injection_donor_ranking.py` ranks candidate seed parents for allele-injection crosses to rescue specific BLs / EOs. `SRK_donor_ranking_figure.R` produces the donor-recovery-ladder figure (`figures/Phase4/step28_donor_recovery_ladder.{pdf,png}`).
+22. **Per-individual SI / pSI / SC reconstruction** – `SRK_individual_SI_status.py` (Step 22b) re-aggregates per-haplotype OK / REMOVED calls from the Step-7 `_frame1_stopcodon_log.tsv` files to classify each individual as **SI** (all 4 copies functional), **pSI** (1–3 copies broken — partial SI loss), **SC** (all 4 copies broken — full self-compatibility), or **Insufficient_data** (too few haplotypes after chimera filtering to call status). `SRK_null_allele_assignment.py` (Step 22a) optionally augments this by mapping REMOVED haplotypes to their nearest functional allele via AA-distance for chimera-aware identity assignment. `SRK_SI_status_figures.R` produces species-, BL-, and EO-level stacked-bar figures with `_full` (7-tier QC view) and `_robust` (5-tier defensible-call view) variants. **Current dataset: 247 SI / 15 pSI / 1 SC / 234 Insufficient_data.**
+23. **Null-aware genotype rebuild** – `SRK_genotype_null_alleles.py` rewrites the Step 11 allele × individual matrix so that pSI individuals carry explicit `Allele_NULL` copies (proportional to `copies_nonfunctional`) and the single SC individual is represented as `Allele_NULL × 4`; rows sum to 4 across the 49 functional alleles + NULL. Outputs `tables/Phase4/step23_individual_allele_genotypes_with_nulls.tsv` + a redo flag list (`step23_samples_for_redo.tsv`) for the 234 Insufficient_data individuals. Triggers the **null-aware cascade re-runs**: Step 14b (pop gen), Step 17b (TP1 P_compat + DI ranking), Step 19b + 20b (GFS + TP2) — same scripts as the canonical Steps 14/17/19/20 but reading the null-aware genotype matrix.
+24. **Forward-time tetraploid inheritance simulator** – `SRK_inheritance_simulator.py` runs a forward-time multi-replicate simulation per BL under multiple scenarios (baseline / high_drift / rescue_high / rescue_low) starting from the empirical Step 23 genotypes. Tracks per-copy NULL frequency, SC frequency, and time-to-50%-SC trajectories. `SRK_inheritance_figures.R` produces the trajectory + SC-progression + time-to-SC figures.
+25. **Donor ranking for allele injection** – `SRK_injection_donor_ranking.py` ranks candidate seed parents for allele-injection crosses to rescue specific BLs / EOs. `SRK_donor_ranking_figure.R` produces the donor-recovery-ladder figure (`figures/Phase4/step25_donor_recovery_ladder.{pdf,png}`).
 
-## Phase 5: Testing S-allele Hypotheses and Cross Design (Steps 22–23)
+## Phase 5: Testing S-allele Hypotheses and Cross Design (Steps 26–27)
 
 *Phase 5 uses the per-individual SI status established in Phase 4: only individuals classified as SI (or pSI · low confidence) are valid parents for the cross plan, ensuring that experimental compatibility predictions rest on functioning recognition machinery.*
 
-22. **HV-Based Allele Hypothesis Testing and Crossing Design** – Multi-script workflow. **Step 22a** (`srk_variability_landscape.py`): combined alignment of LEPA + *Brassica rapa*/*B. oleracea* + *Arabidopsis lyrata*/*A. halleri* SRK alleles; identical sliding-window Shannon-entropy scan applied to each species; per-species HV regions called at mean + 1×SD; anchored structurally by 11 of 12 mappable SCR9-contact residues from Ma et al. 2016 (PDB 5GYY); canonical 66 LEPA HV columns written to `tables/Phase5/step22a_LEPA_HV_positions.tsv` (in the current post-QC dataset, the cross-genus HV-overlap permutation is no longer significant for LEPA pairs — interpreted as drift-eroded standing variation, with Brassica↔Arabidopsis remaining highly significant). **Step 22b** (`srk_allele_hypotheses.py`): reads the canonical HV columns, computes HV-only pairwise distances, UPGMA-clusters into Class I / Class II, builds the synonymy network (HV-identical synonymy groups + Synonymy_test bridges), and generates the Incompatible / Synonymy_test / Compatible_within / Compatible_cross cross design — *restricted to parents whose Phase 4 SI status is `SI`*. **Steps 22c and 22d** are optional mechanism diagnostics. **Step 22e** (`srk_cross_plan.py`) is the operational deliverable — a phased cross plan testing five nested hypotheses (H0 SI validation; H1a within-Class baseline; H1b between-Class baseline; H2 synonymy bin boundaries; H3 hidden bins via heterozygous donors) with explicit AAAA / AAAB / AABB genotype requirements + paired controls for AAAB-mediated tests.
-23. **Cross Result Analysis** – Reads completed crossing records and tests whether the cross category (Incompatible / Synonymy_test / Compatible_within / Compatible_cross) predicts seed yield, validating the sequence-based allele definitions against experimental cross-compatibility data. Activated by setting `CROSS_TSV` in the script once crossing data are available.
+26. **HV-Based Allele Hypothesis Testing and Crossing Design** – Multi-script workflow. **Step 26a** (`srk_variability_landscape.py`): combined alignment of LEPA + *Brassica rapa*/*B. oleracea* + *Arabidopsis lyrata*/*A. halleri* SRK alleles; identical sliding-window Shannon-entropy scan applied to each species; per-species HV regions called at mean + 1×SD; anchored structurally by 11 of 12 mappable SCR9-contact residues from Ma et al. 2016 (PDB 5GYY); canonical 66 LEPA HV columns written to `tables/Phase5/step26a_LEPA_HV_positions.tsv` (in the current post-QC dataset, the cross-genus HV-overlap permutation is no longer significant for LEPA pairs — interpreted as drift-eroded standing variation, with Brassica↔Arabidopsis remaining highly significant). **Step 26b** (`srk_allele_hypotheses.py`): reads the canonical HV columns, computes HV-only pairwise distances, UPGMA-clusters into Class I / Class II, builds the synonymy network (HV-identical synonymy groups + Synonymy_test bridges), and generates the Incompatible / Synonymy_test / Compatible_within / Compatible_cross cross design — *restricted to parents whose Phase 4 SI status is `SI`*. **Steps 26c and 26d** are optional mechanism diagnostics. **Step 26e** (`srk_cross_plan.py`) is the operational deliverable — a phased cross plan testing five nested hypotheses (H0 SI validation; H1a within-Class baseline; H1b between-Class baseline; H2 synonymy bin boundaries; H3 hidden bins via heterozygous donors) with explicit AAAA / AAAB / AABB genotype requirements + paired controls for AAAB-mediated tests.
+27. **Cross Result Analysis** – Reads completed crossing records and tests whether the cross category (Incompatible / Synonymy_test / Compatible_within / Compatible_cross) predicts seed yield, validating the sequence-based allele definitions against experimental cross-compatibility data. Activated by setting `CROSS_TSV` in the script once crossing data are available.
 
 ## Output Organisation (2026-06-14 refactor)
 
-Every canonical pipeline script (Step 9 → 28) writes to a **Phase- and step-prefixed path**:
+Every canonical pipeline script (Step 9 → 27) writes to a **Phase- and step-prefixed path**:
 
 ```
 FASTA/                  ← external reference FASTAs (Brassica + Arabidopsis SRK)
@@ -138,7 +138,7 @@ Every plot produces both `.pdf` (vector) and `.png` (raster) except inherently m
 
 **Phase 1 wrapper:** `Scripts/run_within_library_suite.sh` chains Steps 2 → 8 for every library listed in a TSV config (auto-generated from `Library*/barcode??` if absent), pipes each script's prompts automatically, skips already-completed samples, and continues past per-library failures. Env vars: `CHIMERA_FILTER_MODE`, `MIN_UNIFORMITY` (default 0.2 — Library 005 calibration), `FORCE_SAMPLE`, `FORCE_CANU`, `START_AT_STEP`, `STOP_AT_STEP`.
 
-**Phase 4 LEPA-only filter (2026-06-14):** `pad_representatives.py` now restricts Step 22 inputs to the 49 LEPA-ingroup-observed alleles (drops 6 outgroup-only alleles from *L. montanum* / *L. freemontii* / *L. philonitron*) so the cross-Brassicaceae variability analysis isn't contaminated by non-LEPA sequences.
+**Phase 4 LEPA-only filter (2026-06-14):** `pad_representatives.py` now restricts Step 26 inputs to the 49 LEPA-ingroup-observed alleles (drops 6 outgroup-only alleles from *L. montanum* / *L. freemontii* / *L. philonitron*) so the cross-Brassicaceae variability analysis isn't contaminated by non-LEPA sequences.
 
 ## Requirements
 
@@ -330,10 +330,48 @@ Rscript SRK_individual_GFS.R
 Rscript SRK_GFS_reproductive_effort.R
 ```
 
-5.  **Phase 4 — Testing S-allele Hypotheses (Steps 22–23):**
+5.  **Phase 4 — Per-individual SI status, null-aware genotypes, forward simulation (Steps 22–25):**
 
 ``` bash
-# Step 22a: cross-Brassicaceae variability landscape (Shannon entropy + permutation test)
+# Step 22: per-individual SI system status (SI / pSI / SC / Insufficient_data)
+# Answers: "What is the status of the SI system?" at individual, BL, and EO levels.
+# Re-aggregates per-haplotype OK/REMOVED calls from the Step-7 stop-codon logs
+# (which Phase 1-2 drops before genotyping) without invalidating the canonical
+# 49-allele catalogue. Applies a Canu-noise filter (n_REMOVED < 2 → SI) and a
+# pSI confidence flag (high if frac_NF ≥ 0.25).
+/Users/sven/anaconda3/bin/python SRK_null_allele_assignment.py   # Step 22a
+python3 SRK_individual_SI_status.py                              # Step 22b
+Rscript SRK_SI_status_figures.R
+
+# Step 23: null-aware tetraploid genotype rebuild + downstream reruns
+# Propagates Step 22 SI status into the genotype tables: pSI_high gets explicit
+# Allele_NULL copies, SC included with all-null genotype, Insufficient_data
+# flagged for re-sequencing. Original Phase 1-2 tables stay frozen.
+python3 SRK_genotype_null_alleles.py
+Rscript SRK_population_genetic_summary_with_nulls.R       # Step 14b
+/Users/sven/anaconda3/bin/python SRK_TP1_compatibility_metrics_with_nulls.py  # Step 17b
+Rscript SRK_individual_GFS_with_nulls.R                   # Steps 19b + 20b
+Rscript SRK_P_compat_traffic_light_with_nulls.R           # stakeholder traffic-light figure
+Rscript SRK_depletion_ranking_with_nulls.R                # DI x P_compat ranking
+
+# Step 24: forward-time inheritance simulator + figures.
+# Answers: "Where is each BL heading on the SI→SC erosion axis under
+# current conditions, and what conservation lever stops the trajectory?"
+# Tetraploid Wright-Fisher with NULL-aware sporophytic SI; 4 scenarios
+# (baseline, rescue_low, rescue_high, high_drift) × 5 BLs × 30 replicates.
+/Users/sven/anaconda3/bin/python SRK_inheritance_simulator.py --n_generations 100 --n_replicates 30
+Rscript SRK_inheritance_figures.R
+
+# Step 25: Donor ranking for allele injection
+# Ranks candidate seed parents for allele-injection crosses to rescue specific BLs/EOs.
+/Users/sven/anaconda3/bin/python SRK_injection_donor_ranking.py
+Rscript SRK_donor_ranking_figure.R
+```
+
+6.  **Phase 5 — Testing S-allele Hypotheses and Cross Design (Steps 26–27):**
+
+``` bash
+# Step 26a: cross-Brassicaceae variability landscape (Shannon entropy + permutation test)
 #
 # Rebuild chain (run every time Step 10a re-runs, e.g. new library, new N_ALLELES):
 python3 srk_fetch_reference_alleles.py            # ONCE per project (re-run only if reference set changes)
@@ -344,49 +382,22 @@ python3 srk_brassica_hv_mapping.py                # remaps Ma 2016 SCR9 contacts
 # Then run the variability landscape:
 python3 srk_variability_landscape.py
 
-# Step 22b: HV-based allele hypothesis testing and crossing design
+# Step 26b: HV-based allele hypothesis testing and crossing design
+# (cross design restricted to parents whose Phase 4 SI status is `SI`)
 python3 srk_allele_hypotheses.py
 
-# Step 22c (optional diagnostic): does Synonymy group redundancy explain LEPA's low Shannon entropy?
+# Step 26c (optional diagnostic): does Synonymy group redundancy explain LEPA's low Shannon entropy?
 python3 srk_wgroup_collapse_test.py
 
-# Step 22d (optional diagnostic): drift vs selection at LEPA HV cols (per-BL entropy + cross-genera dominant residues)
+# Step 26d (optional diagnostic): drift vs selection at LEPA HV cols (per-BL entropy + cross-genera dominant residues)
 python3 srk_perBL_entropy_test.py
 
-# Step 22e: hypothesis-testing cross plan generator (H0/H1a/H1b/H2/H3 phased protocol with genotype constraints)
+# Step 26e: hypothesis-testing cross plan generator (H0/H1a/H1b/H2/H3 phased protocol with genotype constraints)
 python3 srk_cross_plan.py
 
-# Step 23: Cross result analysis
+# Step 27: Cross result analysis
 # Set CROSS_TSV = "<your_cross_results_file>" in the script, then re-run:
 python srk_allele_hypotheses.py
-
-# Step 25: per-individual SI system status (SI / pSI / SC / Insufficient_data)
-# Answers: "What is the status of the SI system?" at individual, BL, and EO levels.
-# Re-aggregates per-haplotype OK/REMOVED calls from the Step-7 stop-codon logs
-# (which Phase 1-2 drops before genotyping) without invalidating the canonical
-# 49-allele catalogue. Applies a Canu-noise filter (n_REMOVED < 2 → SI) and a
-# pSI confidence flag (high if frac_NF ≥ 0.25).
-python3 SRK_individual_SI_status.py
-Rscript SRK_SI_status_figures.R
-
-# Step 26: null-aware tetraploid genotype rebuild + downstream reruns
-# Propagates Step 25 SI status into the genotype tables: pSI_high gets explicit
-# Allele_NULL copies, SC included with all-null genotype, Insufficient_data
-# flagged for re-sequencing. Original Phase 1-2 tables stay frozen.
-python3 SRK_genotype_null_alleles.py
-Rscript SRK_population_genetic_summary_with_nulls.R       # Step 14b
-/Users/sven/anaconda3/bin/python SRK_TP1_compatibility_metrics_with_nulls.py  # Step 17b
-Rscript SRK_individual_GFS_with_nulls.R                   # Steps 19b + 20b
-Rscript SRK_P_compat_traffic_light_with_nulls.R           # stakeholder traffic-light figure
-Rscript SRK_depletion_ranking_with_nulls.R                # DI x P_compat ranking
-
-# Step 27: forward-time inheritance simulator + figures.
-# Answers: "Where is each BL heading on the SI→SC erosion axis under
-# current conditions, and what conservation lever stops the trajectory?"
-# Tetraploid Wright-Fisher with NULL-aware sporophytic SI; 4 scenarios
-# (baseline, rescue_low, rescue_high, high_drift) × 5 BLs × 30 replicates.
-/Users/sven/anaconda3/bin/python SRK_inheritance_simulator.py --n_generations 100 --n_replicates 30
-Rscript SRK_inheritance_figures.R
 ```
 
 ### Detailed Usage
@@ -415,7 +426,7 @@ The `tables/` folder is the single source of truth for the most-shared CSV/TSV d
 
 -   **[`tables/Phase2/step11_individual_allele_genotypes.tsv`](tables/Phase2/step11_individual_allele_genotypes.tsv)** — wide allele×individual count matrix (367 individuals × 49 alleles; integer copy counts). Ready-to-use design matrix for allele frequency estimation, drift/erosion modeling, simulations.
 -   **[`tables/Phase2/step12_individual_zygosity.tsv`](tables/Phase2/step12_individual_zygosity.tsv)** — per-individual genotype summary with columns `N_distinct_alleles`, `N_total_proteins`, `Zygosity` (Homozygous / Heterozygous), `Genotype` (AAAA / AAAB / AABB / AABC / ABCD), `Allele_composition` (packed allele-with-counts string). Human-readable companion to the wide matrix above.
--   **[`tables/Phase5/step22b_synonymy_groups.csv`](tables/Phase5/step22b_synonymy_groups.csv)** — allele → synonymy group mapping with group size and observation counts. Lets modelers collapse putatively identical alleles into a single functional unit when needed.
+-   **[`tables/Phase5/step26b_synonymy_groups.csv`](tables/Phase5/step26b_synonymy_groups.csv)** — allele → synonymy group mapping with group size and observation counts. Lets modelers collapse putatively identical alleles into a single functional unit when needed.
 
 **Recommended join chain for `individual → allele counts → population → bottleneck lineage`:**
 
@@ -518,50 +529,50 @@ PNGs land in `figures/`; PDFs in the project root. **Headline finding (2026-05-1
 -   `figures/Phase3/step21_GFS_reproductive_effort_{EO,BL}.png` - Per-EO and per-BL proportional bars
 -   `figures/Phase3/step21_GFS_AAAA_allele_composition_{EO,BL}.png` - Per-EO and per-BL AAAA allele identity. **Headline:** Allele_043 + Allele_046 are pan-BL across all 5 BLs and pan-EO in 5/6 focus EOs — confirms shared Synonymy group 1 fixation despite independent bottlenecks
 
-### Phase 4 Outputs (Testing S-allele Hypotheses)
+### Phase 5 Outputs (Testing S-allele Hypotheses)
 
--   `figures/Phase5/step22a_variability_landscape.pdf` / `figures/Phase5/step22a_variability_landscape.png` - **Multi-panel cross-Brassicaceae figure**: per-species smoothed Shannon entropy (LEPA + Brassica + Arabidopsis), per-species HV-region tracks, and Ma 2016 SCR9-contact residue markers (Step 22a)
--   `tables/Phase5/step22a_HV_regions_per_species.tsv` - LEPA / Brassica / Arabidopsis HV runs (start–end, length, threshold) (Step 22a)
--   `tables/Phase5/step22a_LEPA_HV_positions.tsv` - **66 canonical LEPA HV columns** (consumed by Step 22b) (Step 22a)
--   `SRK_HV_overlap_permutation.tsv` - Three pairwise HV-overlap permutation tests (10 000 perms). In the current post-QC LEPA dataset the Brassica↔Arabidopsis HV overlap remains highly significant, but the two LEPA pairs are no longer significant — interpreted as drift-eroded standing variation at LEPA HV columns (Step 22a)
+-   `figures/Phase5/step26a_variability_landscape.pdf` / `figures/Phase5/step26a_variability_landscape.png` - **Multi-panel cross-Brassicaceae figure**: per-species smoothed Shannon entropy (LEPA + Brassica + Arabidopsis), per-species HV-region tracks, and Ma 2016 SCR9-contact residue markers (Step 26a)
+-   `tables/Phase5/step26a_HV_regions_per_species.tsv` - LEPA / Brassica / Arabidopsis HV runs (start–end, length, threshold) (Step 26a)
+-   `tables/Phase5/step26a_LEPA_HV_positions.tsv` - **66 canonical LEPA HV columns** (consumed by Step 26b) (Step 26a)
+-   `SRK_HV_overlap_permutation.tsv` - Three pairwise HV-overlap permutation tests (10 000 perms). In the current post-QC LEPA dataset the Brassica↔Arabidopsis HV overlap remains highly significant, but the two LEPA pairs are no longer significant — interpreted as drift-eroded standing variation at LEPA HV columns (Step 26a)
 -   `SRK_brassica_hv_mapping.tsv` - 12 Ma 2016 SCR9-contact residues mapped to LEPA columns (helper output)
--   `SRK_HV_allele_distances.tsv` - 58×58 pairwise distance matrix computed on the 66 canonical HV columns (Step 22b)
--   `SRK_functional_allele_groups.tsv` - Allele bin → phylogenetic class assignment, AAAA count, cross power (Step 22b)
--   `SRK_synonymy_candidates.tsv` - All within-class allele pairs with HV distance and testability flag (Step 22b)
--   `SRK_synonymy_groups.csv` - Per-allele synonymy group membership (8 synonymy groups + 19 isolated → 27 effective bins) (Step 22b)
--   `figures/Phase5/step22b_allele_similarity_heatmap.{pdf,png}` - 49×49 HV similarity heatmap ordered by UPGMA with class strips (Step 22b)
--   `SRK_AAAA_cross_design_HV.tsv` - All AAAA × AAAA pairs ranked by category (Incompatible / Synonymy_test / Compatible_within / Compatible_cross) with HV distance and expected outcome (Step 22b)
--   `figures/Phase5/step22b_cross_design_summary.{pdf,png}` - Three-panel figure: HV distance distribution, cross category schematic, Synonymy_test cross interpretation (Step 22b)
--   `figures/Phase5/step22b_HV_cluster_figure.{pdf,png}` - UPGMA dendrogram (HV distances) coloured by class + AAAA availability bar chart (Step 22b)
--   `SRK_synonymy_network_groups.{pdf,png}` / `SRK_synonymy_network_tests.{pdf,png}` - Synonymy network: 9 HV-identical synonymy groups + N-connectivity condensed graph (Step 22b)
--   `SRK_LEPA_synonymy_group_representatives.tsv` - Synonymy group → representative allele mapping (kept vs redundant) (Step 22c)
--   `SRK_wgroup_collapse_entropy_summary.tsv` - Per-species entropy before/after Synonymy group collapse (Step 22c)
--   `SRK_variability_landscape_wgroup_collapsed.{pdf,png}` - Side-by-side LEPA full / LEPA collapsed / Brassica / Arabidopsis entropy comparison (Step 22c)
--   `SRK_perBL_HV_residue_table.tsv` - Per-(HV col × BL) dominant residue + frequency + Shannon entropy among AAAA individuals (Step 22d)
--   `SRK_perBL_HV_concordance_summary.tsv` / `..._per_hv_col.tsv` - Within-LEPA concordance + cross-genera (Brassica, Arabidopsis) dominant-residue match per HV col (Step 22d)
--   `SRK_perBL_entropy_figure.{pdf,png}` - Per-BL entropy heatmap + dominant-residue comparison across BL1–BL5 + Brassica + Arabidopsis at LEPA HV cols (Step 22d)
--   `SRK_cross_plan_H0_SI_validation.tsv` / `..._H1a_within_class_baseline.tsv` / `..._H1b_between_class_baseline.tsv` / `..._H2_synonymy_tests.tsv` / `..._H3_hidden_bin_tests.tsv` - Phased hypothesis-testing cross plan with mother / father IDs, predicted compatibility, replicate counts, and decision rules (Step 22e)
--   `SRK_cross_plan_summary.tsv` / `SRK_cross_plan_summary.{pdf,png}` - Per-phase cross counts + decision-tree figure (Step 22e)
--   `SRK_cross_result_analysis_HV.pdf` - Seed yield distributions and success rates by cross category, with Kruskal-Wallis and Mann-Whitney U tests (Step 23; requires cross data)
+-   `SRK_HV_allele_distances.tsv` - 58×58 pairwise distance matrix computed on the 66 canonical HV columns (Step 26b)
+-   `SRK_functional_allele_groups.tsv` - Allele bin → phylogenetic class assignment, AAAA count, cross power (Step 26b)
+-   `SRK_synonymy_candidates.tsv` - All within-class allele pairs with HV distance and testability flag (Step 26b)
+-   `SRK_synonymy_groups.csv` - Per-allele synonymy group membership (8 synonymy groups + 19 isolated → 27 effective bins) (Step 26b)
+-   `figures/Phase5/step26b_allele_similarity_heatmap.{pdf,png}` - 49×49 HV similarity heatmap ordered by UPGMA with class strips (Step 26b)
+-   `SRK_AAAA_cross_design_HV.tsv` - All AAAA × AAAA pairs ranked by category (Incompatible / Synonymy_test / Compatible_within / Compatible_cross) with HV distance and expected outcome (Step 26b)
+-   `figures/Phase5/step26b_cross_design_summary.{pdf,png}` - Three-panel figure: HV distance distribution, cross category schematic, Synonymy_test cross interpretation (Step 26b)
+-   `figures/Phase5/step26b_HV_cluster_figure.{pdf,png}` - UPGMA dendrogram (HV distances) coloured by class + AAAA availability bar chart (Step 26b)
+-   `SRK_synonymy_network_groups.{pdf,png}` / `SRK_synonymy_network_tests.{pdf,png}` - Synonymy network: 9 HV-identical synonymy groups + N-connectivity condensed graph (Step 26b)
+-   `SRK_LEPA_synonymy_group_representatives.tsv` - Synonymy group → representative allele mapping (kept vs redundant) (Step 26c)
+-   `SRK_wgroup_collapse_entropy_summary.tsv` - Per-species entropy before/after Synonymy group collapse (Step 26c)
+-   `SRK_variability_landscape_wgroup_collapsed.{pdf,png}` - Side-by-side LEPA full / LEPA collapsed / Brassica / Arabidopsis entropy comparison (Step 26c)
+-   `SRK_perBL_HV_residue_table.tsv` - Per-(HV col × BL) dominant residue + frequency + Shannon entropy among AAAA individuals (Step 26d)
+-   `SRK_perBL_HV_concordance_summary.tsv` / `..._per_hv_col.tsv` - Within-LEPA concordance + cross-genera (Brassica, Arabidopsis) dominant-residue match per HV col (Step 26d)
+-   `SRK_perBL_entropy_figure.{pdf,png}` - Per-BL entropy heatmap + dominant-residue comparison across BL1–BL5 + Brassica + Arabidopsis at LEPA HV cols (Step 26d)
+-   `SRK_cross_plan_H0_SI_validation.tsv` / `..._H1a_within_class_baseline.tsv` / `..._H1b_between_class_baseline.tsv` / `..._H2_synonymy_tests.tsv` / `..._H3_hidden_bin_tests.tsv` - Phased hypothesis-testing cross plan with mother / father IDs, predicted compatibility, replicate counts, and decision rules (Step 26e)
+-   `SRK_cross_plan_summary.tsv` / `SRK_cross_plan_summary.{pdf,png}` - Per-phase cross counts + decision-tree figure (Step 26e)
+-   `SRK_cross_result_analysis_HV.pdf` - Seed yield distributions and success rates by cross category, with Kruskal-Wallis and Mann-Whitney U tests (Step 27; requires cross data)
 
-### Phase 5 Outputs (Per-Individual SI System Status — Step 25)
+### Phase 4 Outputs (Per-Individual SI System Status — Step 22)
 
 > Answers the question: *"What is the status of the SI system?"* at the individual, BL, and EO levels.
 
--   `tables/Phase4/step25b_individual_SI_status.tsv` — One row per ingroup individual: `n_haps_OK`, `n_haps_REMOVED`, `frac_nonfunctional`, `copies_functional`, `copies_nonfunctional`, `SI_status` (SI / pSI / SC / Insufficient_data), `pSI_confidence` (high / low). Re-aggregates per-haplotype OK/REMOVED calls from the Step-7 `_frame1_stopcodon_log.tsv` files **without** invalidating the canonical 49-allele catalogue (Step 25)
--   `figures/Phase4/step25b_SI_status_species_{full,robust}.png` — Species-level stacked bar. `_full` = all 497 individuals (7-tier inc. pSI_low + Insufficient_data); `_robust` = 263 with defensible calls (5-tier SI/pSI_1nf/pSI_2nf/pSI_3nf/SC) (Step 25)
--   `figures/Phase4/step25b_SI_status_by_BL_{full,robust}.png` — Per-BL stacked %, BLs in `BL_ORDER`. Same full/robust split (Step 25)
--   `figures/Phase4/step25b_SI_status_by_EO_{full,robust}.png` — Per-EO stacked % faceted by BL, within-BL order by ascending drift index. Same full/robust split (Step 25)
+-   `tables/Phase4/step22b_individual_SI_status.tsv` — One row per ingroup individual: `n_haps_OK`, `n_haps_REMOVED`, `frac_nonfunctional`, `copies_functional`, `copies_nonfunctional`, `SI_status` (SI / pSI / SC / Insufficient_data), `pSI_confidence` (high / low). Re-aggregates per-haplotype OK/REMOVED calls from the Step-7 `_frame1_stopcodon_log.tsv` files **without** invalidating the canonical 49-allele catalogue (Step 22)
+-   `figures/Phase4/step22b_SI_status_species_{full,robust}.png` — Species-level stacked bar. `_full` = all 497 individuals (7-tier inc. pSI_low + Insufficient_data); `_robust` = 263 with defensible calls (5-tier SI/pSI_1nf/pSI_2nf/pSI_3nf/SC) (Step 22)
+-   `figures/Phase4/step22b_SI_status_by_BL_{full,robust}.png` — Per-BL stacked %, BLs in `BL_ORDER`. Same full/robust split (Step 22)
+-   `figures/Phase4/step22b_SI_status_by_EO_{full,robust}.png` — Per-EO stacked % faceted by BL, within-BL order by ascending drift index. Same full/robust split (Step 22)
 
-**Rule:** Step 25a aligns every Step-7 REMOVED haplotype to the 49 functional reps and flags chimeric Canu artefacts (`AA_distance > 0.05` or `n_stops > 10`). Step 25b counts only real broken haplotypes: `copies_nonfunctional = round(4 × n_REMOVED_real / (n_OK + n_REMOVED_real))`. **Snapshot (n = 401 ingroup):** SI = 247 (62 %), pSI = 15 (10 high / 5 low), SC = 1 (Library010_barcode53, EO76), Insufficient_data = 138 (heavily concentrated in EO76, flagged for re-sequencing).
+**Rule:** Step 22a aligns every Step-7 REMOVED haplotype to the 49 functional reps and flags chimeric Canu artefacts (`AA_distance > 0.05` or `n_stops > 10`). Step 22b counts only real broken haplotypes: `copies_nonfunctional = round(4 × n_REMOVED_real / (n_OK + n_REMOVED_real))`. **Snapshot (n = 401 ingroup):** SI = 247 (62 %), pSI = 15 (10 high / 5 low), SC = 1 (Library010_barcode53, EO76), Insufficient_data = 138 (heavily concentrated in EO76, flagged for re-sequencing).
 
-### Phase 5b Outputs (Null-Aware Genotype Rebuild — Step 26)
+### Phase 4b Outputs (Null-Aware Genotype Rebuild — Step 23)
 
-> Propagates Step 25 SI status into the canonical genotype tables so downstream metrics (Step 14 pop-gen, Step 17 TP1, Steps 19+20 GFS/TP2) reflect the broken-copy reality. Phase 1–2 outputs stay frozen as the functional-only reference.
+> Propagates Step 22 SI status into the canonical genotype tables so downstream metrics (Step 14 pop-gen, Step 17 TP1, Steps 19+20 GFS/TP2) reflect the broken-copy reality. Phase 1–2 outputs stay frozen as the functional-only reference.
 
--   `tables/Phase4/step26_individual_allele_genotypes_with_nulls.tsv` — 234 individuals × 49 functional alleles + `Allele_NULL` + `Genotype_class_flag`. pSI_high gets explicit nulls (`copies_nonfunctional`); SC = 4 × NULL; rows sum to 4. pSI_low is promoted to SI (Canu-noise floor) (Step 26)
--   `tables/Phase4/step26_individual_zygosity_with_nulls.tsv` — Genotype labels like `AB00` (1 functional + 1 functional + 2 null) or `0000` (SC); 12-tier null-aware scheme (Step 26)
--   `tables/Phase4/step26_samples_for_redo.tsv` — 234 Insufficient_data individuals flagged for re-sequencing, with EO / BL / hap counts / priority (Step 26)
+-   `tables/Phase4/step23_individual_allele_genotypes_with_nulls.tsv` — 234 individuals × 49 functional alleles + `Allele_NULL` + `Genotype_class_flag`. pSI_high gets explicit nulls (`copies_nonfunctional`); SC = 4 × NULL; rows sum to 4. pSI_low is promoted to SI (Canu-noise floor) (Step 23)
+-   `tables/Phase4/step23_individual_zygosity_with_nulls.tsv` — Genotype labels like `AB00` (1 functional + 1 functional + 2 null) or `0000` (SC); 12-tier null-aware scheme (Step 23)
+-   `tables/Phase4/step23_samples_for_redo.tsv` — 234 Insufficient_data individuals flagged for re-sequencing, with EO / BL / hap counts / priority (Step 23)
 -   `SRK_population_genetic_summary_with_nulls.tsv` / `_BL_with_nulls.tsv` / `.pdf` — Null-aware EO and BL pop-gen with new columns: `Frac_nonfunctional_alleles`, `Mean_null_copies`, `Prop_pSI`, `N_SC` (Step 14b)
 -   `tables/Phase4/step17b_EO_allele_richness_with_nulls.tsv` — Null-aware TP1 metrics (P_compat with Allele_NULL in the frequency vector); BL5 P_compat at L=0 drops 0.472 → 0.392 (Step 17b)
 -   `SRK_individual_GFS_with_nulls.tsv` / `SRK_EO_GFS_summary_with_nulls.tsv` / `SRK_BL_GFS_summary_with_nulls.tsv` — Null-aware GFS (`GFS_func × n_func/4`); all 5 BLs CRITICAL on TP2 (Steps 19b + 20b)
@@ -599,7 +610,7 @@ Key findings from the **335 successful ingroup samples** — 325 BL-resolved acr
 - A majority of individuals carry an **AAAA genotype** (single allele, four copies, GFS = 0), flagging high risk of reduced SI function; a further substantial fraction carry an **AAAB** genotype (GFS = 0.500) — dosage-imbalanced individuals that appear heterozygous but produce fewer diverse gametes than AABB individuals (GFS = 0.667).
 - All five BLs and 5/6 focus EOs are flagged **CRITICAL** for Tipping Point 2 (TP2); EO67 (BL4) is the only AT RISK EO.
 - A formal **Step 12c Data Quality Evaluation** identifies **5 of 7 Complete_loss SI-escape candidates concentrated in EO76 (BL3)**, framing EO76 as a candidate SI → SC transitional population under the Igić–Lande–Kohn framework.
-- A hypothesis-testing **cross plan (Step 22e)** issues 104 phased crosses (H0 SI validation; H1a/b within/between-Class baselines; H2 synonymy-bin tests; H3 hidden-bin tests via heterozygous donors), with every cross traceable to its sequence-based category and its genotype-based feasibility from Step 12.
+- A hypothesis-testing **cross plan (Step 26e)** issues 104 phased crosses (H0 SI validation; H1a/b within/between-Class baselines; H2 synonymy-bin tests; H3 hidden-bin tests via heterozygous donors), with every cross traceable to its sequence-based category and its genotype-based feasibility from Step 12.
 
 ## Citation
 

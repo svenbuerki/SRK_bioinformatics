@@ -39,7 +39,7 @@ setwd(HERE)
 
 source("srk_bl_constants.R")
 
-IN_TSV   <- "Tables/Phase4/step25b_individual_SI_status.tsv"
+IN_TSV   <- "Tables/Phase4/step22b_individual_SI_status.tsv"
 FIG_DIR  <- "figures/Phase5"
 dir.create(FIG_DIR, showWarnings = FALSE, recursive = TRUE)
 
@@ -106,9 +106,9 @@ render_variant <- function(suffix, status_levels, subtitle_tag) {
 
   cat(sprintf("\n--- Rendering %s variant (n = %d) ---\n", suffix, nrow(si)))
 
-  out_sp <- file.path(FIG_DIR, sprintf("step25b_SI_status_species_%s.png", suffix))
-  out_bl <- file.path(FIG_DIR, sprintf("step25b_SI_status_by_BL_%s.png",  suffix))
-  out_eo <- file.path(FIG_DIR, sprintf("step25b_SI_status_by_EO_%s.png",  suffix))
+  out_sp <- file.path(FIG_DIR, sprintf("step22b_SI_status_species_%s.png", suffix))
+  out_bl <- file.path(FIG_DIR, sprintf("step22b_SI_status_by_BL_%s.png",  suffix))
+  out_eo <- file.path(FIG_DIR, sprintf("step22b_SI_status_by_EO_%s.png",  suffix))
 
   fill_sc <- si_fill_scale(status_levels)
 

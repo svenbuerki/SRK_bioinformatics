@@ -49,8 +49,8 @@ suppressPackageStartupMessages({
 
 source("srk_bl_constants.R")
 
-ZYG <- "Tables/Phase4/step26_individual_zygosity_with_nulls.tsv"
-GEN <- "Tables/Phase4/step26_individual_allele_genotypes_with_nulls.tsv"
+ZYG <- "Tables/Phase4/step23_individual_zygosity_with_nulls.tsv"
+GEN <- "Tables/Phase4/step23_individual_allele_genotypes_with_nulls.tsv"
 
 TP2_MEAN_GFS  <- 0.667
 TP2_PROP_AAAA <- 0.30   # in null-aware: GFS <= 0.0 (AAAA-equivalent + worse)

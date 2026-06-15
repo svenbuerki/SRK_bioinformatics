@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-SRK_individual_SI_status.py — Step 25b (per-individual SI categorisation)
+SRK_individual_SI_status.py — Step 22b (per-individual SI categorisation)
 
 Reconstruct per-individual self-incompatibility (SI) status from the
 per-haplotype OK / REMOVED calls produced by Step 7
 (`translate_filter_align_AA.py`) and the per-haplotype broken-allele
-identity assignments produced by Step 25a (`SRK_null_allele_assignment.py`).
+identity assignments produced by Step 22a (`SRK_null_allele_assignment.py`).
 
 Method
 ──────
@@ -14,14 +14,14 @@ Step 7 tags every Canu-assembled haplotype as `OK` (functional protein) or
 extra contigs per individual that fail the stop filter without representing
 real broken SRK copies — these are quantitatively distinguishable from
 genuine broken alleles by their high AA-distance from every functional
-allele in the catalogue (Step 25a). Step 25b therefore:
+allele in the catalogue (Step 22a). Step 22b therefore:
 
   1. Counts OK haplotypes per individual (n_haps_OK).
-  2. Counts REMOVED haplotypes that Step 25a assigned to a functional allele
+  2. Counts REMOVED haplotypes that Step 22a assigned to a functional allele
      with `high` or `medium` confidence (n_haps_REMOVED) — these are real
      broken alleles.
   3. Counts REMOVED haplotypes flagged as chimeric / unassignable in
-     Step 25a (n_haps_chimeric) — recorded for data-quality transparency
+     Step 22a (n_haps_chimeric) — recorded for data-quality transparency
      but excluded from the tetraploid-copy signal pool.
   4. Tetraploid copy estimate uses only the clean signal pool:
 
@@ -44,7 +44,7 @@ The `SRK_BEA` Brassica reference haplotypes are excluded before aggregation
 Inputs
 ──────
     all_Library*_frame1_stopcodon_log.tsv   one per library (Step 7)
-    Tables/SRK_null_allele_assignments.tsv  per-haplotype identity + confidence (Step 25a)
+    Tables/SRK_null_allele_assignments.tsv  per-haplotype identity + confidence (Step 22a)
     Tables/SRK_data_quality_categories.tsv  EO / BL / Ingroup metadata (Step 12c)
 
 Outputs
@@ -63,8 +63,8 @@ import pandas as pd
 HERE          = Path(__file__).resolve().parent
 TABLES_DIR    = HERE / "Tables"
 QC_TSV        = TABLES_DIR / "Phase2" / "step12c_data_quality_categories.tsv"
-ASSIGN_TSV    = TABLES_DIR / "Phase4" / "step25a_null_allele_assignments.tsv"
-OUT_TSV       = TABLES_DIR / "Phase4" / "step25b_individual_SI_status.tsv"
+ASSIGN_TSV    = TABLES_DIR / "Phase4" / "step22a_null_allele_assignments.tsv"
+OUT_TSV       = TABLES_DIR / "Phase4" / "step22b_individual_SI_status.tsv"
 STOPLOG_GLOB  = "all_Library*_frame1_stopcodon_log.tsv"
 OUTGROUP_TAG  = "SRK_BEA"
 
@@ -77,14 +77,14 @@ if not QC_TSV.exists():
     sys.exit(f"ERROR: missing {QC_TSV} — run evaluate_data_quality.py first")
 if not ASSIGN_TSV.exists():
     sys.exit(f"ERROR: missing {ASSIGN_TSV} — run "
-             "SRK_null_allele_assignment.py (Step 25a) first")
+             "SRK_null_allele_assignment.py (Step 22a) first")
 
 qc = pd.read_csv(QC_TSV, sep="\t", encoding="utf-8-sig", dtype=str).fillna("")
 qc = qc[qc["Ingroup"] == "1"].copy()
 meta = qc.set_index("Sample_ID")[["EO_normalised", "BL_inferred"]].to_dict("index")
 print(f"Loaded metadata for {len(meta)} ingroup individuals from {QC_TSV.name}")
 
-# ─── Load Step 25a assignments — split REMOVED haps into real vs chimeric ────
+# ─── Load Step 22a assignments — split REMOVED haps into real vs chimeric ────
 assign = pd.read_csv(ASSIGN_TSV, sep="\t", encoding="utf-8-sig")
 real_set = set(assign.loc[
     assign["confidence"].isin(["high", "medium"]), "Sequence_ID"
@@ -92,7 +92,7 @@ real_set = set(assign.loc[
 chimeric_set = set(assign.loc[
     assign["confidence"] == "low", "Sequence_ID"
 ])
-print(f"Step 25a assignments: {len(real_set)} real broken + "
+print(f"Step 22a assignments: {len(real_set)} real broken + "
       f"{len(chimeric_set)} chimeric")
 
 # ─── Aggregate stop-codon logs ────────────────────────────────────────────────

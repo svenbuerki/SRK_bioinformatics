@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-srk_wgroup_collapse_test.py   (Step 22c — diagnostic, optional)
+srk_wgroup_collapse_test.py   (Step 26c — diagnostic, optional)
 
 Synonymy group collapse diagnostic for the cross-Brassicaceae variability landscape.
 
@@ -23,18 +23,18 @@ Pipeline placement
 ------------------
 This script must be run AFTER Steps 22a and 22b:
 
-  python3 srk_variability_landscape.py     # Step 22a — produces SRK_LEPA_HV_positions.tsv
-  python3 srk_allele_hypotheses.py         # Step 22b — produces SRK_synonymy_groups.csv
-  python3 srk_wgroup_collapse_test.py      # Step 22c — this diagnostic
+  python3 srk_variability_landscape.py     # Step 26a — produces SRK_LEPA_HV_positions.tsv
+  python3 srk_allele_hypotheses.py         # Step 26b — produces SRK_synonymy_groups.csv
+  python3 srk_wgroup_collapse_test.py      # Step 26c — this diagnostic
 
 It reads only existing outputs and produces only new files; it never
-overwrites Step 22a's authoritative landscape figure or HV-position TSV.
+overwrites Step 26a's authoritative landscape figure or HV-position TSV.
 
 Inputs
 ------
-  SRK_synonymy_groups.csv         from Step 22b (Synonymy group membership)
-  SRK_combined_alignment.fasta    from Step 22a (LEPA + Brassica + Arabidopsis)
-  SRK_LEPA_HV_positions.tsv       from Step 22a (canonical LEPA HV columns)
+  SRK_synonymy_groups.csv         from Step 26b (Synonymy group membership)
+  SRK_combined_alignment.fasta    from Step 26a (LEPA + Brassica + Arabidopsis)
+  SRK_LEPA_HV_positions.tsv       from Step 26a (canonical LEPA HV columns)
 
 Outputs
 -------
@@ -60,9 +60,9 @@ from Bio import SeqIO
 # =============================================================================
 # Settings — must match srk_variability_landscape.py for apples-to-apples test
 # =============================================================================
-COMBINED_ALN     = "Tables/Phase5/step22a_combined_alignment.fasta"
-SYN_GROUPS_CSV   = "Tables/Phase5/step22b_synonymy_groups.csv"
-LEPA_HV_TSV      = "Tables/Phase5/step22a_LEPA_HV_positions.tsv"
+COMBINED_ALN     = "Tables/Phase5/step26a_combined_alignment.fasta"
+SYN_GROUPS_CSV   = "Tables/Phase5/step26b_synonymy_groups.csv"
+LEPA_HV_TSV      = "Tables/Phase5/step26a_LEPA_HV_positions.tsv"
 DOMAIN_REGION    = (31, 430)
 WINDOW_SIZE      = 20
 PEAK_SD_FACTOR   = 1.0
@@ -82,12 +82,12 @@ SPECIES_COLOURS = {
     "Arabidopsis":  "#2ca02c",
 }
 
-OUT_REP_TSV   = "Tables/Phase5/step22c_LEPA_synonymy_group_representatives.tsv"
-OUT_PDF       = "figures/Phase5/step22c_variability_landscape_wgroup_collapsed.pdf"
-OUT_PNG       = "figures/Phase5/step22c_variability_landscape_wgroup_collapsed.png"
-OUT_SUMMARY   = "Tables/Phase5/step22c_wgroup_collapse_entropy_summary.tsv"
+OUT_REP_TSV   = "Tables/Phase5/step26c_LEPA_synonymy_group_representatives.tsv"
+OUT_PDF       = "figures/Phase5/step26c_variability_landscape_wgroup_collapsed.pdf"
+OUT_PNG       = "figures/Phase5/step26c_variability_landscape_wgroup_collapsed.png"
+OUT_SUMMARY   = "Tables/Phase5/step26c_wgroup_collapse_entropy_summary.tsv"
 
-os.makedirs("figures/Phase4", exist_ok=True); os.makedirs("Tables/Phase4", exist_ok=True)
+os.makedirs("figures/Phase5", exist_ok=True); os.makedirs("Tables/Phase5", exist_ok=True)
 
 # =============================================================================
 # 1. Sanity-check inputs and choose Synonymy group representatives
@@ -255,7 +255,7 @@ for sp, seqs in [
           f"max H = {H.max():.3f}  threshold = {thr:.3f}")
 
 # =============================================================================
-# 5. Identify HV regions per species (same MIN_HV_RUN as Step 22a)
+# 5. Identify HV regions per species (same MIN_HV_RUN as Step 26a)
 # =============================================================================
 def find_runs(profile: np.ndarray, x_lepa: np.ndarray,
               thr: float, min_run: int):

@@ -18,9 +18,9 @@ from Bio import SeqIO
 import csv
 import sys
 
-ALN_EXPANDED = "Tables/Phase5/step22a_protein_allele_representatives_with_brassica_full.fasta"
+ALN_EXPANDED = "Tables/Phase5/step26a_protein_allele_representatives_with_brassica_full.fasta"
 BR_RECORD_ID = "BrSRK9"
-OUT_TSV      = "Tables/Phase5/step22a_brassica_hv_mapping.tsv"
+OUT_TSV      = "Tables/Phase5/step26a_brassica_hv_mapping.tsv"
 
 # Ma et al. 2016: SCR9-contact residues in B. rapa SRK9 (full-protein
 # numbering, signal peptide residues 1-29 included). Each tuple is

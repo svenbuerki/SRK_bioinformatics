@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-pad_representatives.py — Step 22a-pre helper
+pad_representatives.py — Step 26a-pre helper
 
 Pads the LEPA allele-representative FASTA (`SRK_protein_allele_representatives.fasta`,
 output of Step 10a) to a uniform sequence length so that downstream `mafft --add`
-produces a clean combined alignment in Step 22a.
+produces a clean combined alignment in Step 26a.
 
 Why padding is needed
 ---------------------
@@ -24,7 +24,7 @@ INPUT_FASTA  = "SRK_protein_allele_representatives.fasta"  (Step 10a output)
 
 Output
 ------
-OUTPUT_FASTA = "Tables/Phase5/step22a_protein_allele_representatives_padded.fasta"
+OUTPUT_FASTA = "Tables/Phase5/step26a_protein_allele_representatives_padded.fasta"
                — same headers and sequences, all right-padded to the maximum
                  length with '-'.
 
@@ -43,7 +43,7 @@ from Bio.SeqRecord import SeqRecord
 
 INPUT_FASTA   = "Tables/Phase2/step10a_protein_allele_representatives.fasta"
 ALLELE_TABLE  = "Tables/Phase2/step11_individual_allele_table.tsv"
-OUTPUT_FASTA  = "Tables/Phase5/step22a_protein_allele_representatives_padded.fasta"
+OUTPUT_FASTA  = "Tables/Phase5/step26a_protein_allele_representatives_padded.fasta"
 PAD_CHAR = "-"
 
 # Restrict to alleles observed in at least one LEPA-ingroup individual (Step 11).

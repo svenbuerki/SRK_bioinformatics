@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-srk_variability_landscape.py   (Step 22 — Part 1, three-species version)
+srk_variability_landscape.py   (Step 26 — Part 1, three-species version)
 
 Three-species cross-Brassicaceae HV-region comparison for the SRK S-domain.
 
@@ -49,8 +49,8 @@ from Bio import SeqIO
 # =============================================================================
 # Settings
 # =============================================================================
-COMBINED_ALN  = "Tables/Phase5/step22a_combined_alignment.fasta"
-BRASSICA_TSV  = "Tables/Phase5/step22a_brassica_hv_mapping.tsv"
+COMBINED_ALN  = "Tables/Phase5/step26a_combined_alignment.fasta"
+BRASSICA_TSV  = "Tables/Phase5/step26a_brassica_hv_mapping.tsv"
 DOMAIN_REGION = (31, 430)        # LEPA-original 1-based column range to plot
 WINDOW_SIZE   = 20               # sliding-window width for smoothing
 PEAK_SD_FACTOR = 1.0             # HV threshold = mean + k×SD
@@ -80,13 +80,13 @@ SPECIES_BAND_ALPHA = {"LEPA": 0.18, "Brassica": 0.16, "Arabidopsis": 0.14}
 # Presenting the 12 contacts as one set is the conservative scientific choice.
 MA2016_CONTACT_COLOUR = "#444444"
 
-OUT_PDF = "figures/Phase5/step22a_variability_landscape.pdf"
-OUT_PNG = "figures/Phase5/step22a_variability_landscape.png"
-OUT_HV_TSV  = "Tables/Phase5/step22a_HV_regions_per_species.tsv"
-OUT_PERM_TSV = "Tables/Phase5/step22a_HV_overlap_permutation.tsv"
-OUT_LEPA_HV_COLS = "Tables/Phase5/step22a_LEPA_HV_positions.tsv"   # canonical input to Step 22 Parts 2-5
+OUT_PDF = "figures/Phase5/step26a_variability_landscape.pdf"
+OUT_PNG = "figures/Phase5/step26a_variability_landscape.png"
+OUT_HV_TSV  = "Tables/Phase5/step26a_HV_regions_per_species.tsv"
+OUT_PERM_TSV = "Tables/Phase5/step26a_HV_overlap_permutation.tsv"
+OUT_LEPA_HV_COLS = "Tables/Phase5/step26a_LEPA_HV_positions.tsv"   # canonical input to Step 26 Parts 2-5
 
-os.makedirs("figures/Phase4", exist_ok=True); os.makedirs("Tables/Phase4", exist_ok=True)
+os.makedirs("figures/Phase5", exist_ok=True); os.makedirs("Tables/Phase5", exist_ok=True)
 
 # =============================================================================
 # 1. Load combined alignment and tag rows by species
