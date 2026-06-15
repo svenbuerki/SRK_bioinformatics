@@ -1,0 +1,83 @@
+HV_col_lepa1	n_BLs_with_AAAA	LEPA_consensus_aa	n_BLs_concordant	concordance_frac	Brassica_dom_aa	Brassica_dom_freq	Arabidopsis_dom_aa	Arabidopsis_dom_freq	matches_Brassica	matches_Arabidopsis	matches_both
+349	5	C	5	1.0	C	1.0	C	1.0	True	True	True
+350	5	T	5	1.0	E	0.6	G	0.7	False	False	False
+351	5	Q	5	1.0	E	0.65	E	0.4	False	False	False
+352	5	S	5	1.0		0.0		0.0			
+353	5	L	5	1.0		0.0		0.0			
+354	5	V	5	1.0		0.0		0.0			
+355	5	A	5	1.0		0.0		0.0			
+356	5	G	5	1.0		0.0		0.0			
+357	5	K	5	1.0		0.0		0.0			
+358	5	G	5	1.0	Y	0.9230769230769231		0.0	False		False
+359	5	D	5	1.0	D	0.4	D	1.0	True	True	True
+360	5	G	5	1.0	G	0.35	R	0.5	True	False	False
+361	5	F	5	1.0	F	1.0	F	1.0	True	True	True
+362	5	K	5	1.0	V	0.6	F	0.4	False	False	False
+363	5	V	5	1.0	L	0.6	Q	0.3	False	False	False
+364	5	I	5	1.0	L	0.7	L	1.0	False	False	False
+365	5	T	5	1.0	N	0.65	M	0.5	False	False	False
+366	5	R	5	1.0	N	0.8181818181818182	N	0.7	False	False	False
+367	5	V	5	1.0	T	0.5454545454545454	M	0.9	False	False	False
+368	5	K	5	1.0	K	0.9090909090909091	K	1.0	True	True	True
+369	5	I	5	1.0	L	0.9545454545454546	L	1.0	False	False	False
+370	5	P	5	1.0	P	0.9545454545454546	P	1.0	True	True	True
+371	5	D	5	1.0	D	0.7727272727272727	D	0.6	True	True	True
+372	5	F	5	1.0	T	0.9090909090909091	T	1.0	False	False	False
+373	5	G	5	1.0	K	0.5909090909090909	T	0.8	False	False	False
+374	5	T	5	1.0	T	0.5909090909090909	A	0.4	True	False	False
+375	5	V	5	1.0	A	0.8636363636363636	A	0.8	False	False	False
+376	5	V	5	1.0	T	0.6363636363636364	I	0.5	False	False	False
+377	5	T	5	1.0	V	0.8636363636363636	V	1.0	False	False	False
+378	5	H	4	0.8	D	0.9545454545454546	D	1.0	False	False	False
+379	5	K	5	1.0	Q	0.5714285714285714	K	0.6	False	True	False
+380	5	N	5	1.0	D	0.5909090909090909	G	0.8	False	False	False
+381	5	T	5	1.0	E	0.5454545454545454	L	0.5	False	False	False
+382	5	E	5	1.0	K	0.9545454545454546	K	0.8	False	False	False
+383	5	T	5	1.0	I	0.5454545454545454	E	0.7	False	False	False
+384	5	C	5	1.0	C	0.9545454545454546	C	1.0	True	True	True
+385	5	K	5	1.0	K	0.6363636363636364	E	0.5	True	False	False
+386	5	D	5	1.0	E	0.5909090909090909	E	0.4	False	False	False
+387	5	V	5	1.0	R	0.7272727272727273	K	0.6	False	False	False
+388	5	C	5	1.0	C	1.0	C	1.0	True	True	True
+389	5	L	5	1.0	L	0.9545454545454546	K	0.5	True	False	False
+390	5	R	5	1.0	S	0.8636363636363636	N	0.4	False	False	False
+391	5	N	5	1.0	D	0.9090909090909091	D	0.4	False	False	False
+392	5	C	5	1.0	C	1.0	C	1.0	True	True	True
+393	5	S	5	1.0	N	1.0	N	1.0	False	False	False
+394	5	C	5	1.0	C	1.0	C	1.0	True	True	True
+395	5	S	5	1.0	T	1.0	T	1.0	False	False	False
+396	5	A	5	1.0	S	0.6190476190476191	A	0.9	False	True	False
+397	5	H	5	1.0	F	0.9523809523809523	F	0.6	False	False	False
+398	5	A	5	1.0	A	1.0	A	1.0	True	True	True
+399	5	I	5	1.0	F	0.5714285714285714	N	1.0	False	False	False
+400	5	V	5	1.0	G	0.5714285714285714	T	0.3	False	False	False
+401	5	F	5	1.0	N	0.5714285714285714	G	1.0	False	False	False
+402	5	G	5	1.0	G	0.9047619047619048	G	1.0	True	True	True
+403	5	I	5	1.0	L	0.6190476190476191	S	0.7	False	False	False
+404	5	G	5	1.0	G	0.9523809523809523	G	1.0	True	True	True
+405	5	C	5	1.0	C	0.9523809523809523	C	1.0	True	True	True
+406	5	M	5	1.0	V	0.9523809523809523	V	0.6	False	False	False
+407	5	I	5	1.0	T	0.6190476190476191	I	0.9	False	True	False
+408	5	W	5	1.0	W	1.0	W	1.0	True	True	True
+409	5	T	5	1.0	T	0.9047619047619048	I	0.7	True	False	False
+410	5	G	5	1.0	G	1.0	G	1.0	True	True	True
+411	5	D	5	1.0	D	0.6190476190476191	E	0.8	True	False	False
+412	5	L	5	1.0	L	1.0	F	0.5	True	False	False
+413	5	I	5	1.0	V	0.5909090909090909	R	0.3	False	False	False
+414	5	D	5	1.0	D	0.9090909090909091	D	1.0	True	True	True
+415	5	L	5	1.0	I	0.7727272727272727	I	1.0	False	False	False
+416	5	Q	5	1.0	R	0.9545454545454546	R	1.0	False	False	False
+417	5	R	5	1.0	T	0.6363636363636364	N	0.4	False	False	False
+418	5	F	5	1.0	Y	0.9090909090909091	Y	1.0	False	False	False
+419	5	E	5	1.0	F	0.5909090909090909	A	0.8	False	False	False
+420	5	R	5	1.0	E	0.6363636363636364	A	0.6	False	False	False
+421	5	G	5	1.0	G	0.7272727272727273	D	0.5	True	False	False
+422	5	G	5	1.0	G	1.0	G	0.9	True	True	True
+423	5	N	5	1.0	Y	0.5454545454545454	Q	1.0	False	False	False
+424	5	S	5	1.0	A	0.5714285714285714	D	1.0	False	False	False
+425	5	I	5	1.0	L	0.9523809523809523	L	0.9	False	False	False
+426	5	N	5	1.0	F	0.5714285714285714	Y	0.7	False	False	False
+427	5	I	5	1.0	V	1.0	V	1.0	False	False	False
+428	5	R	5	1.0	K	0.6190476190476191	R	0.9	False	True	False
+429	5	L	5	1.0	V	0.5714285714285714	L	0.9	False	True	False
+430	5	D	5	1.0	S	0.5714285714285714	A	1.0	False	False	False

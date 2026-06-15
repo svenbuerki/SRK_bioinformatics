@@ -1,0 +1,5 @@
+Species	n_sequences	median_H_bits	mean_H_bits	max_H_bits	threshold_bits	n_HV_runs	n_HV_cols
+LEPA	49	0.1437	0.1607	0.9997	0.2560	1	82
+LEPA_collapsed	13	0.3912	0.3564	1.3520	0.6336	1	85
+Brassica	22	0.6999	0.7776	2.6978	1.0007	3	45
+Arabidopsis	10	0.4690	0.6832	2.6464	0.9326	6	71

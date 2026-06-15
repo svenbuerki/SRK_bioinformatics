@@ -1,0 +1,11 @@
+Species	Run_index	Start_lepa1	End_lepa1	Length_aa	Threshold_H_bits
+LEPA	1	349	430	82	0.2560
+Brassica	1	198	207	10	1.0007
+Brassica	2	262	293	32	1.0007
+Brassica	3	295	297	3	1.0007
+Arabidopsis	1	197	215	19	0.9326
+Arabidopsis	2	262	270	9	0.9326
+Arabidopsis	3	272	296	25	0.9326
+Arabidopsis	4	330	339	10	0.9326
+Arabidopsis	5	341	344	4	0.9326
+Arabidopsis	6	381	384	4	0.9326

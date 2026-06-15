@@ -1,0 +1,22 @@
+# Individuals excluded: >4 distinct functional proteins
+# Likely reflects assembly artefacts, contamination, or mixed samples
+Library001_barcode01	5_proteins
+Library002_barcode40	5_proteins
+Library002_barcode41	5_proteins
+Library002_barcode51	5_proteins
+Library002_barcode53	5_proteins
+Library005_barcode04	5_proteins
+Library005_barcode07	9_proteins
+Library005_barcode10	5_proteins
+Library005_barcode20	5_proteins
+Library005_barcode21	5_proteins
+Library006_barcode39	7_proteins
+Library007_barcode74	8_proteins
+Library007_barcode76	5_proteins
+Library009_barcode07	6_proteins
+Library009_barcode09	5_proteins
+Library009_barcode43	5_proteins
+Library009_barcode59	5_proteins
+Library009_barcode74	5_proteins
+Library009_barcode79	5_proteins
+Library010_barcode23	5_proteins

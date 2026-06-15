@@ -1,0 +1,368 @@
+Individual	Pop	EO	Group	BL	Drift_index	BL_status
+Library001_barcode02	67	EO67	30	BL4	1.0	Assigned
+Library001_barcode04	702-3			Unassigned		Unassigned
+Library001_barcode05	712-5			Unassigned		Unassigned
+Library001_barcode06	38	EO38	1	BL3	0.938	Assigned
+Library001_barcode07	61	EO61	29	BL1	0.955	Assigned
+Library001_barcode08	70	EO70	19	BL2	0.999	Assigned
+Library001_barcode09	76	EO76	2	BL3	0.638	Assigned
+Library001_barcode10	25	EO25	13, 14	BL5	0.978	Assigned
+Library001_barcode11	709			Unassigned		Unassigned
+Library001_barcode12	15	EO18	12	BL5	0.588	Inferred
+Library001_barcode13	18	EO18	12	BL5	0.588	Assigned
+Library001_barcode14	118	EO118	4	BL3	1.0	Assigned
+Library001_barcode16	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library001_barcode17	76	EO76	2	BL3	0.638	Assigned
+Library001_barcode18	26-3	EO26	23, 24, 25, 26, 27	BL1	0.982	Inferred
+Library001_barcode19	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library001_barcode20	18	EO18	12	BL5	0.588	Assigned
+Library001_barcode21	8	EO08	20, 21, 22	BL1	0.9097	Assigned
+Library002_barcode23	96-16			Unassigned		Unassigned
+Library002_barcode28	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library002_barcode29	405			Unassigned		Unassigned
+Library002_barcode31	25	EO25	13, 14	BL5	0.978	Assigned
+Library002_barcode32	48	EO48	6	BL5	1.0	Assigned
+Library002_barcode34	84-2			Unassigned		Unassigned
+Library002_barcode35	52	EO52	3	BL3	0.987	Assigned
+Library002_barcode36	704			Unassigned		Unassigned
+Library002_barcode37	18	EO18	12	BL5	0.588	Assigned
+Library002_barcode38	15	EO18	12	BL5	0.588	Inferred
+Library002_barcode39	70	EO70	19	BL2	0.999	Assigned
+Library002_barcode42	29	EO29	7	BL1	0.998	Assigned
+Library002_barcode43	118	EO118	4	BL3	1.0	Assigned
+Library002_barcode44	67	EO67	30	BL4	1.0	Assigned
+Library002_barcode46	68	EO68	4	BL2	1.0	Assigned
+Library002_barcode47	8	EO08	20, 21, 22	BL1	0.9097	Assigned
+Library002_barcode48	118	EO118	4	BL3	1.0	Assigned
+Library002_barcode50	24	EO24	15, 16, 17, 18	BL5	1.0	Assigned
+Library002_barcode52	702-24			Unassigned		Unassigned
+Library002_barcode57	68	EO68	4	BL2	1.0	Assigned
+Library002_barcode58	68	EO68	4	BL2	1.0	Assigned
+Library003_barcode60	67	EO67	30	BL4	1.0	Assigned
+Library003_barcode61	25	EO25	13, 14	BL5	0.978	Assigned
+Library003_barcode62	25	EO25	13, 14	BL5	0.978	Assigned
+Library003_barcode63	67	EO67	30	BL4	1.0	Assigned
+Library003_barcode64	67	EO67	30	BL4	1.0	Assigned
+Library003_barcode65	25	EO25	13, 14	BL5	0.978	Assigned
+Library003_barcode66	76	EO76	2	BL3	0.638	Assigned
+Library003_barcode67	25	EO25	13, 14	BL5	0.978	Assigned
+Library003_barcode68	67	EO67	30	BL4	1.0	Assigned
+Library003_barcode69	25	EO25	13, 14	BL5	0.978	Assigned
+Library003_barcode70	25	EO25	13, 14	BL5	0.978	Assigned
+Library003_barcode71	25	EO25	13, 14	BL5	0.978	Assigned
+Library003_barcode72	25	EO25	13, 14	BL5	0.978	Assigned
+Library003_barcode73	25	EO25	13, 14	BL5	0.978	Assigned
+Library003_barcode74	25	EO25	13, 14	BL5	0.978	Assigned
+Library003_barcode76	76	EO76	2	BL3	0.638	Assigned
+Library003_barcode77	67	EO67	30	BL4	1.0	Assigned
+Library003_barcode78	67	EO67	30	BL4	1.0	Assigned
+Library004_barcode79	25	EO25	13, 14	BL5	0.978	Assigned
+Library004_barcode80	67	EO67	30	BL4	1.0	Assigned
+Library004_barcode81	25	EO25	13, 14	BL5	0.978	Assigned
+Library004_barcode82	25	EO25	13, 14	BL5	0.978	Assigned
+Library004_barcode83	25	EO25	13, 14	BL5	0.978	Assigned
+Library004_barcode84	76	EO76	2	BL3	0.638	Assigned
+Library004_barcode85	67	EO67	30	BL4	1.0	Assigned
+Library004_barcode86	67	EO67	30	BL4	1.0	Assigned
+Library004_barcode87	76	EO76	2	BL3	0.638	Assigned
+Library004_barcode88	67	EO67	30	BL4	1.0	Assigned
+Library004_barcode89	67	EO67	30	BL4	1.0	Assigned
+Library005_barcode01	76	EO76	2	BL3	0.638	Assigned
+Library005_barcode02	76	EO76	2	BL3	0.638	Assigned
+Library005_barcode03	76	EO76	2	BL3	0.638	Assigned
+Library005_barcode05	76	EO76	2	BL3	0.638	Assigned
+Library005_barcode08	76	EO76	2	BL3	0.638	Assigned
+Library005_barcode09	76	EO76	2	BL3	0.638	Assigned
+Library005_barcode11	76	EO76	2	BL3	0.638	Assigned
+Library005_barcode12	76	EO76	2	BL3	0.638	Assigned
+Library005_barcode13	76	EO76	2	BL3	0.638	Assigned
+Library005_barcode14	76	EO76	2	BL3	0.638	Assigned
+Library005_barcode15	76	EO76	2	BL3	0.638	Assigned
+Library005_barcode16	76	EO76	2	BL3	0.638	Assigned
+Library005_barcode17	76	EO76	2	BL3	0.638	Assigned
+Library005_barcode18	76	EO76	2	BL3	0.638	Assigned
+Library005_barcode19	76	EO76	2	BL3	0.638	Assigned
+Library005_barcode22	25	EO25	13, 14	BL5	0.978	Assigned
+Library005_barcode23	25	EO25	13, 14	BL5	0.978	Assigned
+Library005_barcode24	25	EO25	13, 14	BL5	0.978	Assigned
+Library005_barcode25	25	EO25	13, 14	BL5	0.978	Assigned
+Library005_barcode26	25	EO25	13, 14	BL5	0.978	Assigned
+Library005_barcode27	25	EO25	13, 14	BL5	0.978	Assigned
+Library005_barcode28	25	EO25	13, 14	BL5	0.978	Assigned
+Library005_barcode29	25	EO25	13, 14	BL5	0.978	Assigned
+Library005_barcode30	25	EO25	13, 14	BL5	0.978	Assigned
+Library005_barcode31	25	EO25	13, 14	BL5	0.978	Assigned
+Library005_barcode32	25	EO25	13, 14	BL5	0.978	Assigned
+Library005_barcode33	25	EO25	13, 14	BL5	0.978	Assigned
+Library005_barcode34	25	EO25	13, 14	BL5	0.978	Assigned
+Library005_barcode35	25	EO25	13, 14	BL5	0.978	Assigned
+Library005_barcode36	25	EO25	13, 14	BL5	0.978	Assigned
+Library006_barcode37	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library006_barcode38	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library006_barcode40	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library006_barcode41	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library006_barcode42	25	EO25	13, 14	BL5	0.978	Assigned
+Library006_barcode43	76	EO76	2	BL3	0.638	Assigned
+Library006_barcode44	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library006_barcode45	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library006_barcode46	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library006_barcode47	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library006_barcode48	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library006_barcode49	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library006_barcode50	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library006_barcode51	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library006_barcode52	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library006_barcode53	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library006_barcode54	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library006_barcode55	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library006_barcode56	67	EO67	30	BL4	1.0	Assigned
+Library006_barcode57	67	EO67	30	BL4	1.0	Assigned
+Library006_barcode58	67	EO67	30	BL4	1.0	Assigned
+Library006_barcode59	67	EO67	30	BL4	1.0	Assigned
+Library006_barcode60	67	EO67	30	BL4	1.0	Assigned
+Library006_barcode61	67	EO67	30	BL4	1.0	Assigned
+Library006_barcode62	67	EO67	30	BL4	1.0	Assigned
+Library006_barcode63	67	EO67	30	BL4	1.0	Assigned
+Library006_barcode64	67	EO67	30	BL4	1.0	Assigned
+Library006_barcode65	67	EO67	30	BL4	1.0	Assigned
+Library006_barcode66	67	EO67	30	BL4	1.0	Assigned
+Library007_barcode67	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library007_barcode68	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library007_barcode69	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library007_barcode70	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library007_barcode71	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library007_barcode72	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library007_barcode73	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library007_barcode75	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library007_barcode77	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library007_barcode78	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library007_barcode79	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library007_barcode80	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library007_barcode81	67	EO67	30	BL4	1.0	Assigned
+Library007_barcode82	67	EO67	30	BL4	1.0	Assigned
+Library007_barcode83	67	EO67	30	BL4	1.0	Assigned
+Library007_barcode84	67	EO67	30	BL4	1.0	Assigned
+Library007_barcode85	67	EO67	30	BL4	1.0	Assigned
+Library007_barcode86	67	EO67	30	BL4	1.0	Assigned
+Library007_barcode87	67	EO67	30	BL4	1.0	Assigned
+Library007_barcode88	67	EO67	30	BL4	1.0	Assigned
+Library008_barcode01	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode02	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode03	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode04	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode05	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode06	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode07	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode08	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode09	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode10	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode11	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode12	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode13	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode14	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode15	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode16	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode17	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode19	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode20	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode21	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode22	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode23	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode24	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode25	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode26	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode27	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode28	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode29	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode30	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode31	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode32	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode33	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode34	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode35	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode36	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode89	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode90	70	EO70	19	BL2	0.999	Assigned
+Library008_barcode91	70	EO70	19	BL2	0.999	Assigned
+Library009_barcode06	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode05	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode04	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode03	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode02	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode01	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode16	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode15	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode14	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode13	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode12	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode11	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode10	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode24	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode23	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode22	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode21	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode20	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode19	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode18	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode17	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode31	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode30	67	EO67	30	BL4	1.0	Assigned
+Library009_barcode29	67	EO67	30	BL4	1.0	Assigned
+Library009_barcode28	67	EO67	30	BL4	1.0	Assigned
+Library009_barcode27	67	EO67	30	BL4	1.0	Assigned
+Library009_barcode26	67	EO67	30	BL4	1.0	Assigned
+Library009_barcode25	25	EO25	13, 14	BL5	0.978	Assigned
+Library009_barcode39	25	EO25	13, 14	BL5	0.978	Assigned
+Library009_barcode38	25	EO25	13, 14	BL5	0.978	Assigned
+Library009_barcode37	25	EO25	13, 14	BL5	0.978	Assigned
+Library009_barcode36	25	EO25	13, 14	BL5	0.978	Assigned
+Library009_barcode35	25	EO25	13, 14	BL5	0.978	Assigned
+Library009_barcode34	25	EO25	13, 14	BL5	0.978	Assigned
+Library009_barcode33	25	EO25	13, 14	BL5	0.978	Assigned
+Library009_barcode48	25	EO25	13, 14	BL5	0.978	Assigned
+Library009_barcode47	25	EO25	13, 14	BL5	0.978	Assigned
+Library009_barcode46	25	EO25	13, 14	BL5	0.978	Assigned
+Library009_barcode45	25	EO25	13, 14	BL5	0.978	Assigned
+Library009_barcode44	25	EO25	13, 14	BL5	0.978	Assigned
+Library009_barcode42	25	EO25	13, 14	BL5	0.978	Assigned
+Library009_barcode41	25	EO25	13, 14	BL5	0.978	Assigned
+Library009_barcode63	25	EO25	13, 14	BL5	0.978	Assigned
+Library009_barcode62	25	EO25	13, 14	BL5	0.978	Assigned
+Library009_barcode61	25	EO25	13, 14	BL5	0.978	Assigned
+Library009_barcode60	25	EO25	13, 14	BL5	0.978	Assigned
+Library009_barcode56	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode55	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode54	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode53	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode52	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode51	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode50	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode49	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode71	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library009_barcode70	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library009_barcode69	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library009_barcode68	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library009_barcode67	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library009_barcode66	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library009_barcode65	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library009_barcode80	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library009_barcode78	70	EO70	19	BL2	0.999	Assigned
+Library009_barcode77	70	EO70	19	BL2	0.999	Assigned
+Library009_barcode76	70	EO70	19	BL2	0.999	Assigned
+Library009_barcode75	70	EO70	19	BL2	0.999	Assigned
+Library009_barcode88	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode87	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode86	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode85	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode84	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode83	76	EO76	2	BL3	0.638	Assigned
+Library009_barcode82	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library009_barcode81	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library009_barcode96	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library009_barcode95	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library009_barcode94	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library009_barcode93	70	EO70	19	BL2	0.999	Assigned
+Library009_barcode92	70	EO70	19	BL2	0.999	Assigned
+Library009_barcode91	70	EO70	19	BL2	0.999	Assigned
+Library009_barcode90	70	EO70	19	BL2	0.999	Assigned
+Library010_barcode08	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode07	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode06	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode05	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode03	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode02	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode01	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode16	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode15	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode14	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode11	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode10	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode09	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode24	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode22	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode21	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode20	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode19	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode18	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode17	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode32	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode29	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode28	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode27	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode26	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode40	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode39	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode38	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode37	18	EO18	12	BL5	0.588	Assigned
+Library010_barcode36	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library010_barcode34	76	EO76	2	BL3	0.638	Assigned
+Library010_barcode33	76	EO76	2	BL3	0.638	Assigned
+Library010_barcode45	76	EO76	2	BL3	0.638	Assigned
+Library010_barcode44	76	EO76	2	BL3	0.638	Assigned
+Library010_barcode43	76	EO76	2	BL3	0.638	Assigned
+Library010_barcode41	76	EO76	2	BL3	0.638	Assigned
+Library010_barcode56	76	EO76	2	BL3	0.638	Assigned
+Library010_barcode52	76	EO76	2	BL3	0.638	Assigned
+Library010_barcode51	76	EO76	2	BL3	0.638	Assigned
+Library010_barcode49	76	EO76	2	BL3	0.638	Assigned
+Library010_barcode64	76	EO76	2	BL3	0.638	Assigned
+Library010_barcode62	76	EO76	2	BL3	0.638	Assigned
+Library010_barcode60	76	EO76	2	BL3	0.638	Assigned
+Library010_barcode59	70	EO70	19	BL2	0.999	Assigned
+Library010_barcode57	70	EO70	19	BL2	0.999	Assigned
+Library010_barcode71	70	EO70	19	BL2	0.999	Assigned
+Library010_barcode66	70	EO70	19	BL2	0.999	Assigned
+Library010_barcode80	70	EO70	19	BL2	0.999	Assigned
+Library010_barcode79	70	EO70	19	BL2	0.999	Assigned
+Library010_barcode77	70	EO70	19	BL2	0.999	Assigned
+Library010_barcode76	70	EO70	19	BL2	0.999	Assigned
+Library010_barcode75	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library010_barcode74	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library010_barcode73	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library010_barcode88	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library010_barcode87	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library010_barcode86	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library010_barcode84	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library010_barcode83	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library010_barcode82	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library010_barcode81	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library010_barcode94	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library011_barcode07	76	EO76	2	BL3	0.638	Assigned
+Library011_barcode05	18	EO18	12	BL5	0.588	Assigned
+Library011_barcode16	76	EO76	2	BL3	0.638	Assigned
+Library011_barcode13	76	EO76	2	BL3	0.638	Assigned
+Library011_barcode39	70	EO70	19	BL2	0.999	Assigned
+Library011_barcode38	70	EO70	19	BL2	0.999	Assigned
+Library011_barcode37	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library011_barcode36	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library011_barcode33	8	EO08	20, 21, 22	BL1	0.9097	Assigned
+Library011_barcode47	8	EO08	20, 21, 22	BL1	0.9097	Assigned
+Library011_barcode43	8	EO08	20, 21, 22	BL1	0.9097	Assigned
+Library011_barcode51	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library011_barcode50	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library011_barcode49	27	EO27	8, 9, 10, 28	BL4	0.6747	Assigned
+Library011_barcode62	70	EO70	19	BL2	0.999	Assigned
+Library011_barcode61	70	EO70	19	BL2	0.999	Assigned
+Library011_barcode60	70	EO70	19	BL2	0.999	Assigned
+Library011_barcode59	70	EO70	19	BL2	0.999	Assigned
+Library011_barcode58	76	EO76	2	BL3	0.638	Assigned
+Library011_barcode70	76	EO76	2	BL3	0.638	Assigned
+Library011_barcode66	8	EO08	20, 21, 22	BL1	0.9097	Assigned
+Library011_barcode77	8	EO08	20, 21, 22	BL1	0.9097	Assigned
+Library011_barcode75	8	EO08	20, 21, 22	BL1	0.9097	Assigned
+Library011_barcode74	18	EO18	12	BL5	0.588	Assigned
+Library011_barcode73	18	EO18	12	BL5	0.588	Assigned
+Library011_barcode88	18	EO18	12	BL5	0.588	Assigned
+Library011_barcode87	18	EO18	12	BL5	0.588	Assigned
+Library011_barcode85	70	EO70	19	BL2	0.999	Assigned
+Library011_barcode84	70	EO70	19	BL2	0.999	Assigned
+Library011_barcode83	70	EO70	19	BL2	0.999	Assigned
+Library011_barcode82	70	EO70	19	BL2	0.999	Assigned
+Library011_barcode96	70	EO70	19	BL2	0.999	Assigned
+Library011_barcode95	70	EO70	19	BL2	0.999	Assigned
+Library011_barcode94	70	EO70	19	BL2	0.999	Assigned
+Library011_barcode93	70	EO70	19	BL2	0.999	Assigned
+Library011_barcode92	70	EO70	19	BL2	0.999	Assigned
+Library011_barcode91	70	EO70	19	BL2	0.999	Assigned
+Library011_barcode90	70	EO70	19	BL2	0.999	Assigned
+Library011_barcode89	70	EO70	19	BL2	0.999	Assigned

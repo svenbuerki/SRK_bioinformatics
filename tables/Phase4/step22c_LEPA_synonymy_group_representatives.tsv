@@ -1,0 +1,56 @@
+Allele	Group	Group_size	Role	Representative
+Allele_001	Isolated	1	isolated	Allele_001
+Allele_002	Isolated	1	isolated	Allele_002
+Allele_003	Synonymy group 2	6	representative	Allele_003
+Allele_004	Isolated	1	isolated	Allele_004
+Allele_005	Synonymy group 1	34	redundant	Allele_046
+Allele_006	Synonymy group 1	34	redundant	Allele_046
+Allele_007	Synonymy group 1	34	redundant	Allele_046
+Allele_008	Synonymy group 1	34	redundant	Allele_046
+Allele_009	Synonymy group 1	34	redundant	Allele_046
+Allele_010	Synonymy group 1	34	redundant	Allele_046
+Allele_011	Synonymy group 2	6	redundant	Allele_003
+Allele_012	Synonymy group 2	6	redundant	Allele_003
+Allele_013	Synonymy group 1	34	redundant	Allele_046
+Allele_014	Synonymy group 1	34	redundant	Allele_046
+Allele_015	Synonymy group 1	34	redundant	Allele_046
+Allele_016	Synonymy group 1	34	redundant	Allele_046
+Allele_017	Synonymy group 1	34	redundant	Allele_046
+Allele_018	Synonymy group 1	34	redundant	Allele_046
+Allele_019	Synonymy group 1	34	redundant	Allele_046
+Allele_020	Synonymy group 1	34	redundant	Allele_046
+Allele_021	Synonymy group 2	6	redundant	Allele_003
+Allele_022	Synonymy group 1	34	redundant	Allele_046
+Allele_023	Synonymy group 1	34	redundant	Allele_046
+Allele_024	Synonymy group 1	34	redundant	Allele_046
+Allele_025	Isolated	1	isolated	Allele_025
+Allele_026	Synonymy group 1	34	redundant	Allele_046
+Allele_027	Synonymy group 1	34	redundant	Allele_046
+Allele_028	Synonymy group 1	34	redundant	Allele_046
+Allele_029	Synonymy group 1	34	redundant	Allele_046
+Allele_030	Isolated	1	isolated	Allele_030
+Allele_031	Isolated	1	isolated	Allele_031
+Allele_032	Synonymy group 1	34	redundant	Allele_046
+Allele_033	Synonymy group 1	34	redundant	Allele_046
+Allele_034	Synonymy group 1	34	redundant	Allele_046
+Allele_035	Synonymy group 1	34	redundant	Allele_046
+Allele_036	Synonymy group 1	34	redundant	Allele_046
+Allele_037	Isolated	1	isolated	Allele_037
+Allele_038	Synonymy group 1	34	redundant	Allele_046
+Allele_039	Synonymy group 1	34	redundant	Allele_046
+Allele_040	Synonymy group 1	34	redundant	Allele_046
+Allele_041	Synonymy group 3	2	redundant	Allele_052
+Allele_042	Synonymy group 2	6	redundant	Allele_003
+Allele_043	Isolated	1	isolated	Allele_043
+Allele_044	Synonymy group 1	34	redundant	Allele_046
+Allele_045	Synonymy group 1	34	redundant	Allele_046
+Allele_046	Synonymy group 1	34	representative	Allele_046
+Allele_047	Synonymy group 1	34	redundant	Allele_046
+Allele_048	Isolated	1	isolated	Allele_048
+Allele_049	Isolated	1	isolated	Allele_049
+Allele_050	Isolated	1	isolated	Allele_050
+Allele_051	Synonymy group 1	34	redundant	Allele_046
+Allele_052	Synonymy group 3	2	representative	Allele_052
+Allele_053	Synonymy group 4	2	representative	Allele_053
+Allele_054	Synonymy group 4	2	redundant	Allele_053
+Allele_055	Synonymy group 2	6	redundant	Allele_003

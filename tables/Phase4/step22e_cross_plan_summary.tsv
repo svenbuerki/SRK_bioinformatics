@@ -1,0 +1,7 @@
+Hypothesis	Description	N_crosses	Replicates_per_cross	Total_attempts
+H0	SI validation (Incompatible negative controls)	15	9	135
+H1a	Within-Class compatible baseline (Compatible_within positive)	10	9	90
+H1b	Between-Class compatible baseline (Compatible_cross via heterozygous carrier of Class II allele: Allele_043)	5	9	45
+H2	Synonymy bin-boundary tests (Synonymy_test)	6	15	90
+H3	Hidden-bin tests via AAAB donors (29 bins without AAAA)	5	15	75
+TOTAL	All hypothesis tests	41	—	435

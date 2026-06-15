@@ -1,0 +1,4 @@
+pair	obs	null_mean	null_sd	p_one_sided	n_a	n_b
+LEPA__Brassica	0	9.22	2.572	1	82	45
+LEPA__Arabidopsis	4	14.57	3.109	0.9999	82	71
+Brassica__Arabidopsis	43	8	2.438	9.999e-05	45	71

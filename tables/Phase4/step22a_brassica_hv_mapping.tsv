@@ -1,0 +1,13 @@
+Brassica_residue	Brassica_aa	HV_region	Expanded_aln_col	LEPA_aln_col	Verification
+211	V	hvI	241	241	OK
+267	F	hvI	303	303	OK
+287	P	hvI	328	328	OK
+290	F	hvI	331	331	OK
+277	L	hvII	313	313	OK
+278	V	hvII	314	314	OK
+282	P	hvII	323	323	OK
+331	H	hvII	381	381	OK
+332	T	hvII	382	382	OK
+333	R	hvII	383	383	OK
+325	E	hvIII	370	370	OK
+330	D	hvIII	375	375	OK

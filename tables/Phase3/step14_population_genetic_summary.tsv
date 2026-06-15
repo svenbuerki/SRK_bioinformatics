@@ -1,0 +1,17 @@
+BL	EO	Drift_index	N_individuals	N_individuals_with_alleles	N_alleles	Effective_alleles_Ne	Prop_heterozygous	Prop_homozygous	Mean_alleles	Top_alleles	Population
+BL4	EO27	0.675	61	61	22	8.675	0.393	0.607	1.459	Allele_039(24), Allele_046(22), Allele_043(11)	EO27
+BL4	EO67	1	37	37	10	5.036	0.405	0.595	1.459	Allele_046(25), Allele_043(15), Allele_030(6)	EO67
+BL5	EO18	0.588	39	39	14	5.711	0.256	0.744	1.256	Allele_046(23), Allele_043(8), Allele_040(5)	EO18
+BL5	EO25	0.978	51	51	14	8.276	0.49	0.51	1.529	Allele_039(22), Allele_043(21), Allele_018(18)	EO25
+BL5	EO24	1	1	1	1	1	0	1	1	Allele_046(1)	EO24
+BL5	EO48	1	1	1	2	2	1	0	2	Allele_025(2), Allele_046(2)	EO48
+BL3	EO118	1	3	3	5	3.522	1	0	2	Allele_043(4), Allele_027(2), Allele_006(1)	EO118
+BL3	EO76	0.638	76	76	14	7.159	0.276	0.724	1.276	Allele_046(39), Allele_013(19), Allele_016(17)	EO76
+BL3	EO38	0.938	1	1	1	1	0	1	1	Allele_006(2)	EO38
+BL3	EO52	0.987	1	1	2	1.8	1	0	2	Allele_013(2), Allele_043(1)	EO52
+BL1	EO08	0.91	8	8	4	2.2	0.125	0.875	1.125	Allele_043(7), Allele_025(2), Allele_022(1)	EO08
+BL1	EO61	0.955	1	1	1	1	0	1	1	Allele_046(2)	EO61
+BL1	EO26	0.982	1	1	2	1.8	1	0	2	Allele_046(2), Allele_040(1)	EO26
+BL1	EO29	0.998	1	1	2	2	1	0	2	Allele_043(1), Allele_046(1)	EO29
+BL2	EO70	0.999	74	74	6	2.038	0.257	0.743	1.257	Allele_046(87), Allele_043(55), Allele_039(2)	EO70
+BL2	EO68	1	3	3	2	2	0	1	1	Allele_018(2), Allele_039(2)	EO68

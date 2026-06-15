@@ -1,0 +1,17 @@
+metric	value
+n_HV_cols_total	82
+n_5of5_concordant	81
+n_at_least_4of5_concordant	82
+n_at_most_2of5_concordant	0
+mean_concordance_frac	0.9976
+mean_pooled_H_bits	0.6999
+mean_perBL_H_BL4_bits	0.5680
+mean_perBL_H_BL5_bits	0.6324
+mean_perBL_H_BL3_bits	0.4793
+mean_perBL_H_BL1_bits	0.9817
+mean_perBL_H_BL2_bits	0.8902
+n_match_Brassica	26
+n_match_Arabidopsis	23
+n_match_both	18
+n_LEPA_specific_concordant	50
+verdict	Within-LEPA: all BLs concordant. Across genera: largely LEPA-specific (50/82 cols differ from both Brassica AND Arabidopsis dominant residues). Interpretation: drift on a shared LEPA ancestral pool — every BL fixed the most common ancestral allele independently, and that allele family carries LEPA-specific residues at most HV cols (NOT pan-Brassicaceae conserved). This is a drift signature, not selection convergence across genera.

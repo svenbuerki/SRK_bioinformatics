@@ -1,0 +1,6 @@
+BL	N_EOs	Mean_drift	N_individuals	N_individuals_with_alleles	N_alleles	Effective_alleles_Ne	Prop_heterozygous	Prop_homozygous	Mean_alleles	Top_alleles
+BL4	2	0.798	98	98	28	8.498	0.398	0.602	1.459	Allele_046(47), Allele_043(26), Allele_039(24)
+BL5	4	0.813	92	92	23	8.98	0.391	0.609	1.413	Allele_046(41), Allele_043(29), Allele_039(23)
+BL3	4	0.659	81	81	15	7.693	0.309	0.691	1.309	Allele_046(40), Allele_013(21), Allele_016(17)
+BL1	4	0.928	11	11	5	3.057	0.273	0.727	1.273	Allele_043(8), Allele_046(6), Allele_025(2)
+BL2	2	0.999	77	77	7	2.148	0.247	0.753	1.247	Allele_046(87), Allele_043(55), Allele_039(4)

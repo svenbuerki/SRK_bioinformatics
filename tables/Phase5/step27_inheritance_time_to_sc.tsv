@@ -1,0 +1,1001 @@
+scenario	BL	replicate	time_to_sc
+baseline	BL1	0	6.0
+baseline	BL1	1	123.0
+baseline	BL1	2	
+baseline	BL1	3	
+baseline	BL1	4	
+baseline	BL1	5	
+baseline	BL1	6	
+baseline	BL1	7	67.0
+baseline	BL1	8	13.0
+baseline	BL1	9	
+baseline	BL1	10	18.0
+baseline	BL1	11	
+baseline	BL1	12	23.0
+baseline	BL1	13	7.0
+baseline	BL1	14	10.0
+baseline	BL1	15	
+baseline	BL1	16	
+baseline	BL1	17	
+baseline	BL1	18	
+baseline	BL1	19	11.0
+baseline	BL1	20	90.0
+baseline	BL1	21	10.0
+baseline	BL1	22	
+baseline	BL1	23	11.0
+baseline	BL1	24	
+baseline	BL1	25	48.0
+baseline	BL1	26	108.0
+baseline	BL1	27	14.0
+baseline	BL1	28	11.0
+baseline	BL1	29	157.0
+baseline	BL1	30	
+baseline	BL1	31	
+baseline	BL1	32	
+baseline	BL1	33	161.0
+baseline	BL1	34	
+baseline	BL1	35	
+baseline	BL1	36	14.0
+baseline	BL1	37	
+baseline	BL1	38	
+baseline	BL1	39	181.0
+baseline	BL1	40	
+baseline	BL1	41	9.0
+baseline	BL1	42	9.0
+baseline	BL1	43	8.0
+baseline	BL1	44	6.0
+baseline	BL1	45	10.0
+baseline	BL1	46	11.0
+baseline	BL1	47	20.0
+baseline	BL1	48	7.0
+baseline	BL1	49	
+baseline	BL2	0	168.0
+baseline	BL2	1	
+baseline	BL2	2	71.0
+baseline	BL2	3	24.0
+baseline	BL2	4	31.0
+baseline	BL2	5	16.0
+baseline	BL2	6	15.0
+baseline	BL2	7	21.0
+baseline	BL2	8	193.0
+baseline	BL2	9	14.0
+baseline	BL2	10	68.0
+baseline	BL2	11	19.0
+baseline	BL2	12	23.0
+baseline	BL2	13	21.0
+baseline	BL2	14	19.0
+baseline	BL2	15	115.0
+baseline	BL2	16	14.0
+baseline	BL2	17	31.0
+baseline	BL2	18	20.0
+baseline	BL2	19	24.0
+baseline	BL2	20	18.0
+baseline	BL2	21	68.0
+baseline	BL2	22	19.0
+baseline	BL2	23	20.0
+baseline	BL2	24	21.0
+baseline	BL2	25	26.0
+baseline	BL2	26	19.0
+baseline	BL2	27	55.0
+baseline	BL2	28	17.0
+baseline	BL2	29	36.0
+baseline	BL2	30	137.0
+baseline	BL2	31	39.0
+baseline	BL2	32	47.0
+baseline	BL2	33	24.0
+baseline	BL2	34	16.0
+baseline	BL2	35	14.0
+baseline	BL2	36	21.0
+baseline	BL2	37	16.0
+baseline	BL2	38	17.0
+baseline	BL2	39	31.0
+baseline	BL2	40	37.0
+baseline	BL2	41	18.0
+baseline	BL2	42	35.0
+baseline	BL2	43	104.0
+baseline	BL2	44	23.0
+baseline	BL2	45	147.0
+baseline	BL2	46	22.0
+baseline	BL2	47	18.0
+baseline	BL2	48	31.0
+baseline	BL2	49	60.0
+baseline	BL3	0	32.0
+baseline	BL3	1	60.0
+baseline	BL3	2	155.0
+baseline	BL3	3	86.0
+baseline	BL3	4	171.0
+baseline	BL3	5	66.0
+baseline	BL3	6	33.0
+baseline	BL3	7	31.0
+baseline	BL3	8	57.0
+baseline	BL3	9	24.0
+baseline	BL3	10	63.0
+baseline	BL3	11	29.0
+baseline	BL3	12	34.0
+baseline	BL3	13	25.0
+baseline	BL3	14	56.0
+baseline	BL3	15	
+baseline	BL3	16	26.0
+baseline	BL3	17	38.0
+baseline	BL3	18	44.0
+baseline	BL3	19	25.0
+baseline	BL3	20	43.0
+baseline	BL3	21	193.0
+baseline	BL3	22	24.0
+baseline	BL3	23	43.0
+baseline	BL3	24	77.0
+baseline	BL3	25	24.0
+baseline	BL3	26	35.0
+baseline	BL3	27	120.0
+baseline	BL3	28	29.0
+baseline	BL3	29	42.0
+baseline	BL3	30	130.0
+baseline	BL3	31	34.0
+baseline	BL3	32	
+baseline	BL3	33	176.0
+baseline	BL3	34	29.0
+baseline	BL3	35	53.0
+baseline	BL3	36	160.0
+baseline	BL3	37	47.0
+baseline	BL3	38	41.0
+baseline	BL3	39	33.0
+baseline	BL3	40	22.0
+baseline	BL3	41	26.0
+baseline	BL3	42	30.0
+baseline	BL3	43	35.0
+baseline	BL3	44	32.0
+baseline	BL3	45	38.0
+baseline	BL3	46	62.0
+baseline	BL3	47	48.0
+baseline	BL3	48	
+baseline	BL3	49	32.0
+baseline	BL4	0	
+baseline	BL4	1	43.0
+baseline	BL4	2	40.0
+baseline	BL4	3	198.0
+baseline	BL4	4	33.0
+baseline	BL4	5	
+baseline	BL4	6	68.0
+baseline	BL4	7	
+baseline	BL4	8	57.0
+baseline	BL4	9	
+baseline	BL4	10	37.0
+baseline	BL4	11	48.0
+baseline	BL4	12	
+baseline	BL4	13	118.0
+baseline	BL4	14	36.0
+baseline	BL4	15	
+baseline	BL4	16	45.0
+baseline	BL4	17	95.0
+baseline	BL4	18	59.0
+baseline	BL4	19	47.0
+baseline	BL4	20	60.0
+baseline	BL4	21	42.0
+baseline	BL4	22	29.0
+baseline	BL4	23	143.0
+baseline	BL4	24	132.0
+baseline	BL4	25	
+baseline	BL4	26	186.0
+baseline	BL4	27	89.0
+baseline	BL4	28	
+baseline	BL4	29	111.0
+baseline	BL4	30	149.0
+baseline	BL4	31	44.0
+baseline	BL4	32	100.0
+baseline	BL4	33	
+baseline	BL4	34	49.0
+baseline	BL4	35	32.0
+baseline	BL4	36	128.0
+baseline	BL4	37	167.0
+baseline	BL4	38	145.0
+baseline	BL4	39	117.0
+baseline	BL4	40	
+baseline	BL4	41	
+baseline	BL4	42	29.0
+baseline	BL4	43	39.0
+baseline	BL4	44	146.0
+baseline	BL4	45	39.0
+baseline	BL4	46	56.0
+baseline	BL4	47	42.0
+baseline	BL4	48	40.0
+baseline	BL4	49	73.0
+baseline	BL5	0	195.0
+baseline	BL5	1	58.0
+baseline	BL5	2	109.0
+baseline	BL5	3	170.0
+baseline	BL5	4	59.0
+baseline	BL5	5	30.0
+baseline	BL5	6	
+baseline	BL5	7	96.0
+baseline	BL5	8	
+baseline	BL5	9	38.0
+baseline	BL5	10	171.0
+baseline	BL5	11	
+baseline	BL5	12	96.0
+baseline	BL5	13	31.0
+baseline	BL5	14	
+baseline	BL5	15	182.0
+baseline	BL5	16	29.0
+baseline	BL5	17	24.0
+baseline	BL5	18	
+baseline	BL5	19	36.0
+baseline	BL5	20	34.0
+baseline	BL5	21	54.0
+baseline	BL5	22	27.0
+baseline	BL5	23	55.0
+baseline	BL5	24	50.0
+baseline	BL5	25	48.0
+baseline	BL5	26	44.0
+baseline	BL5	27	142.0
+baseline	BL5	28	46.0
+baseline	BL5	29	155.0
+baseline	BL5	30	44.0
+baseline	BL5	31	28.0
+baseline	BL5	32	79.0
+baseline	BL5	33	65.0
+baseline	BL5	34	58.0
+baseline	BL5	35	
+baseline	BL5	36	
+baseline	BL5	37	38.0
+baseline	BL5	38	50.0
+baseline	BL5	39	
+baseline	BL5	40	89.0
+baseline	BL5	41	49.0
+baseline	BL5	42	114.0
+baseline	BL5	43	93.0
+baseline	BL5	44	136.0
+baseline	BL5	45	53.0
+baseline	BL5	46	52.0
+baseline	BL5	47	
+baseline	BL5	48	140.0
+baseline	BL5	49	21.0
+rescue_low	BL1	0	14.0
+rescue_low	BL1	1	29.0
+rescue_low	BL1	2	26.0
+rescue_low	BL1	3	
+rescue_low	BL1	4	
+rescue_low	BL1	5	14.0
+rescue_low	BL1	6	12.0
+rescue_low	BL1	7	
+rescue_low	BL1	8	121.0
+rescue_low	BL1	9	
+rescue_low	BL1	10	
+rescue_low	BL1	11	7.0
+rescue_low	BL1	12	9.0
+rescue_low	BL1	13	
+rescue_low	BL1	14	
+rescue_low	BL1	15	10.0
+rescue_low	BL1	16	92.0
+rescue_low	BL1	17	38.0
+rescue_low	BL1	18	53.0
+rescue_low	BL1	19	
+rescue_low	BL1	20	7.0
+rescue_low	BL1	21	32.0
+rescue_low	BL1	22	
+rescue_low	BL1	23	8.0
+rescue_low	BL1	24	
+rescue_low	BL1	25	
+rescue_low	BL1	26	92.0
+rescue_low	BL1	27	19.0
+rescue_low	BL1	28	
+rescue_low	BL1	29	16.0
+rescue_low	BL1	30	
+rescue_low	BL1	31	
+rescue_low	BL1	32	12.0
+rescue_low	BL1	33	8.0
+rescue_low	BL1	34	14.0
+rescue_low	BL1	35	10.0
+rescue_low	BL1	36	136.0
+rescue_low	BL1	37	
+rescue_low	BL1	38	
+rescue_low	BL1	39	
+rescue_low	BL1	40	176.0
+rescue_low	BL1	41	
+rescue_low	BL1	42	10.0
+rescue_low	BL1	43	9.0
+rescue_low	BL1	44	6.0
+rescue_low	BL1	45	12.0
+rescue_low	BL1	46	11.0
+rescue_low	BL1	47	
+rescue_low	BL1	48	
+rescue_low	BL1	49	12.0
+rescue_low	BL2	0	21.0
+rescue_low	BL2	1	22.0
+rescue_low	BL2	2	18.0
+rescue_low	BL2	3	19.0
+rescue_low	BL2	4	28.0
+rescue_low	BL2	5	23.0
+rescue_low	BL2	6	19.0
+rescue_low	BL2	7	31.0
+rescue_low	BL2	8	
+rescue_low	BL2	9	136.0
+rescue_low	BL2	10	14.0
+rescue_low	BL2	11	19.0
+rescue_low	BL2	12	21.0
+rescue_low	BL2	13	17.0
+rescue_low	BL2	14	188.0
+rescue_low	BL2	15	119.0
+rescue_low	BL2	16	24.0
+rescue_low	BL2	17	25.0
+rescue_low	BL2	18	21.0
+rescue_low	BL2	19	24.0
+rescue_low	BL2	20	32.0
+rescue_low	BL2	21	
+rescue_low	BL2	22	20.0
+rescue_low	BL2	23	164.0
+rescue_low	BL2	24	20.0
+rescue_low	BL2	25	
+rescue_low	BL2	26	60.0
+rescue_low	BL2	27	25.0
+rescue_low	BL2	28	21.0
+rescue_low	BL2	29	20.0
+rescue_low	BL2	30	20.0
+rescue_low	BL2	31	18.0
+rescue_low	BL2	32	26.0
+rescue_low	BL2	33	29.0
+rescue_low	BL2	34	22.0
+rescue_low	BL2	35	35.0
+rescue_low	BL2	36	113.0
+rescue_low	BL2	37	
+rescue_low	BL2	38	127.0
+rescue_low	BL2	39	25.0
+rescue_low	BL2	40	39.0
+rescue_low	BL2	41	16.0
+rescue_low	BL2	42	
+rescue_low	BL2	43	
+rescue_low	BL2	44	50.0
+rescue_low	BL2	45	102.0
+rescue_low	BL2	46	62.0
+rescue_low	BL2	47	15.0
+rescue_low	BL2	48	22.0
+rescue_low	BL2	49	18.0
+rescue_low	BL3	0	64.0
+rescue_low	BL3	1	147.0
+rescue_low	BL3	2	30.0
+rescue_low	BL3	3	195.0
+rescue_low	BL3	4	27.0
+rescue_low	BL3	5	
+rescue_low	BL3	6	59.0
+rescue_low	BL3	7	50.0
+rescue_low	BL3	8	34.0
+rescue_low	BL3	9	33.0
+rescue_low	BL3	10	31.0
+rescue_low	BL3	11	39.0
+rescue_low	BL3	12	31.0
+rescue_low	BL3	13	30.0
+rescue_low	BL3	14	29.0
+rescue_low	BL3	15	33.0
+rescue_low	BL3	16	31.0
+rescue_low	BL3	17	36.0
+rescue_low	BL3	18	58.0
+rescue_low	BL3	19	25.0
+rescue_low	BL3	20	115.0
+rescue_low	BL3	21	69.0
+rescue_low	BL3	22	32.0
+rescue_low	BL3	23	93.0
+rescue_low	BL3	24	52.0
+rescue_low	BL3	25	32.0
+rescue_low	BL3	26	146.0
+rescue_low	BL3	27	
+rescue_low	BL3	28	29.0
+rescue_low	BL3	29	33.0
+rescue_low	BL3	30	38.0
+rescue_low	BL3	31	46.0
+rescue_low	BL3	32	20.0
+rescue_low	BL3	33	23.0
+rescue_low	BL3	34	91.0
+rescue_low	BL3	35	32.0
+rescue_low	BL3	36	111.0
+rescue_low	BL3	37	47.0
+rescue_low	BL3	38	37.0
+rescue_low	BL3	39	27.0
+rescue_low	BL3	40	23.0
+rescue_low	BL3	41	25.0
+rescue_low	BL3	42	60.0
+rescue_low	BL3	43	85.0
+rescue_low	BL3	44	126.0
+rescue_low	BL3	45	40.0
+rescue_low	BL3	46	92.0
+rescue_low	BL3	47	26.0
+rescue_low	BL3	48	163.0
+rescue_low	BL3	49	51.0
+rescue_low	BL4	0	
+rescue_low	BL4	1	
+rescue_low	BL4	2	37.0
+rescue_low	BL4	3	157.0
+rescue_low	BL4	4	127.0
+rescue_low	BL4	5	36.0
+rescue_low	BL4	6	141.0
+rescue_low	BL4	7	157.0
+rescue_low	BL4	8	45.0
+rescue_low	BL4	9	80.0
+rescue_low	BL4	10	
+rescue_low	BL4	11	139.0
+rescue_low	BL4	12	38.0
+rescue_low	BL4	13	
+rescue_low	BL4	14	158.0
+rescue_low	BL4	15	140.0
+rescue_low	BL4	16	190.0
+rescue_low	BL4	17	29.0
+rescue_low	BL4	18	29.0
+rescue_low	BL4	19	
+rescue_low	BL4	20	190.0
+rescue_low	BL4	21	55.0
+rescue_low	BL4	22	36.0
+rescue_low	BL4	23	30.0
+rescue_low	BL4	24	97.0
+rescue_low	BL4	25	34.0
+rescue_low	BL4	26	37.0
+rescue_low	BL4	27	121.0
+rescue_low	BL4	28	52.0
+rescue_low	BL4	29	59.0
+rescue_low	BL4	30	134.0
+rescue_low	BL4	31	
+rescue_low	BL4	32	65.0
+rescue_low	BL4	33	46.0
+rescue_low	BL4	34	32.0
+rescue_low	BL4	35	39.0
+rescue_low	BL4	36	46.0
+rescue_low	BL4	37	99.0
+rescue_low	BL4	38	138.0
+rescue_low	BL4	39	66.0
+rescue_low	BL4	40	73.0
+rescue_low	BL4	41	110.0
+rescue_low	BL4	42	98.0
+rescue_low	BL4	43	48.0
+rescue_low	BL4	44	33.0
+rescue_low	BL4	45	
+rescue_low	BL4	46	42.0
+rescue_low	BL4	47	27.0
+rescue_low	BL4	48	167.0
+rescue_low	BL4	49	
+rescue_low	BL5	0	
+rescue_low	BL5	1	112.0
+rescue_low	BL5	2	
+rescue_low	BL5	3	35.0
+rescue_low	BL5	4	129.0
+rescue_low	BL5	5	
+rescue_low	BL5	6	84.0
+rescue_low	BL5	7	60.0
+rescue_low	BL5	8	71.0
+rescue_low	BL5	9	
+rescue_low	BL5	10	137.0
+rescue_low	BL5	11	54.0
+rescue_low	BL5	12	77.0
+rescue_low	BL5	13	34.0
+rescue_low	BL5	14	
+rescue_low	BL5	15	53.0
+rescue_low	BL5	16	
+rescue_low	BL5	17	101.0
+rescue_low	BL5	18	60.0
+rescue_low	BL5	19	34.0
+rescue_low	BL5	20	68.0
+rescue_low	BL5	21	30.0
+rescue_low	BL5	22	148.0
+rescue_low	BL5	23	44.0
+rescue_low	BL5	24	77.0
+rescue_low	BL5	25	81.0
+rescue_low	BL5	26	
+rescue_low	BL5	27	
+rescue_low	BL5	28	29.0
+rescue_low	BL5	29	42.0
+rescue_low	BL5	30	32.0
+rescue_low	BL5	31	103.0
+rescue_low	BL5	32	45.0
+rescue_low	BL5	33	31.0
+rescue_low	BL5	34	
+rescue_low	BL5	35	35.0
+rescue_low	BL5	36	60.0
+rescue_low	BL5	37	
+rescue_low	BL5	38	84.0
+rescue_low	BL5	39	104.0
+rescue_low	BL5	40	86.0
+rescue_low	BL5	41	43.0
+rescue_low	BL5	42	37.0
+rescue_low	BL5	43	
+rescue_low	BL5	44	175.0
+rescue_low	BL5	45	47.0
+rescue_low	BL5	46	42.0
+rescue_low	BL5	47	78.0
+rescue_low	BL5	48	98.0
+rescue_low	BL5	49	179.0
+rescue_high	BL1	0	172.0
+rescue_high	BL1	1	8.0
+rescue_high	BL1	2	12.0
+rescue_high	BL1	3	63.0
+rescue_high	BL1	4	
+rescue_high	BL1	5	7.0
+rescue_high	BL1	6	7.0
+rescue_high	BL1	7	8.0
+rescue_high	BL1	8	
+rescue_high	BL1	9	
+rescue_high	BL1	10	
+rescue_high	BL1	11	135.0
+rescue_high	BL1	12	101.0
+rescue_high	BL1	13	11.0
+rescue_high	BL1	14	
+rescue_high	BL1	15	194.0
+rescue_high	BL1	16	30.0
+rescue_high	BL1	17	118.0
+rescue_high	BL1	18	15.0
+rescue_high	BL1	19	130.0
+rescue_high	BL1	20	126.0
+rescue_high	BL1	21	18.0
+rescue_high	BL1	22	
+rescue_high	BL1	23	
+rescue_high	BL1	24	170.0
+rescue_high	BL1	25	14.0
+rescue_high	BL1	26	10.0
+rescue_high	BL1	27	11.0
+rescue_high	BL1	28	
+rescue_high	BL1	29	18.0
+rescue_high	BL1	30	172.0
+rescue_high	BL1	31	9.0
+rescue_high	BL1	32	10.0
+rescue_high	BL1	33	12.0
+rescue_high	BL1	34	
+rescue_high	BL1	35	
+rescue_high	BL1	36	25.0
+rescue_high	BL1	37	88.0
+rescue_high	BL1	38	15.0
+rescue_high	BL1	39	14.0
+rescue_high	BL1	40	11.0
+rescue_high	BL1	41	
+rescue_high	BL1	42	168.0
+rescue_high	BL1	43	153.0
+rescue_high	BL1	44	189.0
+rescue_high	BL1	45	149.0
+rescue_high	BL1	46	
+rescue_high	BL1	47	
+rescue_high	BL1	48	13.0
+rescue_high	BL1	49	10.0
+rescue_high	BL2	0	99.0
+rescue_high	BL2	1	47.0
+rescue_high	BL2	2	168.0
+rescue_high	BL2	3	26.0
+rescue_high	BL2	4	27.0
+rescue_high	BL2	5	21.0
+rescue_high	BL2	6	30.0
+rescue_high	BL2	7	18.0
+rescue_high	BL2	8	132.0
+rescue_high	BL2	9	36.0
+rescue_high	BL2	10	28.0
+rescue_high	BL2	11	30.0
+rescue_high	BL2	12	13.0
+rescue_high	BL2	13	47.0
+rescue_high	BL2	14	179.0
+rescue_high	BL2	15	37.0
+rescue_high	BL2	16	
+rescue_high	BL2	17	41.0
+rescue_high	BL2	18	33.0
+rescue_high	BL2	19	40.0
+rescue_high	BL2	20	25.0
+rescue_high	BL2	21	35.0
+rescue_high	BL2	22	26.0
+rescue_high	BL2	23	155.0
+rescue_high	BL2	24	77.0
+rescue_high	BL2	25	35.0
+rescue_high	BL2	26	71.0
+rescue_high	BL2	27	34.0
+rescue_high	BL2	28	27.0
+rescue_high	BL2	29	37.0
+rescue_high	BL2	30	31.0
+rescue_high	BL2	31	150.0
+rescue_high	BL2	32	29.0
+rescue_high	BL2	33	51.0
+rescue_high	BL2	34	179.0
+rescue_high	BL2	35	26.0
+rescue_high	BL2	36	177.0
+rescue_high	BL2	37	51.0
+rescue_high	BL2	38	17.0
+rescue_high	BL2	39	32.0
+rescue_high	BL2	40	60.0
+rescue_high	BL2	41	31.0
+rescue_high	BL2	42	
+rescue_high	BL2	43	
+rescue_high	BL2	44	46.0
+rescue_high	BL2	45	38.0
+rescue_high	BL2	46	16.0
+rescue_high	BL2	47	193.0
+rescue_high	BL2	48	22.0
+rescue_high	BL2	49	
+rescue_high	BL3	0	97.0
+rescue_high	BL3	1	41.0
+rescue_high	BL3	2	61.0
+rescue_high	BL3	3	170.0
+rescue_high	BL3	4	64.0
+rescue_high	BL3	5	
+rescue_high	BL3	6	83.0
+rescue_high	BL3	7	40.0
+rescue_high	BL3	8	63.0
+rescue_high	BL3	9	112.0
+rescue_high	BL3	10	58.0
+rescue_high	BL3	11	25.0
+rescue_high	BL3	12	39.0
+rescue_high	BL3	13	61.0
+rescue_high	BL3	14	144.0
+rescue_high	BL3	15	48.0
+rescue_high	BL3	16	133.0
+rescue_high	BL3	17	44.0
+rescue_high	BL3	18	47.0
+rescue_high	BL3	19	68.0
+rescue_high	BL3	20	68.0
+rescue_high	BL3	21	38.0
+rescue_high	BL3	22	21.0
+rescue_high	BL3	23	31.0
+rescue_high	BL3	24	
+rescue_high	BL3	25	24.0
+rescue_high	BL3	26	
+rescue_high	BL3	27	
+rescue_high	BL3	28	38.0
+rescue_high	BL3	29	57.0
+rescue_high	BL3	30	50.0
+rescue_high	BL3	31	56.0
+rescue_high	BL3	32	43.0
+rescue_high	BL3	33	149.0
+rescue_high	BL3	34	61.0
+rescue_high	BL3	35	38.0
+rescue_high	BL3	36	39.0
+rescue_high	BL3	37	154.0
+rescue_high	BL3	38	60.0
+rescue_high	BL3	39	166.0
+rescue_high	BL3	40	102.0
+rescue_high	BL3	41	35.0
+rescue_high	BL3	42	32.0
+rescue_high	BL3	43	67.0
+rescue_high	BL3	44	20.0
+rescue_high	BL3	45	27.0
+rescue_high	BL3	46	52.0
+rescue_high	BL3	47	90.0
+rescue_high	BL3	48	32.0
+rescue_high	BL3	49	33.0
+rescue_high	BL4	0	
+rescue_high	BL4	1	48.0
+rescue_high	BL4	2	119.0
+rescue_high	BL4	3	76.0
+rescue_high	BL4	4	173.0
+rescue_high	BL4	5	190.0
+rescue_high	BL4	6	27.0
+rescue_high	BL4	7	167.0
+rescue_high	BL4	8	54.0
+rescue_high	BL4	9	61.0
+rescue_high	BL4	10	
+rescue_high	BL4	11	53.0
+rescue_high	BL4	12	70.0
+rescue_high	BL4	13	47.0
+rescue_high	BL4	14	79.0
+rescue_high	BL4	15	140.0
+rescue_high	BL4	16	160.0
+rescue_high	BL4	17	135.0
+rescue_high	BL4	18	62.0
+rescue_high	BL4	19	58.0
+rescue_high	BL4	20	66.0
+rescue_high	BL4	21	
+rescue_high	BL4	22	188.0
+rescue_high	BL4	23	52.0
+rescue_high	BL4	24	83.0
+rescue_high	BL4	25	66.0
+rescue_high	BL4	26	53.0
+rescue_high	BL4	27	80.0
+rescue_high	BL4	28	40.0
+rescue_high	BL4	29	113.0
+rescue_high	BL4	30	56.0
+rescue_high	BL4	31	42.0
+rescue_high	BL4	32	66.0
+rescue_high	BL4	33	58.0
+rescue_high	BL4	34	135.0
+rescue_high	BL4	35	72.0
+rescue_high	BL4	36	113.0
+rescue_high	BL4	37	66.0
+rescue_high	BL4	38	55.0
+rescue_high	BL4	39	42.0
+rescue_high	BL4	40	99.0
+rescue_high	BL4	41	176.0
+rescue_high	BL4	42	60.0
+rescue_high	BL4	43	107.0
+rescue_high	BL4	44	45.0
+rescue_high	BL4	45	51.0
+rescue_high	BL4	46	
+rescue_high	BL4	47	192.0
+rescue_high	BL4	48	
+rescue_high	BL4	49	80.0
+rescue_high	BL5	0	93.0
+rescue_high	BL5	1	55.0
+rescue_high	BL5	2	65.0
+rescue_high	BL5	3	159.0
+rescue_high	BL5	4	99.0
+rescue_high	BL5	5	63.0
+rescue_high	BL5	6	
+rescue_high	BL5	7	94.0
+rescue_high	BL5	8	87.0
+rescue_high	BL5	9	106.0
+rescue_high	BL5	10	44.0
+rescue_high	BL5	11	196.0
+rescue_high	BL5	12	72.0
+rescue_high	BL5	13	
+rescue_high	BL5	14	71.0
+rescue_high	BL5	15	106.0
+rescue_high	BL5	16	
+rescue_high	BL5	17	46.0
+rescue_high	BL5	18	43.0
+rescue_high	BL5	19	121.0
+rescue_high	BL5	20	60.0
+rescue_high	BL5	21	
+rescue_high	BL5	22	136.0
+rescue_high	BL5	23	32.0
+rescue_high	BL5	24	48.0
+rescue_high	BL5	25	127.0
+rescue_high	BL5	26	46.0
+rescue_high	BL5	27	65.0
+rescue_high	BL5	28	86.0
+rescue_high	BL5	29	163.0
+rescue_high	BL5	30	184.0
+rescue_high	BL5	31	28.0
+rescue_high	BL5	32	68.0
+rescue_high	BL5	33	46.0
+rescue_high	BL5	34	46.0
+rescue_high	BL5	35	192.0
+rescue_high	BL5	36	
+rescue_high	BL5	37	
+rescue_high	BL5	38	93.0
+rescue_high	BL5	39	157.0
+rescue_high	BL5	40	43.0
+rescue_high	BL5	41	58.0
+rescue_high	BL5	42	
+rescue_high	BL5	43	138.0
+rescue_high	BL5	44	60.0
+rescue_high	BL5	45	69.0
+rescue_high	BL5	46	32.0
+rescue_high	BL5	47	67.0
+rescue_high	BL5	48	
+rescue_high	BL5	49	72.0
+high_drift	BL1	0	187.0
+high_drift	BL1	1	
+high_drift	BL1	2	
+high_drift	BL1	3	
+high_drift	BL1	4	
+high_drift	BL1	5	12.0
+high_drift	BL1	6	
+high_drift	BL1	7	13.0
+high_drift	BL1	8	
+high_drift	BL1	9	
+high_drift	BL1	10	3.0
+high_drift	BL1	11	150.0
+high_drift	BL1	12	
+high_drift	BL1	13	
+high_drift	BL1	14	
+high_drift	BL1	15	
+high_drift	BL1	16	125.0
+high_drift	BL1	17	13.0
+high_drift	BL1	18	
+high_drift	BL1	19	56.0
+high_drift	BL1	20	
+high_drift	BL1	21	
+high_drift	BL1	22	
+high_drift	BL1	23	9.0
+high_drift	BL1	24	
+high_drift	BL1	25	6.0
+high_drift	BL1	26	
+high_drift	BL1	27	
+high_drift	BL1	28	48.0
+high_drift	BL1	29	
+high_drift	BL1	30	9.0
+high_drift	BL1	31	43.0
+high_drift	BL1	32	
+high_drift	BL1	33	
+high_drift	BL1	34	
+high_drift	BL1	35	
+high_drift	BL1	36	
+high_drift	BL1	37	138.0
+high_drift	BL1	38	
+high_drift	BL1	39	5.0
+high_drift	BL1	40	
+high_drift	BL1	41	
+high_drift	BL1	42	
+high_drift	BL1	43	
+high_drift	BL1	44	
+high_drift	BL1	45	
+high_drift	BL1	46	
+high_drift	BL1	47	
+high_drift	BL1	48	
+high_drift	BL1	49	
+high_drift	BL2	0	104.0
+high_drift	BL2	1	19.0
+high_drift	BL2	2	
+high_drift	BL2	3	130.0
+high_drift	BL2	4	67.0
+high_drift	BL2	5	49.0
+high_drift	BL2	6	14.0
+high_drift	BL2	7	55.0
+high_drift	BL2	8	80.0
+high_drift	BL2	9	16.0
+high_drift	BL2	10	15.0
+high_drift	BL2	11	
+high_drift	BL2	12	83.0
+high_drift	BL2	13	14.0
+high_drift	BL2	14	12.0
+high_drift	BL2	15	125.0
+high_drift	BL2	16	138.0
+high_drift	BL2	17	16.0
+high_drift	BL2	18	
+high_drift	BL2	19	141.0
+high_drift	BL2	20	31.0
+high_drift	BL2	21	18.0
+high_drift	BL2	22	40.0
+high_drift	BL2	23	23.0
+high_drift	BL2	24	11.0
+high_drift	BL2	25	145.0
+high_drift	BL2	26	15.0
+high_drift	BL2	27	12.0
+high_drift	BL2	28	12.0
+high_drift	BL2	29	156.0
+high_drift	BL2	30	16.0
+high_drift	BL2	31	67.0
+high_drift	BL2	32	43.0
+high_drift	BL2	33	
+high_drift	BL2	34	185.0
+high_drift	BL2	35	174.0
+high_drift	BL2	36	117.0
+high_drift	BL2	37	76.0
+high_drift	BL2	38	11.0
+high_drift	BL2	39	13.0
+high_drift	BL2	40	
+high_drift	BL2	41	186.0
+high_drift	BL2	42	16.0
+high_drift	BL2	43	24.0
+high_drift	BL2	44	94.0
+high_drift	BL2	45	
+high_drift	BL2	46	10.0
+high_drift	BL2	47	15.0
+high_drift	BL2	48	10.0
+high_drift	BL2	49	41.0
+high_drift	BL3	0	134.0
+high_drift	BL3	1	48.0
+high_drift	BL3	2	13.0
+high_drift	BL3	3	89.0
+high_drift	BL3	4	
+high_drift	BL3	5	
+high_drift	BL3	6	
+high_drift	BL3	7	25.0
+high_drift	BL3	8	24.0
+high_drift	BL3	9	47.0
+high_drift	BL3	10	70.0
+high_drift	BL3	11	182.0
+high_drift	BL3	12	138.0
+high_drift	BL3	13	
+high_drift	BL3	14	20.0
+high_drift	BL3	15	82.0
+high_drift	BL3	16	100.0
+high_drift	BL3	17	31.0
+high_drift	BL3	18	196.0
+high_drift	BL3	19	
+high_drift	BL3	20	50.0
+high_drift	BL3	21	59.0
+high_drift	BL3	22	36.0
+high_drift	BL3	23	26.0
+high_drift	BL3	24	98.0
+high_drift	BL3	25	24.0
+high_drift	BL3	26	
+high_drift	BL3	27	19.0
+high_drift	BL3	28	
+high_drift	BL3	29	120.0
+high_drift	BL3	30	17.0
+high_drift	BL3	31	21.0
+high_drift	BL3	32	74.0
+high_drift	BL3	33	28.0
+high_drift	BL3	34	78.0
+high_drift	BL3	35	27.0
+high_drift	BL3	36	29.0
+high_drift	BL3	37	23.0
+high_drift	BL3	38	
+high_drift	BL3	39	24.0
+high_drift	BL3	40	
+high_drift	BL3	41	
+high_drift	BL3	42	30.0
+high_drift	BL3	43	20.0
+high_drift	BL3	44	50.0
+high_drift	BL3	45	148.0
+high_drift	BL3	46	128.0
+high_drift	BL3	47	
+high_drift	BL3	48	121.0
+high_drift	BL3	49	13.0
+high_drift	BL4	0	
+high_drift	BL4	1	145.0
+high_drift	BL4	2	47.0
+high_drift	BL4	3	
+high_drift	BL4	4	185.0
+high_drift	BL4	5	32.0
+high_drift	BL4	6	49.0
+high_drift	BL4	7	163.0
+high_drift	BL4	8	85.0
+high_drift	BL4	9	153.0
+high_drift	BL4	10	31.0
+high_drift	BL4	11	
+high_drift	BL4	12	21.0
+high_drift	BL4	13	142.0
+high_drift	BL4	14	29.0
+high_drift	BL4	15	36.0
+high_drift	BL4	16	
+high_drift	BL4	17	125.0
+high_drift	BL4	18	103.0
+high_drift	BL4	19	77.0
+high_drift	BL4	20	118.0
+high_drift	BL4	21	145.0
+high_drift	BL4	22	22.0
+high_drift	BL4	23	176.0
+high_drift	BL4	24	
+high_drift	BL4	25	187.0
+high_drift	BL4	26	
+high_drift	BL4	27	
+high_drift	BL4	28	
+high_drift	BL4	29	122.0
+high_drift	BL4	30	
+high_drift	BL4	31	51.0
+high_drift	BL4	32	124.0
+high_drift	BL4	33	195.0
+high_drift	BL4	34	24.0
+high_drift	BL4	35	
+high_drift	BL4	36	135.0
+high_drift	BL4	37	26.0
+high_drift	BL4	38	95.0
+high_drift	BL4	39	116.0
+high_drift	BL4	40	43.0
+high_drift	BL4	41	30.0
+high_drift	BL4	42	31.0
+high_drift	BL4	43	51.0
+high_drift	BL4	44	18.0
+high_drift	BL4	45	200.0
+high_drift	BL4	46	49.0
+high_drift	BL4	47	
+high_drift	BL4	48	38.0
+high_drift	BL4	49	55.0
+high_drift	BL5	0	
+high_drift	BL5	1	24.0
+high_drift	BL5	2	
+high_drift	BL5	3	
+high_drift	BL5	4	38.0
+high_drift	BL5	5	92.0
+high_drift	BL5	6	27.0
+high_drift	BL5	7	148.0
+high_drift	BL5	8	46.0
+high_drift	BL5	9	94.0
+high_drift	BL5	10	113.0
+high_drift	BL5	11	27.0
+high_drift	BL5	12	
+high_drift	BL5	13	171.0
+high_drift	BL5	14	124.0
+high_drift	BL5	15	29.0
+high_drift	BL5	16	135.0
+high_drift	BL5	17	
+high_drift	BL5	18	126.0
+high_drift	BL5	19	68.0
+high_drift	BL5	20	18.0
+high_drift	BL5	21	
+high_drift	BL5	22	
+high_drift	BL5	23	196.0
+high_drift	BL5	24	
+high_drift	BL5	25	139.0
+high_drift	BL5	26	58.0
+high_drift	BL5	27	30.0
+high_drift	BL5	28	
+high_drift	BL5	29	33.0
+high_drift	BL5	30	
+high_drift	BL5	31	112.0
+high_drift	BL5	32	40.0
+high_drift	BL5	33	15.0
+high_drift	BL5	34	200.0
+high_drift	BL5	35	43.0
+high_drift	BL5	36	
+high_drift	BL5	37	33.0
+high_drift	BL5	38	
+high_drift	BL5	39	
+high_drift	BL5	40	92.0
+high_drift	BL5	41	111.0
+high_drift	BL5	42	32.0
+high_drift	BL5	43	91.0
+high_drift	BL5	44	
+high_drift	BL5	45	31.0
+high_drift	BL5	46	
+high_drift	BL5	47	171.0
+high_drift	BL5	48	103.0
+high_drift	BL5	49	25.0

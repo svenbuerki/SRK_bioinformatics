@@ -1,0 +1,6 @@
+BL	N_EOs	N_individuals	N_SI	N_pSI	N_SC	N_alleles_functional	Effective_alleles_Ne_with_NULL	Prop_heterozygous	Mean_null_copies	Frac_nonfunctional_alleles	Prop_pSI	Top_alleles
+BL4	2	98	70	3	0	28	8.544	0.398	0.031	0.008	0.031	Allele_046(104), Allele_039(50), Allele_043(50)
+BL5	4	92	65	2	0	23	8.991	0.391	0.033	0.008	0.022	Allele_046(81), Allele_043(56), Allele_018(50)
+BL3	4	82	37	1	1	15	8.4	0.309	0.073	0.018	0.012	Allele_046(78), Allele_016(39), Allele_043(35)
+BL1	4	11	4	1	0	5	3.153	0.273	0.091	0.023	0.091	Allele_043(20), Allele_046(12), Allele_025(8)
+BL2	2	77	46	2	0	7	2.171	0.247	0.026	0.006	0.026	Allele_046(181), Allele_043(104), Allele_018(8)
