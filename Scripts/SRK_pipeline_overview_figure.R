@@ -27,7 +27,7 @@ phases <- data.frame(
               "Steps 25-28",
               "Steps 22-23"),
   bullets = c(
-    "- Multi-replicate\n  assembly (Canu)\n\n\n\n\n\n\n- Assembly polishing\n  (RACON)\n- Polyploid phasing\n  (WhatsHap)\n- Phased haplotypes\n  per individual",
+    "- Multi-replicate\n  assembly (Canu)\n- Assembly polishing\n  (RACON)\n- Polyploid phasing\n  (WhatsHap)\n- Phased haplotypes\n  per individual",
     "- Translate &\n  abundance-filter\n  functional proteins\n- Distance-based\n  S-allele clustering\n- Tetraploid\n  genotyping\n  (AAAA -> ABCD)\n- Data-quality gate\n  -> lab redo CSV",
     "- Bottleneck Lineage\n  integration\n- Species-level\n  allele pool\n  estimation\n- Random-mating\n  viability +\n  allele depletion\n- Fitness scores +\n  reproductive\n  collapse risk\n- Reproductive effort\n  per population\n  / lineage",
     "- Per-individual\n  classification\n  (full / partial /\n   lost SI)\n- Broken-allele\n  aware genotype\n  rebuild\n- Re-runs of\n  population genetics,\n  mating viability,\n  fitness diagnostics\n- Forward-time\n  inheritance\n  simulator\n- Donor ranking for\n  allele injection",
@@ -160,18 +160,22 @@ x1 <- xc[1]
 p <- p +
   annotate("rect",
            xmin = x1 - box_w/2 + 0.14, xmax = x1 + box_w/2 - 0.14,
-           ymin = box_h - 4.20, ymax = box_h - 2.90,
+           ymin = 1.75, ymax = 3.25,
            fill = "#FFF0F0", colour = "#E41A1C", linewidth = 0.9) +
   annotate("text",
-           x = x1, y = box_h - 3.20,
+           x = x1, y = 2.95,
+           label = "KEY INNOVATION",
+           fontface = "bold", size = 2.4, colour = "#E41A1C") +
+  annotate("text",
+           x = x1, y = 2.55,
            label = "Detect & discard",
            fontface = "bold", size = 3.1, colour = "#E41A1C") +
   annotate("text",
-           x = x1, y = box_h - 3.55,
+           x = x1, y = 2.20,
            label = "chimeric sequences",
            fontface = "bold", size = 3.1, colour = "#E41A1C") +
   annotate("text",
-           x = x1, y = box_h - 3.95,
+           x = x1, y = 1.90,
            label = "(coverage-based filter)",
            fontface = "italic", size = 2.7, colour = "#E41A1C")
 
