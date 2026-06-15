@@ -62,6 +62,12 @@ from Bio import SeqIO
 REPS_FASTA   = "Tables/Phase2/step10a_protein_allele_representatives.fasta"
 ZYGO_TSV     = "Tables/Phase2/step12_individual_zygosity.tsv"
 ALLELE_TABLE = "Tables/Phase2/step11_individual_allele_table.tsv"
+# Phase 4 SI status — restrict cross-design parents to individuals classified as
+# full SI. pSI individuals (1-3 broken copies) carry compromised SI machinery and
+# cannot serve as reliable compatibility-prediction parents; SC and
+# Insufficient_data individuals are excluded for the same reason. If the file
+# is missing (e.g., Phase 4 not yet run), the filter is skipped with a warning.
+SI_STATUS_TSV = "Tables/Phase4/step25b_individual_SI_status.tsv"
 CROSS_TSV    = None   # set to cross results TSV to activate Part 4
 
 # Brassica HV-region annotation (Ma et al. 2016, Cell Research; PDB 5GYY).
@@ -556,7 +562,23 @@ print("=" * 60)
 # Load AAAA individuals
 df_zyg          = pd.read_csv(ZYGO_TSV, sep="\t", encoding="utf-8-sig")
 aaaa_individuals = set(df_zyg.loc[df_zyg["Genotype"] == "AAAA", "Individual"])
-print(f"\nAAA individuals in zygosity data: {len(aaaa_individuals)}")
+print(f"\nAAAA individuals in zygosity data: {len(aaaa_individuals)}")
+
+# Phase 4 SI filter — keep only individuals with confirmed full SI status.
+# pSI / SC / Insufficient_data parents would compromise the cross design.
+import os
+if os.path.exists(SI_STATUS_TSV):
+    df_si = pd.read_csv(SI_STATUS_TSV, sep="\t", encoding="utf-8-sig")
+    si_individuals = set(df_si.loc[df_si["SI_status"] == "SI", "Sample_ID"])
+    before = len(aaaa_individuals)
+    aaaa_individuals = aaaa_individuals & si_individuals
+    dropped = before - len(aaaa_individuals)
+    print(f"Phase 4 SI filter: kept {len(aaaa_individuals)} of {before} AAAA individuals "
+          f"with SI_status == 'SI' (dropped {dropped} pSI / SC / Insufficient_data)")
+else:
+    print(f"WARNING: Phase 4 SI status file not found ({SI_STATUS_TSV}); "
+          "cross design includes all AAAA individuals regardless of SI status. "
+          "Run SRK_individual_SI_status.py (Step 25b) first to enable the filter.")
 
 df_allele_table = pd.read_csv(ALLELE_TABLE, sep="\t", encoding="utf-8-sig")
 

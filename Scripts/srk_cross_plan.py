@@ -83,6 +83,11 @@ FUNC_GROUPS_TSV   = "Tables/Phase5/step22b_functional_allele_groups.tsv"
 BL_TSV            = "Tables/Phase3/step13_individual_BL_assignments.tsv"
 ZYGO_TSV          = "Tables/Phase2/step12_individual_zygosity.tsv"
 ALLELE_TSV        = "Tables/Phase2/step11_individual_allele_table.tsv"
+# Phase 4 SI status — restrict cross-plan parents to individuals classified as
+# full SI. pSI individuals (1-3 broken copies) cannot serve as reliable
+# compatibility-prediction parents; SC and Insufficient_data individuals are
+# excluded for the same reason.
+SI_STATUS_TSV     = "Tables/Phase4/step25b_individual_SI_status.tsv"
 
 WITHIN_CLASS_THRESHOLD = 0.04   # must match Step 22b
 
@@ -152,6 +157,22 @@ bl_df        = pd.read_csv(BL_TSV, sep="\t", encoding="utf-8-sig")
 zygo_df      = pd.read_csv(ZYGO_TSV, sep="\t", encoding="utf-8-sig")
 allele_df    = pd.read_csv(ALLELE_TSV, sep="\t", encoding="utf-8-sig")
 hv_dist_df   = pd.read_csv(HV_DIST_TSV, sep="\t", index_col=0)
+
+# Phase 4 SI filter — restrict zygosity/BL/allele tables to individuals with
+# confirmed full SI status. pSI / SC / Insufficient_data parents are dropped.
+if os.path.exists(SI_STATUS_TSV):
+    si_df = pd.read_csv(SI_STATUS_TSV, sep="\t", encoding="utf-8-sig")
+    si_individuals = set(si_df.loc[si_df["SI_status"] == "SI", "Sample_ID"])
+    before_zyg = len(zygo_df)
+    zygo_df    = zygo_df[zygo_df["Individual"].isin(si_individuals)].reset_index(drop=True)
+    bl_df      = bl_df[bl_df["Individual"].isin(si_individuals)].reset_index(drop=True)
+    allele_df  = allele_df[allele_df["Individual"].isin(si_individuals)].reset_index(drop=True)
+    print(f"  Phase 4 SI filter: kept {len(zygo_df)} of {before_zyg} individuals "
+          f"with SI_status == 'SI' (dropped {before_zyg - len(zygo_df)} pSI / SC / Insufficient_data)")
+else:
+    print(f"  WARNING: Phase 4 SI status file not found ({SI_STATUS_TSV}); "
+          "cross plan includes all individuals regardless of SI status. "
+          "Run SRK_individual_SI_status.py (Step 25b) first to enable the filter.")
 
 print(f"  cross_design:  {len(cross_design)} AAAA×AAAA pairs")
 print(f"  syn_groups:    {len(syn_groups)} alleles, "
