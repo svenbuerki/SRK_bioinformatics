@@ -17,7 +17,7 @@ The two repositories share a locked **RColorBrewer Set1 BL colour palette** (BL1
 
 ### Shared ordering and palette config
 
-All BL / EO ordering and colour decisions are centralised in two mirrored modules — **[`srk_bl_constants.R`](srk_bl_constants.R)** and **[`srk_bl_constants.py`](srk_bl_constants.py)** — sourced/imported by every pipeline script that orders or colours BLs. Both modules derive the orderings at load time from CSVs mirrored from the sibling project, so the entire pipeline reorders automatically when sampling grows — only the CSVs in `Tables/` need updating.
+All BL / EO ordering and colour decisions are centralised in two mirrored modules — **[`srk_bl_constants.R`](srk_bl_constants.R)** and **[`srk_bl_constants.py`](srk_bl_constants.py)** — sourced/imported by every pipeline script that orders or colours BLs. Both modules derive the orderings at load time from CSVs mirrored from the sibling project, so the entire pipeline reorders automatically when sampling grows — only the CSVs in `tables/` need updating.
 
 Two BL orderings are exposed:
 
@@ -60,7 +60,7 @@ Boise, Idaho, USA
 
 ## Pipeline Workflow
 
-The pipeline consists of **23 main steps organized into four phases**, progressing from within-library sequence assembly to cross-library integration, population genetic analyses, and experimental validation of S-allele hypotheses through controlled crosses.
+The pipeline consists of **28 main steps organized into five phases**, progressing from within-library sequence assembly to cross-library integration, population genetic analyses, and experimental validation of S-allele hypotheses through controlled crosses.
 
 ## Phase 1: SRK Amplicon Sequence Assembly
 
@@ -84,16 +84,16 @@ The pipeline consists of **23 main steps organized into four phases**, progressi
 
 **⚠️ Step 12b (In Progress) — SRK Class Assignment and Dominance Prediction** – Phylogenetic classification of SRK proteins into Class I (dominant) or Class II (recessive) using maximum-likelihood inference (IQ-TREE3). Automated class assignment by longest internal branch exploits the ancient divergence between SRK classes maintained by balancing selection. Per-individual dominance predictions guide cross-compatibility decisions in a conservation breeding program. In the current LEPA dataset (2026-05-11) the procedure assigns Allele_055 to Class II; all other observed alleles fall in Class I. **This analysis is under active development and may not function correctly on all datasets — results require validation against published SRK reference sequences with known class assignments.**
 
-**Step 12c — Data Quality Evaluation (Phase 3 QC gate)** – Cross-tabulates every metadata sample against its terminal pipeline outcome, producing five mutually exclusive categories (Functional, Partial translation failure, SI-escape candidate, Re-PCR, Re-DNA-extraction). Writes three deliverables: the per-sample categorisation, the lab follow-up sheet (Re-PCR + Re-DNA-extraction), and the SI-escape candidate list for phenotyping. Per-BL and per-EO stacked-bar figures use the connectivity order. Implemented in `evaluate_data_quality.py`. **Execution order (revised 2026-06-13):** 12c.ii + 12c.iii run **after Step 13** (BL integration) so per-BL stratification is available; 12c.i (library-effect tests) runs **after Step 19** (GFS) since it consumes `SRK_individual_GFS.tsv`.
+**Step 12c — Data Quality Evaluation (Phase 3 QC gate)** – Cross-tabulates every metadata sample against its terminal pipeline outcome, producing five mutually exclusive categories (Functional, Partial translation failure, SI-escape candidate, Re-PCR, Re-DNA-extraction). Writes three deliverables: the per-sample categorisation, the lab follow-up sheet (Re-PCR + Re-DNA-extraction), and the SI-escape candidate list for phenotyping. Per-BL and per-EO stacked-bar figures use the connectivity order. Implemented in `evaluate_data_quality.py`. **Execution order (revised 2026-06-13):** 12c.ii + 12c.iii run **after Step 13** (BL integration) so per-BL stratification is available; 12c.i (library-effect tests) runs **after Step 19** (GFS) since it consumes `tables/Phase3/step19_individual_GFS.tsv`.
 
 ## Phase 3: Data Analyses
 
-13. **Element Occurrence and Bottleneck Lineage Integration** – Bridges the SRK individual-level dataset to the spatial framework defined in the sibling project [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering). For each post-QC individual, joins EO label, geographic group, bottleneck lineage (BL1–BL5), and drift index from `EO_group_BL_summary.csv`. Produces `SRK_individual_BL_assignments.tsv`, the join key used by all subsequent Phase 3 steps to add BL stratification (EO sorted within BL for management; BL aggregated for inferential power on small localities).
-13b. **Sampling overview map** – Plots all catalogued populations of the species against their BL membership, distinguishing populations successfully sampled by the SRK pipeline (filled triangles) from those not yet sampled (filled circles). Focus EOs used in most downstream analyses (EO18, EO25, EO27, EO67, EO70, EO76) are labelled in white-fill boxes. JAR-region germplasm sub-codes (no resolved coordinates) are not plotted. Implemented in `SRK_sampling_map.R`; reads `Tables/SRK_individual_allele_genotypes.tsv`, `Tables/sampling_metadata.csv`, `SRK_individual_BL_assignments.tsv`, and `EO_location_groups.csv` mirrored from the spatial-clustering project.
+13. **Element Occurrence and Bottleneck Lineage Integration** – Bridges the SRK individual-level dataset to the spatial framework defined in the sibling project [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering). For each post-QC individual, joins EO label, geographic group, bottleneck lineage (BL1–BL5), and drift index from `EO_group_BL_summary.csv`. Produces `tables/Phase3/step13_individual_BL_assignments.tsv`, the join key used by all subsequent Phase 3 steps to add BL stratification (EO sorted within BL for management; BL aggregated for inferential power on small localities).
+13b. **Sampling overview map** – Plots all catalogued populations of the species against their BL membership, distinguishing populations successfully sampled by the SRK pipeline (filled triangles) from those not yet sampled (filled circles). Focus EOs used in most downstream analyses (EO18, EO25, EO27, EO67, EO70, EO76) are labelled in white-fill boxes. JAR-region germplasm sub-codes (no resolved coordinates) are not plotted. Implemented in `SRK_sampling_map.R`; reads `tables/Phase2/step11_individual_allele_genotypes.tsv`, `tables/sampling_metadata.csv`, `tables/Phase3/step13_individual_BL_assignments.tsv`, and `EO_location_groups.csv` mirrored from the spatial-clustering project.
 14. **Population Genetics Statistics** – Estimation of population-level diversity metrics, including heterozygosity, mean alleles per individual, total allele counts, and effective allele numbers. Allele frequencies are based on copy counts summed across individuals (from the count matrix), giving a proper tetraploid frequency estimate.
 15. **Allele Accumulation Curves** – Rarefaction-based analysis of SRK allele discovery across individuals to evaluate patterns consistent with negative frequency-dependent selection versus genetic drift. Includes estimation of total species allele richness using Michaelis-Menten asymptote fitting, Chao1, and iNEXT estimators. Outputs an empirical species optimum used as a baseline in steps 16 and 17.
 16. **Allele Frequency Analysis** – Species- and population-level χ² tests of allele frequency distributions to assess deviations from equal-frequency expectations under NFDS. The estimated species allele richness from step 15 is used as the optimum, quantifying how many alleles each population is missing relative to the species pool.
-17. **TP1 — Mating-pool functionality** – Reframed diagnostic answering two complementary conservation questions: (i) *is random mating still viable in this population?* via the **compatible-pair fraction** P_compat (the fraction of random plant pairs that are cross-compatible under tetraploid sporophytic SI), rendered as a red/amber/green traffic-light figure per focal EO with bootstrap 95 % CIs; and (ii) *which intervention does the data support?* via P_compat × Depletion Index (DI = 1 − k_group / k_species, against the MM consensus species optimum k_species = 59) with quadrants labelled by the three breeding strategies in `Tables/SRK_breeding_strategies.csv` (HEALTHY / INFORMED BREEDING (frequency skew) / INFORMED BREEDING + ALLELE INJECTION (preventive / urgent)). Scripts: `SRK_TP1_compatibility_metrics.py` (computes per-EO + per-BL metrics with bootstrap CIs), `SRK_P_compat_traffic_light.R` (stakeholder traffic-light figure), `SRK_depletion_ranking.R` (P_compat × DI conservation-ranking figure with `_observed` / `_predicted` panels and `_blank` / `_EOs` / `_all` variants for layered presentation builds).
+17. **TP1 — Mating-pool functionality** – Reframed diagnostic answering two complementary conservation questions: (i) *is random mating still viable in this population?* via the **compatible-pair fraction** P_compat (the fraction of random plant pairs that are cross-compatible under tetraploid sporophytic SI), rendered as a red/amber/green traffic-light figure per focal EO with bootstrap 95 % CIs; and (ii) *which intervention does the data support?* via P_compat × Depletion Index (DI = 1 − k_group / k_species, against the MM consensus species optimum k_species = 59) with quadrants labelled by the three breeding strategies in `tables/SRK_breeding_strategies.csv` (HEALTHY / INFORMED BREEDING (frequency skew) / INFORMED BREEDING + ALLELE INJECTION (preventive / urgent)). Scripts: `SRK_TP1_compatibility_metrics.py` (computes per-EO + per-BL metrics with bootstrap CIs), `SRK_P_compat_traffic_light.R` (stakeholder traffic-light figure), `SRK_depletion_ranking.R` (P_compat × DI conservation-ranking figure with `_observed` / `_predicted` panels and `_blank` / `_EOs` / `_all` variants for layered presentation builds).
 18. **Allele Composition Comparison Across Element Occurrences** – UpSet plot and pairwise sharing heatmap quantifying how S-allele sets partition across Element Occurrences, identifying private alleles and alleles shared across all populations. Requires only standard Python dependencies (pandas, numpy, matplotlib).
 19. **Individual Genotypic Fitness Score (GFS)** – Per-individual metric quantifying the proportion of heterozygous diploid gametes a tetraploid can produce. Differentiates dosage-imbalanced genotypes (AABB vs AAAB) invisible to zygosity analysis alone. Outputs per-individual GFS values and ranked seed parent lists per EO.
 20. **TP2 Tipping Point Analysis** – EO-level assessment placing mean GFS and proportion of AAAA individuals in interaction. EOs breaching both thresholds simultaneously (mean GFS < 0.667; proportion AAAA > 30%) are flagged CRITICAL, AT RISK, or OK.
@@ -101,8 +101,32 @@ The pipeline consists of **23 main steps organized into four phases**, progressi
 
 ## Phase 4: Testing S-allele Hypotheses
 
-22. **HV-Based Allele Hypothesis Testing and Crossing Design** – Multi-script workflow. **Step 22a** (`srk_variability_landscape.py`): combined alignment of LEPA + *Brassica rapa*/*B. oleracea* + *Arabidopsis lyrata*/*A. halleri* SRK alleles; identical sliding-window Shannon-entropy scan applied to each species; per-species HV regions called at mean + 1×SD; anchored structurally by 11 of 12 mappable SCR9-contact residues from Ma et al. 2016 (PDB 5GYY); canonical 66 LEPA HV columns written to `SRK_LEPA_HV_positions.tsv` (in the current post-QC dataset, the cross-genus HV-overlap permutation is no longer significant for LEPA pairs — interpreted as drift-eroded standing variation, with Brassica↔Arabidopsis remaining highly significant). **Step 22b** (`srk_allele_hypotheses.py`): reads the canonical HV columns, computes HV-only pairwise distances, UPGMA-clusters into Class I / Class II, builds the synonymy network (HV-identical synonymy groups + Synonymy_test bridges), and generates the Incompatible / Synonymy_test / Compatible_within / Compatible_cross cross design. **Steps 22c and 22d** are optional mechanism diagnostics. **Step 22e** (`srk_cross_plan.py`) is the operational deliverable — a phased cross plan testing five nested hypotheses (H0 SI validation; H1a within-Class baseline; H1b between-Class baseline; H2 synonymy bin boundaries; H3 hidden bins via heterozygous donors) with explicit AAAA / AAAB / AABB genotype requirements + paired controls for AAAB-mediated tests. Every cross is traceable to its sequence-based category (HV distance + Class) plus its genotype-based feasibility (`Allele_composition` from Step 12) — see Bioinformatics_pipeline.md for the full provenance and assumption checklist.
+22. **HV-Based Allele Hypothesis Testing and Crossing Design** – Multi-script workflow. **Step 22a** (`srk_variability_landscape.py`): combined alignment of LEPA + *Brassica rapa*/*B. oleracea* + *Arabidopsis lyrata*/*A. halleri* SRK alleles; identical sliding-window Shannon-entropy scan applied to each species; per-species HV regions called at mean + 1×SD; anchored structurally by 11 of 12 mappable SCR9-contact residues from Ma et al. 2016 (PDB 5GYY); canonical 66 LEPA HV columns written to `tables/Phase4/step22a_LEPA_HV_positions.tsv` (in the current post-QC dataset, the cross-genus HV-overlap permutation is no longer significant for LEPA pairs — interpreted as drift-eroded standing variation, with Brassica↔Arabidopsis remaining highly significant). **Step 22b** (`srk_allele_hypotheses.py`): reads the canonical HV columns, computes HV-only pairwise distances, UPGMA-clusters into Class I / Class II, builds the synonymy network (HV-identical synonymy groups + Synonymy_test bridges), and generates the Incompatible / Synonymy_test / Compatible_within / Compatible_cross cross design. **Steps 22c and 22d** are optional mechanism diagnostics. **Step 22e** (`srk_cross_plan.py`) is the operational deliverable — a phased cross plan testing five nested hypotheses (H0 SI validation; H1a within-Class baseline; H1b between-Class baseline; H2 synonymy bin boundaries; H3 hidden bins via heterozygous donors) with explicit AAAA / AAAB / AABB genotype requirements + paired controls for AAAB-mediated tests. Every cross is traceable to its sequence-based category (HV distance + Class) plus its genotype-based feasibility (`Allele_composition` from Step 12) — see Bioinformatics_pipeline.md for the full provenance and assumption checklist.
 23. **Cross Result Analysis** – Reads completed crossing records and tests whether the cross category (Incompatible / Synonymy_test / Compatible_within / Compatible_cross) predicts seed yield, validating the sequence-based allele definitions against experimental cross-compatibility data. Activated by setting `CROSS_TSV` in the script once crossing data are available.
+
+## Phase 5: Per-individual SI status, null-aware genotypes, and forward simulation (Steps 25–28)
+
+25. **Per-individual SI / pSI / SC reconstruction** – `SRK_individual_SI_status.py` (Step 25b) re-aggregates per-haplotype OK / REMOVED calls from the Step-7 `_frame1_stopcodon_log.tsv` files to classify each individual as **SI** (all 4 copies functional), **pSI** (1–3 copies broken — partial SI loss), **SC** (all 4 copies broken — full self-compatibility), or **Insufficient_data** (too few haplotypes after chimera filtering to call status). `SRK_null_allele_assignment.py` (Step 25a) optionally augments this by mapping REMOVED haplotypes to their nearest functional allele via AA-distance for chimera-aware identity assignment. `SRK_SI_status_figures.R` produces species-, BL-, and EO-level stacked-bar figures with `_full` (7-tier QC view) and `_robust` (5-tier defensible-call view) variants. **Current dataset: 247 SI / 15 pSI / 1 SC / 234 Insufficient_data.**
+26. **Null-aware genotype rebuild** – `SRK_genotype_null_alleles.py` rewrites the Step 11 allele × individual matrix so that pSI individuals carry explicit `Allele_NULL` copies (proportional to `copies_nonfunctional`) and the single SC individual is represented as `Allele_NULL × 4`; rows sum to 4 across the 49 functional alleles + NULL. Outputs `tables/Phase5/step26_individual_allele_genotypes_with_nulls.tsv` + a redo flag list (`step26_samples_for_redo.tsv`) for the 234 Insufficient_data individuals. Triggers the **null-aware cascade re-runs**: Step 14b (pop gen), Step 17b (TP1 P_compat + DI ranking), Step 19b + 20b (GFS + TP2) — same scripts as the canonical Steps 14/17/19/20 but reading the null-aware genotype matrix.
+27. **Forward-time tetraploid inheritance simulator** – `SRK_inheritance_simulator.py` runs a forward-time multi-replicate simulation per BL under multiple scenarios (baseline / high_drift / rescue_high / rescue_low) starting from the empirical Step 26 genotypes. Tracks per-copy NULL frequency, SC frequency, and time-to-50%-SC trajectories. `SRK_inheritance_figures.R` produces the trajectory + SC-progression + time-to-SC figures.
+28. **AA-distance null-allele assignment + donor ranking** – `SRK_injection_donor_ranking.py` ranks candidate seed parents for allele-injection crosses to rescue specific BLs / EOs. `SRK_donor_ranking_figure.R` produces the donor-recovery-ladder figure (`figures/Phase5/step28_donor_recovery_ladder.{pdf,png}`).
+
+## Output Organisation (2026-06-14 refactor)
+
+Every canonical pipeline script (Step 9 → 28) writes to a **Phase- and step-prefixed path**:
+
+```
+FASTA/                  ← external reference FASTAs (Brassica + Arabidopsis SRK)
+tables/sampling_metadata.csv   ← canonical sample registry
+tables/Phase{2,3,4,5}/stepXX_*.{tsv,csv,fasta}
+figures/Phase{2,3,4,5}/stepXX_*.{pdf,png}
+```
+
+Every plot produces both `.pdf` (vector) and `.png` (raster) except inherently multi-page PDFs (Step 15 curves, Step 16 frequency, Step 19 GFS) where the page-level PNGs are companions. See `Bioinformatics_pipeline.md` for the full directory tree.
+
+**Phase 1 wrapper:** `Scripts/run_within_library_suite.sh` chains Steps 2 → 8 for every library listed in a TSV config (auto-generated from `Library*/barcode??` if absent), pipes each script's prompts automatically, skips already-completed samples, and continues past per-library failures. Env vars: `CHIMERA_FILTER_MODE`, `MIN_UNIFORMITY` (default 0.2 — Library 005 calibration), `FORCE_SAMPLE`, `FORCE_CANU`, `START_AT_STEP`, `STOP_AT_STEP`.
+
+**Phase 4 LEPA-only filter (2026-06-14):** `pad_representatives.py` now restricts Step 22 inputs to the 49 LEPA-ingroup-observed alleles (drops 6 outgroup-only alleles from *L. montanum* / *L. freemontii* / *L. philonitron*) so the cross-Brassicaceae variability analysis isn't contaminated by non-LEPA sequences.
 
 ## Requirements
 
@@ -270,7 +294,7 @@ Rscript SRK_chisq_species_population.R
 # Step 17: TP1 — mating-pool functionality (two scripts)
 #   metrics.py computes per-EO + per-BL evenness J, P_compat (L=0..0.5),
 #   bootstrap 95% CIs on P_compat, L_hat, k_rarefied30, and writes
-#   Tables/SRK_EO_allele_richness.tsv;
+#   tables/Phase3/step17_EO_allele_richness.tsv;
 #   traffic_light.R renders the stakeholder-facing red/amber/green
 #   priority figure (full + blank variants);
 #   depletion_ranking.R renders the P_compat × DI conservation-ranking
@@ -366,137 +390,137 @@ For a concise step-by-step protocol (scripts, inputs, outputs, key parameters), 
 -   **Gene structure annotations** (AUGUSTUS CSV format)
 -   **Organized directory structure** by library and barcode
 
-## Curated tables (`Tables/`)
+## Curated tables (`tables/`)
 
-The `Tables/` folder is the single source of truth for the most-shared CSV/TSV deliverables — downloadable directly by modeling, lab, and conservation collaborators without re-running the pipeline.
+The `tables/` folder is the single source of truth for the most-shared CSV/TSV deliverables — downloadable directly by modeling, lab, and conservation collaborators without re-running the pipeline.
 
 ### Sample registry & population key
 
--   **[`Tables/sampling_metadata.csv`](Tables/sampling_metadata.csv)** — canonical sample registry. Links each `SampleID` (e.g., `Library001_barcode02`, joinable to the `Individual` column of every genotyping table below) to its `Pop`, `EO_w_sub`, `Library`, `barcode`, `FlowCell_ID`, `Ingroup` flag (1 = analyzed, 0 = excluded), and `OccurrenceID`.
--   **[`Tables/EO_group_BL_summary.csv`](Tables/EO_group_BL_summary.csv)** — EO → geographic group → bottleneck lineage (BL1–BL5) → drift index cross-reference. Generated by the sibling repository [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering); consumed by Step 13 of this pipeline.
+-   **[`tables/sampling_metadata.csv`](tables/sampling_metadata.csv)** — canonical sample registry. Links each `SampleID` (e.g., `Library001_barcode02`, joinable to the `Individual` column of every genotyping table below) to its `Pop`, `EO_w_sub`, `Library`, `barcode`, `FlowCell_ID`, `Ingroup` flag (1 = analyzed, 0 = excluded), and `OccurrenceID`.
+-   **[`tables/EO_group_BL_summary.csv`](tables/EO_group_BL_summary.csv)** — EO → geographic group → bottleneck lineage (BL1–BL5) → drift index cross-reference. Generated by the sibling repository [LEPA_EO_spatial_clustering](https://github.com/svenbuerki/LEPA_EO_spatial_clustering); consumed by Step 13 of this pipeline.
 
 ### Genotyping deliverables (for modeling collaborators)
 
--   **[`Tables/SRK_individual_allele_genotypes.tsv`](Tables/SRK_individual_allele_genotypes.tsv)** — wide allele×individual count matrix (335 individuals × 49 alleles; integer copy counts). Ready-to-use design matrix for allele frequency estimation, drift/erosion modeling, simulations.
--   **[`Tables/SRK_individual_zygosity.tsv`](Tables/SRK_individual_zygosity.tsv)** — per-individual genotype summary with columns `N_distinct_alleles`, `N_total_proteins`, `Zygosity` (Homozygous / Heterozygous), `Genotype` (AAAA / AAAB / AABB / AABC / ABCD), `Allele_composition` (packed allele-with-counts string). Human-readable companion to the wide matrix above.
--   **[`Tables/SRK_synonymy_groups.csv`](Tables/SRK_synonymy_groups.csv)** — allele → synonymy group mapping with group size and observation counts. Lets modelers collapse putatively identical alleles into a single functional unit when needed.
+-   **[`tables/Phase2/step11_individual_allele_genotypes.tsv`](tables/Phase2/step11_individual_allele_genotypes.tsv)** — wide allele×individual count matrix (367 individuals × 49 alleles; integer copy counts). Ready-to-use design matrix for allele frequency estimation, drift/erosion modeling, simulations.
+-   **[`tables/Phase2/step12_individual_zygosity.tsv`](tables/Phase2/step12_individual_zygosity.tsv)** — per-individual genotype summary with columns `N_distinct_alleles`, `N_total_proteins`, `Zygosity` (Homozygous / Heterozygous), `Genotype` (AAAA / AAAB / AABB / AABC / ABCD), `Allele_composition` (packed allele-with-counts string). Human-readable companion to the wide matrix above.
+-   **[`tables/Phase4/step22b_synonymy_groups.csv`](tables/Phase4/step22b_synonymy_groups.csv)** — allele → synonymy group mapping with group size and observation counts. Lets modelers collapse putatively identical alleles into a single functional unit when needed.
 
 **Recommended join chain for `individual → allele counts → population → bottleneck lineage`:**
 
 ```
-SRK_individual_allele_genotypes.tsv  (Individual)
+tables/Phase2/step11_individual_allele_genotypes.tsv  (Individual)
        │ join on SampleID = Individual
        ▼
-sampling_metadata.csv  (Pop, EO_w_sub)
+tables/sampling_metadata.csv  (Pop, EO_w_sub)
        │ join on EO
        ▼
-EO_group_BL_summary.csv  (EO → BL, Drift_index)
+tables/EO_group_BL_summary.csv  (EO → BL, Drift_index)
 ```
 
 ### Quality categorisation
 
--   **[`Tables/SRK_data_quality_categories.tsv`](Tables/SRK_data_quality_categories.tsv)** — master per-sample categorisation (all 409 metadata samples) with full upstream diagnostic columns preserved (Step 12c).
+-   **[`tables/Phase2/step12c_data_quality_categories.tsv`](tables/Phase2/step12c_data_quality_categories.tsv)** — master per-sample categorisation (all 433 metadata samples) with full upstream diagnostic columns preserved (Step 12c).
 
 ### Lab and phenotyping deliverables
 
--   **[`Tables/SRK_samples_redo.csv`](Tables/SRK_samples_redo.csv)** — single merged lab follow-up sheet. `Lab_action` discriminates **Re-PCR** (existing DNA OK, re-amplify) from **Re-DNA-extraction** (DNA contaminated, re-isolate tissue); rows sorted by `Lab_action → EO → Sample_ID` for field-collection grouping (Step 12c).
--   **[`Tables/SRK_SI_escape_candidates.csv`](Tables/SRK_SI_escape_candidates.csv)** — phenotyping deliverable: SI-escape candidates with the recommended controlled-selfing test instruction (Step 12c).
+-   **[`tables/Phase2/step12c_samples_redo.csv`](tables/Phase2/step12c_samples_redo.csv)** — single merged lab follow-up sheet. `Lab_action` discriminates **Re-PCR** (existing DNA OK, re-amplify) from **Re-DNA-extraction** (DNA contaminated, re-isolate tissue); rows sorted by `Lab_action → EO → Sample_ID` for field-collection grouping (Step 12c).
+-   **[`tables/Phase2/step12c_SI_escape_candidates.csv`](tables/Phase2/step12c_SI_escape_candidates.csv)** — phenotyping deliverable: SI-escape candidates with the recommended controlled-selfing test instruction (Step 12c).
 
 ## Output Files
 
 ### Key Outputs
 
--   `SRK_functional_proteins.fasta` - Validated SRK protein sequences
--   `SRK_individual_allele_genotypes.tsv` - Allele copy-count matrix (individuals × allele bins; values = number of distinct proteins per individual per allele bin)
--   `SRK_individual_allele_table.tsv` - Long-format allele assignment table (Individual, Protein, Allele, Count)
--   `SRK_individual_zygosity.tsv` - Zygosity classifications with columns: `N_distinct_alleles`, `N_total_proteins`, `Zygosity`, `Genotype` (AAAA/AAAB/AABB/AABC/ABCD), `Allele_composition`
--   `SRK_self_compatible_candidates.txt` - Potentially self-compatible individuals
+-   `tables/Phase2/step9_functional_proteins.fasta` - Validated SRK protein sequences
+-   `tables/Phase2/step11_individual_allele_genotypes.tsv` - Allele copy-count matrix (individuals × allele bins; values = number of distinct proteins per individual per allele bin)
+-   `tables/Phase2/step11_individual_allele_table.tsv` - Long-format allele assignment table (Individual, Protein, Allele, Count)
+-   `tables/Phase2/step12_individual_zygosity.tsv` - Zygosity classifications with columns: `N_distinct_alleles`, `N_total_proteins`, `Zygosity`, `Genotype` (AAAA/AAAB/AABB/AABC/ABCD), `Allele_composition`
+-   `tables/Phase2/step9_self_compatible_candidates.txt` - Potentially self-compatible individuals
 
--   `Tables/SRK_EO_allele_richness.tsv` - Per-EO + per-BL evenness J, rarefied k (N=30, 1000 perms), P_compat at L ∈ {0, 0.10, 0.25, 0.50}, L̂_from_AAAA, geno_mix (AAAA:AAAB:AABB:AABC:ABCD), raw amplicon copy recovery
+-   `tables/Phase3/step17_EO_allele_richness.tsv` - Per-EO + per-BL evenness J, rarefied k (N=30, 1000 perms), P_compat at L ∈ {0, 0.10, 0.25, 0.50}, L̂_from_AAAA, geno_mix (AAAA:AAAB:AABB:AABC:ABCD), raw amplicon copy recovery
 
 ### Population Genetic Outputs (Phase 3)
 
 #### Step 13 — EO + Bottleneck Lineage integration
 
--   `SRK_individual_BL_assignments.tsv` - Per-individual EO, Group, BL (BL1–BL5), Drift_index, BL_status (Assigned / Inferred / Unassigned). Join key consumed by every Phase 3/4 R script that adds a BL stratification.
+-   `tables/Phase3/step13_individual_BL_assignments.tsv` - Per-individual EO, Group, BL (BL1–BL5), Drift_index, BL_status (Assigned / Inferred / Unassigned). Join key consumed by every Phase 3/4 R script that adds a BL stratification.
 
 #### Step 13b — Sampling overview map
 
--   `figures/SRK_sampling_map.png` / `SRK_sampling_map.pdf` - Geographic map of all catalogued *L. papilliferum* populations against their parent BL. Sampled populations drawn as filled triangles; not-yet-sampled populations as filled circles; both coloured by parent BL and sized by habitat area. The 6 focus EOs (EO18, EO25, EO27, EO67, EO70, EO76) carry bold white-fill labels with sample counts; other sampled EOs carry smaller plain labels. Headline: **325 BL-resolved samples across 17 populations in 16 EOs** + **10 JAR samples / 9 germplasm sub-codes** (not plotted) = 335 total successful samples.
--   `figures/SRK_sampling_map_presentation.png` / `SRK_sampling_map_presentation.pdf` - Same plot with title/subtitle/caption stripped for slide decks.
+-   `figures/Phase3/step13b_sampling_map.png` / `SRK_sampling_map.pdf` - Geographic map of all catalogued *L. papilliferum* populations against their parent BL. Sampled populations drawn as filled triangles; not-yet-sampled populations as filled circles; both coloured by parent BL and sized by habitat area. The 6 focus EOs (EO18, EO25, EO27, EO67, EO70, EO76) carry bold white-fill labels with sample counts; other sampled EOs carry smaller plain labels. Headline: **359 BL-resolved samples across 17 populations in 16 EOs** + **8 JAR samples / 8 germplasm sub-codes** (not plotted) = 367 total successful samples.
+-   `figures/Phase3/step13b_sampling_map_presentation.png` / `SRK_sampling_map_presentation.pdf` - Same plot with title/subtitle/caption stripped for slide decks.
 
 #### Step 14 — Population genetics
 
--   `SRK_population_genetic_summary.tsv` - EO-level summary with `BL` and `Drift_index` columns; rows ordered by parent BL (total habitat area, then within-BL connectivity → BL4, BL5, BL3, BL1, BL2) then by EO mean Drift_index
--   `SRK_population_genetic_summary_BL.tsv` - BL-level aggregate (5 rows) with `N_EOs`, `Mean_drift`, plus per-group metrics
--   `SRK_population_genetic_summary.pdf` - 2-page PDF: page 1 EO bars in connectivity order with the locked Set1 BL palette; page 2 BL aggregate bars
+-   `tables/Phase3/step14_population_genetic_summary.tsv` - EO-level summary with `BL` and `Drift_index` columns; rows ordered by parent BL (total habitat area, then within-BL connectivity → BL4, BL5, BL3, BL1, BL2) then by EO mean Drift_index
+-   `tables/Phase3/step14_population_genetic_summary_BL.tsv` - BL-level aggregate (5 rows) with `N_EOs`, `Mean_drift`, plus per-group metrics
+-   `figures/Phase3/step14_population_genetic_summary.pdf` - 2-page PDF: page 1 EO bars in connectivity order with the locked Set1 BL palette; page 2 BL aggregate bars
 
 #### Step 15 — Allele accumulation
 
--   `SRK_allele_accumulation_curves.pdf` - Species + per-EO + per-BL pages with MM/Chao1/iNEXT asymptote reference lines
--   `figures/SRK_allele_accumulation_species.png` - Two-panel species figure: stacked bar (observed + predicted-undetected = MM) on the left, rarefaction curve with MM/Chao1 asymptote reference lines on the right; both panels share the bar's y-axis. Same colour key (dark blue = observed, light blue = predicted undetected) as the BL/EO drift-erosion bars. Current dataset 2026-05-11: 49 observed + 10 predicted = MM 59, Chao1 = 61, consensus = 60
--   `figures/presentation/SRK_allele_accumulation_species_observed.png` / `_predicted.png` - **NEW**. Slide build-up frames: frame 1 shows the bar with only the observed segment (no curve, no MM line); frame 2 shows the full bar + curve + MM dashed line (no Chao1/iNEXT). Same canvas size across both frames for clean animation
--   `figures/SRK_allele_accumulation_combined.png` - All qualifying EO curves on shared axes, **colored by parent BL**
--   `figures/SRK_allele_accumulation_BL_combined.png` - **NEW**. The 5 BL aggregate curves on shared axes
--   `figures/SRK_allele_accumulation_drift_erosion.png` - EO stacked bars sorted by BL with BL color strip on the x-axis baseline
--   `figures/SRK_allele_accumulation_BL_drift_erosion.png` - **NEW**. BL aggregate stacked bars (BL4 = 32% lost; BL1/BL2 ≥ 86% lost)
--   `SRK_allele_accumulation_stats.tsv` - Per-level curve statistics (Species + 6 EOs + 5 BLs), MM/Chao1/iNEXT estimates, sampling adequacy targets
--   `SRK_species_richness_estimates.tsv` - Consensus species allele richness estimate (input to Step 16). Computed from all 272 ingroup individuals.
+-   `figures/Phase3/step15_allele_accumulation_curves.pdf` - Species + per-EO + per-BL pages with MM/Chao1/iNEXT asymptote reference lines
+-   `figures/Phase3/step15_allele_accumulation_species.png` - Two-panel species figure: stacked bar (observed + predicted-undetected = MM) on the left, rarefaction curve with MM/Chao1 asymptote reference lines on the right; both panels share the bar's y-axis. Same colour key (dark blue = observed, light blue = predicted undetected) as the BL/EO drift-erosion bars. Current dataset 2026-05-11: 49 observed + 10 predicted = MM 59, Chao1 = 61, consensus = 60
+-   `figures/Phase3/presentation/step15_allele_accumulation_species_observed.png` / `_predicted.png` - **NEW**. Slide build-up frames: frame 1 shows the bar with only the observed segment (no curve, no MM line); frame 2 shows the full bar + curve + MM dashed line (no Chao1/iNEXT). Same canvas size across both frames for clean animation
+-   `figures/Phase3/step15_allele_accumulation_combined.png` - All qualifying EO curves on shared axes, **colored by parent BL**
+-   `figures/Phase3/step15_allele_accumulation_BL_combined.png` - **NEW**. The 5 BL aggregate curves on shared axes
+-   `figures/Phase3/step15_allele_accumulation_drift_erosion.png` - EO stacked bars sorted by BL with BL color strip on the x-axis baseline
+-   `figures/Phase3/step15_allele_accumulation_BL_drift_erosion.png` - **NEW**. BL aggregate stacked bars (BL4 = 32% lost; BL1/BL2 ≥ 86% lost)
+-   `tables/Phase3/step15_allele_accumulation_stats.tsv` - Per-level curve statistics (Species + 6 EOs + 5 BLs), MM/Chao1/iNEXT estimates, sampling adequacy targets
+-   `tables/Phase3/step15_species_richness_estimates.tsv` - Consensus species allele richness estimate (input to Step 16). Computed from all 367 ingroup individuals.
 
 #### Step 16 — Allele frequency χ²
 
--   `SRK_chisq_species_population.tsv` - χ² test statistics at three levels (Species, EO, BL); new `BL` column; rows ordered Species → EOs (sorted by BL) → BLs
--   `SRK_chisq_species_population_frequency_plots.pdf` - 12 pages (1 species + 6 EOs sorted by BL + 5 BLs); EO/BL pages colored by parent BL palette
+-   `tables/Phase3/step16_chisq_species_population.tsv` - χ² test statistics at three levels (Species, EO, BL); new `BL` column; rows ordered Species → EOs (sorted by BL) → BLs
+-   `figures/Phase3/step16_chisq_species_population_frequency_plots.pdf` - 12 pages (1 species + 6 EOs sorted by BL + 5 BLs); EO/BL pages colored by parent BL palette
 
 #### Step 17 — TP1 mating-pool functionality
 
--   `Tables/SRK_EO_allele_richness.tsv` - Per-EO (6 rows, N ≥ 15) + per-BL (5 rows) metric table: `level`, `group`, `BL`, `N`, `geno_mix`, `prop_AAAA`, `L_hat_from_AAAA`, `raw_copy_recovery`, `k_observed`, `k_rarefied30_mean/sd`, `shannon_H`, `evenness_J`, `chi2_uniform_p`, `P_compat_uniform_4x`, `P_compat_L0/L0.10/L0.25/L0.50`. Inferred tetraploid genotypes from `SRK_zygosity_from_genotype.R` (every individual filled to 4 S-allele copies). Exact P_compat formula assumes tetrasomic inheritance.
--   `figures/SRK_P_compat_traffic_light_EO.{png,pdf}` - Stakeholder-facing traffic-light figure: six focal EOs ranked worst-to-best by strict-SI P_compat, coloured red (< 0.20, failed) / amber (0.20–0.40, struggling) / green (≥ 0.40, sustainable), with bootstrap 95 % CIs as horizontal error bars and BL colour squares on the left edge. Headline result drops out at a glance: EO70 (BL2) is the only RED population. Produced by `SRK_P_compat_traffic_light.R`.
--   `figures/SRK_P_compat_traffic_light_EO_blank.{png,pdf}` - Same framework with no data drawn — for predictions slide; reveal the full figure after explaining the threshold logic.
--   `figures/SRK_depletion_ranking_{observed,predicted}_{all,EOs,blank}.{png,pdf}` - P_compat × Depletion Index conservation-ranking figures with quadrants labelled HEALTHY / INFORMED BREEDING (frequency skew) / INFORMED BREEDING + ALLELE INJECTION (preventive / urgent). `_observed` uses `k_rarefied30` (conservative); `_predicted` uses the MM asymptote. `_all` plots both BLs and EOs; `_EOs` is EO-only; `_blank` has zones only. Produced by `SRK_depletion_ranking.R`.
+-   `tables/Phase3/step17_EO_allele_richness.tsv` - Per-EO (6 rows, N ≥ 15) + per-BL (5 rows) metric table: `level`, `group`, `BL`, `N`, `geno_mix`, `prop_AAAA`, `L_hat_from_AAAA`, `raw_copy_recovery`, `k_observed`, `k_rarefied30_mean/sd`, `shannon_H`, `evenness_J`, `chi2_uniform_p`, `P_compat_uniform_4x`, `P_compat_L0/L0.10/L0.25/L0.50`. Inferred tetraploid genotypes from `SRK_zygosity_from_genotype.R` (every individual filled to 4 S-allele copies). Exact P_compat formula assumes tetrasomic inheritance.
+-   `figures/Phase3/step17_P_compat_traffic_light_EO.{png,pdf}` - Stakeholder-facing traffic-light figure: six focal EOs ranked worst-to-best by strict-SI P_compat, coloured red (< 0.20, failed) / amber (0.20–0.40, struggling) / green (≥ 0.40, sustainable), with bootstrap 95 % CIs as horizontal error bars and BL colour squares on the left edge. Headline result drops out at a glance: EO70 (BL2) is the only RED population. Produced by `SRK_P_compat_traffic_light.R`.
+-   `figures/Phase3/step17_P_compat_traffic_light_EO_blank.{png,pdf}` - Same framework with no data drawn — for predictions slide; reveal the full figure after explaining the threshold logic.
+-   `figures/Phase3/step17_depletion_ranking_{observed,predicted}_{all,EOs,blank}.{png,pdf}` - P_compat × Depletion Index conservation-ranking figures with quadrants labelled HEALTHY / INFORMED BREEDING (frequency skew) / INFORMED BREEDING + ALLELE INJECTION (preventive / urgent). `_observed` uses `k_rarefied30` (conservative); `_predicted` uses the MM asymptote. `_all` plots both BLs and EOs; `_EOs` is EO-only; `_blank` has zones only. Produced by `SRK_depletion_ranking.R`.
 -   Legacy `SRK_TP1_tipping_point.R` archived under `archive/`.
 
 #### Step 18 — Allele composition / sharing
 
--   `SRK_allele_upset_EOs.{pdf,png}` - EO UpSet (sorted by parent BL; bars/dots colored by parent BL)
--   `SRK_allele_sharing_heatmap_EOs.{pdf,png}` - Pairwise allele sharing heatmap between EOs
--   `SRK_allele_upset_BLs.{pdf,png}` - **NEW**. BL-level UpSet — the direct test of independent bottlenecks
--   `SRK_allele_sharing_heatmap_BLs.{pdf,png}` - **NEW**. 5×5 BL pairwise sharing heatmap (BL4↔BL5 share 12 alleles, the highest off-diagonal value)
--   `SRK_allele_eulerr_BLs.{pdf,png}` - **NEW (2026-05-22)**. Area-proportional 5-set Euler diagram of BL allele sets — same data as the BL UpSet, rendered as familiar Venn-style ellipses for stakeholder presentations. Produced by the R companion script `SRK_allele_eulerr_BLs.R` (regenerate together with the Python UpSet whenever new data are added).
+-   `figures/Phase3/step18_allele_upset_EOs.{pdf,png}` - EO UpSet (sorted by parent BL; bars/dots colored by parent BL)
+-   `figures/Phase3/step18_allele_sharing_heatmap_EOs.{pdf,png}` - Pairwise allele sharing heatmap between EOs
+-   `figures/Phase3/step18_allele_upset_BLs.{pdf,png}` - **NEW**. BL-level UpSet — the direct test of independent bottlenecks
+-   `figures/Phase3/step18_allele_sharing_heatmap_BLs.{pdf,png}` - **NEW**. 5×5 BL pairwise sharing heatmap (BL4↔BL5 share 12 alleles, the highest off-diagonal value)
+-   `figures/Phase3/step18_allele_eulerr_BLs.{pdf,png}` - **NEW (2026-05-22)**. Area-proportional 5-set Euler diagram of BL allele sets — same data as the BL UpSet, rendered as familiar Venn-style ellipses for stakeholder presentations. Produced by the R companion script `SRK_allele_eulerr_BLs.R` (regenerate together with the Python UpSet whenever new data are added).
 
-PNGs land in `figures/`; PDFs in the project root. **Headline finding (2026-05-11 refresh):** 26 of 49 alleles (53 %) are private to a single BL; only Allele_050 and Allele_051 are shared across all 5 BLs.
+PNGs land in `figures/`; PDFs in the project root. **Headline finding (2026-05-11 refresh):** 28 of 49 alleles (53 %) are private to a single BL; only Allele_043 and Allele_046 are shared across all 5 BLs.
 
 #### Steps 19–20 — Individual GFS + TP2 tipping point
 
--   `SRK_individual_GFS.tsv` - Per-individual Genotypic Fitness Score, genotype class (AAAA/AAAB/AABB/AABC/ABCD), EO, **BL, Drift_index** (Step 19)
--   `SRK_EO_GFS_summary.tsv` - EO-level mean GFS, genotype class proportions, TP2 status, **BL column** (Step 20)
--   `SRK_BL_GFS_summary.tsv` - **NEW**. BL-level mean GFS, class proportions, TP2 status (5 rows; all CRITICAL)
--   `SRK_GFS_plots.pdf` - Multi-page PDF: composition (proportional + counts), per-individual jitter, TP2 scatter — EOs sorted by parent BL with BL-coloured x-axis labels (Steps 19–20)
--   `figures/SRK_GFS_plots_p3_TP2_tipping_point.png` - TP2 scatter; **EOs as circles, BLs as triangles, both Set1-coloured by parent BL**. All 5 BLs and 5/6 plotted EOs CRITICAL (EO67 only AT RISK)
+-   `tables/Phase3/step19_individual_GFS.tsv` - Per-individual Genotypic Fitness Score, genotype class (AAAA/AAAB/AABB/AABC/ABCD), EO, **BL, Drift_index** (Step 19)
+-   `tables/Phase3/step20_EO_GFS_summary.tsv` - EO-level mean GFS, genotype class proportions, TP2 status, **BL column** (Step 20)
+-   `tables/Phase3/step20_BL_GFS_summary.tsv` - **NEW**. BL-level mean GFS, class proportions, TP2 status (5 rows; all CRITICAL)
+-   `figures/Phase3/step19_GFS_plots.pdf` - Multi-page PDF: composition (proportional + counts), per-individual jitter, TP2 scatter — EOs sorted by parent BL with BL-coloured x-axis labels (Steps 19–20)
+-   `figures/Phase3/step20_TP2_tipping_point.png` - TP2 scatter; **EOs as circles, BLs as triangles, both Set1-coloured by parent BL**. All 5 BLs and 5/6 plotted EOs CRITICAL (EO67 only AT RISK)
 
 #### Step 21 — Reproductive effort support
 
--   `SRK_GFS_reproductive_effort.pdf` - 2-page PDF: EO panel + BL panel — GFS tier composition with reproductive effort annotations
--   `SRK_GFS_AAAA_allele_composition.pdf` - 2-page PDF: EO panel + BL panel — allele identity of AAAA individuals; Synonymy group 1 alleles highlighted
--   `SRK_BL_reproductive_effort_summary.tsv` - **NEW**. BL-level reproductive support summary
--   `figures/SRK_GFS_reproductive_effort_{EO,BL}.png` - Per-EO and per-BL proportional bars
--   `figures/SRK_GFS_AAAA_allele_composition_{EO,BL}.png` - Per-EO and per-BL AAAA allele identity. **Headline:** Allele_050 + Allele_051 are pan-BL across all 5 BLs and pan-EO in 5/6 focus EOs — confirms shared Synonymy group 1 fixation despite independent bottlenecks
+-   `figures/Phase3/step21_GFS_reproductive_effort.pdf` - 2-page PDF: EO panel + BL panel — GFS tier composition with reproductive effort annotations
+-   `figures/Phase3/step21_GFS_AAAA_allele_composition.pdf` - 2-page PDF: EO panel + BL panel — allele identity of AAAA individuals; Synonymy group 1 alleles highlighted
+-   `tables/Phase3/step21_BL_reproductive_effort_summary.tsv` - **NEW**. BL-level reproductive support summary
+-   `figures/Phase3/step21_GFS_reproductive_effort_{EO,BL}.png` - Per-EO and per-BL proportional bars
+-   `figures/Phase3/step21_GFS_AAAA_allele_composition_{EO,BL}.png` - Per-EO and per-BL AAAA allele identity. **Headline:** Allele_043 + Allele_046 are pan-BL across all 5 BLs and pan-EO in 5/6 focus EOs — confirms shared Synonymy group 1 fixation despite independent bottlenecks
 
 ### Phase 4 Outputs (Testing S-allele Hypotheses)
 
--   `SRK_variability_landscape.pdf` / `figures/SRK_variability_landscape.png` - **Multi-panel cross-Brassicaceae figure**: per-species smoothed Shannon entropy (LEPA + Brassica + Arabidopsis), per-species HV-region tracks, and Ma 2016 SCR9-contact residue markers (Step 22a)
--   `SRK_HV_regions_per_species.tsv` - LEPA / Brassica / Arabidopsis HV runs (start–end, length, threshold) (Step 22a)
--   `SRK_LEPA_HV_positions.tsv` - **66 canonical LEPA HV columns** (consumed by Step 22b) (Step 22a)
+-   `figures/Phase4/step22a_variability_landscape.pdf` / `figures/Phase4/step22a_variability_landscape.png` - **Multi-panel cross-Brassicaceae figure**: per-species smoothed Shannon entropy (LEPA + Brassica + Arabidopsis), per-species HV-region tracks, and Ma 2016 SCR9-contact residue markers (Step 22a)
+-   `tables/Phase4/step22a_HV_regions_per_species.tsv` - LEPA / Brassica / Arabidopsis HV runs (start–end, length, threshold) (Step 22a)
+-   `tables/Phase4/step22a_LEPA_HV_positions.tsv` - **66 canonical LEPA HV columns** (consumed by Step 22b) (Step 22a)
 -   `SRK_HV_overlap_permutation.tsv` - Three pairwise HV-overlap permutation tests (10 000 perms). In the current post-QC LEPA dataset the Brassica↔Arabidopsis HV overlap remains highly significant, but the two LEPA pairs are no longer significant — interpreted as drift-eroded standing variation at LEPA HV columns (Step 22a)
 -   `SRK_brassica_hv_mapping.tsv` - 12 Ma 2016 SCR9-contact residues mapped to LEPA columns (helper output)
 -   `SRK_HV_allele_distances.tsv` - 58×58 pairwise distance matrix computed on the 66 canonical HV columns (Step 22b)
 -   `SRK_functional_allele_groups.tsv` - Allele bin → phylogenetic class assignment, AAAA count, cross power (Step 22b)
 -   `SRK_synonymy_candidates.tsv` - All within-class allele pairs with HV distance and testability flag (Step 22b)
 -   `SRK_synonymy_groups.csv` - Per-allele synonymy group membership (8 synonymy groups + 19 isolated → 27 effective bins) (Step 22b)
--   `SRK_allele_similarity_heatmap.pdf` / `figures/SRK_allele_similarity_heatmap.png` - 58×58 HV similarity heatmap ordered by UPGMA with class strips (Step 22b)
+-   `figures/Phase4/step22b_allele_similarity_heatmap.{pdf,png}` - 49×49 HV similarity heatmap ordered by UPGMA with class strips (Step 22b)
 -   `SRK_AAAA_cross_design_HV.tsv` - All AAAA × AAAA pairs ranked by category (Incompatible / Synonymy_test / Compatible_within / Compatible_cross) with HV distance and expected outcome (Step 22b)
--   `SRK_cross_design_summary.pdf` / `figures/SRK_cross_design_summary.png` - Three-panel figure: HV distance distribution, cross category schematic, Synonymy_test cross interpretation (Step 22b)
--   `SRK_HV_cluster_figure.pdf` / `figures/SRK_HV_cluster_figure.png` - UPGMA dendrogram (HV distances) coloured by class + AAAA availability bar chart (Step 22b)
+-   `figures/Phase4/step22b_cross_design_summary.{pdf,png}` - Three-panel figure: HV distance distribution, cross category schematic, Synonymy_test cross interpretation (Step 22b)
+-   `figures/Phase4/step22b_HV_cluster_figure.{pdf,png}` - UPGMA dendrogram (HV distances) coloured by class + AAAA availability bar chart (Step 22b)
 -   `SRK_synonymy_network_groups.{pdf,png}` / `SRK_synonymy_network_tests.{pdf,png}` - Synonymy network: 9 HV-identical synonymy groups + N-connectivity condensed graph (Step 22b)
 -   `SRK_LEPA_synonymy_group_representatives.tsv` - Synonymy group → representative allele mapping (kept vs redundant) (Step 22c)
 -   `SRK_wgroup_collapse_entropy_summary.tsv` - Per-species entropy before/after Synonymy group collapse (Step 22c)
@@ -512,10 +536,10 @@ PNGs land in `figures/`; PDFs in the project root. **Headline finding (2026-05-1
 
 > Answers the question: *"What is the status of the SI system?"* at the individual, BL, and EO levels.
 
--   `Tables/SRK_individual_SI_status.tsv` — One row per ingroup individual: `n_haps_OK`, `n_haps_REMOVED`, `frac_nonfunctional`, `copies_functional`, `copies_nonfunctional`, `SI_status` (SI / pSI / SC / Insufficient_data), `pSI_confidence` (high / low). Re-aggregates per-haplotype OK/REMOVED calls from the Step-7 `_frame1_stopcodon_log.tsv` files **without** invalidating the canonical 49-allele catalogue (Step 25)
--   `figures/SRK_SI_status_species_{full,robust}.png` — Species-level stacked bar. `_full` = all 401 ingroup (7-tier inc. pSI_low + Insufficient_data); `_robust` = 254 with defensible calls (5-tier SI/pSI_1nf/pSI_2nf/pSI_3nf/SC) (Step 25)
--   `figures/SRK_SI_status_by_BL_{full,robust}.png` — Per-BL stacked %, BLs in `BL_ORDER`. Same full/robust split (Step 25)
--   `figures/SRK_SI_status_by_EO_{full,robust}.png` — Per-EO stacked % faceted by BL, within-BL order by ascending drift index. Same full/robust split (Step 25)
+-   `tables/Phase5/step25b_individual_SI_status.tsv` — One row per ingroup individual: `n_haps_OK`, `n_haps_REMOVED`, `frac_nonfunctional`, `copies_functional`, `copies_nonfunctional`, `SI_status` (SI / pSI / SC / Insufficient_data), `pSI_confidence` (high / low). Re-aggregates per-haplotype OK/REMOVED calls from the Step-7 `_frame1_stopcodon_log.tsv` files **without** invalidating the canonical 49-allele catalogue (Step 25)
+-   `figures/Phase5/step25b_SI_status_species_{full,robust}.png` — Species-level stacked bar. `_full` = all 497 individuals (7-tier inc. pSI_low + Insufficient_data); `_robust` = 263 with defensible calls (5-tier SI/pSI_1nf/pSI_2nf/pSI_3nf/SC) (Step 25)
+-   `figures/Phase5/step25b_SI_status_by_BL_{full,robust}.png` — Per-BL stacked %, BLs in `BL_ORDER`. Same full/robust split (Step 25)
+-   `figures/Phase5/step25b_SI_status_by_EO_{full,robust}.png` — Per-EO stacked % faceted by BL, within-BL order by ascending drift index. Same full/robust split (Step 25)
 
 **Rule:** Step 25a aligns every Step-7 REMOVED haplotype to the 49 functional reps and flags chimeric Canu artefacts (`AA_distance > 0.05` or `n_stops > 10`). Step 25b counts only real broken haplotypes: `copies_nonfunctional = round(4 × n_REMOVED_real / (n_OK + n_REMOVED_real))`. **Snapshot (n = 401 ingroup):** SI = 247 (62 %), pSI = 15 (10 high / 5 low), SC = 1 (Library010_barcode53, EO76), Insufficient_data = 138 (heavily concentrated in EO76, flagged for re-sequencing).
 
@@ -523,15 +547,15 @@ PNGs land in `figures/`; PDFs in the project root. **Headline finding (2026-05-1
 
 > Propagates Step 25 SI status into the canonical genotype tables so downstream metrics (Step 14 pop-gen, Step 17 TP1, Steps 19+20 GFS/TP2) reflect the broken-copy reality. Phase 1–2 outputs stay frozen as the functional-only reference.
 
--   `Tables/SRK_individual_allele_genotypes_with_nulls.tsv` — 342 individuals × 49 functional alleles + `Allele_NULL` + `Genotype_class_flag`. pSI_high gets explicit nulls (`copies_nonfunctional`); SC = 4 × NULL; rows sum to 4. pSI_low is promoted to SI (Canu-noise floor) (Step 26)
--   `Tables/SRK_individual_zygosity_with_nulls.tsv` — Genotype labels like `AB00` (1 functional + 1 functional + 2 null) or `0000` (SC); 12-tier null-aware scheme (Step 26)
--   `Tables/SRK_samples_for_redo.tsv` — 124 Insufficient_data individuals flagged for re-sequencing, with EO / BL / hap counts / priority (Step 26)
+-   `tables/Phase5/step26_individual_allele_genotypes_with_nulls.tsv` — 234 individuals × 49 functional alleles + `Allele_NULL` + `Genotype_class_flag`. pSI_high gets explicit nulls (`copies_nonfunctional`); SC = 4 × NULL; rows sum to 4. pSI_low is promoted to SI (Canu-noise floor) (Step 26)
+-   `tables/Phase5/step26_individual_zygosity_with_nulls.tsv` — Genotype labels like `AB00` (1 functional + 1 functional + 2 null) or `0000` (SC); 12-tier null-aware scheme (Step 26)
+-   `tables/Phase5/step26_samples_for_redo.tsv` — 234 Insufficient_data individuals flagged for re-sequencing, with EO / BL / hap counts / priority (Step 26)
 -   `SRK_population_genetic_summary_with_nulls.tsv` / `_BL_with_nulls.tsv` / `.pdf` — Null-aware EO and BL pop-gen with new columns: `Frac_nonfunctional_alleles`, `Mean_null_copies`, `Prop_pSI`, `N_SC` (Step 14b)
--   `Tables/SRK_EO_allele_richness_with_nulls.tsv` — Null-aware TP1 metrics (P_compat with Allele_NULL in the frequency vector); BL5 P_compat at L=0 drops 0.472 → 0.392 (Step 17b)
+-   `tables/Phase5/step17b_EO_allele_richness_with_nulls.tsv` — Null-aware TP1 metrics (P_compat with Allele_NULL in the frequency vector); BL5 P_compat at L=0 drops 0.472 → 0.392 (Step 17b)
 -   `SRK_individual_GFS_with_nulls.tsv` / `SRK_EO_GFS_summary_with_nulls.tsv` / `SRK_BL_GFS_summary_with_nulls.tsv` — Null-aware GFS (`GFS_func × n_func/4`); all 5 BLs CRITICAL on TP2 (Steps 19b + 20b)
--   `figures/SRK_GFS_with_nulls_composition.png` / `_TP2_scatter.png` — Stacked-bar genotype tiers per BL + null-aware TP2 scatter (Steps 19b + 20b)
--   `figures/SRK_P_compat_traffic_light_EO_with_nulls.{png,pdf}` (and `_blank` for presentations) — Null-aware random-mating viability per EO. Headline shifts vs canonical: EO76 slips from green into amber (0.36), EO27 / EO25 sit right at the 0.40 floor (0.40 / 0.42), EO70 stays red (0.13). Script: `SRK_P_compat_traffic_light_with_nulls.R`
--   `figures/SRK_depletion_ranking_observed_with_nulls_{all,EOs,blank}.{png,pdf}` / `SRK_depletion_ranking_predicted_with_nulls_*` — Null-aware DI × P_compat ranking (observed and MM-predicted). Every BL and every focal EO now sits in the right half (DI ≥ 0.5, severe depletion). Script: `SRK_depletion_ranking_with_nulls.R`
+-   `figures/Phase5/step19b_GFS_with_nulls_composition.png` + `figures/Phase5/step20b_TP2_with_nulls_scatter.png` — Stacked-bar genotype tiers per BL + null-aware TP2 scatter (Steps 19b + 20b)
+-   `figures/Phase5/step17b_P_compat_traffic_light_with_nulls.{png,pdf}` (and `_blank` for presentations) — Null-aware random-mating viability per EO. Headline shifts vs canonical: EO76 slips from green into amber (0.36), EO27 / EO25 sit right at the 0.40 floor (0.40 / 0.42), EO70 stays red (0.13). Script: `SRK_P_compat_traffic_light_with_nulls.R`
+-   `figures/Phase3/step17_depletion_ranking_observed_with_nulls_{all,EOs,blank}.{png,pdf}` / `SRK_depletion_ranking_predicted_with_nulls_*` — Null-aware DI × P_compat ranking (observed and MM-predicted). Every BL and every focal EO now sits in the right half (DI ≥ 0.5, severe depletion). Script: `SRK_depletion_ranking_with_nulls.R`
 
 **Headline finding:** functional-only P_compat overestimated mating-pool size by 0.03–0.08 across BL3–BL5; null-aware GFS shows 60–75 % of individuals in every BL fall to GFS = 0 (AAAA-equivalent or worse). The conclusion that LEPA is reproductively compromised is *strengthened*, not weakened, by the null-aware rebuild.
 
@@ -554,12 +578,12 @@ This pipeline is designed for:
 
 For a full worked example of results produced by this pipeline, see [LEPA_SRK_report.md](LEPA_SRK_report.md).
 
-Key findings from the **335 successful ingroup samples** — 325 BL-resolved across **17 populations in 16 Element Occurrences** spanning all five bottleneck lineages BL1–BL5 (with the 6 focus EOs EO18, EO25, EO27, EO67, EO70, EO76 driving most downstream analyses); plus 10 samples in the JAR region with unresolved coordinates; plus **59 metadata samples reserved for lab follow-up** (Libraries 001–010). See `figures/SRK_sampling_map.png` for the sampling overview:
+Key findings from the **335 successful ingroup samples** — 325 BL-resolved across **17 populations in 16 Element Occurrences** spanning all five bottleneck lineages BL1–BL5 (with the 6 focus EOs EO18, EO25, EO27, EO67, EO70, EO76 driving most downstream analyses); plus 10 samples in the JAR region with unresolved coordinates; plus **59 metadata samples reserved for lab follow-up** (Libraries 001–010). See `figures/Phase3/step13b_sampling_map.png` for the sampling overview:
 
 - **49 observed S-allele bins** species-wide, with a predicted total of **60** (consensus of Michaelis-Menten = 59 and Chao1 = 61) — the species retains ~82% of its expected SI repertoire, but the retention is unevenly distributed across BLs.
 - The five bottleneck lineages have eroded their S-allele pools very unevenly: **BL4 retains ~68%** of its expected richness while **BL1 and BL2 have lost ≥86%**, consistent with their lower within-BL connectivity.
 - Allele frequencies are significantly skewed from NFDS expectations at every level (Species, EO, BL; χ² *p* < 10⁻⁷).
-- **26 of 49 alleles (53%) are BL-private**; only **Allele_050 + Allele_051** (Synonymy group 1) are pan-BL, and these are the alleles driving most AAAA fixation across the species.
+- **28 of 49 alleles (53%) are BL-private**; only **Allele_043 + Allele_046** (Synonymy group 1) are pan-BL, and these are the alleles driving most AAAA fixation across the species.
 - A majority of individuals carry an **AAAA genotype** (single allele, four copies, GFS = 0), flagging high risk of reduced SI function; a further substantial fraction carry an **AAAB** genotype (GFS = 0.500) — dosage-imbalanced individuals that appear heterozygous but produce fewer diverse gametes than AABB individuals (GFS = 0.667).
 - All five BLs and 5/6 focus EOs are flagged **CRITICAL** for Tipping Point 2 (TP2); EO67 (BL4) is the only AT RISK EO.
 - A formal **Step 12c Data Quality Evaluation** identifies **5 of 7 Complete_loss SI-escape candidates concentrated in EO76 (BL3)**, framing EO76 as a candidate SI → SC transitional population under the Igić–Lande–Kohn framework.
