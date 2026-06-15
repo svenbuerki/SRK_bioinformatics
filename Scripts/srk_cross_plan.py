@@ -160,9 +160,22 @@ hv_dist_df   = pd.read_csv(HV_DIST_TSV, sep="\t", index_col=0)
 
 # Phase 4 SI filter — restrict zygosity/BL/allele tables to individuals with
 # confirmed full SI status. pSI / SC / Insufficient_data parents are dropped.
+# Snapshot the SI-excluded subset BEFORE filtering so we can write a separate
+# "alternative candidates" deliverable after the canonical cross plan is built.
+si_excluded_df         = None
+si_excluded_zygo_df    = None
+si_excluded_bl_df      = None
+si_excluded_allele_df  = None
 if os.path.exists(SI_STATUS_TSV):
     si_df = pd.read_csv(SI_STATUS_TSV, sep="\t", encoding="utf-8-sig")
     si_individuals = set(si_df.loc[si_df["SI_status"] == "SI", "Sample_ID"])
+    excluded_ids   = set(zygo_df["Individual"]) - si_individuals
+    # Keep an SI-status-augmented view of the excluded individuals.
+    si_excluded_df         = si_df[si_df["Sample_ID"].isin(excluded_ids)].copy()
+    si_excluded_zygo_df    = zygo_df[zygo_df["Individual"].isin(excluded_ids)].reset_index(drop=True)
+    si_excluded_bl_df      = bl_df[bl_df["Individual"].isin(excluded_ids)].reset_index(drop=True)
+    si_excluded_allele_df  = allele_df[allele_df["Individual"].isin(excluded_ids)].reset_index(drop=True)
+
     before_zyg = len(zygo_df)
     zygo_df    = zygo_df[zygo_df["Individual"].isin(si_individuals)].reset_index(drop=True)
     bl_df      = bl_df[bl_df["Individual"].isin(si_individuals)].reset_index(drop=True)
@@ -764,6 +777,105 @@ for hyp, rows in phases:
     out = OUT_TSVS[hyp]
     df.to_csv(out, sep="\t", index=False)
     print(f"  {hyp}: {len(rows)} crosses → {out}")
+
+# =============================================================================
+# SI-excluded alternative-candidates deliverable
+# =============================================================================
+# For every canonical cross row, identify candidate parents that were dropped
+# by the Phase 4 SI filter but COULD have served as alternative Mothers or
+# Fathers for the same allele slot. Writes one CSV listing each cross-id with
+# the SI-excluded alternative candidates per role.
+if si_excluded_df is not None and len(si_excluded_df) > 0:
+    # Build per-individual: SI_status, BL, AAAA-allele if AAAA, else allele set.
+    excl_lookup = si_excluded_df.set_index("Sample_ID").to_dict("index")
+    excl_bl     = {r["Individual"]: r["BL"] for _, r in si_excluded_bl_df.iterrows()
+                   if r.get("BL_status") != "Unassigned"}
+    # excluded individual → set of alleles they carry
+    excl_alleles_by_ind: dict[str, set[str]] = {}
+    for _, r in si_excluded_allele_df.iterrows():
+        ind = r["Individual"]
+        excl_alleles_by_ind.setdefault(ind, set()).add(r["Allele"])
+    # excluded individual → genotype call from the unfiltered zygosity table
+    excl_geno = {r["Individual"]: r["Genotype"] for _, r in si_excluded_zygo_df.iterrows()}
+
+    # Concatenate the canonical cross plan into one dataframe so we can scan it.
+    all_canonical = pd.concat([pd.DataFrame(rows, columns=CROSS_PLAN_COLS)
+                               for _, rows in phases if rows],
+                              ignore_index=True)
+
+    alt_rows = []
+    for ind, alleles in excl_alleles_by_ind.items():
+        si_row = excl_lookup.get(ind, {})
+        si_status = si_row.get("SI_status", "Unknown")
+        n_ok       = si_row.get("n_haps_OK", "")
+        n_removed  = si_row.get("n_haps_REMOVED", "")
+        n_chim     = si_row.get("n_haps_chimeric", "")
+
+        # Find canonical crosses where this excluded individual could be an
+        # alternative parent (their allele set covers the canonical role allele).
+        for _, c in all_canonical.iterrows():
+            m_alleles = set(str(c["Mother_allele(s)"]).split("+"))
+            f_alleles = set(str(c["Father_allele(s)"]).split("+"))
+            could_mother = bool(alleles & m_alleles)
+            could_father = bool(alleles & f_alleles)
+            if not (could_mother or could_father):
+                continue
+            role = "Mother" if could_mother else "Father"
+            alt_rows.append({
+                "Excluded_individual":      ind,
+                "SI_status":                si_status,
+                "Redo_reason_SI": (
+                    f"{si_status} (n_haps_OK={n_ok}, REMOVED={n_removed}, chimeric={n_chim})"
+                ),
+                "BL":                       excl_bl.get(ind, ""),
+                "Genotype":                 excl_geno.get(ind, ""),
+                "Alleles_carried":          ",".join(sorted(alleles)),
+                "Could_alternate_for_role": role,
+                "Canonical_Cross_id":       c["Cross_id"],
+                "Canonical_Hypothesis":     c["Hypothesis"],
+                "Canonical_Mother":         c["Mother"],
+                "Canonical_Mother_allele":  c["Mother_allele(s)"],
+                "Canonical_Father":         c["Father"],
+                "Canonical_Father_allele":  c["Father_allele(s)"],
+            })
+
+    if alt_rows:
+        alt_df = pd.DataFrame(alt_rows).sort_values(
+            ["Canonical_Hypothesis", "Canonical_Cross_id",
+             "Could_alternate_for_role", "Excluded_individual"]
+        )
+        OUT_ALT_TSV = "Tables/Phase5/step22e_cross_plan_SI_excluded_candidates.tsv"
+        alt_df.to_csv(OUT_ALT_TSV, sep="\t", index=False)
+        n_unique_ind  = alt_df["Excluded_individual"].nunique()
+        n_unique_cross = alt_df["Canonical_Cross_id"].nunique()
+        print(f"  SI-excluded candidates: {len(alt_df)} rows "
+              f"({n_unique_ind} individuals × {n_unique_cross} canonical crosses) "
+              f"→ {OUT_ALT_TSV}")
+
+        # Per-individual summary — re-sequencing priority list.
+        summary = (
+            alt_df.groupby(["Excluded_individual", "SI_status", "Redo_reason_SI",
+                            "BL", "Genotype", "Alleles_carried"], as_index=False)
+                  .agg(
+                      N_canonical_crosses_unlocked=("Canonical_Cross_id", "nunique"),
+                      Could_alternate_as_Mother=("Could_alternate_for_role",
+                                                  lambda s: int((s == "Mother").sum())),
+                      Could_alternate_as_Father=("Could_alternate_for_role",
+                                                  lambda s: int((s == "Father").sum())),
+                      Hypotheses_covered=("Canonical_Hypothesis",
+                                          lambda s: ",".join(sorted(set(s)))),
+                  )
+                  .sort_values(["SI_status", "N_canonical_crosses_unlocked"],
+                               ascending=[True, False])
+        )
+        OUT_PRIORITY_TSV = "Tables/Phase5/step22e_cross_plan_SI_excluded_priority.tsv"
+        summary.to_csv(OUT_PRIORITY_TSV, sep="\t", index=False)
+        print(f"  Re-sequencing priority list: {len(summary)} individuals "
+              f"→ {OUT_PRIORITY_TSV}")
+        print(f"     Sort by N_canonical_crosses_unlocked to prioritise which "
+              f"flagged individuals to re-sequence first; if a re-sequenced "
+              f"individual confirms SI status, the listed crosses gain an "
+              f"alternative parent option.")
 
 # Phase summary
 summ_rows = []
