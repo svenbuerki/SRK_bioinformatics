@@ -18,7 +18,15 @@ editor_options:
 
 # Pipeline at a Glance
 
-This pipeline reconstructs S-receptor kinase (SRK) haplotypes from Nanopore amplicon sequencing of polyploid plants and turns them into population-genetic and crossing-design data products usable for conservation breeding. It comprises **23 steps in 4 phases**.
+This pipeline reconstructs S-receptor kinase (SRK) haplotypes from Nanopore amplicon sequencing of polyploid plants and turns them into population-genetic and crossing-design data products usable for conservation breeding. It comprises **28 steps in 5 phases**.
+
+## Roadmap — what the pipeline does, at a glance
+
+Read the figure below left-to-right: each phase shows what it does (bullets), the steps it covers, and the canonical output it produces. Phase 2 → 3 → 4 → 5 each consume the previous phase's outputs.
+
+![SRK pipeline overview — 5-phase roadmap from Nanopore amplicons through functional S-alleles to conservation diagnostics, cross plan, and forward-time simulation. Produced by `SRK_pipeline_overview_figure.R`.](figures/SRK_pipeline_overview.png)
+
+For step-by-step detail (scripts, inputs, outputs, key parameters) see the protocol document [`Bioinformatics_pipeline.md`](https://github.com/svenbuerki/SRK_bioinformatics/blob/main/Bioinformatics_pipeline.md).
 
 **Phase 1 — Assembly and haplotype phasing** (Steps 1–9). Per-individual amplicon assembly with multi-replicate Canu, polyploid-aware variant calling (`whatshap polyphase`), read-backed phasing, MAFFT-based multiple sequence alignment, exon-level reference projection, gap backfilling, frame-correct DNA → protein translation, and abundance-based filtering of authentic SRK proteins from technical artefacts. Output: a per-individual functional-protein table. Two targeted quality-control filters were introduced after Library 010 processing to address data-quality issues invisible to the original length filter: a **reference-similarity (BLAST coverage) filter** ([Step 4b](#refsimfilter)) that removes SRK paralogs with a localised ~500 bp insertion (98–100 % identical to canonical SRK where they align, so identity-based filtering fails), and an **ambiguity (N-content) filter** ([Step 7b](#ambigfilter)) that removes contigs with N-rich termini introduced by Canu *de novo* assembly when Nanopore reads are shorter than the expected ~3.5 kb amplicon — the upstream cause of trailing `X` blocks (and hence spurious gaps on BEA canonical references) in downstream AA alignments.
 

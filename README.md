@@ -4,6 +4,14 @@
 
 This repository contains a comprehensive bioinformatics pipeline for analyzing S-receptor kinase (SRK) haplotype diversity in self-incompatible plant species using Oxford Nanopore long-read sequencing. The pipeline is specifically designed for threatened plant species research, enabling assessment of self-incompatibility system integrity in populations where genetic diversity loss may compromise reproductive success.
 
+### Roadmap — what the pipeline does, at a glance
+
+The five-phase pipeline takes Nanopore amplicon reads through assembly, allele definition, population-genetic diagnostics, hypothesis-driven cross design, and per-individual SI-system characterisation. Each box below summarises what that phase does, the steps it covers, and the canonical output it produces — read left-to-right to follow the data flow.
+
+![SRK pipeline overview — 5-phase roadmap from Nanopore amplicons through functional S-alleles to conservation diagnostics, cross plan, and forward-time simulation. Produced by `SRK_pipeline_overview_figure.R`.](figures/SRK_pipeline_overview.png)
+
+Detailed step-by-step protocol in [`Bioinformatics_pipeline.md`](Bioinformatics_pipeline.md); full output organisation under [Output Organisation](#output-organisation-2026-06-14-refactor).
+
 ## Related Repositories
 
 This pipeline integrates with a sibling project that provides the spatial framework for S-allele interpretation:
