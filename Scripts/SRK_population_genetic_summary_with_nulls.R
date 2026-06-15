@@ -40,10 +40,10 @@ BL_UNASSIGNED_COLOR <- "#999999"
 ############################
 # 1. Load files
 ############################
-geno <- read.table("Tables/Phase5/step26_individual_allele_genotypes_with_nulls.tsv",
+geno <- read.table("Tables/Phase4/step26_individual_allele_genotypes_with_nulls.tsv",
                    header = TRUE, sep = "\t", check.names = FALSE,
                    stringsAsFactors = FALSE)
-zyg  <- read.table("Tables/Phase5/step26_individual_zygosity_with_nulls.tsv",
+zyg  <- read.table("Tables/Phase4/step26_individual_zygosity_with_nulls.tsv",
                    header = TRUE, sep = "\t",
                    stringsAsFactors = FALSE)
 
@@ -174,7 +174,7 @@ eo_results <- eo_results[, c(
   "Prop_pSI", "Top_alleles"
 )]
 
-write.table(eo_results, "Tables/Phase5/step14b_population_genetic_summary_with_nulls.tsv",
+write.table(eo_results, "Tables/Phase4/step14b_population_genetic_summary_with_nulls.tsv",
             sep = "\t", quote = FALSE, row.names = FALSE)
 cat("Written EO summary -> SRK_population_genetic_summary_with_nulls.tsv (",
     nrow(eo_results), " rows)\n", sep = "")
@@ -201,7 +201,7 @@ bl_results <- bl_results[, c(
   "Prop_pSI", "Top_alleles"
 )]
 
-write.table(bl_results, "Tables/Phase5/step14b_population_genetic_summary_BL_with_nulls.tsv",
+write.table(bl_results, "Tables/Phase4/step14b_population_genetic_summary_BL_with_nulls.tsv",
             sep = "\t", quote = FALSE, row.names = FALSE)
 cat("Written BL summary -> SRK_population_genetic_summary_BL_with_nulls.tsv (",
     nrow(bl_results), " rows)\n", sep = "")
@@ -237,7 +237,7 @@ bar_panel <- function(values, labels, fill, ylab, main) {
   invisible(bp)
 }
 
-pdf("figures/Phase5/step14b_population_genetic_summary_with_nulls.pdf", width = 14, height = 9)
+pdf("figures/Phase4/step14b_population_genetic_summary_with_nulls.pdf", width = 14, height = 9)
 par(mfrow = c(2, 2), mar = c(6, 4, 3, 1), oma = c(0, 0, 3, 0))
 bar_panel(eo_results$Effective_alleles_Ne_with_NULL, eo_results$EO, eo_colors,
           "Effective allele diversity (incl. NULL)", "Ne (with NULL)")

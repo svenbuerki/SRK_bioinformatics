@@ -46,11 +46,11 @@ from scipy.stats import chisquare
 REPO    = Path(__file__).resolve().parent
 TABLES  = REPO / "Tables"
 
-GENO_TSV = TABLES / "Phase5" / "step26_individual_allele_genotypes_with_nulls.tsv"
+GENO_TSV = TABLES / "Phase4" / "step26_individual_allele_genotypes_with_nulls.tsv"
 META     = TABLES / "sampling_metadata.csv"
 BL_FILE  = TABLES / "Phase3" / "step13_individual_BL_assignments.tsv"
 ACC_STATS = TABLES / "Phase3" / "step15_allele_accumulation_stats.tsv"
-OUT      = TABLES / "Phase5" / "step17b_EO_allele_richness_with_nulls.tsv"
+OUT      = TABLES / "Phase4" / "step17b_EO_allele_richness_with_nulls.tsv"
 
 K_SPECIES = 59
 MIN_N     = 15

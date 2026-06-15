@@ -332,7 +332,7 @@ redo["Redo_reason_SI"] = ""
 # Samples that reached Step 9 with functional proteins but had too many
 # chimeric haplotypes for Step 25b to call SI/pSI/SC reliably are flagged
 # here so the lab team gets ONE consolidated redo list.
-SI_TSV = "Tables/Phase5/step25b_individual_SI_status.tsv"
+SI_TSV = "Tables/Phase4/step25b_individual_SI_status.tsv"
 if os.path.exists(SI_TSV):
     si_df = pd.read_csv(SI_TSV, sep="\t")
     insuf = si_df[si_df["SI_status"] == "Insufficient_data"].copy()

@@ -49,8 +49,8 @@ suppressPackageStartupMessages({
 
 source("srk_bl_constants.R")
 
-ZYG <- "Tables/Phase5/step26_individual_zygosity_with_nulls.tsv"
-GEN <- "Tables/Phase5/step26_individual_allele_genotypes_with_nulls.tsv"
+ZYG <- "Tables/Phase4/step26_individual_zygosity_with_nulls.tsv"
+GEN <- "Tables/Phase4/step26_individual_allele_genotypes_with_nulls.tsv"
 
 TP2_MEAN_GFS  <- 0.667
 TP2_PROP_AAAA <- 0.30   # in null-aware: GFS <= 0.0 (AAAA-equivalent + worse)
@@ -111,7 +111,7 @@ ind$GFS_tier <- cut(
   right = FALSE
 )
 
-write_tsv(ind, "Tables/Phase5/step19b_individual_GFS_with_nulls.tsv")
+write_tsv(ind, "Tables/Phase4/step19b_individual_GFS_with_nulls.tsv")
 cat("Written SRK_individual_GFS_with_nulls.tsv\n")
 
 # Group summaries
@@ -156,8 +156,8 @@ bl_summary <- summarise_group(ind, "BL_inferred") %>%
   mutate(BL = factor(BL, levels = BL_ORDER)) %>%
   arrange(BL)
 
-write_tsv(eo_summary, "Tables/Phase5/step19b_EO_GFS_summary_with_nulls.tsv")
-write_tsv(bl_summary, "Tables/Phase5/step19b_BL_GFS_summary_with_nulls.tsv")
+write_tsv(eo_summary, "Tables/Phase4/step19b_EO_GFS_summary_with_nulls.tsv")
+write_tsv(bl_summary, "Tables/Phase4/step19b_BL_GFS_summary_with_nulls.tsv")
 cat("Written EO + BL GFS summaries (null-aware)\n\n")
 
 cat("=== BL-LEVEL GFS SUMMARY (null-aware) ===\n")
@@ -208,7 +208,7 @@ p_comp <- ggplot(comp_df,
         legend.position    = "bottom",
         plot.margin        = margin(10, 18, 10, 14))
 
-ggsave("figures/Phase5/step19b_GFS_with_nulls_composition.png",
+ggsave("figures/Phase4/step19b_GFS_with_nulls_composition.png",
        p_comp, width = 11, height = 7, dpi = 300)
 
 # (2) TP2 scatter: mean GFS vs prop_zero
@@ -246,7 +246,7 @@ p_tp2 <- ggplot(scatter_df,
 
 if (!requireNamespace("ggrepel", quietly = TRUE)) install.packages("ggrepel")
 
-ggsave("figures/Phase5/step20b_TP2_with_nulls_scatter.png",
+ggsave("figures/Phase4/step20b_TP2_with_nulls_scatter.png",
        p_tp2, width = 10, height = 7, dpi = 300)
 
 cat("\nFigures written to figures/SRK_GFS_with_nulls_{composition,TP2_scatter}.png\n")

@@ -76,10 +76,10 @@ def parse_allele_composition(comp_str: str) -> list[tuple[str, int]]:
 # =============================================================================
 # Settings
 # =============================================================================
-CROSS_DESIGN_TSV  = "Tables/Phase4/step22b_AAAA_cross_design_HV.tsv"
-SYN_GROUPS_CSV    = "Tables/Phase4/step22b_synonymy_groups.csv"
-HV_DIST_TSV       = "Tables/Phase4/step22b_HV_allele_distances.tsv"
-FUNC_GROUPS_TSV   = "Tables/Phase4/step22b_functional_allele_groups.tsv"
+CROSS_DESIGN_TSV  = "Tables/Phase5/step22b_AAAA_cross_design_HV.tsv"
+SYN_GROUPS_CSV    = "Tables/Phase5/step22b_synonymy_groups.csv"
+HV_DIST_TSV       = "Tables/Phase5/step22b_HV_allele_distances.tsv"
+FUNC_GROUPS_TSV   = "Tables/Phase5/step22b_functional_allele_groups.tsv"
 BL_TSV            = "Tables/Phase3/step13_individual_BL_assignments.tsv"
 ZYGO_TSV          = "Tables/Phase2/step12_individual_zygosity.tsv"
 ALLELE_TSV        = "Tables/Phase2/step11_individual_allele_table.tsv"
@@ -112,15 +112,15 @@ from srk_bl_constants import BL_ORDER, BL_ORDER_NUMERIC, BL_COLORS
 BL_PALETTE = BL_COLORS
 
 OUT_TSVS = {
-    "H0":  "Tables/Phase4/step22e_cross_plan_H0_SI_validation.tsv",
-    "H1a": "Tables/Phase4/step22e_cross_plan_H1a_within_class_baseline.tsv",
-    "H1b": "Tables/Phase4/step22e_cross_plan_H1b_between_class_baseline.tsv",
-    "H2":  "Tables/Phase4/step22e_cross_plan_H2_synonymy_tests.tsv",
-    "H3":  "Tables/Phase4/step22e_cross_plan_H3_hidden_bin_tests.tsv",
+    "H0":  "Tables/Phase5/step22e_cross_plan_H0_SI_validation.tsv",
+    "H1a": "Tables/Phase5/step22e_cross_plan_H1a_within_class_baseline.tsv",
+    "H1b": "Tables/Phase5/step22e_cross_plan_H1b_between_class_baseline.tsv",
+    "H2":  "Tables/Phase5/step22e_cross_plan_H2_synonymy_tests.tsv",
+    "H3":  "Tables/Phase5/step22e_cross_plan_H3_hidden_bin_tests.tsv",
 }
-OUT_SUMMARY_TSV = "Tables/Phase4/step22e_cross_plan_summary.tsv"
-OUT_FIG_PDF     = "figures/Phase4/step22e_cross_plan_summary.pdf"
-OUT_FIG_PNG     = "figures/Phase4/step22e_cross_plan_summary.png"
+OUT_SUMMARY_TSV = "Tables/Phase5/step22e_cross_plan_summary.tsv"
+OUT_FIG_PDF     = "figures/Phase5/step22e_cross_plan_summary.pdf"
+OUT_FIG_PNG     = "figures/Phase5/step22e_cross_plan_summary.png"
 
 CROSS_PLAN_COLS = [
     "Hypothesis", "Cross_id", "Priority",

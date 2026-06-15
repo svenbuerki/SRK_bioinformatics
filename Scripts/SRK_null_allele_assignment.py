@@ -69,14 +69,14 @@ STOP_LOG_GLOB = "all_Library*_frame1_stopcodon_log.tsv"
 AA_RAW_GLOB   = "all_Library*_frame1_AA_raw.fasta"
 BACKFILL_GLOB = "all_Library*_aligned_exons_backfilled.fasta"
 
-GENO_TSV   = TABLES / "Phase5" / "step26_individual_allele_genotypes_with_nulls.tsv"
+GENO_TSV   = TABLES / "Phase4" / "step26_individual_allele_genotypes_with_nulls.tsv"
 REP_FASTA  = TABLES / "Phase2" / "step10a_protein_allele_representatives.fasta"
 
-OUT_QUERY_FA = TABLES / "Phase5" / "step25a_REMOVED_haplotypes_AA.fasta"
-OUT_REPS_FA  = TABLES / "Phase5" / "step25a_functional_allele_reps_canonical.fasta"
-OUT_REPS_ALN = TABLES / "Phase5" / "step25a_functional_allele_reps_canonical.aln"
-OUT_COMBO    = TABLES / "Phase5" / "step25a_null_allele_combined.aln"
-OUT_ASSIGN   = TABLES / "Phase5" / "step25a_null_allele_assignments.tsv"
+OUT_QUERY_FA = TABLES / "Phase4" / "step25a_REMOVED_haplotypes_AA.fasta"
+OUT_REPS_FA  = TABLES / "Phase4" / "step25a_functional_allele_reps_canonical.fasta"
+OUT_REPS_ALN = TABLES / "Phase4" / "step25a_functional_allele_reps_canonical.aln"
+OUT_COMBO    = TABLES / "Phase4" / "step25a_null_allele_combined.aln"
+OUT_ASSIGN   = TABLES / "Phase4" / "step25a_null_allele_assignments.tsv"
 
 # Confidence thresholds (Sven, 2026-06-11)
 THRESH_HIGH_DIST = 0.005   # Step 10 Kneedle elbow (per allele cluster)

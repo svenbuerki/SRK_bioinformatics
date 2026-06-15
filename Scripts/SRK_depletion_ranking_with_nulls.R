@@ -60,7 +60,7 @@ K_SPECIES <- 59              # MM consensus — for subtitle reference
 # 1. LOAD
 # =============================================================================
 cat("Loading SRK_EO_allele_richness_with_nulls.tsv ...\n")
-dat <- read_tsv("Tables/Phase5/step17b_EO_allele_richness_with_nulls.tsv",
+dat <- read_tsv("Tables/Phase4/step17b_EO_allele_richness_with_nulls.tsv",
                 show_col_types = FALSE) %>%
   mutate(
     level = factor(level, levels = c("EO", "BL")),
@@ -190,7 +190,7 @@ render_set <- function(di_col, title_tag, subtitle_extra, base_stem) {
   for (label in names(variants)) {
     p <- build_panel(di_col, title_tag, subtitle_extra,
                       show = variants[[label]])
-    out_stem <- paste0("figures/Phase5/", base_stem, "_", label)
+    out_stem <- paste0("figures/Phase4/", base_stem, "_", label)
     ggsave(paste0(out_stem, ".png"), plot = p,
            width = 11, height = 8, dpi = 200)
     ggsave(paste0(out_stem, ".pdf"), plot = p,

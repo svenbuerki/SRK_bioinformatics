@@ -48,7 +48,7 @@ LIGHT_COLS <- c(
 # 1. LOAD
 # =============================================================================
 cat("Loading SRK_EO_allele_richness_with_nulls.tsv ...\n")
-dat <- read_tsv("Tables/Phase5/step17b_EO_allele_richness_with_nulls.tsv",
+dat <- read_tsv("Tables/Phase4/step17b_EO_allele_richness_with_nulls.tsv",
                 show_col_types = FALSE) %>%
   filter(level == "EO") %>%
   mutate(
@@ -155,15 +155,15 @@ p_blank <- p_base +
 dir.create("figures/Phase5", recursive = TRUE, showWarnings = FALSE)
 
 # Full figure
-ggsave("figures/Phase5/step17b_P_compat_traffic_light_with_nulls.png", plot = p_full,
+ggsave("figures/Phase4/step17b_P_compat_traffic_light_with_nulls.png", plot = p_full,
        width = 10, height = 5.5, dpi = 200)
-ggsave("figures/Phase5/step17b_P_compat_traffic_light_with_nulls.pdf", plot = p_full,
+ggsave("figures/Phase4/step17b_P_compat_traffic_light_with_nulls.pdf", plot = p_full,
        width = 10, height = 5.5)
 
 # Blank figure (zones + threshold lines + EO labels + BL strip; no data)
-ggsave("figures/Phase5/step17b_P_compat_traffic_light_with_nulls_blank.png", plot = p_blank,
+ggsave("figures/Phase4/step17b_P_compat_traffic_light_with_nulls_blank.png", plot = p_blank,
        width = 10, height = 5.5, dpi = 200)
-ggsave("figures/Phase5/step17b_P_compat_traffic_light_with_nulls_blank.pdf", plot = p_blank,
+ggsave("figures/Phase4/step17b_P_compat_traffic_light_with_nulls_blank.pdf", plot = p_blank,
        width = 10, height = 5.5)
 
 cat("\nWritten:\n")

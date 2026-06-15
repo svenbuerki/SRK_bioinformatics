@@ -57,7 +57,7 @@ TABLES = REPO / "Tables"
 GENOTYPES = TABLES / "Phase2" / "step11_individual_allele_genotypes.tsv"
 METADATA = TABLES / "sampling_metadata.csv"
 BL_FILE = TABLES / "Phase3" / "step13_individual_BL_assignments.tsv"
-OUT = TABLES / "Phase5" / "step28_injection_donor_ranking.tsv"
+OUT = TABLES / "Phase4" / "step28_injection_donor_ranking.tsv"
 
 K_SPECIES = 59
 MIN_N = 15

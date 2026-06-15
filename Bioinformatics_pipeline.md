@@ -77,16 +77,8 @@ figures/
 - Every script's READ path includes the upstream step's prefix; this makes the dependency chain visible directly in the source.
 - `Tables/sampling_metadata.csv` is the **single canonical metadata file**; a symlink at `./sampling_metadata.csv` preserves backward compatibility for legacy scripts.
 
-**Phase 4 (Steps 22a–22e) refactored 2026-06-14.** External reference FASTAs (Brassica + Arabidopsis SRK alleles) now live in **`FASTA/`** at the repo root. Intermediate Phase 4 FASTAs and step-prefixed TSVs land in `Tables/Phase4/`; figures in `figures/Phase4/`. `pad_representatives.py` now filters Step 10a representatives to LEPA-ingroup-observed alleles only (49 of 55) — eliminates outgroup contamination (*L. montanum* / *L. freemontii* / *L. philonitron*) from the variability-landscape analysis.
+**Phase 4 (Steps 25–28 + Step 14b/17b/19b/20b null-aware reruns) refactored 2026-06-14; promoted from Phase 5 to Phase 4 on 2026-06-15 because per-individual SI status is a prerequisite for cross design.** Tables in `Tables/Phase4/`, figures in `figures/Phase4/`. Includes:
 
-```
-FASTA/                  ← external reference FASTAs (Brassica + Arabidopsis SRK)
-Tables/Phase4/          ← step22a_*.{fasta,tsv}, step22b_*.tsv,csv, step22c_*.tsv, step22d_*.tsv, step22e_*.tsv
-figures/Phase4/         ← step22a_variability_landscape.{pdf,png}, step22b_synonymy_networks/cluster/cross_design,
-                          step22c_*.{pdf,png}, step22d_*.{pdf,png}, step22e_cross_plan_summary.{pdf,png}, step23_cross_result_analysis.pdf
-```
-
-**Phase 5 (Steps 25–28 + Step 14b/17b/19b/20b null-aware reruns) refactored 2026-06-14.** Tables in `Tables/Phase5/`, figures in `figures/Phase5/`. Includes:
 - `step25a_null_allele_assignments.tsv` + intermediate FASTAs/alignments
 - `step25b_individual_SI_status.tsv` + `step25b_SI_status_{species,by_BL,by_EO}_{full,robust}.png`
 - `step26_individual_{allele_genotypes,zygosity}_with_nulls.tsv` + `step26_samples_for_redo.tsv`
@@ -96,7 +88,16 @@ figures/Phase4/         ← step22a_variability_landscape.{pdf,png}, step22b_syn
 - `step27_inheritance_{trajectories,time_to_sc}.tsv` + `step27_inheritance_{pNULL_trajectories,SC_progression,time_to_sc}.png`
 - `step28_injection_donor_ranking.tsv` + `step28_donor_recovery_ladder.{pdf,png}`
 
-**Cascade dependency reminder.** The Phase 5 chain depends on Phase 3 outputs (`Tables/Phase3/step13_individual_BL_assignments.tsv`, `Tables/Phase2/step12_individual_zygosity.tsv`). Run order: 25b → 25a → 25b refresh → 25b figures → 26 → {14b, 17b, 19b/20b} → 27 → 27 figures → 28 → 28 figures.
+**Phase 4 cascade dependency reminder.** The Phase 4 chain depends on Phase 3 outputs (`Tables/Phase3/step13_individual_BL_assignments.tsv`, `Tables/Phase2/step12_individual_zygosity.tsv`). Run order: 25b → 25a → 25b refresh → 25b figures → 26 → {14b, 17b, 19b/20b} → 27 → 27 figures → 28 → 28 figures.
+
+**Phase 5 (Steps 22a–22e + 23, cross design) refactored 2026-06-14; demoted from Phase 4 to Phase 5 on 2026-06-15 because cross design must consume the SI-status-validated parent list from Phase 4.** External reference FASTAs (Brassica + Arabidopsis SRK alleles) live in **`FASTA/`** at the repo root. Intermediate Phase 5 FASTAs and step-prefixed TSVs land in `Tables/Phase5/`; figures in `figures/Phase5/`. `pad_representatives.py` filters Step 10a representatives to LEPA-ingroup-observed alleles only (49 of 55) — eliminates outgroup contamination from the variability-landscape analysis.
+
+```
+FASTA/                  ← external reference FASTAs (Brassica + Arabidopsis SRK)
+Tables/Phase5/          ← step22a_*.{fasta,tsv}, step22b_*.{tsv,csv}, step22c_*.tsv, step22d_*.tsv, step22e_*.tsv
+figures/Phase5/         ← step22a_variability_landscape.{pdf,png}, step22b_*.{pdf,png},
+                          step22c_*.{pdf,png}, step22d_*.{pdf,png}, step22e_cross_plan_summary.{pdf,png}, step23_*.pdf
+```
 
 ---
 
@@ -1231,9 +1232,19 @@ Visualises, for each focus EO and each BL, the proportion of individuals at each
 
 ---
 
-## Phase 4: Testing S-allele Hypotheses
+## Phase 4: Per-individual SI status, null-aware genotypes, and forward simulation
 
-> Phase 4 uses the allele bin definitions from Phase 2 and the individual GFS data from Phase 3 to design and analyse controlled crossing experiments. All scripts run from the same working directory as Phase 2 and Phase 3.
+> Phase 4 establishes the per-individual self-incompatibility status (full SI, partial SI, self-compatible, insufficient_data) using the per-haplotype OK / REMOVED calls from Step 7 and the AA-distance broken-allele assignments from Step 25a. This information is *required* before Phase 5 (cross design) — a cross plan is only meaningful when the parents have a verified functioning SI machinery.
+
+Phase 4 contains Steps 25 (per-individual SI / pSI / SC), 26 (null-aware genotype rebuild + cascade re-runs of Steps 14b / 17b / 19b+20b), 27 (forward-time tetraploid inheritance simulator), and 28 (donor ranking). All scripts read from `Tables/Phase4/` and write to `Tables/Phase4/` + `figures/Phase4/`.
+
+(Step 22 + Step 23 — the experimental cross design — appear in **Phase 5** below, where they consume the SI-status-validated parent list produced here.)
+
+---
+
+## Phase 5: Testing S-allele Hypotheses and Cross Design
+
+> Phase 5 uses the allele bin definitions from Phase 2, the individual GFS data from Phase 3, *and the per-individual SI status from Phase 4* to design and analyse controlled crossing experiments. All scripts run from the same working directory as the earlier phases. Cross design (Step 22e) is restricted to parents whose Phase 4 SI status is `SI` — broken-SI individuals cannot serve as reliable compatibility-prediction parents.
 
 ### Step 22 — HV-Based Allele Hypothesis Testing and Crossing Design
 
@@ -1582,7 +1593,7 @@ Each cross in the plan is assigned to its hypothesis level by combining two inde
 
 **Pipeline-order requirement:** Step 13 + Step 22a + Step 22b → 22e. Re-run 22e after re-running upstream steps when new data arrive (the carrier-detection logic reads the authoritative `Allele_composition` strings, so the plan automatically expands as new individuals are added).
 
-**Phase 5 (operational seed-orchard design)** is downstream of 22e and 23 — it consumes the *validated* functional S-allele table that emerges from H2 + H3 outcomes, and is documented separately.
+**Operational seed-orchard design** is downstream of 22e and 23 — it consumes the *validated* functional S-allele table that emerges from H2 + H3 outcomes, and is documented separately.
 
 ---
 
@@ -1689,7 +1700,7 @@ Rscript SRK_SI_status_figures.R
 
 ---
 
-### Step 26 — Null-Aware Tetraploid Genotype Rebuild (Phase 5)
+### Step 26 — Null-Aware Tetraploid Genotype Rebuild (Phase 4)
 
 > **Question answered:** *Once we know which individuals are pSI / SC, what does the population genetic picture look like when we stop treating their broken copies as functional?* — the integration step that propagates Step 25's per-individual SI status through to every downstream population-genetic metric (Steps 14, 17, 19, 20).
 
@@ -1775,7 +1786,7 @@ Per-BL broken-allele frequencies after chimera filtering are small (`frac_null` 
 
 ---
 
-### Step 27 — Forward-Time Inheritance Simulator (Phase 5b)
+### Step 27 — Forward-Time Inheritance Simulator (Phase 4)
 
 > **Question answered:** *Where is each BL heading on the SI → SC erosion axis under current conditions, and what conservation lever stops the trajectory?* — the dynamic companion to Step 25's snapshot.
 

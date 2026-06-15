@@ -79,7 +79,7 @@ Every pipeline script reads/writes from a Phase- and step-prefixed path:
 
 **Phase 4 (Step 22) update:** `pad_representatives.py` now restricts LEPA representatives to ingroup-observed alleles only (49 of 55), removing outgroup contamination from the cross-Brassicaceae variability landscape analysis.
 
-**Phase 5 (Steps 25–28 + null-aware 14b/17b/19b/20b reruns)** writes to `Tables/Phase5/` and `figures/Phase5/` with `step25a/25b/26/14b/17b/19b/20b/27/28_*` prefixes.
+**Phase 5 (Steps 25–28 + null-aware 14b/17b/19b/20b reruns)** writes to `Tables/Phase4/` and `figures/Phase4/` with `step25a/25b/26/14b/17b/19b/20b/27/28_*` prefixes.
 
 See `Bioinformatics_pipeline.md` for the full directory tree.
 
@@ -121,9 +121,20 @@ See `Bioinformatics_pipeline.md` for the full directory tree.
 20. [TP2 Tipping Point Analysis](#TP2) – **Reproductive Fitness**: EO-level tipping point assessment asking (x) what fraction of individuals are reproductive dead-ends (prop_AAAA) and (y) how much reproductive capacity the average individual still has (mean GFS); EOs breaching both thresholds simultaneously are flagged CRITICAL.
 21. [Reproductive Effort Support per Element Occurrence](#reproeffort) – Horizontal proportional bar chart showing the fraction of individuals at each GFS tier per EO, quantifying the proportion of the population capable of contributing allelic diversity to compatible crosses.
 
-## [Phase 4: Testing S-allele Hypotheses](#phase4)
+## [Phase 4: Per-individual SI status, null-aware genotypes, and forward simulation](#phase4)
 
-22. [Hypervariable-Position Allele Hypothesis Testing and Crossing Design](#alleleclusters) – Cross-Brassicaceae sliding-window Shannon-entropy scan identifies 66 canonical HV columns (anchored structurally by 11 of the 12 mappable Ma 2016 SCR9-contact residues; cross-genus permutation overlap with Brassica + Arabidopsis is no longer significant in the current post-QC dataset — interpreted as drift-eroded standing variation, see Step 22d); UPGMA auto-threshold clustering detects the Class I / Class II phylogenetic split (Class II = single allele, Allele_055); generates a sequence-based cross design for AAAA × AAAA pairs with four categories (Incompatible, Synonymy_test, Compatible_within, Compatible_cross). Optional diagnostics 22c (Synonymy group collapse test) and 22d (per-BL entropy decomposition) test alternative mechanisms underlying LEPA's low entropy. **Step 22e** ([Hypothesis-Testing Cross Plan](#crossplan)) translates the sequence-based categories into a phased experimental protocol with explicit AAAA / AAAB / AABB genotype constraints (H0 SI validation, H1a within-Class baseline, H1b between-Class baseline, H2 synonymy bin boundaries, H3 hidden bins via heterozygous donors + paired controls).
+> Phase 4 establishes the per-individual self-incompatibility status. This information is *required* before Phase 5 (cross design) — a cross plan is only meaningful when the parents have a verified functioning SI machinery.
+
+25. **Per-individual SI / pSI / SC reconstruction** – `SRK_individual_SI_status.py` re-aggregates per-haplotype OK / REMOVED calls to classify each individual as full SI, partial SI, self-compatible, or insufficient_data. `SRK_null_allele_assignment.py` augments this by mapping REMOVED haplotypes to their nearest functional allele via amino acid distance.
+26. **Null-aware genotype rebuild** – `SRK_genotype_null_alleles.py` rewrites the allele × individual matrix so that partial SI individuals carry explicit `Allele_NULL` copies and self-compatible individuals are represented as `Allele_NULL × 4`. Triggers null-aware cascade re-runs of Steps 14b (population genetics), 17b (random-mating viability), and 19b + 20b (fitness scores + reproductive collapse risk).
+27. **Forward-time tetraploid inheritance simulator** – `SRK_inheritance_simulator.py` simulates per-lineage trajectories under multiple scenarios (baseline / high_drift / rescue_high / rescue_low) starting from the empirical Step 26 genotypes.
+28. **Donor ranking for allele injection** – `SRK_injection_donor_ranking.py` ranks candidate seed parents for allele-injection crosses to rescue specific lineages / populations.
+
+## [Phase 5: Testing S-allele Hypotheses and Cross Design](#phase5)
+
+> Phase 5 uses the per-individual SI status established in Phase 4. Cross design is restricted to parents whose Phase 4 SI status is `SI` — broken-SI individuals cannot serve as reliable compatibility-prediction parents.
+
+22. [Hypervariable-Position Allele Hypothesis Testing and Crossing Design](#alleleclusters) – Cross-Brassicaceae sliding-window Shannon-entropy scan identifies 66 canonical HV columns (anchored structurally by 11 of the 12 mappable Ma 2016 SCR9-contact residues; cross-genus permutation overlap with Brassica + Arabidopsis is no longer significant in the current post-QC dataset — interpreted as drift-eroded standing variation, see Step 22d); UPGMA auto-threshold clustering detects the Class I / Class II phylogenetic split (Class II = single allele, Allele_055); generates a sequence-based cross design for AAAA × AAAA pairs with four categories (Incompatible, Synonymy_test, Compatible_within, Compatible_cross) — restricted to Phase-4-verified SI parents. Optional diagnostics 22c (Synonymy group collapse test) and 22d (per-BL entropy decomposition) test alternative mechanisms underlying LEPA's low entropy. **Step 22e** ([Hypothesis-Testing Cross Plan](#crossplan)) translates the sequence-based categories into a phased experimental protocol with explicit AAAA / AAAB / AABB genotype constraints (H0 SI validation, H1a within-Class baseline, H1b between-Class baseline, H2 synonymy bin boundaries, H3 hidden bins via heterozygous donors + paired controls).
 23. [Cross Result Analysis](#crossresults) – Statistical comparison of seed yield across Incompatible / Synonymy_test / Compatible_within / Compatible_cross cross categories to test whether HV-based allele bin boundaries predict functional recognition specificity.
 
 ---

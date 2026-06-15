@@ -18,8 +18,8 @@ suppressPackageStartupMessages({
 
 source("srk_bl_constants.R")
 
-TRAJ <- "Tables/Phase5/step27_inheritance_trajectories.tsv"
-TTSC <- "Tables/Phase5/step27_inheritance_time_to_sc.tsv"
+TRAJ <- "Tables/Phase4/step27_inheritance_trajectories.tsv"
+TTSC <- "Tables/Phase4/step27_inheritance_time_to_sc.tsv"
 
 stopifnot(file.exists(TRAJ), file.exists(TTSC))
 
@@ -69,7 +69,7 @@ p1 <- ggplot(traj,
         strip.text = element_text(face = "bold"),
         panel.grid.minor = element_blank())
 
-ggsave("figures/Phase5/step27_inheritance_pNULL_trajectories.png",
+ggsave("figures/Phase4/step27_inheritance_pNULL_trajectories.png",
        p1, width = 15, height = 5.5, dpi = 200)
 
 # (2) SC fraction progression with ribbon
@@ -106,7 +106,7 @@ p2 <- ggplot(sc_summary,
         strip.text = element_text(face = "bold"),
         panel.grid.minor = element_blank())
 
-ggsave("figures/Phase5/step27_inheritance_SC_progression.png",
+ggsave("figures/Phase4/step27_inheritance_SC_progression.png",
        p2, width = 15, height = 5.5, dpi = 200)
 
 # (3) Time-to-SC bars (median + IQR; right-censored shown as ▲ at top)
@@ -147,7 +147,7 @@ p3 <- ggplot(ttsc_summary,
   theme(legend.position    = "bottom",
         panel.grid.major.x = element_blank())
 
-ggsave("figures/Phase5/step27_inheritance_time_to_sc.png",
+ggsave("figures/Phase4/step27_inheritance_time_to_sc.png",
        p3, width = 12, height = 6, dpi = 200)
 
 cat("Wrote three figures to figures/SRK_inheritance_*.png\n")

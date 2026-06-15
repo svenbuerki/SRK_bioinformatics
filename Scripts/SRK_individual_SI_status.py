@@ -63,8 +63,8 @@ import pandas as pd
 HERE          = Path(__file__).resolve().parent
 TABLES_DIR    = HERE / "Tables"
 QC_TSV        = TABLES_DIR / "Phase2" / "step12c_data_quality_categories.tsv"
-ASSIGN_TSV    = TABLES_DIR / "Phase5" / "step25a_null_allele_assignments.tsv"
-OUT_TSV       = TABLES_DIR / "Phase5" / "step25b_individual_SI_status.tsv"
+ASSIGN_TSV    = TABLES_DIR / "Phase4" / "step25a_null_allele_assignments.tsv"
+OUT_TSV       = TABLES_DIR / "Phase4" / "step25b_individual_SI_status.tsv"
 STOPLOG_GLOB  = "all_Library*_frame1_stopcodon_log.tsv"
 OUTGROUP_TAG  = "SRK_BEA"
 

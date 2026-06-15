@@ -43,7 +43,7 @@ source("srk_bl_constants.R")
 K_SPECIES <- 59
 K_POOL    <- 49
 
-dat <- read_tsv("Tables/Phase5/step28_injection_donor_ranking.tsv",
+dat <- read_tsv("Tables/Phase4/step28_injection_donor_ranking.tsv",
                 show_col_types = FALSE)
 
 parse_set <- function(s) {
@@ -234,8 +234,8 @@ p <- ggplot(long_df,
   )
 
 dir.create("figures/Phase5", recursive = TRUE, showWarnings = FALSE)
-ggsave("figures/Phase5/step28_donor_recovery_ladder.png", p,
+ggsave("figures/Phase4/step28_donor_recovery_ladder.png", p,
        width = 11, height = 7, dpi = 200)
-ggsave("figures/Phase5/step28_donor_recovery_ladder.pdf", p,
+ggsave("figures/Phase4/step28_donor_recovery_ladder.pdf", p,
        width = 11, height = 7)
 cat("Written: figures/SRK_donor_recovery_ladder.{png,pdf}\n")

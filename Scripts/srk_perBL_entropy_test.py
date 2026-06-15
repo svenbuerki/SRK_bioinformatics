@@ -70,8 +70,8 @@ from Bio import SeqIO
 # =============================================================================
 # Settings
 # =============================================================================
-COMBINED_ALN  = "Tables/Phase4/step22a_combined_alignment.fasta"
-LEPA_HV_TSV   = "Tables/Phase4/step22a_LEPA_HV_positions.tsv"
+COMBINED_ALN  = "Tables/Phase5/step22a_combined_alignment.fasta"
+LEPA_HV_TSV   = "Tables/Phase5/step22a_LEPA_HV_positions.tsv"
 BL_TSV        = "Tables/Phase3/step13_individual_BL_assignments.tsv"
 ALLELE_TSV    = "Tables/Phase2/step11_individual_allele_table.tsv"
 ZYGO_TSV      = "Tables/Phase2/step12_individual_zygosity.tsv"
@@ -95,10 +95,10 @@ AA_COLOURS = {aa: c for aa, c in zip(
     plt.cm.tab20(np.linspace(0, 1, 20))
 )}
 
-OUT_RES_TSV  = "Tables/Phase4/step22d_perBL_HV_residue_table.tsv"
-OUT_SUMM_TSV = "Tables/Phase4/step22d_perBL_HV_concordance_summary.tsv"
-OUT_PDF      = "figures/Phase4/step22d_perBL_entropy_figure.pdf"
-OUT_PNG      = "figures/Phase4/step22d_perBL_entropy_figure.png"
+OUT_RES_TSV  = "Tables/Phase5/step22d_perBL_HV_residue_table.tsv"
+OUT_SUMM_TSV = "Tables/Phase5/step22d_perBL_HV_concordance_summary.tsv"
+OUT_PDF      = "figures/Phase5/step22d_perBL_entropy_figure.pdf"
+OUT_PNG      = "figures/Phase5/step22d_perBL_entropy_figure.png"
 
 os.makedirs("figures/Phase4", exist_ok=True); os.makedirs("Tables/Phase4", exist_ok=True)
 

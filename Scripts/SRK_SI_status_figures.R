@@ -39,7 +39,7 @@ setwd(HERE)
 
 source("srk_bl_constants.R")
 
-IN_TSV   <- "Tables/Phase5/step25b_individual_SI_status.tsv"
+IN_TSV   <- "Tables/Phase4/step25b_individual_SI_status.tsv"
 FIG_DIR  <- "figures/Phase5"
 dir.create(FIG_DIR, showWarnings = FALSE, recursive = TRUE)
 

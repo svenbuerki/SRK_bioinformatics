@@ -54,7 +54,7 @@ SPECIES_TO_FILE = {
 # Max representatives per species (to avoid bias from over-sampled species)
 MAX_PER_SPECIES = 20
 
-LOG_TSV = "Tables/Phase4/step22a_i_reference_SRK_fetch_log.tsv"
+LOG_TSV = "Tables/Phase5/step22a_i_reference_SRK_fetch_log.tsv"
 
 
 def s_haplotype_label(title: str) -> str:

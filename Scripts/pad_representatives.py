@@ -24,7 +24,7 @@ INPUT_FASTA  = "SRK_protein_allele_representatives.fasta"  (Step 10a output)
 
 Output
 ------
-OUTPUT_FASTA = "Tables/Phase4/step22a_protein_allele_representatives_padded.fasta"
+OUTPUT_FASTA = "Tables/Phase5/step22a_protein_allele_representatives_padded.fasta"
                — same headers and sequences, all right-padded to the maximum
                  length with '-'.
 
@@ -43,7 +43,7 @@ from Bio.SeqRecord import SeqRecord
 
 INPUT_FASTA   = "Tables/Phase2/step10a_protein_allele_representatives.fasta"
 ALLELE_TABLE  = "Tables/Phase2/step11_individual_allele_table.tsv"
-OUTPUT_FASTA  = "Tables/Phase4/step22a_protein_allele_representatives_padded.fasta"
+OUTPUT_FASTA  = "Tables/Phase5/step22a_protein_allele_representatives_padded.fasta"
 PAD_CHAR = "-"
 
 # Restrict to alleles observed in at least one LEPA-ingroup individual (Step 11).

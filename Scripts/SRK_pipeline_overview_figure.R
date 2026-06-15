@@ -19,26 +19,26 @@ phases <- data.frame(
   title   = c("Assembly\n& Phasing",
               "Functional Proteins,\nAllele Definition,\nGenotyping",
               "Population Genetics\n& Conservation\nDiagnostics",
-              "Hypothesis Testing\n& Crossing Design",
-              "Per-individual SI Status\n& Forward Simulation"),
+              "Per-individual\nSelf-Incompatibility Status\n& Forward Simulation",
+              "Hypothesis Testing\n& Crossing Design"),
   steps   = c("Steps 1-8",
               "Steps 9-12c",
               "Steps 13-21",
-              "Steps 22-23",
-              "Steps 25-28"),
+              "Steps 25-28",
+              "Steps 22-23"),
   bullets = c(
-    "- Multi-CANU assembly\n- Coverage chimera filter\n- RACON polishing\n- WhatsHap polyphase\n- 4 phased haplotypes\n  per tetraploid",
-    "- Translate & abundance\n  filter functional proteins\n- Distance-based S-allele\n  clustering (N = 55)\n- Tetraploid genotyping\n  (AAAA - ABCD)\n- Step 12c QC gate\n  -> lab redo CSV",
-    "- BL integration\n  (5 lineages BL1-BL5)\n- Accumulation curves\n  (MM = 59, Chao1 = 54)\n- TP1 P_compat x DI\n- GFS + TP2\n- Reproductive effort\n  per EO / BL",
-    "- Cross-Brassicaceae HV\n  variability scan\n- UPGMA Class I / II\n- Synonymy networks\n- Cross plan H0/H1a/H1b/\n  H2/H3 (819 attempts)",
-    "- Per-individual SI / pSI / SC\n  classification\n- Null-aware genotype\n  rebuild (Step 26)\n- Cascade re-runs\n  (14b, 17b, 19b, 20b)\n- Forward-time inheritance\n  simulator (Step 27)\n- Donor ranking (Step 28)"
+    "- Multi-replicate\n  assembly (Canu)\n\n\n\n\n\n\n- Assembly polishing\n  (RACON)\n- Polyploid phasing\n  (WhatsHap)\n- Phased haplotypes\n  per individual",
+    "- Translate &\n  abundance-filter\n  functional proteins\n- Distance-based\n  S-allele clustering\n- Tetraploid\n  genotyping\n  (AAAA -> ABCD)\n- Data-quality gate\n  -> lab redo CSV",
+    "- Bottleneck Lineage\n  integration\n- Species-level\n  allele pool\n  estimation\n- Random-mating\n  viability +\n  allele depletion\n- Fitness scores +\n  reproductive\n  collapse risk\n- Reproductive effort\n  per population\n  / lineage",
+    "- Per-individual\n  classification\n  (full / partial /\n   lost SI)\n- Broken-allele\n  aware genotype\n  rebuild\n- Re-runs of\n  population genetics,\n  mating viability,\n  fitness diagnostics\n- Forward-time\n  inheritance\n  simulator\n- Donor ranking for\n  allele injection",
+    "- Cross-species\n  variability scan\n  (Brassica +\n   Arabidopsis)\n- Hierarchical\n  clustering into\n  Class I / II\n- Synonymy networks\n  (functionally\n   redundant alleles)\n- Hypothesis-tested\n  cross plan\n  (uses Phase 4\n   SI parents)"
   ),
   out_key = c(
-    "phased haplotypes\nper barcode",
-    "349 functional proteins\n49 allele bins\n367 ingroup genotypes",
-    "BL stratification\nP_compat, GFS, TP1/TP2\nlab redo CSV (257 samples)",
-    "Cross plan TSVs\n(H0 - H3)\nSynonymy groups",
-    "247 SI / 15 pSI / 1 SC /\n234 Insufficient_data\nDonor ranking"
+    "Phased haplotypes\nper individual",
+    "Functional proteins,\nallele bins,\nindividual genotypes",
+    "Lineage stratification,\nmating + fitness metrics,\nlab re-sequencing CSV",
+    "Self-incompatibility\nstatus per individual,\ndonor ranking",
+    "Hypothesis-tested\ncross plan,\nfunctional allele groups"
   ),
   stringsAsFactors = FALSE
 )
@@ -46,9 +46,9 @@ phases <- data.frame(
 # ---- Geometry --------------------------------------------------------------
 
 n_phases <- nrow(phases)
-box_w    <- 1.7
-box_h    <- 4.6
-gap      <- 0.65
+box_w    <- 2.3
+box_h    <- 8.5
+gap      <- 0.80
 total_w  <- n_phases * box_w + (n_phases - 1) * gap
 
 # x-centres for each phase box
@@ -92,32 +92,32 @@ draw_phase_box <- function(i) {
 
     # Title (bold, below header band)
     annotate("text",
-             x = x, y = box_h - 1.30,
+             x = x, y = box_h - 1.50,
              label = phases$title[i],
-             fontface = "bold", size = 3.2, lineheight = 0.95),
+             fontface = "bold", size = 3.7, lineheight = 0.95),
 
     # Bullet body
     annotate("text",
-             x = x - box_w/2 + 0.07,
-             y = box_h - 2.45,
+             x = x - box_w/2 + 0.12,
+             y = box_h - 2.80,
              label = phases$bullets[i],
-             hjust = 0, vjust = 1, size = 2.55,
-             lineheight = 1.08,
+             hjust = 0, vjust = 1, size = 3.05,
+             lineheight = 1.18,
              family = "mono"),
 
     # Output key callout at base
     annotate("rect",
              xmin = x - box_w/2 + 0.10, xmax = x + box_w/2 - 0.10,
-             ymin = 0.08, ymax = 0.95,
+             ymin = 0.15, ymax = 1.55,
              fill = "grey92", colour = col, linewidth = 0.4),
     annotate("text",
-             x = x, y = 0.78,
+             x = x, y = 1.32,
              label = "Output",
-             fontface = "italic", size = 2.4, colour = "grey30"),
+             fontface = "italic", size = 2.8, colour = "grey30"),
     annotate("text",
-             x = x, y = 0.40,
+             x = x, y = 0.65,
              label = phases$out_key[i],
-             size = 2.5, lineheight = 1.05, fontface = "bold")
+             size = 2.9, lineheight = 1.15, fontface = "bold")
   )
 }
 
@@ -143,8 +143,7 @@ p <- ggplot() +
            fontface = "bold", size = 5.5) +
   annotate("text",
            x = total_w / 2, y = box_h + 0.20,
-           label = paste0("Nanopore amplicons -> functional S-alleles -> conservation diagnostics. ",
-                          "28 steps, 5 phases. Current dataset: 367 ingroup individuals / 49 alleles."),
+           label = "Nanopore amplicons -> functional S-alleles -> conservation diagnostics. 28 steps, 5 phases.",
            size = 3.0, colour = "grey30", fontface = "italic")
 
 # Boxes
@@ -155,6 +154,26 @@ for (i in seq_len(n_phases)) {
 for (i in seq_len(n_phases - 1)) {
   p <- p + draw_arrow_between(i)
 }
+
+# ─── Chimera filter highlight overlay on Phase 1 (key innovation callout) ───
+x1 <- xc[1]
+p <- p +
+  annotate("rect",
+           xmin = x1 - box_w/2 + 0.14, xmax = x1 + box_w/2 - 0.14,
+           ymin = box_h - 4.20, ymax = box_h - 2.90,
+           fill = "#FFF0F0", colour = "#E41A1C", linewidth = 0.9) +
+  annotate("text",
+           x = x1, y = box_h - 3.20,
+           label = "Detect & discard",
+           fontface = "bold", size = 3.1, colour = "#E41A1C") +
+  annotate("text",
+           x = x1, y = box_h - 3.55,
+           label = "chimeric sequences",
+           fontface = "bold", size = 3.1, colour = "#E41A1C") +
+  annotate("text",
+           x = x1, y = box_h - 3.95,
+           label = "(coverage-based filter)",
+           fontface = "italic", size = 2.7, colour = "#E41A1C")
 
 # Bottom caption with key external resources
 p <- p +
@@ -176,9 +195,9 @@ p <- p +
 
 dir.create("figures", showWarnings = FALSE, recursive = TRUE)
 ggsave("figures/SRK_pipeline_overview.pdf", plot = p,
-       width = 14, height = 5.5, units = "in")
+       width = 17.5, height = 9.5, units = "in")
 ggsave("figures/SRK_pipeline_overview.png", plot = p,
-       width = 14, height = 5.5, units = "in", dpi = 200, bg = "white")
+       width = 17.5, height = 9.5, units = "in", dpi = 200, bg = "white")
 
 cat("Written:\n",
     "  figures/SRK_pipeline_overview.pdf\n",
