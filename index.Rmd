@@ -24,7 +24,14 @@ This pipeline reconstructs S-receptor kinase (SRK) haplotypes from Nanopore ampl
 
 Read the figure below left-to-right: each phase shows what it does (bullets), the steps it covers, and the canonical output it produces. Phase 2 → 3 → 4 → 5 each consume the previous phase's outputs.
 
-![SRK pipeline overview — 5-phase roadmap from Nanopore amplicons through functional S-alleles to conservation diagnostics, cross plan, and forward-time simulation. Produced by `SRK_pipeline_overview_figure.R`.](figures/SRK_pipeline_overview.png)
+<figure style="margin: 1.5em 0;">
+<img src="figures/SRK_pipeline_overview.png"
+     alt="SRK pipeline overview — 5-phase roadmap"
+     style="width: 100%; max-width: 1800px; display: block; margin: 0 auto;">
+<figcaption style="font-style: italic; text-align: center; margin-top: 0.5em; font-size: 0.9em;">
+SRK pipeline overview — 5-phase roadmap from Nanopore amplicons through functional S-alleles to conservation diagnostics, cross plan, and forward-time simulation. Produced by <code>SRK_pipeline_overview_figure.R</code>. (Click to enlarge in a new tab.)
+</figcaption>
+</figure>
 
 For step-by-step detail (scripts, inputs, outputs, key parameters) see the protocol document [`Bioinformatics_pipeline.md`](https://github.com/svenbuerki/SRK_bioinformatics/blob/main/Bioinformatics_pipeline.md).
 

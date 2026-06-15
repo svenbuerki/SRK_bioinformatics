@@ -199,9 +199,9 @@ p <- p +
 
 dir.create("figures", showWarnings = FALSE, recursive = TRUE)
 ggsave("figures/SRK_pipeline_overview.pdf", plot = p,
-       width = 17.5, height = 9.5, units = "in")
+       width = 20, height = 11, units = "in")
 ggsave("figures/SRK_pipeline_overview.png", plot = p,
-       width = 17.5, height = 9.5, units = "in", dpi = 200, bg = "white")
+       width = 20, height = 11, units = "in", dpi = 300, bg = "white")
 
 cat("Written:\n",
     "  figures/SRK_pipeline_overview.pdf\n",
