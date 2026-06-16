@@ -26,9 +26,9 @@ The most practical question to answer before sending material to the sequencer: 
 
 ### Operational targets
 
-- **~ 20 000 raw Nanopore reads per barcode** → empirical SI-call success rate **~ 90 %** in the coverage-driven cohort.
-- **~ 30 000 raw reads per barcode** → success rate **~ 100 %**.
-- Below ~ 7 500 reads per barcode, success rate collapses to single digits — anything lighter than that is essentially wasted.
+- **≈ 20 000 raw Nanopore reads per barcode** → empirical SI-call success rate **≈ 90 %** in the coverage-driven cohort.
+- **≈ 30 000 raw reads per barcode** → success rate **≈ 100 %**.
+- Below ≈ 7 500 reads per barcode, success rate collapses to single digits — anything lighter than that is essentially wasted.
 
 The same per-sample calibration also separates failures by their underlying cause, so the lab knows which samples are worth re-sequencing and which need a different intervention:
 
@@ -36,7 +36,7 @@ The same per-sample calibration also separates failures by their underlying caus
 - **Template-limited** — chimera-dominated; more reads will not shift the chimera : clean ratio. Needs amplicon-prep redesign (primer specificity, longer-fragment library, different polymerase).
 - **Pipeline-limited** — reads are fine, the bioinformatics pipeline kills the contigs downstream. Needs a code-level investigation, not lab re-work.
 
-This decomposition is how a single 135-sample "Re-sequence (SI status uncertain)" list resolves into the ~13 samples that actually need to go back to the sequencer, vs the ~122 that need a bioinformatics fix instead.
+This decomposition is how a single 135-sample "Re-sequence (SI status uncertain)" list resolves into the ≈ 13 samples that actually need to go back to the sequencer, vs the ≈ 122 that need a bioinformatics fix instead.
 
 ### Scripts and outputs (kept transparent in the repository)
 
