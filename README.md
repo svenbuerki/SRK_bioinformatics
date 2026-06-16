@@ -11,7 +11,50 @@ A 5-phase pipeline that turns Oxford Nanopore amplicon reads of the **S-receptor
 
 Read the figure left-to-right: each phase shows what it does (bullets), the steps it covers, and the canonical output it produces. Phases 2 → 3 → 4 → 5 each consume the previous phase's outputs.
 
-### Two design choices worth flagging up front
+---
+
+## Sequencing data requirements
+
+The most practical question to answer before sending material to the sequencer: *how much depth do we need per barcode to get a defensible SI call?* This pipeline ships with an empirical calibration that turns every past sequencing batch into a dose-response curve linking raw Nanopore read budget to SI-call success rate, and reports the read budget at which that success becomes reliable.
+
+<figure>
+<img src="figures/Phase4/step22c_reseq_threshold.png"
+     alt="Sequencing-depth threshold for SI-callable samples — empirical support for the 20 000-read-per-barcode operational target"
+     width="100%">
+<figcaption><em>Sequencing-depth threshold for SI-callable samples — empirical support for the operational target. Left panel: bin-level pass rate vs raw read budget. Right panel: cumulative pass rate — choose a threshold on the x-axis and read off the expected success rate. Restricted to coverage-driven samples (pipeline-failure, chimera-difficulty, and DNA-contamination cohorts excluded). Produced by <code>reseq_threshold_figure.py</code>.</em></figcaption>
+</figure>
+
+### Operational targets
+
+- **~ 20 000 raw Nanopore reads per barcode** → empirical SI-call success rate **~ 90 %** in the coverage-driven cohort.
+- **~ 30 000 raw reads per barcode** → success rate **~ 100 %**.
+- Below ~ 7 500 reads per barcode, success rate collapses to single digits — anything lighter than that is essentially wasted.
+
+The same per-sample calibration also separates failures by their underlying cause, so the lab knows which samples are worth re-sequencing and which need a different intervention:
+
+- **Coverage-limited** — more reads will help; re-sequence on the existing DNA + library at the operational target.
+- **Template-limited** — chimera-dominated; more reads will not shift the chimera : clean ratio. Needs amplicon-prep redesign (primer specificity, longer-fragment library, different polymerase).
+- **Pipeline-limited** — reads are fine, the bioinformatics pipeline kills the contigs downstream. Needs a code-level investigation, not lab re-work.
+
+This decomposition is how a single 135-sample "Re-sequence (SI status uncertain)" list resolves into the ~13 samples that actually need to go back to the sequencer, vs the ~122 that need a bioinformatics fix instead.
+
+### Scripts and outputs (kept transparent in the repository)
+
+Both scripts run at the project root and can be re-applied to any new sequencing batch:
+
+- [`reseq_calibration.py`](reseq_calibration.py) — builds the per-sample diagnostic table joining raw FASTQ statistics, Canu / chimera-filter / contig-length intermediates, and the final SI status outcome. Assigns each sample a `failure_mode` + `recommended_action`, so the lab redo list is actionable per-sample rather than a single flat flag.
+- [`reseq_threshold_figure.py`](reseq_threshold_figure.py) — renders the figure above directly from that calibration table.
+
+Outputs:
+
+- [`tables/Phase4/step22c_reseq_calibration_per_sample.tsv`](tables/Phase4/step22c_reseq_calibration_per_sample.tsv) — full per-sample table.
+- [`tables/Phase4/step22c_reseq_calibration_summary.tsv`](tables/Phase4/step22c_reseq_calibration_summary.tsv) — bin-level dose-response.
+- `figures/Phase4/step22c_reseq_threshold.{pdf,png}` — the figure above.
+- [`tables/Phase4/step22c_reseq_calibration_interpretation.md`](tables/Phase4/step22c_reseq_calibration_interpretation.md) — interpretation write-up with caveats.
+
+---
+
+## Two design choices worth flagging up front
 
 **Chimeric sequences are filtered at two independent stages.** Nanopore amplicon assembly routinely produces chimeric haplotypes — false haplotypes spliced together from reads of two different SRK alleles. Because the splice junction usually introduces a premature stop codon, chimeras look molecularly indistinguishable from real broken SRK copies. Left in the data, they inflate the per-individual broken-copy count and produce false partial-SI / self-compatible calls — the whole self-incompatibility story would then track assembly noise rather than biology. The pipeline catches them at two stages because they leave a different fingerprint at each:
 
@@ -24,29 +67,11 @@ The two stages catch different chimeras. Only individuals whose surviving haplot
 
 - **Re-PCR** — the DNA stock is fine; the PCR amplicon failed. Re-amplify.
 - **Re-DNA-extraction** — the DNA stock itself is contaminated. Re-isolate from tissue.
-- **Re-sequence (SI status uncertain)** — the existing DNA and library are fine, but Nanopore coverage was too thin to leave enough clean haplotypes for an SI call after the chimera filter. Re-run on the sequencer at higher coverage.
+- **Re-sequence (SI status uncertain)** — the existing DNA and library are fine, but Nanopore coverage was too thin to leave enough clean haplotypes for an SI call after the chimera filter. Re-run on the sequencer at the operational target above.
 
 This is the only file the team consults to know what to redo and why.
 
-### Sequencing requirements — empirical calibration for SI-callable samples
-
-A practical question the lab needs answered before sending material to the sequencer: *how much depth do we need to get a defensible SI call?* The pipeline produces a per-sample calibration that joins each barcode's raw Nanopore read budget to its eventual SI / partial-SI / self-compatible outcome, and reports the read budget at which success becomes reliable.
-
-<figure>
-<img src="figures/Phase4/step22c_reseq_threshold.png"
-     alt="Re-sequencing read-count threshold — empirical support for the 20 000-read-per-barcode operational target"
-     width="100%">
-<figcaption><em>Re-sequencing read-count threshold — empirical support for the operational target. Left panel: bin-level pass rate vs raw read budget. Right panel: cumulative pass rate — choose a threshold on the x-axis and read off the expected success rate. Restricted to coverage-driven samples (pipeline-failure, chimera-difficulty, and DNA-contamination cohorts excluded). Produced by <code>reseq_threshold_figure.py</code>.</em></figcaption>
-</figure>
-
-**Operational target: ~ 20 000 raw Nanopore reads per barcode** — at that depth, the empirical success rate for coverage-driven samples plateaus around 90 %. ~ 30 000 raw reads pushes success to ~ 100 %. The same calibration also separates *coverage-limited* failures (more reads will help) from *template-limited* and *pipeline-limited* failures (more reads will not help and the right intervention is different), so the lab knows which samples are worth re-sequencing and which are not.
-
-This calibration is run via two scripts at the project root, kept transparent in the repository so any future sequencing batch can be folded into the curve:
-
-- [`reseq_calibration.py`](reseq_calibration.py) — per-sample diagnostic table joining raw FASTQ statistics, Canu / chimera-filter / contig-length intermediates, and the final SI status outcome. Assigns each sample a `failure_mode` + `recommended_action` so the lab redo list is actionable per-sample.
-- [`reseq_threshold_figure.py`](reseq_threshold_figure.py) — renders the figure above directly from the calibration table.
-
-Outputs land in [`tables/Phase4/step22c_reseq_calibration_per_sample.tsv`](tables/Phase4/step22c_reseq_calibration_per_sample.tsv) and the matching figure files under `figures/Phase4/`. The accompanying interpretation write-up is at [`tables/Phase4/step22c_reseq_calibration_interpretation.md`](tables/Phase4/step22c_reseq_calibration_interpretation.md).
+---
 
 > **Where to go next**
 > - **Run the pipeline:** jump to [Quick Start](#quick-start).
