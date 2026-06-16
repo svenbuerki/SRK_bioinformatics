@@ -28,6 +28,26 @@ The two stages catch different chimeras. Only individuals whose surviving haplot
 
 This is the only file the team consults to know what to redo and why.
 
+### Sequencing requirements — empirical calibration for SI-callable samples
+
+A practical question the lab needs answered before sending material to the sequencer: *how much depth do we need to get a defensible SI call?* The pipeline produces a per-sample calibration that joins each barcode's raw Nanopore read budget to its eventual SI / partial-SI / self-compatible outcome, and reports the read budget at which success becomes reliable.
+
+<figure>
+<img src="figures/Phase4/step22c_reseq_threshold.png"
+     alt="Re-sequencing read-count threshold — empirical support for the 20 000-read-per-barcode operational target"
+     width="100%">
+<figcaption><em>Re-sequencing read-count threshold — empirical support for the operational target. Left panel: bin-level pass rate vs raw read budget. Right panel: cumulative pass rate — choose a threshold on the x-axis and read off the expected success rate. Restricted to coverage-driven samples (pipeline-failure, chimera-difficulty, and DNA-contamination cohorts excluded). Produced by <code>reseq_threshold_figure.py</code>.</em></figcaption>
+</figure>
+
+**Operational target: ~ 20 000 raw Nanopore reads per barcode** — at that depth, the empirical success rate for coverage-driven samples plateaus around 90 %. ~ 30 000 raw reads pushes success to ~ 100 %. The same calibration also separates *coverage-limited* failures (more reads will help) from *template-limited* and *pipeline-limited* failures (more reads will not help and the right intervention is different), so the lab knows which samples are worth re-sequencing and which are not.
+
+This calibration is run via two scripts at the project root, kept transparent in the repository so any future sequencing batch can be folded into the curve:
+
+- [`reseq_calibration.py`](reseq_calibration.py) — per-sample diagnostic table joining raw FASTQ statistics, Canu / chimera-filter / contig-length intermediates, and the final SI status outcome. Assigns each sample a `failure_mode` + `recommended_action` so the lab redo list is actionable per-sample.
+- [`reseq_threshold_figure.py`](reseq_threshold_figure.py) — renders the figure above directly from the calibration table.
+
+Outputs land in [`tables/Phase4/step22c_reseq_calibration_per_sample.tsv`](tables/Phase4/step22c_reseq_calibration_per_sample.tsv) and the matching figure files under `figures/Phase4/`. The accompanying interpretation write-up is at [`tables/Phase4/step22c_reseq_calibration_interpretation.md`](tables/Phase4/step22c_reseq_calibration_interpretation.md).
+
 > **Where to go next**
 > - **Run the pipeline:** jump to [Quick Start](#quick-start).
 > - **Step-by-step protocol** (scripts, inputs, outputs, key parameters, justification of every design decision): [`Bioinformatics_pipeline.md`](Bioinformatics_pipeline.md).
