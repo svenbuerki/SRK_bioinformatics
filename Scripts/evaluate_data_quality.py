@@ -348,7 +348,7 @@ if os.path.exists(SI_TSV):
             return {
                 "Lab_action":               "Re-sequence (SI status uncertain)",
                 "Sample_ID":                sid,
-                "Tube_number":              m.get("Tube_number", ""),
+                "DNA_Extraction":           m.get("DNA_Extraction", ""),
                 "Library":                  m.get("Library", ""),
                 "Barcode":                  m.get("Barcode", ""),
                 "EO":                       m.get("EO", r.get("EO_normalised", "")),
@@ -381,15 +381,15 @@ else:
           "Run SRK_individual_SI_status.py first.")
 
 redo_cols = [
-    "Lab_action", "Sample_ID", "Tube_number",
+    "Lab_action", "Sample_ID", "DNA_Extraction",
     "Library", "Barcode", "EO", "EO_normalised",
     "BL_inferred", "n_raw_haps", "Proteins_in_final_data", "Exclusion_stage",
     "Recommended_action", "Redo_reason_SI",
 ]
 redo = redo[redo_cols].sort_values(["Lab_action", "EO_normalised", "Sample_ID"])
-# Tube_number can be float-coerced on read when blanks are present; rewrite as clean integer strings.
-redo["Tube_number"] = (
-    redo["Tube_number"].fillna("").astype(str).str.replace(r"\.0$", "", regex=True)
+# DNA_Extraction may be float-coerced when blanks are present; rewrite as clean integer strings.
+redo["DNA_Extraction"] = (
+    redo["DNA_Extraction"].fillna("").astype(str).str.replace(r"\.0$", "", regex=True)
 )
 redo.to_csv(OUT_REDO_CSV, index=False)
 

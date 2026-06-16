@@ -1,4 +1,4 @@
-Sample_ID	Library	Barcode	Tube_number	EO	Ingroup	n_raw_haps	n_after_step4	n_after_step4b	n_after_step7b	Step9_classification	Proteins_in_final_data	SI_functional_status	Dominant_failure_mode	BL_status	Final_status	Exclusion_stage	Exclusion_reason
+Sample_ID	Library	Barcode	DNA_Extraction	EO	Ingroup	n_raw_haps	n_after_step4	n_after_step4b	n_after_step7b	Step9_classification	Proteins_in_final_data	SI_functional_status	Dominant_failure_mode	BL_status	Final_status	Exclusion_stage	Exclusion_reason
 Library001_barcode01	1	1	103	27rt	1	28	28			too_many_alleles	0	Functional	premature_stop		Excluded	Step 9 — too_many_alleles	>4 distinct proteins per individual — likely contamination / assembly artefact (Top failures: premature_stop(24))
 Library001_barcode02	1	2	131	67	1	40	32			normal	8	Functional	premature_stop	Assigned	Included		
 Library001_barcode03	1	3	132	96-16	1	24	8			dropped_abundance_filter	0	Functional	mixed		Excluded	Step 9 — dropped_abundance_filter	functional proteins present but below min_count = 5 abundance filter (Top failures: ambiguous_aa(4);premature_stop(3))
@@ -216,291 +216,291 @@ Library008_barcode36	8	36	337	70	1	44	28			normal	13	Functional	mixed	Assigned	I
 Library008_barcode89	8	89	338	70	1	44	24			low_functional_rate	8	Partial_translation_failure	mixed	Assigned	Included		
 Library008_barcode90	8	90	339	70	1	28	20			normal	8	Functional	mixed	Assigned	Included		
 Library008_barcode91	8	91	340	70	1	32	8			normal	4	Functional	premature_stop	Assigned	Included		
-Library009_barcode01	9	1		76	1	16	16			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode02	9	2		76	1	12	12			low_functional_rate	3	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode03	9	3		76	1	40	32			low_functional_rate	9	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode04	9	4		76	1	12	12			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode05	9	5		76	1	16	16			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode06	9	6		76	1	12	12			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode07	9	7		76	1	36	32			too_many_alleles	0	Functional	premature_stop		Excluded	Step 9 — too_many_alleles	>4 distinct proteins per individual — likely contamination / assembly artefact (Top failures: premature_stop(20))
-Library009_barcode08	9	8		76	1	16	16			no_functional_proteins	0	Complete_loss	ambiguous_aa		Excluded	Step 9 — no_functional_proteins	all sequences carry X residues from N-rich data — quality issue, NOT a biological SI escape; re-sequencing may help (would have been caught by Step 7b if applied) (Top failures: ambiguous_aa(28);premature_stop(8))
-Library009_barcode09	9	9		76	1	48	36			too_many_alleles	0	Functional	mixed		Excluded	Step 9 — too_many_alleles	>4 distinct proteins per individual — likely contamination / assembly artefact (Top failures: ambiguous_aa(16);premature_stop(12))
-Library009_barcode10	9	10		76	1	16	16			normal	8	Functional	premature_stop	Assigned	Included		
-Library009_barcode11	9	11		76	1	16	16			normal	16	Functional		Assigned	Included		
-Library009_barcode12	9	12		76	1	12	12			normal	7	Functional	premature_stop	Assigned	Included		
-Library009_barcode13	9	13		76	1	16	16			normal	12	Functional	premature_stop	Assigned	Included		
-Library009_barcode14	9	14		76	1	44	32			normal	15	Functional	mixed	Assigned	Included		
-Library009_barcode15	9	15		76	1	28	24			normal	8	Functional	premature_stop	Assigned	Included		
-Library009_barcode16	9	16		76	1	28	28			low_functional_rate	8	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode17	9	17		76	1	12	12			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode18	9	18		76	1	44	24			normal	14	Functional	mixed	Assigned	Included		
-Library009_barcode19	9	19		76	1	12	12			low_functional_rate	3	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode20	9	20		76	1	28	24			low_functional_rate	9	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode21	9	21		76	1	32	20			low_functional_rate	2	Partial_translation_failure	mixed	Assigned	Included		
-Library009_barcode22	9	22		76	1	44	36			low_functional_rate	10	Partial_translation_failure	mixed	Assigned	Included		
-Library009_barcode23	9	23		76	1	16	16			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode24	9	24		76	1	24	16			normal	8	Functional	ambiguous_aa	Assigned	Included		
-Library009_barcode25	9	25		25	1	16	16			normal	8	Functional	premature_stop	Assigned	Included		
-Library009_barcode26	9	26		67	1	28	24			low_functional_rate	3	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode27	9	27		67	1	32	16			normal	8	Functional	mixed	Assigned	Included		
-Library009_barcode28	9	28		67	1	28	24			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode29	9	29		67	1	36	32			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode30	9	30		67	1	28	24			normal	12	Functional	premature_stop	Assigned	Included		
-Library009_barcode31	9	31		76	1	52	40			low_functional_rate	8	Partial_translation_failure	ambiguous_aa	Assigned	Included		
-Library009_barcode32	9	32		76	1	16	0					NA			Excluded	Step 4 — length filter	16 raw haps, 0 passed 3250–4000 bp length filter — likely fragmented or chimeric assembly; re-sequencing recommended
-Library009_barcode33	9	33		25	1	12	12			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode34	9	34		25	1	52	36			normal	8	Functional	mixed	Assigned	Included		
-Library009_barcode35	9	35		25	1	32	24			low_functional_rate	8	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode36	9	36		25	1	36	24			normal	15	Functional	premature_stop	Assigned	Included		
-Library009_barcode37	9	37		25	1	48	36			low_functional_rate	12	Partial_translation_failure	mixed	Assigned	Included		
-Library009_barcode38	9	38		25	1	44	24			low_functional_rate	8	Partial_translation_failure	mixed	Assigned	Included		
-Library009_barcode39	9	39		25	1	32	28			normal	12	Functional	premature_stop	Assigned	Included		
-Library009_barcode40	9	40		25	1	12	12			no_functional_proteins	0	Complete_loss	ambiguous_aa		Excluded	Step 9 — no_functional_proteins	all sequences carry X residues from N-rich data — quality issue, NOT a biological SI escape; re-sequencing may help (would have been caught by Step 7b if applied) (Top failures: ambiguous_aa(16);premature_stop(6))
-Library009_barcode41	9	41		25	1	40	36			normal	14	Functional	mixed	Assigned	Included		
-Library009_barcode42	9	42		25	1	40	24			low_functional_rate	7	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode43	9	43		25	1	52	40			too_many_alleles	0	Functional	mixed		Excluded	Step 9 — too_many_alleles	>4 distinct proteins per individual — likely contamination / assembly artefact (Top failures: premature_stop(20);ambiguous_aa(20))
-Library009_barcode44	9	44		25	1	32	32			normal	14	Functional	mixed	Assigned	Included		
-Library009_barcode45	9	45		25	1	32	32			low_functional_rate	15	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode46	9	46		25	1	24	20			normal	10	Functional	premature_stop	Assigned	Included		
-Library009_barcode47	9	47		25	1	24	24			low_functional_rate	2	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode48	9	48		25	1	16	16			normal	10	Functional	premature_stop	Assigned	Included		
-Library009_barcode49	9	49		76	1	16	16			normal	8	Functional	premature_stop	Assigned	Included		
-Library009_barcode50	9	50		76	1	12	12			normal	12	Functional		Assigned	Included		
-Library009_barcode51	9	51		76	1	16	16			normal	12	Functional	premature_stop	Assigned	Included		
-Library009_barcode52	9	52		76	1	52	40			low_functional_rate	13	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode53	9	53		76	1	40	24			normal	12	Functional	premature_stop	Assigned	Included		
-Library009_barcode54	9	54		76	1	16	16			normal	11	Functional	premature_stop	Assigned	Included		
-Library009_barcode55	9	55		76	1	52	24			normal	13	Functional	premature_stop	Assigned	Included		
-Library009_barcode56	9	56		76	1	32	32			low_functional_rate	10	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode57	9	57		76	1	12	12			no_functional_proteins	0	Complete_loss	premature_stop		Excluded	Step 9 — no_functional_proteins	all sequences carry premature stop codons — strong candidate for ongoing SI breakdown / self-compatibility escape; recommend controlled selfing test to phenotype (Top failures: premature_stop(12))
-Library009_barcode58	9	58		76	1	36	32			dropped_abundance_filter	0	Partial_translation_failure	premature_stop		Excluded	Step 9 — dropped_abundance_filter	functional proteins present but below min_count = 5 abundance filter (Top failures: premature_stop(50))
-Library009_barcode59	9	59		76	1	20	20			too_many_alleles	0	Functional	premature_stop		Excluded	Step 9 — too_many_alleles	>4 distinct proteins per individual — likely contamination / assembly artefact (Top failures: premature_stop(10))
-Library009_barcode60	9	60		25	1	36	24			low_functional_rate	7	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode61	9	61		25	1	48	28			low_functional_rate	9	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode62	9	62		25	1	36	36			normal	15	Functional	mixed	Assigned	Included		
-Library009_barcode63	9	63		25	1	84	52			low_functional_rate	16	Partial_translation_failure	mixed	Assigned	Included		
-Library009_barcode64	9	64		25	1	24	16			dropped_abundance_filter	0	Functional	mixed		Excluded	Step 9 — dropped_abundance_filter	functional proteins present but below min_count = 5 abundance filter (Top failures: premature_stop(4);ambiguous_aa(4))
-Library009_barcode65	9	65		27	1	44	28			normal	7	Functional	premature_stop	Assigned	Included		
-Library009_barcode66	9	66		27	1	20	20			normal	15	Functional	premature_stop	Assigned	Included		
-Library009_barcode67	9	67		27	1	32	20			low_functional_rate	7	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode68	9	68		27	1	48	20			normal	12	Functional	mixed	Assigned	Included		
-Library009_barcode69	9	69		27	1	20	20			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode70	9	70		27	1	8	8			normal	4	Functional		Assigned	Included		
-Library009_barcode71	9	71		27	1	40	36			low_functional_rate	15	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode72	9	72		27	1	16	0					NA			Excluded	Step 4 — length filter	16 raw haps, 0 passed 3250–4000 bp length filter — likely fragmented or chimeric assembly; re-sequencing recommended
-Library009_barcode73	9	73		76	1	4	4			no_functional_proteins	0	Complete_loss	premature_stop		Excluded	Step 9 — no_functional_proteins	all sequences carry premature stop codons — strong candidate for ongoing SI breakdown / self-compatibility escape; recommend controlled selfing test to phenotype (Top failures: premature_stop(8))
-Library009_barcode74	9	74		76	1	32	28			too_many_alleles	0	Functional	premature_stop		Excluded	Step 9 — too_many_alleles	>4 distinct proteins per individual — likely contamination / assembly artefact (Top failures: premature_stop(12))
-Library009_barcode75	9	75		70	1	24	24			low_functional_rate	8	Partial_translation_failure	mixed	Assigned	Included		
-Library009_barcode76	9	76		70	1	28	28			normal	16	Functional	premature_stop	Assigned	Included		
-Library009_barcode77	9	77		70	1	36	24			low_functional_rate	4	Partial_translation_failure	mixed	Assigned	Included		
-Library009_barcode78	9	78		70	1	40	24			normal	14	Functional	premature_stop	Assigned	Included		
-Library009_barcode79	9	79		27	1	36	24			too_many_alleles	0	Functional	mixed		Excluded	Step 9 — too_many_alleles	>4 distinct proteins per individual — likely contamination / assembly artefact (Top failures: ambiguous_aa(4);premature_stop(3))
-Library009_barcode80	9	80		27	1	32	32			normal	14	Functional	mixed	Assigned	Included		
-Library009_barcode81	9	81		27	1	36	32			normal	13	Functional	premature_stop	Assigned	Included		
-Library009_barcode82	9	82		27	1	32	24			normal	11	Functional	premature_stop	Assigned	Included		
-Library009_barcode83	9	83		76	1	36	28			low_functional_rate	8	Partial_translation_failure	mixed	Assigned	Included		
-Library009_barcode84	9	84		76	1	36	32			normal	19	Functional	mixed	Assigned	Included		
-Library009_barcode85	9	85		76	1	48	20			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode86	9	86		76	1	32	32			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode87	9	87		76	1	68	48			low_functional_rate	8	Partial_translation_failure	mixed	Assigned	Included		
-Library009_barcode88	9	88		76	1	40	28			low_functional_rate	8	Partial_translation_failure	mixed	Assigned	Included		
-Library009_barcode89	9	89			1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library009_barcode90	9	90		70	1	40	39			low_functional_rate	12	Partial_translation_failure	mixed	Assigned	Included		
-Library009_barcode91	9	91		70	1	28	8			normal	8	Functional		Assigned	Included		
-Library009_barcode92	9	92		70	1	40	24			low_functional_rate	6	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode93	9	93		70	1	8	8			normal	4	Functional	premature_stop	Assigned	Included		
-Library009_barcode94	9	94		27	1	52	36			low_functional_rate	3	Partial_translation_failure	mixed	Assigned	Included		
-Library009_barcode95	9	95		27	1	48	28			low_functional_rate	7	Partial_translation_failure	premature_stop	Assigned	Included		
-Library009_barcode96	9	96		27	1	24	16			normal	8	Functional	mixed	Assigned	Included		
-Library010_barcode01	10	1		18	1	24	16	16	16	normal	2	Functional	premature_stop	Assigned	Included		
-Library010_barcode02	10	2		18	1	56	40	40	40	low_functional_rate	6	Partial_translation_failure	premature_stop	Assigned	Included		
-Library010_barcode03	10	3		18	1	40	32	24	24	normal	8	Functional	premature_stop	Assigned	Included		
-Library010_barcode04	10	4		18	1	40	24					NA			Excluded	Step 4b — BLAST coverage filter	24 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode05	10	5		18	1	16	16	16	16	normal	4	Functional	premature_stop	Assigned	Included		
-Library010_barcode06	10	6		18	1	20	20	16	12	normal	3	Functional	premature_stop	Assigned	Included		
-Library010_barcode07	10	7		18	1	32	32	16	16	normal	8	Functional	premature_stop	Assigned	Included		
-Library010_barcode08	10	8		18	1	56	28	16	16	normal	8	Functional	premature_stop	Assigned	Included		
-Library010_barcode09	10	9		18	1	16	16	16	16	normal	8	Functional	premature_stop	Assigned	Included		
-Library010_barcode10	10	10		18	1	16	16	16	16	normal	8	Functional	premature_stop	Assigned	Included		
-Library010_barcode11	10	11		18	1	16	16	16	16	normal	4	Functional	mixed	Assigned	Included		
-Library010_barcode12	10	12		18	1	48	32					NA			Excluded	Step 4b — BLAST coverage filter	32 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode13	10	13		18	1	72	48	48	36	dropped_abundance_filter	0	Partial_translation_failure	premature_stop		Excluded	Step 9 — dropped_abundance_filter	functional proteins present but below min_count = 5 abundance filter (Top failures: premature_stop(18);ambiguous_aa(4))
-Library010_barcode14	10	14		18	1	36	28	24	16	normal	4	Functional	premature_stop	Assigned	Included		
-Library010_barcode15	10	15		18	1	48	32	32	28	normal	15	Functional	premature_stop	Assigned	Included		
-Library010_barcode16	10	16		18	1	44	28	28	28	normal	7	Functional	premature_stop	Assigned	Included		
-Library010_barcode17	10	17		18	1	56	32	32	28	low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library010_barcode18	10	18		18	1	40	36	36	32	low_functional_rate	9	Partial_translation_failure	premature_stop	Assigned	Included		
-Library010_barcode19	10	19		18	1	12	12	12	12	normal	4	Functional		Assigned	Included		
-Library010_barcode20	10	20		18	1	36	24	24	20	normal	4	Functional	premature_stop	Assigned	Included		
-Library010_barcode21	10	21		18	1	64	32	32	32	normal	13	Functional	premature_stop	Assigned	Included		
-Library010_barcode22	10	22		18	1	12	12	12	12	low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library010_barcode23	10	23		18	1	28	28	28	28	too_many_alleles	0	Functional	premature_stop		Excluded	Step 9 — too_many_alleles	>4 distinct proteins per individual — likely contamination / assembly artefact (Top failures: premature_stop(6))
-Library010_barcode24	10	24		18	1	24	16	16	16	low_functional_rate	3	Partial_translation_failure	premature_stop	Assigned	Included		
-Library010_barcode25	10	25		18	1	48	28	24	24	dropped_abundance_filter	0	Partial_translation_failure	premature_stop		Excluded	Step 9 — dropped_abundance_filter	functional proteins present but below min_count = 5 abundance filter (Top failures: premature_stop(16))
-Library010_barcode26	10	26		18	1	28	28	28	24	low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library010_barcode27	10	27		18	1	56	28	28	20	low_functional_rate	4	Partial_translation_failure	mixed	Assigned	Included		
-Library010_barcode28	10	28		18	1	84	64	64	40	normal	16	Functional	premature_stop	Assigned	Included		
-Library010_barcode29	10	29		18	1	80	32	32	32	normal	5	Functional	premature_stop	Assigned	Included		
-Library010_barcode30	10	30		18	1	28	8	8	8	dropped_abundance_filter	0	Functional	premature_stop		Excluded	Step 9 — dropped_abundance_filter	functional proteins present but below min_count = 5 abundance filter (Top failures: premature_stop(4))
-Library010_barcode31	10	31		18	1	20	8					NA			Excluded	Step 4b — BLAST coverage filter	8 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode32	10	32		18	1	40	24	24	24	normal	11	Functional	premature_stop	Assigned	Included		
-Library010_barcode33	10	33		76	1	32	16	16	12	normal	8	Functional	premature_stop	Assigned	Included		
-Library010_barcode34	10	34		76	1	36	28	28	20	low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library010_barcode35	10	35		76	1	16	12					NA			Excluded	Step 4b — BLAST coverage filter	12 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode36	10	36		27	1	20	16	16	12	normal	3	Functional		Assigned	Included		
-Library010_barcode37	10	37		18	1	44	36	36	32	normal	8	Functional	premature_stop	Assigned	Included		
-Library010_barcode38	10	38		18	1	36	24	24	20	normal	2	Functional	premature_stop	Assigned	Included		
-Library010_barcode39	10	39		18	1	20	16	16	16	normal	7	Functional	premature_stop	Assigned	Included		
-Library010_barcode40	10	40		18	1	32	28	28	28	low_functional_rate	2	Partial_translation_failure	premature_stop	Assigned	Included		
-Library010_barcode41	10	41		76	1	44	20	12	12	low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library010_barcode42	10	42		76	1	12	12					NA			Excluded	Step 4b — BLAST coverage filter	12 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode43	10	43		76	1	28	24	12	12	low_functional_rate	2	Partial_translation_failure	premature_stop	Assigned	Included		
-Library010_barcode44	10	44		76	1	36	36	36	32	normal	16	Functional	premature_stop	Assigned	Included		
-Library010_barcode45	10	45		76	1	36	28	24	24	low_functional_rate	8	Partial_translation_failure	premature_stop	Assigned	Included		
-Library010_barcode46	10	46		76	1	44	24	20	16	no_functional_proteins	0	Complete_loss	mixed		Excluded	Step 9 — no_functional_proteins	mixed premature_stop + ambiguous_aa failures — both LoF mutations AND data-quality issues; interpret cautiously (Top failures: premature_stop(12);ambiguous_aa(8))
-Library010_barcode47	10	47		76	1	64	48					NA			Excluded	Step 4b — BLAST coverage filter	48 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode48	10	48		76	1	36	36					NA			Excluded	Step 4b — BLAST coverage filter	36 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode49	10	49		76	1	28	28	16	12	normal	4	Functional	premature_stop	Assigned	Included		
-Library010_barcode50	10	50		76	1	40	32					NA			Excluded	Step 4b — BLAST coverage filter	32 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode51	10	51		76	1	32	28	28	28	normal	8	Functional	premature_stop	Assigned	Included		
-Library010_barcode52	10	52		76	1	24	16	16	16	low_functional_rate	7	Partial_translation_failure	ambiguous_aa	Assigned	Included		
-Library010_barcode53	10	53		76	1	52	32	24	24	no_functional_proteins	0	Complete_loss	premature_stop		Excluded	Step 9 — no_functional_proteins	all sequences carry premature stop codons — strong candidate for ongoing SI breakdown / self-compatibility escape; recommend controlled selfing test to phenotype (Top failures: premature_stop(24))
-Library010_barcode54	10	54		76	1	8	8					NA			Excluded	Step 4b — BLAST coverage filter	8 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode55	10	55		76	1	48	32	24	20	no_functional_proteins	0	Complete_loss	premature_stop		Excluded	Step 9 — no_functional_proteins	all sequences carry premature stop codons — strong candidate for ongoing SI breakdown / self-compatibility escape; recommend controlled selfing test to phenotype (Top failures: premature_stop(20))
-Library010_barcode56	10	56		76	1	28	20	16	16	normal	5	Functional	mixed	Assigned	Included		
-Library010_barcode57	10	57		70	1	28	28	24	24	normal	12	Functional	mixed	Assigned	Included		
-Library010_barcode58	10	58		70	1	28	24					NA			Excluded	Step 4b — BLAST coverage filter	24 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode59	10	59		70	1	20	20	16	16	low_functional_rate	3	Partial_translation_failure	premature_stop	Assigned	Included		
-Library010_barcode60	10	60		76	1	16	16	12	12	low_functional_rate	3	Partial_translation_failure	premature_stop	Assigned	Included		
-Library010_barcode61	10	61		76	1	32	28					NA			Excluded	Step 4b — BLAST coverage filter	28 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode62	10	62		76	1	32	16	12	12	normal	8	Functional	premature_stop	Assigned	Included		
-Library010_barcode63	10	63		76	1	40	28	16	16	dropped_abundance_filter	0	Partial_translation_failure	premature_stop		Excluded	Step 9 — dropped_abundance_filter	functional proteins present but below min_count = 5 abundance filter (Top failures: premature_stop(12))
-Library010_barcode64	10	64		76	1	32	24	16	12	normal	4	Functional	premature_stop	Assigned	Included		
-Library010_barcode65	10	65		70	1	16	16					NA			Excluded	Step 4b — BLAST coverage filter	16 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode66	10	66		70	1	32	32	28	28	low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library010_barcode67	10	67		70	1	44	32					NA			Excluded	Step 4b — BLAST coverage filter	32 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode68	10	68		70	1	28	24					NA			Excluded	Step 4b — BLAST coverage filter	24 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode69	10	69		70	1	32	24					NA			Excluded	Step 4b — BLAST coverage filter	24 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode70	10	70		70	1	32	20					NA			Excluded	Step 4b — BLAST coverage filter	20 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode71	10	71		70	1	32	24	12	12	low_functional_rate	4	Partial_translation_failure	mixed	Assigned	Included		
-Library010_barcode72	10	72		70	1	28	24	4	4	no_functional_proteins	0	Complete_loss	premature_stop		Excluded	Step 9 — no_functional_proteins	all sequences carry premature stop codons — strong candidate for ongoing SI breakdown / self-compatibility escape; recommend controlled selfing test to phenotype (Top failures: premature_stop(4))
-Library010_barcode73	10	73		27	1	20	16	16	16	normal	9	Functional	ambiguous_aa	Assigned	Included		
-Library010_barcode74	10	74		27	1	28	12	12	12	normal	3	Functional	premature_stop	Assigned	Included		
-Library010_barcode75	10	75		27	1	36	20	20	16	normal	6	Functional	premature_stop	Assigned	Included		
-Library010_barcode76	10	76		70	1	16	16	16	16	normal	4	Functional	premature_stop	Assigned	Included		
-Library010_barcode77	10	77		70	1	36	32	32	28	normal	18	Functional	premature_stop	Assigned	Included		
-Library010_barcode78	10	78		70	1	36	32					NA			Excluded	Step 4b — BLAST coverage filter	32 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode79	10	79		70	1	32	28	4	4	normal	2	Functional	premature_stop	Assigned	Included		
-Library010_barcode80	10	80		70	1	24	24	16	16	normal	8	Functional	premature_stop	Assigned	Included		
-Library010_barcode81	10	81		27	1	16	16	16	16	normal	1	Functional	premature_stop	Assigned	Included		
-Library010_barcode82	10	82		27	1	36	20	20	20	normal	6	Functional	premature_stop	Assigned	Included		
-Library010_barcode83	10	83		27	1	32	28	28	28	normal	7	Functional	premature_stop	Assigned	Included		
-Library010_barcode84	10	84		27	1	40	24	20	20	normal	5	Functional	mixed	Assigned	Included		
-Library010_barcode85	10	85		27	1	40	12					NA			Excluded	Step 4b — BLAST coverage filter	12 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode86	10	86		27	1	40	20	16	16	low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library010_barcode87	10	87		27	1	36	24	20	20	low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library010_barcode88	10	88		27	1	24	12	12	12	normal	7	Functional	premature_stop	Assigned	Included		
+Library009_barcode01	9	1	348	76	1	16	16			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode02	9	2	347	76	1	12	12			low_functional_rate	3	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode03	9	3	346	76	1	40	32			low_functional_rate	9	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode04	9	4	345	76	1	12	12			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode05	9	5	344	76	1	16	16			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode06	9	6	343	76	1	12	12			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode07	9	7	342	76	1	36	32			too_many_alleles	0	Functional	premature_stop		Excluded	Step 9 — too_many_alleles	>4 distinct proteins per individual — likely contamination / assembly artefact (Top failures: premature_stop(20))
+Library009_barcode08	9	8	341	76	1	16	16			no_functional_proteins	0	Complete_loss	ambiguous_aa		Excluded	Step 9 — no_functional_proteins	all sequences carry X residues from N-rich data — quality issue, NOT a biological SI escape; re-sequencing may help (would have been caught by Step 7b if applied) (Top failures: ambiguous_aa(28);premature_stop(8))
+Library009_barcode09	9	9	356	76	1	48	36			too_many_alleles	0	Functional	mixed		Excluded	Step 9 — too_many_alleles	>4 distinct proteins per individual — likely contamination / assembly artefact (Top failures: ambiguous_aa(16);premature_stop(12))
+Library009_barcode10	9	10	355	76	1	16	16			normal	8	Functional	premature_stop	Assigned	Included		
+Library009_barcode11	9	11	354	76	1	16	16			normal	16	Functional		Assigned	Included		
+Library009_barcode12	9	12	353	76	1	12	12			normal	7	Functional	premature_stop	Assigned	Included		
+Library009_barcode13	9	13	352	76	1	16	16			normal	12	Functional	premature_stop	Assigned	Included		
+Library009_barcode14	9	14	351	76	1	44	32			normal	15	Functional	mixed	Assigned	Included		
+Library009_barcode15	9	15	350	76	1	28	24			normal	8	Functional	premature_stop	Assigned	Included		
+Library009_barcode16	9	16	349	76	1	28	28			low_functional_rate	8	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode17	9	17	364	76	1	12	12			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode18	9	18	363	76	1	44	24			normal	14	Functional	mixed	Assigned	Included		
+Library009_barcode19	9	19	362	76	1	12	12			low_functional_rate	3	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode20	9	20	361	76	1	28	24			low_functional_rate	9	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode21	9	21	360	76	1	32	20			low_functional_rate	2	Partial_translation_failure	mixed	Assigned	Included		
+Library009_barcode22	9	22	359	76	1	44	36			low_functional_rate	10	Partial_translation_failure	mixed	Assigned	Included		
+Library009_barcode23	9	23	358	76	1	16	16			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode24	9	24	357	76	1	24	16			normal	8	Functional	ambiguous_aa	Assigned	Included		
+Library009_barcode25	9	25	372	25	1	16	16			normal	8	Functional	premature_stop	Assigned	Included		
+Library009_barcode26	9	26	371	67	1	28	24			low_functional_rate	3	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode27	9	27	370	67	1	32	16			normal	8	Functional	mixed	Assigned	Included		
+Library009_barcode28	9	28	369	67	1	28	24			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode29	9	29	368	67	1	36	32			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode30	9	30	367	67	1	28	24			normal	12	Functional	premature_stop	Assigned	Included		
+Library009_barcode31	9	31	366	76	1	52	40			low_functional_rate	8	Partial_translation_failure	ambiguous_aa	Assigned	Included		
+Library009_barcode32	9	32	365	76	1	16	0					NA			Excluded	Step 4 — length filter	16 raw haps, 0 passed 3250–4000 bp length filter — likely fragmented or chimeric assembly; re-sequencing recommended
+Library009_barcode33	9	33	380	25	1	12	12			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode34	9	34	379	25	1	52	36			normal	8	Functional	mixed	Assigned	Included		
+Library009_barcode35	9	35	378	25	1	32	24			low_functional_rate	8	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode36	9	36	377	25	1	36	24			normal	15	Functional	premature_stop	Assigned	Included		
+Library009_barcode37	9	37	376	25	1	48	36			low_functional_rate	12	Partial_translation_failure	mixed	Assigned	Included		
+Library009_barcode38	9	38	375	25	1	44	24			low_functional_rate	8	Partial_translation_failure	mixed	Assigned	Included		
+Library009_barcode39	9	39	374	25	1	32	28			normal	12	Functional	premature_stop	Assigned	Included		
+Library009_barcode40	9	40	373	25	1	12	12			no_functional_proteins	0	Complete_loss	ambiguous_aa		Excluded	Step 9 — no_functional_proteins	all sequences carry X residues from N-rich data — quality issue, NOT a biological SI escape; re-sequencing may help (would have been caught by Step 7b if applied) (Top failures: ambiguous_aa(16);premature_stop(6))
+Library009_barcode41	9	41	388	25	1	40	36			normal	14	Functional	mixed	Assigned	Included		
+Library009_barcode42	9	42	387	25	1	40	24			low_functional_rate	7	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode43	9	43	386	25	1	52	40			too_many_alleles	0	Functional	mixed		Excluded	Step 9 — too_many_alleles	>4 distinct proteins per individual — likely contamination / assembly artefact (Top failures: premature_stop(20);ambiguous_aa(20))
+Library009_barcode44	9	44	385	25	1	32	32			normal	14	Functional	mixed	Assigned	Included		
+Library009_barcode45	9	45	384	25	1	32	32			low_functional_rate	15	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode46	9	46	383	25	1	24	20			normal	10	Functional	premature_stop	Assigned	Included		
+Library009_barcode47	9	47	382	25	1	24	24			low_functional_rate	2	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode48	9	48	381	25	1	16	16			normal	10	Functional	premature_stop	Assigned	Included		
+Library009_barcode49	9	49	404	76	1	16	16			normal	8	Functional	premature_stop	Assigned	Included		
+Library009_barcode50	9	50	403	76	1	12	12			normal	12	Functional		Assigned	Included		
+Library009_barcode51	9	51	402	76	1	16	16			normal	12	Functional	premature_stop	Assigned	Included		
+Library009_barcode52	9	52	401	76	1	52	40			low_functional_rate	13	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode53	9	53	400	76	1	40	24			normal	12	Functional	premature_stop	Assigned	Included		
+Library009_barcode54	9	54	399	76	1	16	16			normal	11	Functional	premature_stop	Assigned	Included		
+Library009_barcode55	9	55	398	76	1	52	24			normal	13	Functional	premature_stop	Assigned	Included		
+Library009_barcode56	9	56	397	76	1	32	32			low_functional_rate	10	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode57	9	57	396	76	1	12	12			no_functional_proteins	0	Complete_loss	premature_stop		Excluded	Step 9 — no_functional_proteins	all sequences carry premature stop codons — strong candidate for ongoing SI breakdown / self-compatibility escape; recommend controlled selfing test to phenotype (Top failures: premature_stop(12))
+Library009_barcode58	9	58	395	76	1	36	32			dropped_abundance_filter	0	Partial_translation_failure	premature_stop		Excluded	Step 9 — dropped_abundance_filter	functional proteins present but below min_count = 5 abundance filter (Top failures: premature_stop(50))
+Library009_barcode59	9	59	394	76	1	20	20			too_many_alleles	0	Functional	premature_stop		Excluded	Step 9 — too_many_alleles	>4 distinct proteins per individual — likely contamination / assembly artefact (Top failures: premature_stop(10))
+Library009_barcode60	9	60	393	25	1	36	24			low_functional_rate	7	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode61	9	61	392	25	1	48	28			low_functional_rate	9	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode62	9	62	391	25	1	36	36			normal	15	Functional	mixed	Assigned	Included		
+Library009_barcode63	9	63	390	25	1	84	52			low_functional_rate	16	Partial_translation_failure	mixed	Assigned	Included		
+Library009_barcode64	9	64	389	25	1	24	16			dropped_abundance_filter	0	Functional	mixed		Excluded	Step 9 — dropped_abundance_filter	functional proteins present but below min_count = 5 abundance filter (Top failures: premature_stop(4);ambiguous_aa(4))
+Library009_barcode65	9	65	412	27	1	44	28			normal	7	Functional	premature_stop	Assigned	Included		
+Library009_barcode66	9	66	411	27	1	20	20			normal	15	Functional	premature_stop	Assigned	Included		
+Library009_barcode67	9	67	410	27	1	32	20			low_functional_rate	7	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode68	9	68	409	27	1	48	20			normal	12	Functional	mixed	Assigned	Included		
+Library009_barcode69	9	69	408	27	1	20	20			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode70	9	70	407	27	1	8	8			normal	4	Functional		Assigned	Included		
+Library009_barcode71	9	71	406	27	1	40	36			low_functional_rate	15	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode72	9	72	405	27	1	16	0					NA			Excluded	Step 4 — length filter	16 raw haps, 0 passed 3250–4000 bp length filter — likely fragmented or chimeric assembly; re-sequencing recommended
+Library009_barcode73	9	73	420	76	1	4	4			no_functional_proteins	0	Complete_loss	premature_stop		Excluded	Step 9 — no_functional_proteins	all sequences carry premature stop codons — strong candidate for ongoing SI breakdown / self-compatibility escape; recommend controlled selfing test to phenotype (Top failures: premature_stop(8))
+Library009_barcode74	9	74	419	76	1	32	28			too_many_alleles	0	Functional	premature_stop		Excluded	Step 9 — too_many_alleles	>4 distinct proteins per individual — likely contamination / assembly artefact (Top failures: premature_stop(12))
+Library009_barcode75	9	75	418	70	1	24	24			low_functional_rate	8	Partial_translation_failure	mixed	Assigned	Included		
+Library009_barcode76	9	76	417	70	1	28	28			normal	16	Functional	premature_stop	Assigned	Included		
+Library009_barcode77	9	77	416	70	1	36	24			low_functional_rate	4	Partial_translation_failure	mixed	Assigned	Included		
+Library009_barcode78	9	78	415	70	1	40	24			normal	14	Functional	premature_stop	Assigned	Included		
+Library009_barcode79	9	79	414	27	1	36	24			too_many_alleles	0	Functional	mixed		Excluded	Step 9 — too_many_alleles	>4 distinct proteins per individual — likely contamination / assembly artefact (Top failures: ambiguous_aa(4);premature_stop(3))
+Library009_barcode80	9	80	413	27	1	32	32			normal	14	Functional	mixed	Assigned	Included		
+Library009_barcode81	9	81	428	27	1	36	32			normal	13	Functional	premature_stop	Assigned	Included		
+Library009_barcode82	9	82	427	27	1	32	24			normal	11	Functional	premature_stop	Assigned	Included		
+Library009_barcode83	9	83	426	76	1	36	28			low_functional_rate	8	Partial_translation_failure	mixed	Assigned	Included		
+Library009_barcode84	9	84	425	76	1	36	32			normal	19	Functional	mixed	Assigned	Included		
+Library009_barcode85	9	85	424	76	1	48	20			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode86	9	86	423	76	1	32	32			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode87	9	87	422	76	1	68	48			low_functional_rate	8	Partial_translation_failure	mixed	Assigned	Included		
+Library009_barcode88	9	88	421	76	1	40	28			low_functional_rate	8	Partial_translation_failure	mixed	Assigned	Included		
+Library009_barcode89	9	89	NULL		1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library009_barcode90	9	90	435	70	1	40	39			low_functional_rate	12	Partial_translation_failure	mixed	Assigned	Included		
+Library009_barcode91	9	91	434	70	1	28	8			normal	8	Functional		Assigned	Included		
+Library009_barcode92	9	92	433	70	1	40	24			low_functional_rate	6	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode93	9	93	432	70	1	8	8			normal	4	Functional	premature_stop	Assigned	Included		
+Library009_barcode94	9	94	431	27	1	52	36			low_functional_rate	3	Partial_translation_failure	mixed	Assigned	Included		
+Library009_barcode95	9	95	430	27	1	48	28			low_functional_rate	7	Partial_translation_failure	premature_stop	Assigned	Included		
+Library009_barcode96	9	96	429	27	1	24	16			normal	8	Functional	mixed	Assigned	Included		
+Library010_barcode01	10	1	300	18	1	24	16	16	16	normal	2	Functional	premature_stop	Assigned	Included		
+Library010_barcode02	10	2	299	18	1	56	40	40	40	low_functional_rate	6	Partial_translation_failure	premature_stop	Assigned	Included		
+Library010_barcode03	10	3	298	18	1	40	32	24	24	normal	8	Functional	premature_stop	Assigned	Included		
+Library010_barcode04	10	4	297	18	1	40	24					NA			Excluded	Step 4b — BLAST coverage filter	24 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode05	10	5	296	18	1	16	16	16	16	normal	4	Functional	premature_stop	Assigned	Included		
+Library010_barcode06	10	6	295	18	1	20	20	16	12	normal	3	Functional	premature_stop	Assigned	Included		
+Library010_barcode07	10	7	294	18	1	32	32	16	16	normal	8	Functional	premature_stop	Assigned	Included		
+Library010_barcode08	10	8	293	18	1	56	28	16	16	normal	8	Functional	premature_stop	Assigned	Included		
+Library010_barcode09	10	9	442	18	1	16	16	16	16	normal	8	Functional	premature_stop	Assigned	Included		
+Library010_barcode10	10	10	441	18	1	16	16	16	16	normal	8	Functional	premature_stop	Assigned	Included		
+Library010_barcode11	10	11	440	18	1	16	16	16	16	normal	4	Functional	mixed	Assigned	Included		
+Library010_barcode12	10	12	439	18	1	48	32					NA			Excluded	Step 4b — BLAST coverage filter	32 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode13	10	13	438	18	1	72	48	48	36	dropped_abundance_filter	0	Partial_translation_failure	premature_stop		Excluded	Step 9 — dropped_abundance_filter	functional proteins present but below min_count = 5 abundance filter (Top failures: premature_stop(18);ambiguous_aa(4))
+Library010_barcode14	10	14	437	18	1	36	28	24	16	normal	4	Functional	premature_stop	Assigned	Included		
+Library010_barcode15	10	15	436	18	1	48	32	32	28	normal	15	Functional	premature_stop	Assigned	Included		
+Library010_barcode16	10	16	301	18	1	44	28	28	28	normal	7	Functional	premature_stop	Assigned	Included		
+Library010_barcode17	10	17	450	18	1	56	32	32	28	low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library010_barcode18	10	18	449	18	1	40	36	36	32	low_functional_rate	9	Partial_translation_failure	premature_stop	Assigned	Included		
+Library010_barcode19	10	19	448	18	1	12	12	12	12	normal	4	Functional		Assigned	Included		
+Library010_barcode20	10	20	447	18	1	36	24	24	20	normal	4	Functional	premature_stop	Assigned	Included		
+Library010_barcode21	10	21	446	18	1	64	32	32	32	normal	13	Functional	premature_stop	Assigned	Included		
+Library010_barcode22	10	22	445	18	1	12	12	12	12	low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library010_barcode23	10	23	444	18	1	28	28	28	28	too_many_alleles	0	Functional	premature_stop		Excluded	Step 9 — too_many_alleles	>4 distinct proteins per individual — likely contamination / assembly artefact (Top failures: premature_stop(6))
+Library010_barcode24	10	24	443	18	1	24	16	16	16	low_functional_rate	3	Partial_translation_failure	premature_stop	Assigned	Included		
+Library010_barcode25	10	25	458	18	1	48	28	24	24	dropped_abundance_filter	0	Partial_translation_failure	premature_stop		Excluded	Step 9 — dropped_abundance_filter	functional proteins present but below min_count = 5 abundance filter (Top failures: premature_stop(16))
+Library010_barcode26	10	26	457	18	1	28	28	28	24	low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library010_barcode27	10	27	456	18	1	56	28	28	20	low_functional_rate	4	Partial_translation_failure	mixed	Assigned	Included		
+Library010_barcode28	10	28	455	18	1	84	64	64	40	normal	16	Functional	premature_stop	Assigned	Included		
+Library010_barcode29	10	29	454	18	1	80	32	32	32	normal	5	Functional	premature_stop	Assigned	Included		
+Library010_barcode30	10	30	453	18	1	28	8	8	8	dropped_abundance_filter	0	Functional	premature_stop		Excluded	Step 9 — dropped_abundance_filter	functional proteins present but below min_count = 5 abundance filter (Top failures: premature_stop(4))
+Library010_barcode31	10	31	452	18	1	20	8					NA			Excluded	Step 4b — BLAST coverage filter	8 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode32	10	32	451	18	1	40	24	24	24	normal	11	Functional	premature_stop	Assigned	Included		
+Library010_barcode33	10	33	466	76	1	32	16	16	12	normal	8	Functional	premature_stop	Assigned	Included		
+Library010_barcode34	10	34	465	76	1	36	28	28	20	low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library010_barcode35	10	35	464	76	1	16	12					NA			Excluded	Step 4b — BLAST coverage filter	12 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode36	10	36	463	27	1	20	16	16	12	normal	3	Functional		Assigned	Included		
+Library010_barcode37	10	37	462	18	1	44	36	36	32	normal	8	Functional	premature_stop	Assigned	Included		
+Library010_barcode38	10	38	461	18	1	36	24	24	20	normal	2	Functional	premature_stop	Assigned	Included		
+Library010_barcode39	10	39	460	18	1	20	16	16	16	normal	7	Functional	premature_stop	Assigned	Included		
+Library010_barcode40	10	40	459	18	1	32	28	28	28	low_functional_rate	2	Partial_translation_failure	premature_stop	Assigned	Included		
+Library010_barcode41	10	41	474	76	1	44	20	12	12	low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library010_barcode42	10	42	473	76	1	12	12					NA			Excluded	Step 4b — BLAST coverage filter	12 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode43	10	43	472	76	1	28	24	12	12	low_functional_rate	2	Partial_translation_failure	premature_stop	Assigned	Included		
+Library010_barcode44	10	44	471	76	1	36	36	36	32	normal	16	Functional	premature_stop	Assigned	Included		
+Library010_barcode45	10	45	470	76	1	36	28	24	24	low_functional_rate	8	Partial_translation_failure	premature_stop	Assigned	Included		
+Library010_barcode46	10	46	469	76	1	44	24	20	16	no_functional_proteins	0	Complete_loss	mixed		Excluded	Step 9 — no_functional_proteins	mixed premature_stop + ambiguous_aa failures — both LoF mutations AND data-quality issues; interpret cautiously (Top failures: premature_stop(12);ambiguous_aa(8))
+Library010_barcode47	10	47	468	76	1	64	48					NA			Excluded	Step 4b — BLAST coverage filter	48 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode48	10	48	467	76	1	36	36					NA			Excluded	Step 4b — BLAST coverage filter	36 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode49	10	49	482	76	1	28	28	16	12	normal	4	Functional	premature_stop	Assigned	Included		
+Library010_barcode50	10	50	481	76	1	40	32					NA			Excluded	Step 4b — BLAST coverage filter	32 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode51	10	51	480	76	1	32	28	28	28	normal	8	Functional	premature_stop	Assigned	Included		
+Library010_barcode52	10	52	479	76	1	24	16	16	16	low_functional_rate	7	Partial_translation_failure	ambiguous_aa	Assigned	Included		
+Library010_barcode53	10	53	478	76	1	52	32	24	24	no_functional_proteins	0	Complete_loss	premature_stop		Excluded	Step 9 — no_functional_proteins	all sequences carry premature stop codons — strong candidate for ongoing SI breakdown / self-compatibility escape; recommend controlled selfing test to phenotype (Top failures: premature_stop(24))
+Library010_barcode54	10	54	477	76	1	8	8					NA			Excluded	Step 4b — BLAST coverage filter	8 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode55	10	55	476	76	1	48	32	24	20	no_functional_proteins	0	Complete_loss	premature_stop		Excluded	Step 9 — no_functional_proteins	all sequences carry premature stop codons — strong candidate for ongoing SI breakdown / self-compatibility escape; recommend controlled selfing test to phenotype (Top failures: premature_stop(20))
+Library010_barcode56	10	56	475	76	1	28	20	16	16	normal	5	Functional	mixed	Assigned	Included		
+Library010_barcode57	10	57	490	70	1	28	28	24	24	normal	12	Functional	mixed	Assigned	Included		
+Library010_barcode58	10	58	489	70	1	28	24					NA			Excluded	Step 4b — BLAST coverage filter	24 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode59	10	59	488	70	1	20	20	16	16	low_functional_rate	3	Partial_translation_failure	premature_stop	Assigned	Included		
+Library010_barcode60	10	60	487	76	1	16	16	12	12	low_functional_rate	3	Partial_translation_failure	premature_stop	Assigned	Included		
+Library010_barcode61	10	61	486	76	1	32	28					NA			Excluded	Step 4b — BLAST coverage filter	28 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode62	10	62	485	76	1	32	16	12	12	normal	8	Functional	premature_stop	Assigned	Included		
+Library010_barcode63	10	63	484	76	1	40	28	16	16	dropped_abundance_filter	0	Partial_translation_failure	premature_stop		Excluded	Step 9 — dropped_abundance_filter	functional proteins present but below min_count = 5 abundance filter (Top failures: premature_stop(12))
+Library010_barcode64	10	64	483	76	1	32	24	16	12	normal	4	Functional	premature_stop	Assigned	Included		
+Library010_barcode65	10	65	498	70	1	16	16					NA			Excluded	Step 4b — BLAST coverage filter	16 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode66	10	66	497	70	1	32	32	28	28	low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library010_barcode67	10	67	496	70	1	44	32					NA			Excluded	Step 4b — BLAST coverage filter	32 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode68	10	68	495	70	1	28	24					NA			Excluded	Step 4b — BLAST coverage filter	24 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode69	10	69	494	70	1	32	24					NA			Excluded	Step 4b — BLAST coverage filter	24 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode70	10	70	493	70	1	32	20					NA			Excluded	Step 4b — BLAST coverage filter	20 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode71	10	71	492	70	1	32	24	12	12	low_functional_rate	4	Partial_translation_failure	mixed	Assigned	Included		
+Library010_barcode72	10	72	491	70	1	28	24	4	4	no_functional_proteins	0	Complete_loss	premature_stop		Excluded	Step 9 — no_functional_proteins	all sequences carry premature stop codons — strong candidate for ongoing SI breakdown / self-compatibility escape; recommend controlled selfing test to phenotype (Top failures: premature_stop(4))
+Library010_barcode73	10	73	506	27	1	20	16	16	16	normal	9	Functional	ambiguous_aa	Assigned	Included		
+Library010_barcode74	10	74	505	27	1	28	12	12	12	normal	3	Functional	premature_stop	Assigned	Included		
+Library010_barcode75	10	75	504	27	1	36	20	20	16	normal	6	Functional	premature_stop	Assigned	Included		
+Library010_barcode76	10	76	503	70	1	16	16	16	16	normal	4	Functional	premature_stop	Assigned	Included		
+Library010_barcode77	10	77	502	70	1	36	32	32	28	normal	18	Functional	premature_stop	Assigned	Included		
+Library010_barcode78	10	78	501	70	1	36	32					NA			Excluded	Step 4b — BLAST coverage filter	32 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode79	10	79	500	70	1	32	28	4	4	normal	2	Functional	premature_stop	Assigned	Included		
+Library010_barcode80	10	80	499	70	1	24	24	16	16	normal	8	Functional	premature_stop	Assigned	Included		
+Library010_barcode81	10	81	514	27	1	16	16	16	16	normal	1	Functional	premature_stop	Assigned	Included		
+Library010_barcode82	10	82	513	27	1	36	20	20	20	normal	6	Functional	premature_stop	Assigned	Included		
+Library010_barcode83	10	83	512	27	1	32	28	28	28	normal	7	Functional	premature_stop	Assigned	Included		
+Library010_barcode84	10	84	511	27	1	40	24	20	20	normal	5	Functional	mixed	Assigned	Included		
+Library010_barcode85	10	85	510	27	1	40	12					NA			Excluded	Step 4b — BLAST coverage filter	12 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode86	10	86	509	27	1	40	20	16	16	low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library010_barcode87	10	87	508	27	1	36	24	20	20	low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library010_barcode88	10	88	507	27	1	24	12	12	12	normal	7	Functional	premature_stop	Assigned	Included		
 Library010_barcode89	10	89			1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library010_barcode90	10	90		27	1	12	12					NA			Excluded	Step 4b — BLAST coverage filter	12 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode91	10	91		27	1	16	16					NA			Excluded	Step 4b — BLAST coverage filter	16 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode92	10	92		27	1	12	12					NA			Excluded	Step 4b — BLAST coverage filter	12 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode93	10	93		27	1	16	16					NA			Excluded	Step 4b — BLAST coverage filter	16 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode94	10	94		27	1	8	8	8	8	normal	4	Functional		Assigned	Included		
-Library010_barcode95	10	95		27	1	16	16					NA			Excluded	Step 4b — BLAST coverage filter	16 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library010_barcode96	10	96		27	1	52	24					NA			Excluded	Step 4b — BLAST coverage filter	24 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
-Library011_barcode01	11	1		76	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode02	11	2		76	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode03	11	3		76	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode04	11	4		18	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode05	11	5		18	1	0	0			normal	8	Functional	premature_stop	Assigned	Included		
-Library011_barcode06	11	6		18	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode07	11	7		76	1	0	0			normal	3	Functional	premature_stop	Assigned	Included		
-Library011_barcode08	11	8		18-8	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode09	11	9		70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode10	11	10		70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode11	11	11		76	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode12	11	12		76	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode13	11	13		76	1	0	0			normal	15	Functional	mixed	Assigned	Included		
-Library011_barcode14	11	14		76	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode15	11	15		76	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode16	11	16		76	1	0	0			normal	4	Functional	premature_stop	Assigned	Included		
-Library011_barcode17	11	17		27	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode18	11	18		27	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode19	11	19		27	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode20	11	20		70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode21	11	21		70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode22	11	22		70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode23	11	23		70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode24	11	24		70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode25	11	25		70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode26	11	26		70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode27	11	27		70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode28	11	28		70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode29	11	29		27	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode30	11	30		27	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode31	11	31		27	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode32	11	32		27	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode33	11	33		8	1	0	0			normal	2	Functional	premature_stop	Assigned	Included		
-Library011_barcode34	11	34		27	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode35	11	35		27	1	0	0			dropped_abundance_filter	0	Functional	premature_stop		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode36	11	36		27	1	0	0			normal	10	Functional	premature_stop	Assigned	Included		
-Library011_barcode37	11	37		27	1	0	0			normal	3	Functional	premature_stop	Assigned	Included		
-Library011_barcode38	11	38		70	1	0	0			normal	4	Functional	premature_stop	Assigned	Included		
-Library011_barcode39	11	39		70	1	0	0			normal	5	Functional	premature_stop	Assigned	Included		
-Library011_barcode40	11	40		70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode41	11	41		8	1	0	0			dropped_abundance_filter	0	Partial_translation_failure	mixed		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode42	11	42		8	1	0	0			dropped_abundance_filter	0	Functional			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode43	11	43		8	1	0	0			normal	2	Functional	premature_stop	Assigned	Included		
-Library011_barcode44	11	44		8	1	0	0			dropped_abundance_filter	0	Functional	premature_stop		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode45	11	45		8	1	0	0			dropped_abundance_filter	0	Functional	premature_stop		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode46	11	46		8	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode47	11	47		8	1	0	0			normal	2	Functional	premature_stop	Assigned	Included		
-Library011_barcode48	11	48		8	1	0	0			dropped_abundance_filter	0	Functional	premature_stop		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode49	11	49		27	1	0	0			normal	1	Functional	premature_stop	Assigned	Included		
-Library011_barcode50	11	50		27	1	0	0			normal	4	Functional		Assigned	Included		
-Library011_barcode51	11	51		27	1	0	0			normal	7	Functional	premature_stop	Assigned	Included		
-Library011_barcode52	11	52		8	1	0	0			dropped_abundance_filter	0	Functional	premature_stop		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode53	11	53		8	1	0	0			dropped_abundance_filter	0	Functional	premature_stop		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode54	11	54		8	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode55	11	55		8	1	0	0			dropped_abundance_filter	0	Functional	premature_stop		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode56	11	56		8	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode57	11	57		76	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode58	11	58		76	1	0	0			normal	3	Functional		Assigned	Included		
-Library011_barcode59	11	59		70	1	0	0			normal	7	Functional	premature_stop	Assigned	Included		
-Library011_barcode60	11	60		70	1	0	0			normal	7	Functional	premature_stop	Assigned	Included		
-Library011_barcode61	11	61		70	1	0	0			normal	3	Functional	premature_stop	Assigned	Included		
-Library011_barcode62	11	62		70	1	0	0			normal	3	Functional	premature_stop	Assigned	Included		
-Library011_barcode63	11	63		70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode64	11	64		27	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode65	11	65		8	1	0	0			dropped_abundance_filter	0	Functional			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode66	11	66		8	1	0	0			normal	3	Functional	premature_stop	Assigned	Included		
-Library011_barcode67	11	67		8	1	0	0			dropped_abundance_filter	0	Partial_translation_failure	premature_stop		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode68	11	68		8	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode69	11	69		8	1	0	0			dropped_abundance_filter	0	Partial_translation_failure	mixed		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode70	11	70		76	1	0	0			normal	3	Functional	premature_stop	Assigned	Included		
-Library011_barcode71	11	71		76	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode72	11	72		76	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode73	11	73		18	1	0	0			normal	8	Functional	premature_stop	Assigned	Included		
-Library011_barcode74	11	74		18	1	0	0			normal	11	Functional		Assigned	Included		
-Library011_barcode75	11	75		8	1	0	0			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library011_barcode76	11	76		8	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode77	11	77		8	1	0	0			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
-Library011_barcode78	11	78		8	1	0	0			dropped_abundance_filter	0	Functional	premature_stop		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode79	11	79		8	1	0	0			dropped_abundance_filter	0	Partial_translation_failure	ambiguous_aa		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode80	11	80		8	1	0	0			dropped_abundance_filter	0	Functional	premature_stop		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode81	11	81		70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode82	11	82		70	1	0	0			normal	8	Functional		Assigned	Included		
-Library011_barcode83	11	83		70	1	0	0			low_functional_rate	8	Partial_translation_failure	mixed	Assigned	Included		
-Library011_barcode84	11	84		70	1	0	0			normal	3	Functional	premature_stop	Assigned	Included		
-Library011_barcode85	11	85		70	1	0	0			normal	8	Functional	premature_stop	Assigned	Included		
-Library011_barcode86	11	86		27	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
-Library011_barcode87	11	87		18	1	0	0			normal	8	Functional	premature_stop	Assigned	Included		
-Library011_barcode88	11	88		18	1	0	0			normal	2	Functional	premature_stop	Assigned	Included		
-Library011_barcode89	11	89		70	1	0	0			normal	3	Functional	premature_stop	Assigned	Included		
-Library011_barcode90	11	90		70	1	0	0			low_functional_rate	7	Partial_translation_failure	premature_stop	Assigned	Included		
-Library011_barcode91	11	91		70	1	0	0			normal	8	Functional	premature_stop	Assigned	Included		
-Library011_barcode92	11	92		70	1	0	0			normal	14	Functional	premature_stop	Assigned	Included		
-Library011_barcode93	11	93		70	1	0	0			normal	17	Functional	premature_stop	Assigned	Included		
-Library011_barcode94	11	94		70	1	0	0			normal	4	Functional	premature_stop	Assigned	Included		
-Library011_barcode95	11	95		70	1	0	0			low_functional_rate	2	Partial_translation_failure	premature_stop	Assigned	Included		
-Library011_barcode96	11	96		70	1	0	0			low_functional_rate	3	Partial_translation_failure	premature_stop	Assigned	Included		
+Library010_barcode90	10	90	521	27	1	12	12					NA			Excluded	Step 4b — BLAST coverage filter	12 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode91	10	91	520	27	1	16	16					NA			Excluded	Step 4b — BLAST coverage filter	16 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode92	10	92	519	27	1	12	12					NA			Excluded	Step 4b — BLAST coverage filter	12 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode93	10	93	518	27	1	16	16					NA			Excluded	Step 4b — BLAST coverage filter	16 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode94	10	94	517	27	1	8	8	8	8	normal	4	Functional		Assigned	Included		
+Library010_barcode95	10	95	516	27	1	16	16					NA			Excluded	Step 4b — BLAST coverage filter	16 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library010_barcode96	10	96	515	27	1	52	24					NA			Excluded	Step 4b — BLAST coverage filter	24 haps after Step 4, 0 passed coverage ≥ 0.90 / identity ≥ 95 vs canonical SRK — likely SRK paralogs / off-target; do NOT re-sequence (issue is sequence identity, not coverage)
+Library011_barcode01	11	1	468	76	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode02	11	2	467	76	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode03	11	3	464	76	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode04	11	4	452	18	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode05	11	5	444	18	1	0	0			normal	8	Functional	premature_stop	Assigned	Included		
+Library011_barcode06	11	6	439	18	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode07	11	7	419	76	1	0	0			normal	3	Functional	premature_stop	Assigned	Included		
+Library011_barcode08	11	8	297	18-8	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode09	11	9	493	70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode10	11	10	489	70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode11	11	11	486	76	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode12	11	12	481	76	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode13	11	13	480	76	1	0	0			normal	15	Functional	mixed	Assigned	Included		
+Library011_barcode14	11	14	477	76	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode15	11	15	473	76	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode16	11	16	469	76	1	0	0			normal	4	Functional	premature_stop	Assigned	Included		
+Library011_barcode17	11	17	516	27	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode18	11	18	515	27	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode19	11	19	510	27	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode20	11	20	501	70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode21	11	21	498	70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode22	11	22	496	70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode23	11	23	495	70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode24	11	24	494	70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode25	11	25	525	70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode26	11	26	524	70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode27	11	27	523	70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode28	11	28	522	70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode29	11	29	521	27	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode30	11	30	520	27	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode31	11	31	519	27	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode32	11	32	518	27	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode33	11	33	533	8	1	0	0			normal	2	Functional	premature_stop	Assigned	Included		
+Library011_barcode34	11	34	532	27	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode35	11	35	531	27	1	0	0			dropped_abundance_filter	0	Functional	premature_stop		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode36	11	36	530	27	1	0	0			normal	10	Functional	premature_stop	Assigned	Included		
+Library011_barcode37	11	37	529	27	1	0	0			normal	3	Functional	premature_stop	Assigned	Included		
+Library011_barcode38	11	38	528	70	1	0	0			normal	4	Functional	premature_stop	Assigned	Included		
+Library011_barcode39	11	39	527	70	1	0	0			normal	5	Functional	premature_stop	Assigned	Included		
+Library011_barcode40	11	40	526	70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode41	11	41	541	8	1	0	0			dropped_abundance_filter	0	Partial_translation_failure	mixed		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode42	11	42	540	8	1	0	0			dropped_abundance_filter	0	Functional			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode43	11	43	539	8	1	0	0			normal	2	Functional	premature_stop	Assigned	Included		
+Library011_barcode44	11	44	538	8	1	0	0			dropped_abundance_filter	0	Functional	premature_stop		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode45	11	45	537	8	1	0	0			dropped_abundance_filter	0	Functional	premature_stop		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode46	11	46	536	8	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode47	11	47	535	8	1	0	0			normal	2	Functional	premature_stop	Assigned	Included		
+Library011_barcode48	11	48	534	8	1	0	0			dropped_abundance_filter	0	Functional	premature_stop		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode49	11	49	549	27	1	0	0			normal	1	Functional	premature_stop	Assigned	Included		
+Library011_barcode50	11	50	548	27	1	0	0			normal	4	Functional		Assigned	Included		
+Library011_barcode51	11	51	547	27	1	0	0			normal	7	Functional	premature_stop	Assigned	Included		
+Library011_barcode52	11	52	546	8	1	0	0			dropped_abundance_filter	0	Functional	premature_stop		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode53	11	53	545	8	1	0	0			dropped_abundance_filter	0	Functional	premature_stop		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode54	11	54	544	8	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode55	11	55	543	8	1	0	0			dropped_abundance_filter	0	Functional	premature_stop		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode56	11	56	542	8	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode57	11	57	557	76	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode58	11	58	556	76	1	0	0			normal	3	Functional		Assigned	Included		
+Library011_barcode59	11	59	555	70	1	0	0			normal	7	Functional	premature_stop	Assigned	Included		
+Library011_barcode60	11	60	554	70	1	0	0			normal	7	Functional	premature_stop	Assigned	Included		
+Library011_barcode61	11	61	553	70	1	0	0			normal	3	Functional	premature_stop	Assigned	Included		
+Library011_barcode62	11	62	552	70	1	0	0			normal	3	Functional	premature_stop	Assigned	Included		
+Library011_barcode63	11	63	551	70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode64	11	64	550	27	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode65	11	65	565	8	1	0	0			dropped_abundance_filter	0	Functional			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode66	11	66	564	8	1	0	0			normal	3	Functional	premature_stop	Assigned	Included		
+Library011_barcode67	11	67	563	8	1	0	0			dropped_abundance_filter	0	Partial_translation_failure	premature_stop		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode68	11	68	562	8	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode69	11	69	561	8	1	0	0			dropped_abundance_filter	0	Partial_translation_failure	mixed		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode70	11	70	560	76	1	0	0			normal	3	Functional	premature_stop	Assigned	Included		
+Library011_barcode71	11	71	559	76	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode72	11	72	558	76	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode73	11	73	573	18	1	0	0			normal	8	Functional	premature_stop	Assigned	Included		
+Library011_barcode74	11	74	572	18	1	0	0			normal	11	Functional		Assigned	Included		
+Library011_barcode75	11	75	571	8	1	0	0			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library011_barcode76	11	76	570	8	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode77	11	77	569	8	1	0	0			low_functional_rate	4	Partial_translation_failure	premature_stop	Assigned	Included		
+Library011_barcode78	11	78	568	8	1	0	0			dropped_abundance_filter	0	Functional	premature_stop		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode79	11	79	567	8	1	0	0			dropped_abundance_filter	0	Partial_translation_failure	ambiguous_aa		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode80	11	80	566	8	1	0	0			dropped_abundance_filter	0	Functional	premature_stop		Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode81	11	81	581	70	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode82	11	82	580	70	1	0	0			normal	8	Functional		Assigned	Included		
+Library011_barcode83	11	83	579	70	1	0	0			low_functional_rate	8	Partial_translation_failure	mixed	Assigned	Included		
+Library011_barcode84	11	84	578	70	1	0	0			normal	3	Functional	premature_stop	Assigned	Included		
+Library011_barcode85	11	85	577	70	1	0	0			normal	8	Functional	premature_stop	Assigned	Included		
+Library011_barcode86	11	86	576	27	1	0	0					NA			Excluded	Stage 3 — no assembly	sample present in metadata but no haplotypes assembled by Canu — needs re-sequencing
+Library011_barcode87	11	87	575	18	1	0	0			normal	8	Functional	premature_stop	Assigned	Included		
+Library011_barcode88	11	88	574	18	1	0	0			normal	2	Functional	premature_stop	Assigned	Included		
+Library011_barcode89	11	89	589	70	1	0	0			normal	3	Functional	premature_stop	Assigned	Included		
+Library011_barcode90	11	90	588	70	1	0	0			low_functional_rate	7	Partial_translation_failure	premature_stop	Assigned	Included		
+Library011_barcode91	11	91	587	70	1	0	0			normal	8	Functional	premature_stop	Assigned	Included		
+Library011_barcode92	11	92	586	70	1	0	0			normal	14	Functional	premature_stop	Assigned	Included		
+Library011_barcode93	11	93	585	70	1	0	0			normal	17	Functional	premature_stop	Assigned	Included		
+Library011_barcode94	11	94	584	70	1	0	0			normal	4	Functional	premature_stop	Assigned	Included		
+Library011_barcode95	11	95	583	70	1	0	0			low_functional_rate	2	Partial_translation_failure	premature_stop	Assigned	Included		
+Library011_barcode96	11	96	582	70	1	0	0			low_functional_rate	3	Partial_translation_failure	premature_stop	Assigned	Included		

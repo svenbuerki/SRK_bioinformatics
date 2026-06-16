@@ -145,11 +145,11 @@ with open(METADATA, encoding="utf-8-sig") as f:
         # Note: sampling_metadata.csv has TWO "Tube #" columns; DictReader keeps
         # the last value, which happens to equal the first in the canonical sheet.
         samples[sid] = {
-            "Library":       row.get("Library", "").strip(),
-            "Barcode":       row.get("barcode", "").strip(),
-            "EO":            row.get("EO_w_sub", row.get("Pop", "")).strip(),
-            "Ingroup":       row.get("Ingroup", "1").strip(),
-            "Tube_number":   (row.get("Tube #") or "").strip(),
+            "Library":        row.get("Library", "").strip(),
+            "Barcode":        row.get("barcode", "").strip(),
+            "EO":             row.get("EO_w_sub", row.get("Pop", "")).strip(),
+            "Ingroup":        row.get("Ingroup", "1").strip(),
+            "DNA_Extraction": (row.get("DNA_Extraction") or "").strip(),
         }
 
 print(f"Metadata: {len(samples)} samples loaded")
@@ -354,7 +354,7 @@ def decide(ind: str) -> tuple[str, str, str]:
 
 # ─── Write audit TSV ──────────────────────────────────────────────────────────
 header = [
-    "Sample_ID", "Library", "Barcode", "Tube_number", "EO", "Ingroup",
+    "Sample_ID", "Library", "Barcode", "DNA_Extraction", "EO", "Ingroup",
     "n_raw_haps", "n_after_step4", "n_after_step4b", "n_after_step7b",
     "Step9_classification", "Proteins_in_final_data",
     "SI_functional_status", "Dominant_failure_mode",
@@ -371,7 +371,7 @@ for sid in sorted(samples):
         "Sample_ID":              sid,
         "Library":                meta["Library"],
         "Barcode":                meta["Barcode"],
-        "Tube_number":            meta["Tube_number"],
+        "DNA_Extraction":         meta["DNA_Extraction"],
         "EO":                     meta["EO"],
         "Ingroup":                meta["Ingroup"],
         "n_raw_haps":             raw_haps.get(sid, 0),
