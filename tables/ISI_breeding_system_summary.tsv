@@ -1,0 +1,5 @@
+Level	Group	N_S	N_O	ISI_point	ISI_median	CI_lo	CI_hi	Prop_SC	Prop_Partial	Prop_SI	Classification	N_boot_finite
+Species	Lepidium papilliferum	20	17	0.741	0.7463	0.5352	0.8993	0.0	0.7313	0.2687	Partially self-incompatible	10000
+EO	Kuna Butte (EO18-7)	5	5	0.9474	0.9474	0.8857	1.0	0.0	0.0	1.0	Self-incompatible	10000
+EO	New Plymouth (EO66)	3	4	0.5556	0.5556	0.0	1.0	0.2304	0.4739	0.2957	Partially self-incompatible	10000
+EO	Tenmile Creek (EO32)	4	4	0.5946	0.6053	0.1389	0.9474	0.0479	0.77	0.1821	Partially self-incompatible	10000
