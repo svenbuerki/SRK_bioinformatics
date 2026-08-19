@@ -1,0 +1,22 @@
+HV_hypothesis	Cross_id	Mother	Father	Mother_test_allele	Father_test_allele	Mother_HV_synonymy_group	Father_HV_synonymy_group	Mother_functional_group	Father_functional_group	HV_distance	Functional_distance	HV_category	Functional_category	Category_changed	Functional_hypothesis	Hypothesis_changed	Discriminating	BL_pairing
+H0	H0-006	Library001_barcode07	Library001_barcode20	Allele_046	Allele_018	Synonymy group 1	Synonymy group 1	FG001	FG002	0.0	0.0048309178743961	Incompatible	Synonymy_test	True	H2	True	True	between-BL
+H0	H0-007	Library001_barcode07	Library001_barcode10	Allele_046	Allele_039	Synonymy group 1	Synonymy group 1	FG001	FG006	0.0	0.0048309178743961	Incompatible	Synonymy_test	True	H2	True	True	between-BL
+H0	H0-008	Library001_barcode07	Library005_barcode18	Allele_046	Allele_016	Synonymy group 1	Synonymy group 1	FG001	FG012	0.0	0.0096618357487922	Incompatible	Synonymy_test	True	H2	True	True	between-BL
+H0	H0-010	Library001_barcode07	Library004_barcode84	Allele_046	Allele_013	Synonymy group 1	Synonymy group 1	FG001	FG002	0.0	0.0048309178743961	Incompatible	Synonymy_test	True	H2	True	True	between-BL
+H0	H0-012	Library001_barcode07	Library001_barcode04	Allele_046	Allele_020	Synonymy group 1	Synonymy group 1	FG001	FG004	0.0	0.0096618357487922	Incompatible	Synonymy_test	True	H2	True	True	any
+H0	H0-013	Library001_barcode07	Library006_barcode47	Allele_046	Allele_028	Synonymy group 1	Synonymy group 1	FG001	FG002	0.0	0.0048309178743961	Incompatible	Synonymy_test	True	H2	True	True	between-BL
+H0	H0-015	Library010_barcode08	Library001_barcode05	Allele_003	Allele_021	Synonymy group 2	Synonymy group 2	FG008	FG014	0.0	0.0096618357487922	Incompatible	Synonymy_test	True	H2	True	True	any
+H1a	H1a-001	Library010_barcode26	Library010_barcode45	Allele_002	Allele_040	Isolated	Synonymy group 1	FG007	FG001	0.0366	0.0193236714975845	Compatible_within	Synonymy_test	True	H2	True	True	between-BL
+H1a	H1a-002	Library010_barcode09	Library010_barcode18	Allele_002	Allele_046	Isolated	Synonymy group 1	FG007	FG001	0.0366	0.0193236714975845	Compatible_within	Synonymy_test	True	H2	True	True	within-BL
+H1a	H1a-003	Library004_barcode89	Library010_barcode27	Allele_030	Allele_003	Isolated	Synonymy group 2	FG018	FG008	0.0366	0.0193236714975845	Compatible_within	Synonymy_test	True	H2	True	True	between-BL
+H1a	H1a-004	Library002_barcode58	Library006_barcode66	Allele_018	Allele_042	Synonymy group 1	Synonymy group 2	FG002	FG023	0.0122	0.0144927536231884	Compatible_within	Synonymy_test	True	H2	True	True	between-BL
+H1a	H1a-005	Library001_barcode05	Library008_barcode27	Allele_021	Allele_046	Synonymy group 2	Synonymy group 1	FG014	FG001	0.0122	0.0144927536231884	Compatible_within	Synonymy_test	True	H2	True	True	any
+H1a	H1a-006	Library007_barcode71	Library010_barcode10	Allele_037	Allele_046	Isolated	Synonymy group 1	FG021	FG001	0.0122	0.0096618357487922	Compatible_within	Synonymy_test	True	H2	True	True	between-BL
+H1a	H1a-007	Library010_barcode06	Library010_barcode15	Allele_052	Allele_046	Synonymy group 3	Synonymy group 1	FG030	FG001	0.0122	0.0144927536231884	Compatible_within	Synonymy_test	True	H2	True	True	within-BL
+H1a	H1a-008	Library006_barcode43	Library008_barcode03	Allele_034	Allele_046	Synonymy group 1	Synonymy group 1	FG001	FG001	0.0	0.0	Compatible_within	Incompatible	True	H0	True	True	between-BL
+H1a	H1a-009	Library006_barcode46	Library006_barcode51	Allele_035	Allele_046	Synonymy group 1	Synonymy group 1	FG001	FG001	0.0	0.0	Compatible_within	Incompatible	True	H0	True	True	within-BL
+H1a	H1a-010	Library006_barcode47	Library008_barcode31	Allele_028	Allele_046	Synonymy group 1	Synonymy group 1	FG002	FG001	0.0	0.0048309178743961	Compatible_within	Synonymy_test	True	H2	True	True	between-BL
+H3	H3-001	Library010_barcode09	Library004_barcode82	Allele_002	Allele_031+Allele_019	Isolated	Isolated+Synonymy group 1	FG007	?	0.0365853658536585		Compatible_within	unknown	True	H3	False	True	within-BL
+H3	H3-002	Library010_barcode09	Library004_barcode89	Allele_002	Allele_030	Isolated	Isolated	FG007	FG018	0.0609756097560975	0.0241545893719806	Compatible_within	Synonymy_test	True	H3	False	True	between-BL
+H3	H3-003	Library010_barcode09	Library007_barcode83	Allele_002	Allele_030+Allele_023	Isolated	Isolated+Synonymy group 1	FG007	?	0.0365853658536585		Compatible_within	unknown	True	H3	False	True	between-BL
+H3	H3-004	Library001_barcode04	Library002_barcode29	Allele_020	Allele_054+Allele_055	Synonymy group 1	Synonymy group 4+Synonymy group 2	FG004	?	0.0121951219512195		Compatible_within	unknown	True	H3	False	True	any

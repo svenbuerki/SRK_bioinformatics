@@ -1,0 +1,13 @@
+Level	Definition	Group	N_ind	S_obs	Chao1	MM_Vmax
+Species	Functional	L. papilliferum	367	32	50	38.12
+Species	Sequence	L. papilliferum	367	49	65.07	59.04
+BL	Functional	BL1	11	4	4.5	5.21
+BL	Sequence	BL1	11	5	7	7.08
+BL	Functional	BL2	77	7	11.5	8.49
+BL	Sequence	BL2	77	7	11.5	8.49
+BL	Functional	BL3	81	10	12	10.85
+BL	Sequence	BL3	81	15	19.5	17.02
+BL	Functional	BL4	98	16	20	18.93
+BL	Sequence	BL4	98	28	33.33	37.45
+BL	Functional	BL5	92	13	14.5	15.02
+BL	Sequence	BL5	92	23	26	29.1

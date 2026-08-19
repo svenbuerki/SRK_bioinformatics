@@ -6828,6 +6828,51 @@ The statistical test is a direct evaluation of the allele bin definitions using 
 * **SI breakdown documentation**: Incompatible crosses yielding seeds identify individuals where the polyploid competitive interaction mechanism has enabled self-fertilisation — Stage 5 Compatibility Collapse Cascade events
 * **Proposal preliminary data**: even a small initial crossing experiment (n = 20–30 crosses) covering W, N, and Compatible_within categories provides sufficient preliminary evidence to justify the full Objective 2 crossing design in the NSF proposal
 
+## Functional-SRK Site Definition and Accumulation-Curve Rerun (Step 26f) {#functional-srk}
+
+> **Question answered:** *What is an SRK allele, functionally?* — added 2026-08-18 as a refinement to Step 26a's HV definition and Step 15's accumulation curves.
+
+### Motivation
+
+LEPA-only Shannon-entropy scanning has drift-collapsed to a single HV run (cols 349–430) and misses 7 of the 12 Ma 2016 SCR9-contact residues (cols 241, 303, 313, 314, 323, 328, 331). The pipeline therefore under-specifies the SI-recognition site set when calibrated on LEPA sequences alone. Using the outgroup taxa (Brassica + Arabidopsis) as guiding force recovers the full HV structure and defines a richer functional site set — the outgroups act as an evolutionary "amplifier" for signal that drift has erased from within LEPA.
+
+### Scripts
+
+- `srk_functional_definitions.py` — computes the functional site set, the functional synonymy groups, the collapsed individual × functional-group matrix, and the tidy-layout synonymy network figure.
+- `SRK_functional_allele_accumulation.R` — accumulation curves under the functional definition, side-by-side with the sequence-based curves.
+
+### Functional site set
+
+- **HV_union** = LEPA HV ∪ Brassica HV ∪ Arabidopsis HV (from `step26a_HV_regions_per_species.tsv`). Current dataset: 151 cols across 5 runs (197–215, 262–297, 330–339, 341–344, 349–430).
+- **Linker zones** = intervals between consecutive HV_union runs (4 zones spanning 83 cols).
+- **Linker-polymorphic sites** = polymorphic in the full alignment (LEPA + Brassica + Arabidopsis); 72 of 83 linker cols qualify.
+- **Functional site set = HV_union ∪ polymorphic_linker = 223 cols.** All 12 Ma 2016 SCR9-contact residues fall inside this set (6 inside HV union, 6 inside linker zones).
+
+### Functional synonymy groups
+
+Pairwise p-distance is computed on the 223 functional sites only. Allele pairs at distance = 0 form the identity-edge set (57 edges in the current dataset); connected components define **functional synonymy groups**. Current dataset: 49 sequence alleles collapse to **32 functional groups** (6 multi-allele — FG001 with 10 alleles, FG002 with 4, FG003 with 3, three pairs — plus 26 singletons).
+
+### Scientific interpretation
+
+The functional partition is ~9× finer than the HV-only synonymy would produce (~9 large groups) but ~35 % coarser than the raw sequence count (49). This is the *specificity-level* view: it collapses sequence alleles that differ only at neutral/silent positions but keeps distinct all pairs that differ at any residue with plausible functional consequence (HV or contact-adjacent linker).
+
+**Consequence for per-BL diversity narrative.** Rerunning the accumulation curves on the collapsed matrix (`Tables/Phase2/step11_functional_allele_genotypes.tsv`) reveals:
+
+| Level | Sequence alleles | Functional groups | Collapse |
+|---|---|---|---|
+| Species | 49 (MM = 59, Chao1 = 65) | 32 (MM = 38, Chao1 = 50) | 35 % |
+| BL1 | 5 | 4 | 20 % |
+| BL2 | 7 | 7 | **0 %** (all functionally distinct) |
+| BL3 | 15 | 10 | 33 % |
+| BL4 | 28 | **16** | **43 %** |
+| BL5 | 23 | **13** | **43 %** |
+
+**BL4 and BL5 — previously framed as the "diversity reservoirs" — carry substantial silent variation.** Their true specificity-level diversity is roughly half of what the sequence-based count suggests. **BL2's diversity, by contrast, is entirely genuine.** This resegregation of the "who is diverse" narrative is one of the paper-worthy consequences of the functional-site refinement.
+
+### Outputs
+
+Written to `Tables/Phase5/` (site + synonymy + distances), `Tables/Phase2/` (collapsed matrix), `Tables/Phase3/` (accumulation stats), and `figures/Phase5/` + `figures/Phase3/` (network + accumulation-curve panels). The HV-only pipeline outputs are left completely untouched — the two definitions can be compared side-by-side, and the paper / NSF-proposal writeup will pick one as the headline (current recommendation: lead with functional, report sequence-based as supplementary).
+
 # Phase 4: Per-individual SI status, null-aware genotypes, and forward simulation {#phase4}
 
 ## Per-Individual SI System Status (Step 22) {#sistatus}

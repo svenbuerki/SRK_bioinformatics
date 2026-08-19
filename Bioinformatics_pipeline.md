@@ -1854,6 +1854,59 @@ python srk_allele_hypotheses.py
 
 ---
 
+#### Step 26f — Functional-SRK Site Definition and Accumulation-Curve Rerun
+
+> Refinement to Step 26a's HV definition and Step 15's accumulation curves, added 2026-08-18. Motivated by the observation that LEPA-only Shannon entropy has drift-collapsed to a single HV run (cols 349–430), missing 7 of the 12 Ma 2016 SCR9-contact residues (cols 241, 303, 313, 314, 323, 328, 331). Using the outgroup taxa as guiding force recovers 5 cross-genera HV runs (197–430) and defines a richer functional site set. Adds a functional-synonymy definition side-by-side with the HV-only one so the two are directly comparable in the paper / NSF proposal writeup.
+
+**Scripts:** `srk_functional_definitions.py` + `SRK_functional_allele_accumulation.R`
+
+**Command:**
+```bash
+python3 srk_functional_definitions.py
+Rscript SRK_functional_allele_accumulation.R
+```
+
+**Functional site set — definition**
+
+- **HV_union** = LEPA HV ∪ Brassica HV ∪ Arabidopsis HV (from `step26a_HV_regions_per_species.tsv`); 151 cols across 5 runs (197–215, 262–297, 330–339, 341–344, 349–430).
+- **Linker zones** = intervals between consecutive HV_union runs (4 zones spanning 83 cols).
+- **Linker-polymorphic sites** = polymorphic in the full alignment (LEPA + Brassica + Arabidopsis); 72 of 83 linker cols qualify.
+- **Functional site set = HV_union ∪ polymorphic_linker = 223 cols total.** All 12 Ma 2016 SCR9-contact residues fall inside this set (6 in HV union, 6 in linker zones).
+
+**Functional synonymy groups**
+
+Pairwise p-distance is computed for LEPA alleles across the 223 functional sites only. Allele pairs with distance = 0 are joined as edges of an identity graph; connected components define **functional synonymy groups**. Current dataset (2026-08-18): 49 alleles → **32 functional groups** (6 multi-allele groups + 26 singletons; 57 identity edges).
+
+**Outputs**
+
+| File | Purpose |
+|---|---|
+| `Tables/Phase5/step26a_functional_site_positions.tsv` | 223 sites annotated (per-species HV membership, Ma-2016 contact flag, polymorphism status) |
+| `Tables/Phase5/step26b_functional_synonymy_groups.csv` | Allele → functional group mapping |
+| `Tables/Phase5/step26b_functional_allele_distances.tsv` | Pairwise distances at functional sites (parallel to `step26b_HV_allele_distances.tsv`) |
+| `Tables/Phase2/step11_functional_allele_genotypes.tsv` | Step 11 count matrix collapsed by functional group |
+| `Tables/Phase3/step15_functional_allele_accumulation_stats.tsv` | Species + per-BL S_obs / MM / Chao1 (functional) |
+| `Tables/Phase3/step15_functional_vs_sequence_comparison.tsv` | Side-by-side sequence-vs-functional comparison |
+| `figures/Phase5/step26b_functional_synonymy_network.pdf/.png` | Tidy network layout of the 32 groups |
+| `figures/Phase3/step15_functional_allele_accumulation_species.pdf/.png` | Species-level dual-line accumulation (sequence + functional overlaid) |
+| `figures/Phase3/step15_functional_allele_accumulation_BL_combined.pdf/.png` | Two-panel per-BL comparison (sequence left, functional right) |
+| `figures/Phase3/step15_functional_vs_sequence_comparison.pdf/.png` | Side-by-side bar comparison |
+
+**Rerun impact (2026-08-18)**
+
+| Level | Sequence alleles | Functional groups | Collapse |
+|---|---|---|---|
+| Species | 49 (MM = 59, Chao1 = 65) | 32 (MM = 38, Chao1 = 50) | 35 % |
+| BL1 | 5 | 4 | 20 % |
+| BL2 | 7 | 7 | 0 % (all functionally distinct) |
+| BL3 | 15 | 10 | 33 % |
+| BL4 | 28 | 16 | 43 % |
+| BL5 | 23 | 13 | 43 % |
+
+The HV-only pipeline outputs (`step26a_LEPA_HV_positions.tsv`, `step26b_synonymy_groups.csv`, legacy `step15_*` files) are left untouched — the new files sit side-by-side for the transition. The paper / NSF-proposal writeup will pick one definition as the headline; current recommendation is to lead with the functional definition and report the sequence-based version as a supplementary panel.
+
+---
+
 ## Sample Exclusion Audit (cross-phase QC report)
 
 **Script:** `audit_sample_exclusions.py`
