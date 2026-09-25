@@ -1,136 +1,110 @@
-"""srk_bl_constants — single source of truth for BL ordering and colours.
+"""srk_bl_constants.py — Python mirror of srk_bl_constants.R.
 
-Imported by every SRK pipeline script that orders or colours bottleneck
-lineages so that ordering and palette stay consistent across the project.
+Single source of truth for the Bottleneck-Lineage (BL) ordering, colour
+palette, and locationCode → BL mapping used across the SRK pipeline.
+Reads the same `Tables/EO_BL_summary.csv` and `Tables/EO_group_BL_summary.csv`
+that the R constants file consumes, so ordering and colours stay in lock-step
+with the LEPA_EO_spatial_clustering figures.
 
-Both orderings are DERIVED FROM CSVs mirrored from the
-LEPA_EO_spatial_clustering project, so the entire pipeline reorders
-automatically when sampling grows — only the CSVs in ``Tables/`` need
-updating.
-
-Exports
--------
-BL_ORDER : list[str]
-    BLs sorted high-to-low by total habitat area, with within-BL
-    connectivity as tie-breaker. Computed at import time from
-    ``Tables/EO_BL_summary.csv`` using the sort key
-        total_area_ha                          (primary, desc)
-        connectivity = n_locations - n_groups  (secondary, desc)
-        BL name                                (deterministic tie-break)
-    Area is the primary Ne proxy (carrying capacity -> drift floor);
-    connectivity is the secondary stratification for BLs of similar size.
-    Same sort key drives the panel order in the BL drift figure produced
-    by the spatial-clustering project.
-
-BL_COLORS : dict[str, str]
-    Set1 palette mapped to BL by cluster-index, matching the rendered
-    figures in LEPA_EO_spatial_clustering (dendrogram, BL geographic
-    context map, drift panel, fragmentation network). Verified against
-    live ``bl_strip_cols`` on 2026-05-18.
-
-get_eo_order_within_bl(eo_codes=None, bl_summary_path=...)
-    EO codes ordered by (BL_ORDER, ascending mean Drift_index within BL).
-    Reads ``Tables/EO_group_BL_summary.csv``. EO name is the tie-break so
-    the order is deterministic and matches the R helper.
+Public API
+----------
+BL_COLORS               dict {BLn: hex colour} — Set1 cluster-index mapping.
+BL_ORDER                list of BLn strings, area-then-connectivity DESC.
+load_eo_to_bl(...)      map {EOcode: BL} from EO_group_BL_summary.csv
+locationCode_to_bl(...) map {locationCode: BL} — locationCode → base EO → BL
+                        (locationCodes like "EO18-7" map to "EO18" → its BL).
 """
+from __future__ import annotations
 
+import re
 from pathlib import Path
-import csv
 
-_BL_SUMMARY_FILE     = Path("Tables/EO_BL_summary.csv")
-_EO_GROUP_BL_SUMMARY = Path("Tables/EO_group_BL_summary.csv")
+import pandas as pd
 
-# BL -> hex colour (cluster-index Set1 mapping)
-BL_COLORS = {
-    "BL1": "#984EA3",  # purple
-    "BL2": "#377EB8",  # blue
-    "BL3": "#E41A1C",  # red
-    "BL4": "#FF7F00",  # orange
-    "BL5": "#4DAF4A",  # green
+# ---------------------------------------------------------------------------
+DEFAULT_BL_SUMMARY_CSV       = Path("Tables/EO_BL_summary.csv")
+DEFAULT_EO_GROUP_BL_CSV      = Path("Tables/EO_group_BL_summary.csv")
+
+# BL → hex colour (Set1 palette, cluster-index mapping).
+BL_COLORS: dict[str, str] = {
+    "BL1": "#984EA3",   # purple
+    "BL2": "#377EB8",   # blue
+    "BL3": "#E41A1C",   # red
+    "BL4": "#FF7F00",   # orange
+    "BL5": "#4DAF4A",   # green
 }
 
 
-def _derive_bl_order(path=_BL_SUMMARY_FILE):
-    """BL order sort key: total habitat area (ha) DESC, then within-BL
-    connectivity DESC, then BL name ASC. Area is the primary Ne proxy;
-    connectivity is the secondary stratification for BLs of similar size."""
-    path = Path(path)
-    if not path.is_file():
-        raise FileNotFoundError(
-            f"BL summary file not found: {path} — mirror it from "
-            f"LEPA_EO_spatial_clustering/data/EO_BL_summary.csv"
-        )
-    rows = []
-    with path.open(encoding="utf-8-sig", newline="") as f:
-        for r in csv.DictReader(f):
-            rows.append((
-                r["BL"],
-                float(r["total_area_ha"]),                       # primary
-                int(r["n_locations"]) - int(r["n_groups"]),      # connectivity
-            ))
-    rows.sort(key=lambda x: (-x[1], -x[2], x[0]))
-    return [bl for bl, _area, _conn in rows]
-
-
-BL_ORDER = _derive_bl_order()
-
-# Numerical (alphanumeric) BL order — used for SCATTER-PLOT LEGENDS only
-# (TP1, TP2, GFS scatters, allele-accumulation curve legend, etc.) where
-# the x/y axes are not BL and the legend just needs an easy-to-read order.
-# Pass to plotting code (e.g. matplotlib legend handles, ggplot breaks=...)
-# wherever the BL appears in a colour legend.  Categorical axes / facets /
-# tables should still use BL_ORDER (area-then-connectivity, Ne-proxy driven).
-BL_ORDER_NUMERIC = sorted(BL_ORDER)
-
-
-def get_eo_order_within_bl(eo_codes=None, bl_summary_path=_EO_GROUP_BL_SUMMARY):
-    """EO codes ordered by (BL_ORDER, ascending mean Drift_index within BL).
-
-    Parameters
-    ----------
-    eo_codes : iterable[str] or None
-        If provided, restrict the returned list to these EOs (preserving the
-        connectivity order). Any extras not in the summary file are appended
-        lexically at the end so downstream code is robust to germplasm
-        sub-codes etc.
-    bl_summary_path : str or pathlib.Path
-        Path to EO_group_BL_summary.csv (mirrored under Tables/ in this repo).
-
-    Returns
-    -------
-    list[str]
-    """
-    path = Path(bl_summary_path)
-    if not path.is_file():
-        raise FileNotFoundError(f"EO group BL summary file not found: {path}")
-
-    import re
-    sums = {}
-    counts = {}
-    with path.open(encoding="utf-8-sig", newline="") as f:
-        for row in csv.DictReader(f):
-            # Composite EO entries like "EO118; EO76" represent one geographic
-            # group spanning two EOs — split so downstream code sees both
-            # codes (each inherits the group's mean Drift_index).
-            eos = [e.strip() for e in re.split(r"[;,]", row["EO"]) if e.strip()]
-            di = float(row["Drift_index"])
-            for eo in eos:
-                key = (eo, row["BL"])
-                sums[key] = sums.get(key, 0.0) + di
-                counts[key] = counts.get(key, 0) + 1
-
-    means = {key: sums[key] / counts[key] for key in sums}
-    bl_rank = {bl: i for i, bl in enumerate(BL_ORDER)}
-    # Secondary sort on EO name keeps ties deterministic and identical to R.
-    ordered = sorted(
-        means.keys(),
-        key=lambda k: (bl_rank.get(k[1], len(BL_ORDER)), means[k], k[0]),
+def load_bl_order(path: Path = DEFAULT_BL_SUMMARY_CSV) -> list[str]:
+    """BL_ORDER: area DESC, connectivity (n_locations − n_groups) DESC,
+    BL name ASC. Same key as srk_bl_constants.R."""
+    df = pd.read_csv(path)
+    df["connectivity"] = df["n_locations"] - df["n_groups"]
+    df = df.sort_values(
+        ["total_area_ha", "connectivity", "BL"],
+        ascending=[False, False, True],
     )
-    ordered_eos = [eo for eo, _bl in ordered]
+    return df["BL"].tolist()
 
-    if eo_codes is not None:
-        eo_set = set(eo_codes)
-        kept = [eo for eo in ordered_eos if eo in eo_set]
-        extras = sorted(eo_set - set(kept))
-        ordered_eos = kept + extras
-    return ordered_eos
+
+try:
+    BL_ORDER = load_bl_order()
+except FileNotFoundError:
+    BL_ORDER = ["BL4", "BL5", "BL3", "BL1", "BL2"]   # documented default
+
+
+# ---------------------------------------------------------------------------
+def load_eo_to_bl(path: Path = DEFAULT_EO_GROUP_BL_CSV) -> dict[str, str]:
+    """Map each EO code to its BL. Composite EO entries like 'EO118; EO76'
+    are split so both codes are returned. If an EO spans multiple BLs
+    (uncommon), the first one encountered wins."""
+    df = pd.read_csv(path)
+    parts = df["EO"].astype(str).str.split(r"[;,]\s*")
+    df = df.assign(EO=parts).explode("EO").copy()
+    df["EO"] = df["EO"].str.strip()
+    eo_to_bl: dict[str, str] = {}
+    for _, row in df.iterrows():
+        eo = row["EO"]
+        if eo and eo not in eo_to_bl:
+            eo_to_bl[eo] = row["BL"]
+    return eo_to_bl
+
+
+# Match "EO" + one-or-more digits at the start. Any trailing suffix
+# (a dash + subunit, or letters like "RT" for reintroduction / reserve
+# treatment) is stripped so subunits inherit their parent EO's BL.
+_EO_BASE = re.compile(r"^(EO)(\d+)")
+
+
+def base_eo(location_code: str) -> str:
+    """Return the base EO code matching the LEPA_EO_spatial_clustering
+    naming convention (zero-padded to two digits for EO0-EO9).
+
+    Examples::
+
+        'EO18-7'  → 'EO18'
+        'EO25-A'  → 'EO25'
+        'EO27RT'  → 'EO27'    (reintroduction / reserve-treatment subunit)
+        'EO8'     → 'EO08'    (zero-padded to match the BL summary CSV)
+        'EO118'   → 'EO118'   (three-digit codes unchanged)
+
+    Returns an empty string when the code does not start with 'EO'.
+    """
+    m = _EO_BASE.match(str(location_code))
+    if not m:
+        return ""
+    n = int(m.group(2))
+    # Zero-pad only the one-digit EOs; the CSV keeps single-digit EOs as
+    # 'EO01'..'EO09'. Two- and three-digit EOs are unchanged.
+    return f"EO{n:02d}" if n < 10 else f"EO{n}"
+
+
+def locationCode_to_bl(location_codes,
+                       eo_to_bl: dict[str, str] | None = None
+                       ) -> pd.Series:
+    """Vectorised map locationCode → BL using base_eo() + eo_to_bl."""
+    if eo_to_bl is None:
+        eo_to_bl = load_eo_to_bl()
+    codes = pd.Series(location_codes, dtype=str).reset_index(drop=True)
+    bases = codes.map(base_eo)
+    return bases.map(eo_to_bl)
