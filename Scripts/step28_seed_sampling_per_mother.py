@@ -89,7 +89,9 @@ NFERTILE_BINS = [
     (">50",   51, 10_000),
 ]
 N_SIM = 2_000                     # bootstrap draws per (K, n) point
-SEEDS_GRID = np.arange(1, 201)    # x-axis for the curves
+SEEDS_GRID = np.arange(1, 201)    # x-axis for the per-mother panel
+M_GRID = np.arange(1, 31)         # x-axis for the aggregation panel
+DRAWS_PER_MOTHER = 31             # 2 maternal alleles + 29 paternal seed draws
 
 
 # ---------------------------------------------------------------------------
@@ -476,6 +478,41 @@ def build_curves_by_bin(rng: np.random.Generator) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def build_aggregation_curves(rng: np.random.Generator) -> pd.DataFrame:
+    """Expected distinct alleles at a location as we aggregate mothers.
+
+    Each mother contributes DRAWS_PER_MOTHER = 31 independent allele
+    draws from the local pool (2 maternal alleles she carries + 29
+    paternal alleles the Rule-2 seed lot reveals). M mothers therefore
+    contribute M · 31 draws. This closes the gap the per-mother panel
+    exposes at large events: even though one mother's 29 seeds cannot
+    saturate a 32-allele pool, the location saturates once ~5–10
+    mothers are aggregated.
+    """
+    rows = []
+    for label, lo, hi in NFERTILE_BINS:
+        n_rep = (lo + min(hi, 200)) / 2
+        K_uncapped = max(2 * (int(round(n_rep)) - 1), 1)
+        K = min(K_uncapped, K_SPECIES_FG)
+        for M in M_GRID:
+            draws = int(M) * DRAWS_PER_MOTHER
+            e = expected_coverage(K, draws)
+            sim = simulate_coverage(K, draws, n_sim=N_SIM, rng=rng)
+            rows.append({
+                "bin":            label,
+                "N_rep":          int(round(n_rep)),
+                "K":              K,
+                "M_mothers":      int(M),
+                "cum_seeds":      int(M) * 29,
+                "cum_draws":      draws,
+                "E_cov":          e,
+                "E_alleles":      e * K,
+                "sim_alleles_lo": float(np.quantile(sim, 0.025)) * K,
+                "sim_alleles_hi": float(np.quantile(sim, 0.975)) * K,
+            })
+    return pd.DataFrame(rows)
+
+
 # ---------------------------------------------------------------------------
 # 4 — figures
 # ---------------------------------------------------------------------------
@@ -496,76 +533,122 @@ def _bin_of(n_fertile: int) -> str:
     return ">50"
 
 
-def plot_coverage_curves(curves: pd.DataFrame, out_png: Path, out_pdf: Path):
-    """Theoretical coverage curves on the absolute-allele scale, with the
-    operational 29-seed cap.
+def plot_coverage_curves(curves: pd.DataFrame,
+                         agg: pd.DataFrame,
+                         out_png: Path, out_pdf: Path):
+    """Two-panel coverage figure on the absolute-allele scale.
 
-    Each curve shows the **expected number of distinct SRK alleles** a
-    mother's seed lot would reveal as we increase the number of seeds
-    genotyped, with the local pool of distinct alleles capped at the
-    species-wide ceiling (32 Fgs). Plotting on the absolute scale keeps
-    the curves honestly comparable across event sizes: small events
-    saturate quickly because there are few alleles to find, not because
-    they are easier to sample. The dashed grey horizontal line marks
-    the 32-allele species ceiling; the vertical red line marks the
-    29-seed operational cap (Rule 2); coloured dots on each curve show
-    the number of distinct alleles each event-size bin **actually
-    delivers per mother** at the 29-seed cap.
+    Panel A (left): expected distinct SRK alleles a **single mother's**
+    seed lot reveals as we increase the number of seeds genotyped, with
+    the 29-seed operational cap (Rule 2). Shows why one mother alone
+    plateaus at ~19 of 32 alleles at large events — the coupon-collector
+    limit for a single sampler.
+
+    Panel B (right): the **aggregation rescue**. Same y-axis, but x =
+    number of mother plants sampled at the location (29 seeds each).
+    Each mother contributes 2 maternal + 29 paternal = 31 allele draws
+    to the local pool, so M mothers deliver M · 31 draws. Locations
+    saturate near the species ceiling once ~5–10 mothers are aggregated;
+    the apparent "undersampling of large events" in Panel A is not a
+    real gap.
     """
     RULE2 = 29
-    fig, ax = plt.subplots(figsize=(9.5, 6.0))
-    # Shade the "not-operational" region beyond the 29-seed cap.
-    ax.axvspan(RULE2, SEEDS_GRID.max(),
-               color="#f0f0f0", alpha=0.6, zorder=0)
+    fig, (axA, axB) = plt.subplots(1, 2, figsize=(15.5, 6.0), sharey=True)
+
+    # ---------- Panel A: per-mother ----------
+    axA.axvspan(RULE2, SEEDS_GRID.max(),
+                color="#f0f0f0", alpha=0.6, zorder=0)
     for label, _, _ in NFERTILE_BINS:
         sub = curves[curves["bin"] == label]
         colour = BIN_COLOURS[label]
         K_bin = int(sub["K"].iloc[0])
-        ax.fill_between(sub["n_seeds"],
-                        sub["sim_alleles_lo"], sub["sim_alleles_hi"],
-                        color=colour, alpha=0.18, linewidth=0)
-        ax.plot(sub["n_seeds"], sub["E_alleles"],
-                color=colour, lw=2.0,
-                label=f"{label} fertile plants at event  "
-                      f"(local pool = {K_bin} distinct alleles)")
-        # Mark the alleles delivered by the 29-seed cap — this is the
-        # sampling-strategy dot the field team can point to.
+        axA.fill_between(sub["n_seeds"],
+                         sub["sim_alleles_lo"], sub["sim_alleles_hi"],
+                         color=colour, alpha=0.18, linewidth=0)
+        axA.plot(sub["n_seeds"], sub["E_alleles"],
+                 color=colour, lw=2.0,
+                 label=f"{label} fertile plants at event  "
+                       f"(local pool = {K_bin} distinct alleles)")
         try:
             alleles_at_cap = float(
                 sub.loc[sub["n_seeds"] == RULE2, "E_alleles"].iloc[0]
             )
         except IndexError:
             continue
-        ax.scatter([RULE2], [alleles_at_cap], s=90, c=colour,
-                   edgecolor="white", linewidth=1.2, zorder=5)
-        ax.text(RULE2 + 3, alleles_at_cap,
-                f" {alleles_at_cap:.1f} of {K_bin}",
-                fontsize=9, color=colour, va="center", ha="left")
+        axA.scatter([RULE2], [alleles_at_cap], s=90, c=colour,
+                    edgecolor="white", linewidth=1.2, zorder=5)
+        axA.text(RULE2 + 3, alleles_at_cap,
+                 f" {alleles_at_cap:.1f} of {K_bin}",
+                 fontsize=9, color=colour, va="center", ha="left")
+    axA.axhline(K_SPECIES_FG, color="#333333",
+                ls="--", lw=1.0, alpha=0.6)
+    axA.text(SEEDS_GRID.max() - 2, K_SPECIES_FG + 0.3,
+             f"32 alleles — species-wide SRK ceiling",
+             fontsize=9, color="#333333", ha="right", va="bottom")
+    axA.axvline(RULE2, color="#b2182b", ls="-", lw=1.6, alpha=0.85)
+    axA.text(RULE2 - 1.5, 0.5,
+             f"29 seeds — operational cap (Rule 2)\n"
+             f"the recipe never asks for more than this per mother",
+             fontsize=9, color="#b2182b",
+             ha="right", va="bottom")
+    axA.set_xlim(1, SEEDS_GRID.max())
+    axA.set_ylim(0, K_SPECIES_FG + 2)
+    axA.set_xlabel("Number of seeds genotyped per mother")
+    axA.set_ylabel("Expected number of distinct SRK alleles detected")
+    axA.set_title("A. Per mother (29 seeds each)", fontsize=12)
+    axA.legend(loc="lower right", fontsize=9, frameon=True,
+               title="Event size (per-mother pool)")
+    axA.spines["top"].set_visible(False)
+    axA.spines["right"].set_visible(False)
 
-    # Species-wide SRK allele ceiling (32 Fgs from the preliminary study).
-    ax.axhline(K_SPECIES_FG, color="#333333",
-               ls="--", lw=1.0, alpha=0.6)
-    ax.text(SEEDS_GRID.max() - 2, K_SPECIES_FG + 0.3,
-            f"32 alleles — species-wide SRK ceiling",
-            fontsize=9, color="#333333", ha="right", va="bottom")
-    ax.axvline(RULE2, color="#b2182b", ls="-", lw=1.6, alpha=0.85)
-    ax.text(RULE2 - 1.5, 0.5,
-            f"29 seeds — operational cap (Rule 2)\n"
-            f"the recipe never asks for more than this per mother",
-            fontsize=9, color="#b2182b",
-            ha="right", va="bottom")
-    ax.set_xlim(1, SEEDS_GRID.max())
-    ax.set_ylim(0, K_SPECIES_FG + 2)
-    ax.set_xlabel("Number of seeds genotyped per mother")
-    ax.set_ylabel("Expected number of distinct SRK alleles detected")
-    ax.set_title(
-        "Per-mother seed sampling — distinct SRK alleles revealed at each event size",
-        fontsize=12,
+    # ---------- Panel B: aggregation across mothers ----------
+    m_bench = 5   # highlight 5-mother benchmark ("saturation at all event sizes")
+    for label, _, _ in NFERTILE_BINS:
+        sub = agg[agg["bin"] == label]
+        colour = BIN_COLOURS[label]
+        K_bin = int(sub["K"].iloc[0])
+        axB.fill_between(sub["M_mothers"],
+                         sub["sim_alleles_lo"], sub["sim_alleles_hi"],
+                         color=colour, alpha=0.18, linewidth=0)
+        axB.plot(sub["M_mothers"], sub["E_alleles"],
+                 color=colour, lw=2.0,
+                 label=f"{label} fertile plants at event")
+        # Marker + label at the 5-mother benchmark
+        try:
+            alleles_at_m = float(
+                sub.loc[sub["M_mothers"] == m_bench, "E_alleles"].iloc[0]
+            )
+        except IndexError:
+            continue
+        axB.scatter([m_bench], [alleles_at_m], s=90, c=colour,
+                    edgecolor="white", linewidth=1.2, zorder=5)
+        axB.text(m_bench + 0.5, alleles_at_m,
+                 f" {alleles_at_m:.1f} of {K_bin}",
+                 fontsize=9, color=colour, va="center", ha="left")
+    axB.axhline(K_SPECIES_FG, color="#333333",
+                ls="--", lw=1.0, alpha=0.6)
+    axB.axvline(m_bench, color="#1b7837", ls=":", lw=1.4, alpha=0.85)
+    axB.text(m_bench - 0.3, 0.5,
+             f"{m_bench} mothers × 29 seeds\n"
+             f"= {m_bench * 29} cumulative seeds at the location",
+             fontsize=9, color="#1b7837",
+             ha="right", va="bottom")
+    axB.set_xlim(1, M_GRID.max())
+    axB.set_xlabel("Number of mother plants sampled at the location "
+                   "(29 seeds each)")
+    axB.set_title("B. Aggregation across mothers at a location",
+                  fontsize=12)
+    axB.legend(loc="lower right", fontsize=9, frameon=True,
+               title="Event size")
+    axB.spines["top"].set_visible(False)
+    axB.spines["right"].set_visible(False)
+
+    fig.suptitle(
+        "Per-mother seed sampling and its aggregation to the location scale — "
+        "distinct SRK alleles revealed",
+        fontsize=13, y=1.00,
     )
-    ax.legend(loc="lower right", fontsize=9, frameon=True, title="Legend")
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-    fig.tight_layout()
+    fig.tight_layout(rect=[0, 0, 1, 0.97])
     fig.savefig(out_png, dpi=200)
     fig.savefig(out_pdf)
     plt.close(fig)
@@ -699,8 +782,13 @@ def main() -> None:
     curves.to_csv(curves_path, sep="\t", index=False)
     print(f"[step28] Wrote {curves_path}")
 
+    agg = build_aggregation_curves(rng)
+    agg_path = tables_dir / "step28_aggregation_curves_by_Nfertile.tsv"
+    agg.to_csv(agg_path, sep="\t", index=False)
+    print(f"[step28] Wrote {agg_path}")
+
     plot_coverage_curves(
-        curves,
+        curves, agg,
         out_png=figures_dir / "step28_coverage_curves.png",
         out_pdf=figures_dir / "step28_coverage_curves.pdf",
     )
