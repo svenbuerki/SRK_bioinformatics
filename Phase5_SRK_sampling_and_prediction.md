@@ -164,8 +164,10 @@ so we present **25 m as the intermediate honest default**. All three
 radii are computed and stored in the connectivity table; the primary
 figure and Step 30's finite-population multiplier both use 25 m.
 
+<a id="fig-1"></a>
 ![Figure 1: Within-location pollen connectivity across the 39 LEPA locations at the **25 m primary pollen-flight radius**. One bar per location, panelled by Bottleneck Lineage (BL4 orange, BL5 green, BL3 red, BL1 purple, BL2 blue — Set1 palette shared with the LEPA_EO_spatial_clustering project). Bar length = fraction of the location's adults that sit in a connected component containing more than one event. Vertical guides: 50 % (orange dotted) and 90 % (green dotted) thresholds. Row labels list the location code, number of events, and total adult census. **At 25 m only 8 / 39 locations reach 90 % within-location connectivity; 21 / 39 sit below 50 %.** Sensitivity views at 10 m (conservative small-bee patch) and 50 m (optimistic long-flight) are stored alongside as `step29_location_connectivity_10m.png/pdf` and `step29_location_connectivity_50m.png/pdf`. Source: `step29b_location_connectivity.py`. Data: [`step29_location_connectivity.tsv`](tables/Phase5/step29_location_connectivity.tsv).](figures/Phase5/step29_location_connectivity.png)
 
+<a id="fig-2"></a>
 ![Figure 2: Radius sensitivity of within-location pollen connectivity across all 39 LEPA locations, and the biological justification for adopting **25 m as the primary radius**. Orange bars = fraction of locations reaching ≥ 50 % adults connected at each radius; green bars = fraction reaching ≥ 90 %. At **10 m** (conservative small-bee patch) **0 / 39** locations are fully connected — the framework would flag every LEPA location as fragmented, an over-strong claim. At **50 m** (optimistic long-flight) **46 %** are fully connected — the framework would under-flag fragmentation. **At 25 m, 21 % of locations reach 90 % connectivity and 46 % reach 50 %** — an intermediate reading that is neither too pessimistic nor too optimistic, and that leaves plenty of variation across BLs to detect fragmentation-driven mate limitation. Every downstream analysis in the doc uses this 25 m default; 10 m and 50 m are always computed and stored as sensitivity checks. Source: `step29b_location_connectivity.py`.](figures/Phase5/step29_location_connectivity_radius_sensitivity.png)
 
 ### A.3 Census N_fertile vs permit-realistic M sampled
@@ -849,7 +851,7 @@ limit. Connectivity enters the pipeline as an **effective-N multiplier**
 for the compatibility model and as an **explicit predictor** in the
 Phase B mate-limitation regression.
 
-See **Figure 1** (per-location bars at 10 m) and **Figure 2**
+See [**Figure 1**](#fig-1) (per-location bars at 25 m) and [**Figure 2**](#fig-2)
 (radius-sensitivity aggregate) in the foundational subsection above.
 
 ### R.2 A sampling protocol scaled to each mother's mate context (see A.5–A.8)
@@ -875,6 +877,7 @@ The design is
 robust to permit-driven under-sampling and honest about what small
 populations cannot reveal.
 
+<a id="fig-3"></a>
 ![Figure 3: Recommended seeds per mother plant for each LEPA location under the P1 empirical prior. One horizontal bar per location, coloured by achievability tier: **green** (≤ 29 seeds/mother, fits the Step 28 Rule 2 miss-probability floor), **amber** (30–100 seeds/mother, achievable with focused effort), **red** (> 100 seeds/mother, unrealistic — the location's census is too small to characterise). Vertical guides: 29 (Rule 2 floor) and 100 (practical ceiling). Bars > 300 are capped for display, with the true value annotated at the right. **44 / 52 locations sit in the green tier; 5 in amber; 3 in red (EO24-1, EO24-2, EO24-7 — all single-plant or two-plant slickspots).** Source: `step29_event_location_sampling.py`.](figures/Phase5/step29_recommended_seeds_per_mother_P1.png)
 
 ### How Part B results are computed — short summary for readers
@@ -976,6 +979,7 @@ but for Phase B mate-limitation and SI-escape tests the local coverage
 is what matters: we are testing reproductive dynamics on the alleles
 that are physically present, not attempting a species-wide inventory.
 
+<a id="fig-4"></a>
 ![Figure 4: Predicted number of distinct SRK alleles detected per LEPA location under the P1 species-wide prior (32 Fgs from the Canu-amplicon preliminary study). Horizontal layout, one dot per location, panelled by Bottleneck Lineage in the standard BL_ORDER (BL4, BL5, BL3, BL1, BL2). Dot size ∝ √M (permit-realistic count of mothers with seed records in the LEPA DB); error bars = 95 % credible interval from Dirichlet posterior draws. Y-tick labels give `locationCode (n = mothers sampled)`. Vertical dashed line marks the species-wide SRK allele ceiling of 32. **BL3 (EO76, EO38) and BL1 (EO61) predict ~21 distinct alleles; the BL5 tail (EO24 group) predicts 2–5.** Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_prediction_diversity.png)
 
 ### R.4 Finite-population prediction of pollen compatibility (Part B result)
@@ -1002,6 +1006,7 @@ the "failed" threshold at ≥ 3 Idaho slickspots before we
 even open a seed lot. These are the specific sites where
 mate-limitation is the working hypothesis.
 
+<a id="fig-5"></a>
 ![Figure 5: Predicted per-mother pollen compatibility under random mating for each LEPA location. Horizontal layout, one dot per location, panelled by Bottleneck Lineage. Traffic-light background bands mark **failed** (compatibility < 0.20, red), **struggling** (0.20–0.40, orange) and **sustainable** (≥ 0.40, green) — matching the wording used elsewhere in the SRK random-mating framework. Dot position = mean predicted compatibility from the finite-population model (2 × N_fertile local alleles drawn from P1, N_fertile scaled by the location's within-10 m connectivity share); error bars = 95 % credible interval across simulation replicates; dot size ∝ √M (mothers with seed records in DB). **Large slickspots converge on ~0.63 with tight CI; BL5 tiny slickspots collapse into "struggling" or "failed" bands with wide CI reflecting founder-effect uncertainty.** Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_prediction_fecundation.png)
 
 ### R.5 Cross-plot: SRK diversity vs pollen compatibility (Part B result)
@@ -1021,6 +1026,7 @@ summary of Objective 3: fragmentation and drift are not abstract
 threats to LEPA; they translate into a measurable, testable drop
 in the number of compatible mates a mother can access.
 
+<a id="fig-6"></a>
 ![Figure 6: Predicted SRK allele diversity (x) vs predicted random-mating pollen compatibility (y) per LEPA location, coloured by Bottleneck Lineage (Set1 palette: BL1 purple, BL2 blue, BL3 red, BL4 orange, BL5 green). Error bars on both axes come from the same Dirichlet posterior draws that produced the two single-quantity Phase A figures. Dot size ∝ √M (mothers with seed records in DB). Dashed grey reference curve = the theoretical mean-compatibility relation `1 − 2 / k_eff` under uniform allele frequencies — locations sit ON this curve when Fg diversity is even, below it when the local pool is skewed toward one or two common alleles (drift signature). **The BL5 tail (EO24, EO24-1, EO24-2) sits at the extreme low-diversity / low-compatibility corner; large BL3 (EO76) and BL1 (EO61) sit near the top-right where both quantities saturate near P1.** This is the single-figure summary of the fragmentation → drift → SRK diversity loss → mate-limitation chain that anchors Objective 3. Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_diversity_vs_pcompat.png)
 
 ### R.6 How Part C closes the loop: data needed to test the predictions
@@ -1088,8 +1094,10 @@ genotypes exist — these are DEMO renders produced under
 `--demo` (simulated Phase B data), watermarked so they cannot
 be confused with real analysis.
 
+<a id="fig-7"></a>
 ![Figure 7 (DEMO): Mate-limitation regression preview. One dot per LEPA location, colour = "sustainable" band. X = predicted random-mating pollen compatibility (mean across sampled mothers at that location); Y = mean observed seeds per mother. Traffic-light background bands (failed / struggling / sustainable). Dashed line = weighted OLS fit, slope + p-value printed in the legend. In this DEMO the simulator baked in a direct causal link (seed set ∝ compatibility), so the slope is highly significant. **With real data the same figure will test whether observed seed set actually declines with predicted compatibility — a positive slope with 95 % CI excluding 0 confirms mate limitation at population level.** Source: `step30_srk_diversity_prediction_vs_observed.py --demo`.](figures/Phase5/step30_B_DEMO_mate_limitation.png)
 
+<a id="fig-8"></a>
 ![Figure 8 (DEMO): Self-incompatibility escape preview. One horizontal bar per LEPA location, sorted by observed rate. X = observed rate of pollen alleles matching the mother's own SRK alleles (= self-incompatibility escape rate). Red bars = locations that reject the strict-SI null at 5 % false-discovery rate; grey bars = consistent with strict SI. In this DEMO the simulator baked in 8 % SI escape rate, so most locations show detectable escape. **With real data any red bar names a candidate partial-SI population — a location where the SI machinery has broken down enough that self-pollen produces seeds.** Source: `step30_srk_diversity_prediction_vs_observed.py --demo`.](figures/Phase5/step30_B_DEMO_si_escape.png)
 
 **Two-year extension.** The `--year` flag on Steps 28, 29 and 30
