@@ -740,7 +740,7 @@ $$\pi_{\text{self-match}}^{H_0} \;=\; 0$$
 Under **partial SI** or SI breakdown, some fraction of seeds carry a
 paternal Fg matching one of the mother's Fgs:
 
-$$\hat{\pi}_{\text{self-match}}(\ell) \;=\; \frac{\#\{\text{seeds at loc.}\;\ell : \text{paternal Fg} \in (a_m, b_m)\}}{\#\text{seeds at loc.}\;\ell}$$
+$$\hat{\pi}_{\text{self-match}}(\ell) \;=\; \frac{\bigl|\{\text{seeds at loc.}\;\ell : \text{paternal Fg} \in (a_m, b_m)\}\bigr|}{\bigl|\text{seeds at loc.}\;\ell\bigr|}$$
 
 The **test** is a permutation of the strict-SI null: for each location,
 permute paternal alleles across seeds while preserving the marginal Fg
