@@ -66,6 +66,14 @@ EXPECTED_COVERAGE = 0.90
 P_MIN = 0.10           # detect any allele siring at least 10 % of offspring
 MISS_ALPHA = 0.05      # with at least 95 % probability
 
+# Biological ceiling on distinct SRK alleles at any single mating event:
+# no local pollen pool can carry more distinct Fgs than the species-wide
+# functional-SRK inventory (32 Fgs from the Canu-amplicon preliminary
+# study). Used to cap the per-bin K in the coverage-curves figure so
+# large events don't visually promise more allele diversity than the
+# species actually holds.
+K_SPECIES_FG = 32
+
 # Spatial mating-neighbourhood radii (metres). R = 10 is the primary
 # assumption; R = 25 and R = 50 are sensitivity checks.
 SPATIAL_RADII_M = (10.0, 25.0, 50.0)
@@ -432,25 +440,38 @@ def build_curves_by_bin(rng: np.random.Generator) -> pd.DataFrame:
     """One row per (bin, n) with analytical E[coverage] + simulation CI.
 
     For each bin we use the midpoint of the bin's N_fertile range as the
-    representative K (rounded), which is what the curves communicate.
+    representative pool size. The pool of *distinct* pollen-donor SRK
+    alleles is capped at the species-wide ceiling (K_SPECIES_FG = 32
+    Fgs) because a local mating neighbourhood cannot carry more
+    functional alleles than the species actually holds — a 100-plant
+    event doesn't produce 200 distinct alleles, it produces at most 32.
+    Both the fraction (E_cov, ∈ [0, 1]) and the absolute allele count
+    (E_alleles = E_cov · K) are stored so the figure can plot on the
+    honest absolute scale while the TSV still carries the fraction.
     """
     rows = []
     for label, lo, hi in NFERTILE_BINS:
-        # representative K: average of 2*(N-1) over the bin range, rounded
+        # representative K: average of 2*(N-1) over the bin range, rounded,
+        # then capped at the species-wide Fg ceiling.
         n_rep = (lo + min(hi, 200)) / 2      # cap >50 bin at 200 for display
-        K = max(2 * (int(round(n_rep)) - 1), 1)
+        K_uncapped = max(2 * (int(round(n_rep)) - 1), 1)
+        K = min(K_uncapped, K_SPECIES_FG)
         for n in SEEDS_GRID:
             e = expected_coverage(K, int(n))
             sim = simulate_coverage(K, int(n), n_sim=N_SIM, rng=rng)
             rows.append({
-                "bin":       label,
-                "N_rep":     int(round(n_rep)),
-                "K":         K,
-                "n_seeds":   int(n),
-                "E_cov":     e,
-                "sim_mean":  sim.mean(),
-                "sim_lo":    np.quantile(sim, 0.025),
-                "sim_hi":    np.quantile(sim, 0.975),
+                "bin":            label,
+                "N_rep":          int(round(n_rep)),
+                "K_uncapped":     K_uncapped,
+                "K":              K,
+                "n_seeds":        int(n),
+                "E_cov":          e,
+                "E_alleles":      e * K,
+                "sim_mean":       sim.mean(),
+                "sim_lo":         float(np.quantile(sim, 0.025)),
+                "sim_hi":         float(np.quantile(sim, 0.975)),
+                "sim_alleles_lo": float(np.quantile(sim, 0.025)) * K,
+                "sim_alleles_hi": float(np.quantile(sim, 0.975)) * K,
             })
     return pd.DataFrame(rows)
 
@@ -476,19 +497,20 @@ def _bin_of(n_fertile: int) -> str:
 
 
 def plot_coverage_curves(curves: pd.DataFrame, out_png: Path, out_pdf: Path):
-    """Theoretical coverage curves + the operational 29-seed cap.
+    """Theoretical coverage curves on the absolute-allele scale, with the
+    operational 29-seed cap.
 
-    Each curve shows how much of the local pollen-donor SRK allele pool
-    a mother's seed lot would characterise as we increase the number of
-    seeds genotyped. Under the **90 %-expected-coverage target** alone
-    (Rule 1), large slickspots would demand 100–300 seeds per mother
-    — impractical for seed banks. The field-team recipe therefore
-    **caps the recommendation at 29 seeds per mother** (Rule 2's
-    miss-probability floor), which guarantees detection of any pollen
-    allele siring at least 10 % of a mother's offspring. The vertical
-    red line marks that operational cap; the coloured dots on each
-    curve mark the coverage each event-size bin **actually delivers**
-    at the 29-seed cap.
+    Each curve shows the **expected number of distinct SRK alleles** a
+    mother's seed lot would reveal as we increase the number of seeds
+    genotyped, with the local pool of distinct alleles capped at the
+    species-wide ceiling (32 Fgs). Plotting on the absolute scale keeps
+    the curves honestly comparable across event sizes: small events
+    saturate quickly because there are few alleles to find, not because
+    they are easier to sample. The dashed grey horizontal line marks
+    the 32-allele species ceiling; the vertical red line marks the
+    29-seed operational cap (Rule 2); coloured dots on each curve show
+    the number of distinct alleles each event-size bin **actually
+    delivers per mother** at the 29-seed cap.
     """
     RULE2 = 29
     fig, ax = plt.subplots(figsize=(9.5, 6.0))
@@ -498,43 +520,46 @@ def plot_coverage_curves(curves: pd.DataFrame, out_png: Path, out_pdf: Path):
     for label, _, _ in NFERTILE_BINS:
         sub = curves[curves["bin"] == label]
         colour = BIN_COLOURS[label]
-        ax.fill_between(sub["n_seeds"], sub["sim_lo"], sub["sim_hi"],
+        K_bin = int(sub["K"].iloc[0])
+        ax.fill_between(sub["n_seeds"],
+                        sub["sim_alleles_lo"], sub["sim_alleles_hi"],
                         color=colour, alpha=0.18, linewidth=0)
-        ax.plot(sub["n_seeds"], sub["E_cov"],
+        ax.plot(sub["n_seeds"], sub["E_alleles"],
                 color=colour, lw=2.0,
                 label=f"{label} fertile plants at event  "
-                      f"({int(sub['K'].iloc[0])} pollen-donor alleles)")
-        # Mark the actual coverage delivered by the 29-seed cap.
+                      f"(local pool = {K_bin} distinct alleles)")
+        # Mark the alleles delivered by the 29-seed cap — this is the
+        # sampling-strategy dot the field team can point to.
         try:
-            cov_at_cap = float(sub.loc[sub["n_seeds"] == RULE2, "E_cov"].iloc[0])
+            alleles_at_cap = float(
+                sub.loc[sub["n_seeds"] == RULE2, "E_alleles"].iloc[0]
+            )
         except IndexError:
             continue
-        ax.scatter([RULE2], [cov_at_cap], s=90, c=colour,
+        ax.scatter([RULE2], [alleles_at_cap], s=90, c=colour,
                    edgecolor="white", linewidth=1.2, zorder=5)
-        # Text label showing the delivered coverage for the small-event bins;
-        # skip clutter on the two smallest bins which are already saturated.
-        if cov_at_cap < 0.99:
-            ax.text(RULE2 + 3, cov_at_cap, f" {cov_at_cap:.0%}",
-                    fontsize=9, color=colour, va="center", ha="left")
+        ax.text(RULE2 + 3, alleles_at_cap,
+                f" {alleles_at_cap:.1f} of {K_bin}",
+                fontsize=9, color=colour, va="center", ha="left")
 
-    ax.axhline(EXPECTED_COVERAGE, color="#333333",
+    # Species-wide SRK allele ceiling (32 Fgs from the preliminary study).
+    ax.axhline(K_SPECIES_FG, color="#333333",
                ls="--", lw=1.0, alpha=0.6)
-    ax.text(SEEDS_GRID.max() - 2, EXPECTED_COVERAGE + 0.012,
-            f"90 % coverage — Rule 1 aspirational target",
+    ax.text(SEEDS_GRID.max() - 2, K_SPECIES_FG + 0.3,
+            f"32 alleles — species-wide SRK ceiling",
             fontsize=9, color="#333333", ha="right", va="bottom")
     ax.axvline(RULE2, color="#b2182b", ls="-", lw=1.6, alpha=0.85)
-    ax.text(RULE2 - 1.5, 0.02,
+    ax.text(RULE2 - 1.5, 0.5,
             f"29 seeds — operational cap (Rule 2)\n"
             f"the recipe never asks for more than this per mother",
             fontsize=9, color="#b2182b",
             ha="right", va="bottom")
     ax.set_xlim(1, SEEDS_GRID.max())
-    ax.set_ylim(0, 1.02)
+    ax.set_ylim(0, K_SPECIES_FG + 2)
     ax.set_xlabel("Number of seeds genotyped per mother")
-    ax.set_ylabel("Expected fraction of pollen-donor SRK alleles detected")
+    ax.set_ylabel("Expected number of distinct SRK alleles detected")
     ax.set_title(
-        "Per-mother seed sampling — what 29 seeds actually delivers "
-        "at each event size",
+        "Per-mother seed sampling — distinct SRK alleles revealed at each event size",
         fontsize=12,
     )
     ax.legend(loc="lower right", fontsize=9, frameon=True, title="Legend")
