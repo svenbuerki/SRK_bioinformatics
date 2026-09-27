@@ -880,6 +880,62 @@ populations cannot reveal.
 <a id="fig-3"></a>
 ![Figure 3: Recommended seeds per mother plant for each LEPA location under the P1 empirical prior. One horizontal bar per location, coloured by achievability tier: **green** (≤ 29 seeds/mother, fits the Step 28 Rule 2 miss-probability floor), **amber** (30–100 seeds/mother, achievable with focused effort), **red** (> 100 seeds/mother, unrealistic — the location's census is too small to characterise). Vertical guides: 29 (Rule 2 floor) and 100 (practical ceiling). Bars > 300 are capped for display, with the true value annotated at the right. **44 / 52 locations sit in the green tier; 5 in amber; 3 in red (EO24-1, EO24-2, EO24-7 — all single-plant or two-plant slickspots).** Source: `step29_event_location_sampling.py`.](figures/Phase5/step29_recommended_seeds_per_mother_P1.png)
 
+### R.2b How many mothers per location to observe every predicted SRK allele
+
+**Question.** Panel B of the § A.7 coverage figure shows *expected*
+coverage as we aggregate mothers. But biologists asking "have I seen
+every allele my location carries?" need a **probability**, not an
+expectation — the last allele is the hardest to catch. And preliminary
+Canu-amplicon data show **private alleles** across events (drift
+signature), so any event skipped at sampling time carries a risk of
+missing its private alleles entirely.
+
+**Two floors combined.** For each location we compute the smallest
+number of mothers `M_recommended` that meets **both**:
+
+- **Coupon-collector floor** (`M_uniform_full_detection`): under the
+  uniform-frequency assumption, the smallest M such that the
+  probability of observing **every one** of the location's predicted
+  SRK alleles is at least **90 %**. Uses M × 31 allele draws (2
+  maternal + 29 paternal per mother) against the local pool K_local =
+  min(2 · (total fertile plants − 1), 32 species alleles).
+- **Private-allele floor** (`M_event_coverage`): at least one mother
+  per event at the location. This is a *drift-aware* constraint —
+  private alleles cannot be caught in an event that is not visited.
+
+The recommendation is `M_recommended = max(coupon-collector floor,
+private-allele floor)`, and the field team is asked to **spread the
+mothers across events** so every event contributes ≥ 1.
+
+**Result — per event-size bin under the uniform model:**
+
+| Event size | K local | M for 90 % chance to see all K |
+|---|---|---|
+| 1–2 fertile plants | 2 | 1 mother |
+| 3–5 | 6 | 1 mother |
+| 6–10 | 14 | 3 mothers |
+| 11–20 | 30 | 6 mothers |
+| 21–50 | 32 | 6 mothers |
+| >50 | 32 | 6 mothers |
+
+**Result — per location combining both floors.** Median
+`M_recommended = 7` mothers per location; range 1–82. **The
+private-allele floor binds at 31 / 52 locations** — for the majority
+of LEPA locations the real sampling constraint is not the
+coupon-collector maths, it is the number of events that must each be
+represented. See [Figure 3b](#fig-3b) and
+[`step28_mothers_for_full_detection_by_location.tsv`](tables/Phase5/step28_mothers_for_full_detection_by_location.tsv).
+
+**Caveat.** The uniform-frequency assumption is optimistic; when
+allele frequencies are skewed (which is what drift produces), rare
+alleles need substantially more mothers than the 90 % bound suggests.
+The private-allele floor is the practical safeguard — it forces at
+least one mother per event so no event's private alleles are missed
+even when frequency skew is severe.
+
+<a id="fig-3b"></a>
+![Figure 3b: Per-location sampling target to observe every predicted SRK allele at 90 % probability under the uniform coupon-collector model, additionally requiring at least one mother per event (private-allele floor). One row per LEPA location, panelled by Bottleneck Lineage; solid coloured bar = `M_recommended` (the binding floor); open bar with the same colour outline = the uniform coupon-collector bound alone. Row labels give the location code, number of events, adult census and predicted local pool size K. Where the solid bar extends beyond the open bar, the private-allele floor is binding — the location has more events than the coupon-collector maths would ask for, and the extra mothers are needed so no event is skipped. Median `M_recommended = 7`; **31 / 52 locations** have the private-allele floor bind (i.e. `n_events > M_uniform`). Source: `step28_seed_sampling_per_mother.py`. Data: [`step28_mothers_for_full_detection_by_location.tsv`](tables/Phase5/step28_mothers_for_full_detection_by_location.tsv), [`step28_mothers_for_full_detection_by_bin.tsv`](tables/Phase5/step28_mothers_for_full_detection_by_bin.tsv).](figures/Phase5/step28_mothers_for_full_detection.png)
+
 ### How Part B results are computed — short summary for readers
 
 Every Part B result below (R.3 – R.5) comes from the same
@@ -1201,6 +1257,8 @@ or right-click → *Save link as…* to pull the TSV into your local pipeline.
 - [`step28_seed_sampling_per_mother.tsv`](tables/Phase5/step28_seed_sampling_per_mother.tsv) — per-mother analyst view (K, achievable coverage, budget flags).
 - [`step28_coverage_curves_by_Nfertile.tsv`](tables/Phase5/step28_coverage_curves_by_Nfertile.tsv) — per-mother analytical + simulation curves by event-size bin.
 - [`step28_aggregation_curves_by_Nfertile.tsv`](tables/Phase5/step28_aggregation_curves_by_Nfertile.tsv) — aggregation curves showing expected distinct alleles at a location for M = 1 … 30 mothers × 29 seeds each, one row per (event-size bin, M).
+- [`step28_mothers_for_full_detection_by_bin.tsv`](tables/Phase5/step28_mothers_for_full_detection_by_bin.tsv) — uniform-model M for a 90 % chance of observing every one of K_local alleles, one row per event-size bin.
+- [`step28_mothers_for_full_detection_by_location.tsv`](tables/Phase5/step28_mothers_for_full_detection_by_location.tsv) — per-location `M_recommended` combining the coupon-collector bound with the private-allele floor (≥ 1 mother per event).
 - [`step29_sampling_per_event.tsv`](tables/Phase5/step29_sampling_per_event.tsv) — per-event allocation.
 - [`step29_sampling_per_location.tsv`](tables/Phase5/step29_sampling_per_location.tsv) — per-location design table with connectivity-informed columns.
 - [`step29_location_coverage_curves.tsv`](tables/Phase5/step29_location_coverage_curves.tsv) — analytical curves by location size.
@@ -1215,6 +1273,7 @@ or right-click → *Save link as…* to pull the TSV into your local pipeline.
 
 - [`step28_coverage_curves.pdf`](figures/Phase5/step28_coverage_curves.pdf) / [`.png`](figures/Phase5/step28_coverage_curves.png) — per-mother coverage vs seeds, one curve per event-size bin, with Rule 2 cap.
 - [`step28_per_mother_budget.pdf`](figures/Phase5/step28_per_mother_budget.pdf) / [`.png`](figures/Phase5/step28_per_mother_budget.png) — per-mother seed budget vs recommended n.
+- [`step28_mothers_for_full_detection.pdf`](figures/Phase5/step28_mothers_for_full_detection.pdf) / [`.png`](figures/Phase5/step28_mothers_for_full_detection.png) — per-location M_recommended (90 % chance to see every predicted SRK allele + ≥ 1 mother per event), panelled by BL.
 - [`step29_location_coverage_curves.pdf`](figures/Phase5/step29_location_coverage_curves.pdf) / [`.png`](figures/Phase5/step29_location_coverage_curves.png) — uniform-K location curves.
 - [`step29_location_coverage_curves_P1.pdf`](figures/Phase5/step29_location_coverage_curves_P1.pdf) / [`.png`](figures/Phase5/step29_location_coverage_curves_P1.png) — P1-prior location curves with per-location bars.
 - [`step29_recommended_seeds_per_mother_P1.pdf`](figures/Phase5/step29_recommended_seeds_per_mother_P1.pdf) / [`.png`](figures/Phase5/step29_recommended_seeds_per_mother_P1.png) — per-location seed-genotyping recipe (green/amber/red tiers).

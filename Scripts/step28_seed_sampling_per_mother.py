@@ -144,6 +144,43 @@ def simulate_coverage(K: int, n: int, n_sim: int = N_SIM,
     return counts / K
 
 
+def prob_all_observed(K: int, n: int) -> float:
+    """P(every one of K uniform alleles is observed in n independent draws)
+    via inclusion–exclusion:
+        P(all seen) = sum_{i=0..K-1} (-1)^i * C(K, i) * ((K-i)/K)^n
+    (The i=K term is 0^n = 0 for n >= 1.) Exact under the uniform-frequency
+    assumption used throughout Step 28; rare alleles in real data require
+    MORE mothers.
+    """
+    if K <= 1:
+        return 1.0
+    if n < K:
+        return 0.0
+    total = 0.0
+    for i in range(K):
+        log_binom = (math.lgamma(K + 1)
+                     - math.lgamma(i + 1)
+                     - math.lgamma(K - i + 1))
+        log_pow = n * math.log((K - i) / K)
+        term = math.exp(log_binom + log_pow)
+        total += ((-1) ** i) * term
+    return float(min(max(total, 0.0), 1.0))
+
+
+def mothers_for_full_detection(K: int, target_prob: float,
+                               draws_per_mother: int = 31,
+                               m_max: int = 100) -> int:
+    """Smallest M such that P(all K uniform alleles observed) >= target_prob,
+    given draws_per_mother allele draws per mother (default 31 = 2 maternal
+    + 29 paternal under the Rule-2 seed lot)."""
+    if K <= 1:
+        return 1
+    for M in range(1, m_max + 1):
+        if prob_all_observed(K, M * draws_per_mother) >= target_prob:
+            return M
+    return m_max
+
+
 # ---------------------------------------------------------------------------
 # Spatial helpers — event mating-neighbourhood (used by Step 28 + Step 29)
 # ---------------------------------------------------------------------------
@@ -478,6 +515,158 @@ def build_curves_by_bin(rng: np.random.Generator) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+# ---------------------------------------------------------------------------
+# Full-detection targets: mothers per location to observe every local allele
+# ---------------------------------------------------------------------------
+FULL_DETECTION_TARGET_PROB = 0.90
+
+
+def build_full_detection_bins_table(
+        target_prob: float = FULL_DETECTION_TARGET_PROB) -> pd.DataFrame:
+    """Per-bin M target: smallest number of mothers (29 seeds each) that
+    delivers at least `target_prob` probability of observing every one
+    of the local pool's distinct alleles under the uniform-frequency
+    coupon-collector model.
+
+    NOTE: the uniform-p assumption is optimistic. Preliminary Canu-
+    amplicon data show private alleles and drift signatures, meaning
+    real allele frequencies are skewed and rare/private alleles need
+    MORE mothers than this floor suggests. The location-level table
+    (`build_full_detection_location_table`) additionally requires at
+    least one mother per event so no event's private alleles are missed.
+    """
+    rows = []
+    for label, lo, hi in NFERTILE_BINS:
+        n_rep = (lo + min(hi, 200)) / 2
+        K_uncapped = max(2 * (int(round(n_rep)) - 1), 1)
+        K = min(K_uncapped, K_SPECIES_FG)
+        rows.append({
+            "bin":                     label,
+            "N_rep":                   int(round(n_rep)),
+            "K":                       K,
+            "target_prob":             target_prob,
+            "M_uniform_full_detection": mothers_for_full_detection(
+                K, target_prob),
+            "cum_seeds_uniform":       mothers_for_full_detection(
+                K, target_prob) * 29,
+        })
+    return pd.DataFrame(rows)
+
+
+def build_full_detection_location_table(
+        spatial_frame: pd.DataFrame,
+        target_prob: float = FULL_DETECTION_TARGET_PROB) -> pd.DataFrame:
+    """Per-location M target combining two floors:
+
+      * `M_uniform_full_detection` — the uniform coupon-collector bound
+        on M needed for P(all local alleles observed) >= target_prob,
+        using K_local = min(2 * (total_N_fertile - 1), K_SPECIES_FG).
+      * `M_event_coverage` — the number of distinct events at the
+        location; this floor exists because preliminary data show
+        private alleles across events, so no event can be skipped.
+
+    `M_recommended` = max(M_uniform_full_detection, M_event_coverage).
+    The field team should spread the M_recommended mothers across all
+    events so that every event contributes ≥ 1 mother.
+    """
+    rows = []
+    for loc_id, sub in spatial_frame.groupby("locationID"):
+        total_nf = int(sub["n_fertile"].astype(int).sum())
+        n_events = int(len(sub))
+        K_uncapped = max(2 * (total_nf - 1), 1)
+        K_local = min(K_uncapped, K_SPECIES_FG)
+        M_uniform = mothers_for_full_detection(K_local, target_prob)
+        M_recommended = max(M_uniform, n_events)
+        rows.append({
+            "locationID":                int(loc_id),
+            "n_events":                  n_events,
+            "total_N_fertile":           total_nf,
+            "K_local":                   K_local,
+            "target_prob":               target_prob,
+            "M_uniform_full_detection":  M_uniform,
+            "M_event_coverage":          n_events,
+            "M_recommended":             M_recommended,
+            "cum_seeds_recommended":     M_recommended * 29,
+            "mothers_per_event_hint":    round(M_recommended / max(n_events, 1), 2),
+        })
+    return pd.DataFrame(rows)
+
+
+def plot_full_detection_by_location(df: pd.DataFrame,
+                                     out_png: Path, out_pdf: Path,
+                                     target_prob: float = FULL_DETECTION_TARGET_PROB):
+    """Horizontal bar chart of M_recommended per location, panelled by
+    Bottleneck Lineage. Two overlaid bars per location: a light bar for
+    M_uniform_full_detection (coupon-collector bound) and a solid bar
+    for M_recommended (= max(M_uniform, n_events)) that highlights the
+    private-allele floor when it binds."""
+    from srk_bl_constants import BL_COLORS, BL_ORDER, locationCode_to_bl
+    df = df.copy()
+    df["BL"] = locationCode_to_bl(df["locationCode"]).values
+    df["BL"] = df["BL"].fillna("Unassigned")
+
+    bls = [b for b in BL_ORDER if b in df["BL"].values]
+    if (df["BL"] == "Unassigned").any():
+        bls.append("Unassigned")
+    palette = {**BL_COLORS, "Unassigned": "#8a8a8a"}
+
+    heights = [max(int((df["BL"] == b).sum()), 1) for b in bls]
+    fig, axes = plt.subplots(
+        len(bls), 1,
+        figsize=(10.0, max(6.0, 0.28 * sum(heights) + 1.5)),
+        gridspec_kw={"height_ratios": heights},
+        sharex=True,
+    )
+    if len(bls) == 1:
+        axes = [axes]
+
+    for ax, bl in zip(axes, bls):
+        sub = df[df["BL"] == bl].sort_values(
+            "M_recommended", ascending=True).reset_index(drop=True)
+        y = np.arange(len(sub))
+        colour = palette[bl]
+        ax.barh(y, sub["M_recommended"], color=colour,
+                edgecolor="white", height=0.75,
+                label="M recommended (max of both floors)")
+        ax.barh(y, sub["M_uniform_full_detection"],
+                color="white", edgecolor=colour,
+                height=0.75, linewidth=1.3,
+                label="uniform coupon-collector bound")
+        labels = [f"{code}   (events = {int(e)}, adults = {int(f)}, "
+                  f"local pool = {int(K)})"
+                  for code, e, f, K in zip(sub["locationCode"],
+                                             sub["n_events"],
+                                             sub["total_N_fertile"],
+                                             sub["K_local"])]
+        for i, (mrec, muni) in enumerate(zip(sub["M_recommended"],
+                                              sub["M_uniform_full_detection"])):
+            ax.text(mrec + 0.3, i, f"{int(mrec)}",
+                    fontsize=8, color=colour, va="center", ha="left")
+        ax.set_yticks(y)
+        ax.set_yticklabels(labels, fontsize=8)
+        max_M = float(df["M_recommended"].max())
+        ax.set_xlim(0, max_M + 4)
+        ax.set_ylim(-0.7, len(sub) - 0.3)
+        ax.text(1.01, 0.5, bl, transform=ax.transAxes,
+                fontsize=13, fontweight="bold", color=colour,
+                va="center", ha="left")
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+
+    axes[-1].set_xlabel(
+        f"Recommended number of mothers per location "
+        f"(29 seeds each; {int(target_prob*100)} % chance to observe "
+        f"every local SRK allele, and ≥ 1 mother per event)",
+        fontsize=11,
+    )
+    fig.suptitle(
+        "Sampling target per location to observe every predicted SRK allele",
+        fontsize=13, y=0.995,
+    )
+    fig.tight_layout(rect=[0, 0, 0.94, 0.97])
+    fig.savefig(out_png, dpi=200); fig.savefig(out_pdf); plt.close(fig)
+
+
 def build_aggregation_curves(rng: np.random.Generator) -> pd.DataFrame:
     """Expected distinct alleles at a location as we aggregate mothers.
 
@@ -786,6 +975,45 @@ def main() -> None:
     agg_path = tables_dir / "step28_aggregation_curves_by_Nfertile.tsv"
     agg.to_csv(agg_path, sep="\t", index=False)
     print(f"[step28] Wrote {agg_path}")
+
+    # Full-detection targets — how many mothers to observe every local allele
+    fd_bins = build_full_detection_bins_table()
+    fd_bins_path = tables_dir / "step28_mothers_for_full_detection_by_bin.tsv"
+    fd_bins.to_csv(fd_bins_path, sep="\t", index=False)
+    print(f"[step28] Wrote {fd_bins_path}")
+
+    fd_loc = build_full_detection_location_table(spatial_frame)
+    # attach locationCode from step29 output if available (for readability)
+    loc_meta_path = tables_dir / "step29_sampling_per_location.tsv"
+    if loc_meta_path.exists():
+        loc_meta = pd.read_csv(loc_meta_path, sep="\t", encoding="utf-8-sig")
+        code_map = (loc_meta.drop_duplicates("locationID")
+                    .set_index("locationID")["locationCode"].to_dict())
+        fd_loc["locationCode"] = fd_loc["locationID"].map(code_map).fillna(
+            fd_loc["locationID"].astype(str))
+    else:
+        fd_loc["locationCode"] = fd_loc["locationID"].astype(str)
+    fd_loc = fd_loc[["locationID", "locationCode"] +
+                    [c for c in fd_loc.columns
+                     if c not in ("locationID", "locationCode")]]
+    fd_loc_path = tables_dir / "step28_mothers_for_full_detection_by_location.tsv"
+    fd_loc.to_csv(fd_loc_path, sep="\t", index=False)
+    print(f"[step28] Wrote {fd_loc_path}")
+
+    event_binds = int(((fd_loc["M_event_coverage"]
+                         > fd_loc["M_uniform_full_detection"])).sum())
+    print(f"[step28] Full-detection @ 90 %: median M_recommended = "
+          f"{int(fd_loc['M_recommended'].median())} mothers per location; "
+          f"range {int(fd_loc['M_recommended'].min())}–"
+          f"{int(fd_loc['M_recommended'].max())}. "
+          f"Private-allele floor (M_events > M_uniform) binds at "
+          f"{event_binds}/{len(fd_loc)} locations.")
+
+    plot_full_detection_by_location(
+        fd_loc,
+        out_png=figures_dir / "step28_mothers_for_full_detection.png",
+        out_pdf=figures_dir / "step28_mothers_for_full_detection.pdf",
+    )
 
     plot_coverage_curves(
         curves, agg,
