@@ -47,8 +47,17 @@ DEFAULT_PRIOR_TSV = DEFAULT_TABLES / "step26i_L1_carrier_inventory.tsv"
 # each mother's germplasmQuantityEstimate).
 DEFAULT_STEP28_TSV = DEFAULT_TABLES / "step28_seed_sampling_per_mother.tsv"
 
+# LEPA is tetraploid (2n = 4x): every plant carries PLOIDY = 4 SRK allele
+# copies, and each seed carries PATERNAL_ALLELES_PER_SEED = 2 paternal
+# alleles. Sourced from Step 28 so both scripts stay in lock-step.
+from step28_seed_sampling_per_mother import (
+    PLOIDY,
+    PATERNAL_ALLELES_PER_SEED,
+    n_for_miss_probability,
+)
+
 EXPECTED_COVERAGE = 0.90
-DEFAULT_SEEDS_PER_MOTHER = 29     # Step 28 Rule 2 miss-probability floor
+DEFAULT_SEEDS_PER_MOTHER = n_for_miss_probability()   # tetraploid Rule 2 = 15
 
 LOCATION_SIZE_BINS = [
     ("<20",     0,   20),
@@ -62,23 +71,25 @@ MOTHERS_GRID = np.arange(1, 121)
 
 
 # ---------------------------------------------------------------------------
-# Coverage math (uniform maternal-allele draws over K = 2 * N_fertile)
+# Coverage math (uniform maternal-allele draws over K = PLOIDY * N_fertile)
+# Each mother contributes PLOIDY maternal alleles under tetraploidy.
 # ---------------------------------------------------------------------------
 def n_mothers_for_coverage(K: int, target: float = EXPECTED_COVERAGE) -> int:
-    """Smallest M s.t. E[coverage] >= target, drawing 2M alleles uniformly
-    from K. Under uniform p_j = 1/K,
-        E[coverage] = 1 - (1 - 1/K)^(2M)
-    Solve for M: M = ceil( log(1-target) / (2 * log(1 - 1/K)) ).
+    """Smallest M s.t. E[coverage] >= target, drawing PLOIDY·M maternal
+    alleles uniformly from K. Under uniform p_j = 1/K,
+        E[coverage] = 1 - (1 - 1/K)^(PLOIDY·M)
+    Solve for M: M = ceil( log(1-target) / (PLOIDY · log(1 - 1/K)) ).
     """
     if K <= 1:
         return 1
-    return int(math.ceil(math.log(1 - target) / (2 * math.log(1 - 1.0 / K))))
+    return int(math.ceil(math.log(1 - target)
+                         / (PLOIDY * math.log(1 - 1.0 / K))))
 
 
 def expected_coverage(K: int, M: int) -> float:
     if K <= 1:
         return 1.0
-    return 1.0 - (1.0 - 1.0 / K) ** (2 * M)
+    return 1.0 - (1.0 - 1.0 / K) ** (PLOIDY * M)
 
 
 def simulate_coverage(K: int, M: int, n_sim: int = N_SIM,
@@ -86,7 +97,7 @@ def simulate_coverage(K: int, M: int, n_sim: int = N_SIM,
     if K <= 1:
         return np.ones(n_sim)
     rng = rng or np.random.default_rng(2029)
-    draws = rng.integers(0, K, size=(n_sim, 2 * M))
+    draws = rng.integers(0, K, size=(n_sim, PLOIDY * M))
     counts = np.array([np.unique(r).size for r in draws])
     return counts / K
 
@@ -260,18 +271,21 @@ def augment_with_empirical_prior(loc: pd.DataFrame,
         Total allele draws needed at the location to reach 90 % expected
         coverage of the 32 Fgs under the empirical species-wide prior.
     A_delivered_maternal_only
-        2 x M_achievable — allele draws from mother genotypes alone.
+        PLOIDY x M_achievable — allele draws from mother genotypes alone
+        (4 per mother under tetraploid).
     A_delivered_with_seeds
-        M_achievable x (2 + seeds_per_mother) — mother genotypes plus one
-        paternal allele per genotyped seed. Default is
-        `DEFAULT_SEEDS_PER_MOTHER = 29` (Step 28 Rule 2 floor).
+        M_achievable x (PLOIDY + PATERNAL_ALLELES_PER_SEED * seeds_per_mother)
+        — mother genotypes plus paternal allele draws per genotyped seed.
+        Default seeds_per_mother is `DEFAULT_SEEDS_PER_MOTHER` (Step 28
+        Rule 2 floor; tetraploid = 15).
     exp_Fg_cov_maternal_only_P1
         E[fraction of distinct Fgs observed] at A_delivered_maternal_only.
     exp_Fg_cov_with_seeds_P1
         E[fraction of distinct Fgs observed] at A_delivered_with_seeds.
     seeds_per_mother_for_90pct_P1
-        Smallest integer n such that M_achievable x (2 + n) >=
-        A_target_90pct_P1. NaN if the target is unreachable given
+        Smallest integer n such that
+        M_achievable x (PLOIDY + PATERNAL_ALLELES_PER_SEED * n)
+        >= A_target_90pct_P1. NaN if the target is unreachable given
         M_achievable.
     """
     A_target = alleles_for_fg_coverage_empirical(prior_f, EXPECTED_COVERAGE)
@@ -279,8 +293,10 @@ def augment_with_empirical_prior(loc: pd.DataFrame,
     loc["A_target_90pct_P1"] = A_target
 
     M_ach = loc["M_achievable_location"].astype(int)
-    A_mat_only = (2 * M_ach).astype(int)
-    A_with_seeds = (M_ach * (2 + seeds_per_mother)).astype(int)
+    A_mat_only = (PLOIDY * M_ach).astype(int)
+    A_with_seeds = (M_ach * (PLOIDY
+                             + PATERNAL_ALLELES_PER_SEED * seeds_per_mother)
+                    ).astype(int)
 
     loc["A_delivered_maternal_only"] = A_mat_only
     loc["A_delivered_with_seeds"]    = A_with_seeds
@@ -291,13 +307,14 @@ def augment_with_empirical_prior(loc: pd.DataFrame,
         expected_fg_coverage_empirical(prior_f, int(a)) for a in A_with_seeds
     ]
 
-    # Smallest seeds/mother to hit A_target given M_achievable
+    # Smallest seeds/mother to hit A_target given M_achievable, under
+    # tetraploid: m * (PLOIDY + PATERNAL_ALLELES_PER_SEED * n) >= target
     def seeds_for_target(m: int, target_A: int) -> int | float:
         if m <= 0:
             return np.nan
-        # Solve m * (2 + n) >= target_A → n >= target_A / m - 2
-        need = math.ceil(target_A / m - 2)
-        return max(need, 0)
+        need_draws = target_A / m - PLOIDY
+        need_seeds = math.ceil(need_draws / PATERNAL_ALLELES_PER_SEED)
+        return max(need_seeds, 0)
 
     loc["seeds_per_mother_for_90pct_P1"] = [
         seeds_for_target(int(m), int(A_target)) for m in M_ach
@@ -451,11 +468,15 @@ def augment_with_realised_step28(loc: pd.DataFrame,
         total_n_seeds_realised_exp=("n_achievable_exp", "sum"),
         total_n_seeds_realised_miss=("n_achievable_miss", "sum"),
     )
+    # A_delivered per mother = PLOIDY maternal + PATERNAL_ALLELES_PER_SEED
+    # per genotyped seed. Under tetraploid, per mother = 4 + 2·n_seeds.
     roll["A_delivered_realised_exp"] = (
-        2 * roll["M_actual_in_step28"] + roll["total_n_seeds_realised_exp"]
+        PLOIDY * roll["M_actual_in_step28"]
+        + PATERNAL_ALLELES_PER_SEED * roll["total_n_seeds_realised_exp"]
     )
     roll["A_delivered_realised_miss"] = (
-        2 * roll["M_actual_in_step28"] + roll["total_n_seeds_realised_miss"]
+        PLOIDY * roll["M_actual_in_step28"]
+        + PATERNAL_ALLELES_PER_SEED * roll["total_n_seeds_realised_miss"]
     )
     roll["exp_Fg_cov_realised_exp_P1"] = [
         expected_fg_coverage_empirical(prior_f, int(a))
@@ -471,7 +492,8 @@ def augment_with_realised_step28(loc: pd.DataFrame,
     def _seeds_needed(m: int) -> int | float:
         if m <= 0:
             return np.nan
-        return max(math.ceil(A_target / m - 2), 0)
+        need_draws = A_target / m - PLOIDY
+        return max(math.ceil(need_draws / PATERNAL_ALLELES_PER_SEED), 0)
     roll["seeds_per_mother_for_90pct_P1_actual"] = [
         _seeds_needed(int(m)) for m in roll["M_actual_in_step28"]
     ]
@@ -556,7 +578,8 @@ def plot_curves_empirical(prior_f: np.ndarray, per_location: pd.DataFrame,
                   fontsize=9, color="#b2182b", va="bottom")
     ax_curve.set_xlim(0, 1500); ax_curve.set_ylim(0, 1.02)
     ax_curve.set_xlabel("Total allele draws per location "
-                        "A = M × (2 + n_seeds)")
+                        f"A = M × (PLOIDY + PATERNAL_PER_SEED × n_seeds) "
+                        f"= M × ({PLOIDY} + {PATERNAL_ALLELES_PER_SEED}·n_seeds)")
     ax_curve.set_ylabel("Expected fraction of the 32 Fgs observed")
     ax_curve.set_title("Prediction curve under P1 prior", fontsize=11)
     ax_curve.legend(loc="lower right", fontsize=9, frameon=True)
@@ -672,9 +695,11 @@ def plot_recommended_seeds_per_mother(per_location: pd.DataFrame,
                     fontsize=8, color="#b2182b",
                     va="center", ha="left")
 
-    ax.axvline(29,  color="#333", ls="--", lw=1.0, alpha=0.6)
-    ax.axvline(100, color="#333", ls=":",  lw=1.0, alpha=0.6)
-    ax.text(29,  len(df) - 0.5, " 29 (Rule 2 floor)",
+    RULE2_SEEDS = DEFAULT_SEEDS_PER_MOTHER
+    ax.axvline(RULE2_SEEDS, color="#333", ls="--", lw=1.0, alpha=0.6)
+    ax.axvline(100,         color="#333", ls=":",  lw=1.0, alpha=0.6)
+    ax.text(RULE2_SEEDS, len(df) - 0.5,
+            f" {RULE2_SEEDS} (Rule 2 floor, tetraploid)",
             fontsize=8, color="#333", va="top", ha="left")
     ax.text(100, len(df) - 0.5, " 100 (practical ceiling)",
             fontsize=8, color="#333", va="top", ha="left")
@@ -708,9 +733,11 @@ def plot_recommended_seeds_per_mother(per_location: pd.DataFrame,
     from matplotlib.patches import Patch
     handles = [
         Patch(facecolor="#1b7837",
-              label=f"≤ 29 seeds / mother  (n = {(seeds <= 29).sum()})"),
+              label=f"≤ {RULE2_SEEDS} seeds / mother  "
+                    f"(n = {(seeds <= RULE2_SEEDS).sum()})"),
         Patch(facecolor="#e08214",
-              label=f"30 – 100 seeds / mother  (n = {((seeds > 29) & (seeds <= 100)).sum()})"),
+              label=f"{RULE2_SEEDS + 1} – 100 seeds / mother  "
+                    f"(n = {((seeds > RULE2_SEEDS) & (seeds <= 100)).sum()})"),
         Patch(facecolor="#b2182b",
               label=f"> 100 seeds / mother  (n = {(seeds > 100).sum()})"),
     ]

@@ -11,7 +11,7 @@ of genotyped seeds.
 Two decision rules are reported side-by-side per mother:
 
   * n_expected_cov  — seeds needed for 90 % expected sire-allele coverage,
-    under uniform pollen weights with K = 2 * (N_fertile - 1) potential sire
+    under uniform pollen weights with K = PLOIDY * (N_fertile - 1) potential sire
     alleles. Closed-form: n = log(1 - 0.9) / log(1 - 1/K).
 
   * n_miss_prob     — seeds needed to be 95 % sure of detecting any pollen
@@ -60,6 +60,18 @@ DEFAULT_DB = Path(
 DEFAULT_TABLES = Path("Tables/Phase5")
 DEFAULT_FIGURES = Path("figures/Phase5")
 
+# -----------------------------------------------------------------------------
+# Ploidy — Lepidium papilliferum is TETRAPLOID (2n = 4x). Every somatic plant
+# carries 4 SRK allele copies; meiotic reduction produces 2x pollen grains
+# (2 SRK alleles per grain) that fertilise 2x eggs, so each seed carries 2
+# maternal + 2 paternal SRK alleles. The framework treats copy counts and
+# per-seed draws through these two constants; the P_compat model — which
+# additionally depends on sporophytic SI — is a downstream modelling choice
+# handled in Part 2 (Step 30) and NOT touched here.
+# -----------------------------------------------------------------------------
+PLOIDY = 4
+PATERNAL_ALLELES_PER_SEED = PLOIDY // 2   # = 2: paternal alleles per seed
+
 # Rule 1 — expected-coverage target
 EXPECTED_COVERAGE = 0.90
 # Rule 2 — miss-probability guarantee at fixed relative frequency threshold
@@ -91,19 +103,33 @@ NFERTILE_BINS = [
 N_SIM = 2_000                     # bootstrap draws per (K, n) point
 SEEDS_GRID = np.arange(1, 201)    # x-axis for the per-mother panel
 M_GRID = np.arange(1, 31)         # x-axis for the aggregation panel
-DRAWS_PER_MOTHER = 31             # 2 maternal alleles + 29 paternal seed draws
+
+
+def K_pool(N_reachable_plants: int) -> int:
+    """Number of SRK allele copies reachable in the pollen pool. Excludes
+    the mother's own N_fertile from the count of donors."""
+    return max(PLOIDY * (int(N_reachable_plants) - 1), 0)
 
 
 # ---------------------------------------------------------------------------
 # Analytical helpers
 # ---------------------------------------------------------------------------
-def n_for_expected_coverage(K: int, target: float = EXPECTED_COVERAGE) -> int:
-    """Smallest n such that E[distinct sire alleles]/K >= target, uniform p.
+# NOTE ON UNITS.  All coupon-collector functions in this module take
+# "allele draws" (independent multinomial pulls from the pool of size K),
+# not "seeds". Each seed carries PATERNAL_ALLELES_PER_SEED paternal
+# allele draws (2 under tetraploid), so the number of paternal draws
+# from `n_seeds` sampled from one mother is `PATERNAL_ALLELES_PER_SEED
+# * n_seeds`. The wrappers `n_for_expected_coverage` /
+# `n_for_miss_probability` return SEED counts — what the field team acts
+# on — internally converting from the draws-based analytics.
 
-    Under uniform p_j = 1/K, E[D]/K = 1 - (1 - 1/K)^n. Solve for n:
+
+def draws_for_expected_coverage(K: int,
+                                 target: float = EXPECTED_COVERAGE) -> int:
+    """Smallest n_DRAWS such that E[distinct alleles]/K >= target under
+    uniform p_j = 1/K:
         n = ceil( log(1 - target) / log(1 - 1/K) )
-    K must be at least 1. For K == 1 the mother sees exactly one father, whose
-    2 alleles are both observed once any seed is genotyped.
+    K = 1 → any single draw already saturates.
     """
     if K <= 1:
         return 1
@@ -111,72 +137,95 @@ def n_for_expected_coverage(K: int, target: float = EXPECTED_COVERAGE) -> int:
     return int(math.ceil(math.log(1 - target) / math.log(1 - p)))
 
 
-def n_for_miss_probability(p_min: float = P_MIN,
-                           alpha: float = MISS_ALPHA) -> int:
-    """Smallest n such that any allele of frequency >= p_min is missed with
-    probability <= alpha. Closed-form and K-independent:
-        n = ceil( log(alpha) / log(1 - p_min) )
-    """
+def n_for_expected_coverage(K: int,
+                             target: float = EXPECTED_COVERAGE) -> int:
+    """Smallest number of SEEDS to genotype from one mother so that her
+    paternal allele draws (PATERNAL_ALLELES_PER_SEED per seed) reach the
+    expected-coverage target."""
+    d = draws_for_expected_coverage(K, target)
+    return int(math.ceil(d / PATERNAL_ALLELES_PER_SEED))
+
+
+def draws_for_miss_probability(p_min: float = P_MIN,
+                                alpha: float = MISS_ALPHA) -> int:
+    """Smallest n_DRAWS such that any allele of frequency >= p_min is
+    missed with probability <= alpha. Closed-form and K-independent."""
     return int(math.ceil(math.log(alpha) / math.log(1 - p_min)))
 
 
-def expected_coverage(K: int, n: int) -> float:
-    """E[distinct alleles observed]/K at sample size n, uniform pollen."""
+def n_for_miss_probability(p_min: float = P_MIN,
+                           alpha: float = MISS_ALPHA) -> int:
+    """Smallest number of SEEDS per mother such that any paternal allele
+    of frequency >= p_min is missed with probability <= alpha, given
+    PATERNAL_ALLELES_PER_SEED allele draws per seed."""
+    d = draws_for_miss_probability(p_min, alpha)
+    return int(math.ceil(d / PATERNAL_ALLELES_PER_SEED))
+
+
+def draws_per_mother(n_seeds: int) -> int:
+    """Total allele draws a mother's data contribute to a location pool:
+    her own PLOIDY-copy genotype + PATERNAL_ALLELES_PER_SEED per seed."""
+    return PLOIDY + PATERNAL_ALLELES_PER_SEED * int(n_seeds)
+
+
+def expected_coverage(K: int, n_draws: int) -> float:
+    """E[distinct alleles observed]/K after `n_draws` independent draws,
+    uniform pollen (n_draws counts allele draws, NOT seeds)."""
     if K <= 1:
         return 1.0
-    return 1.0 - (1.0 - 1.0 / K) ** n
+    return 1.0 - (1.0 - 1.0 / K) ** n_draws
 
 
-def simulate_coverage(K: int, n: int, n_sim: int = N_SIM,
+def simulate_coverage(K: int, n_draws: int, n_sim: int = N_SIM,
                        rng: np.random.Generator | None = None) -> np.ndarray:
-    """Bootstrap coverage: draw n multinomial pollen alleles from K uniform
-    weights, count distinct hits, repeat n_sim times. Returns array of
-    coverage fractions (each in [0, 1]).
-    """
+    """Bootstrap coverage: draw n_draws multinomial pollen alleles from K
+    uniform weights, count distinct hits, repeat n_sim times. Returns
+    array of coverage fractions (each in [0, 1]). n_draws counts allele
+    draws, NOT seeds."""
     if K <= 1:
         return np.ones(n_sim)
     rng = rng or np.random.default_rng(2026)
-    draws = rng.integers(0, K, size=(n_sim, n))
-    # count distinct values per row
+    draws = rng.integers(0, K, size=(n_sim, n_draws))
     def n_unique(row):
         return np.unique(row).size
     counts = np.apply_along_axis(n_unique, 1, draws)
     return counts / K
 
 
-def prob_all_observed(K: int, n: int) -> float:
-    """P(every one of K uniform alleles is observed in n independent draws)
-    via inclusion–exclusion:
+def prob_all_observed(K: int, n_draws: int) -> float:
+    """P(every one of K uniform alleles is observed in n_draws independent
+    draws) via inclusion–exclusion:
         P(all seen) = sum_{i=0..K-1} (-1)^i * C(K, i) * ((K-i)/K)^n
-    (The i=K term is 0^n = 0 for n >= 1.) Exact under the uniform-frequency
-    assumption used throughout Step 28; rare alleles in real data require
-    MORE mothers.
-    """
+    Exact under the uniform-frequency assumption used throughout Step 28;
+    rare alleles in real data require MORE mothers."""
     if K <= 1:
         return 1.0
-    if n < K:
+    if n_draws < K:
         return 0.0
     total = 0.0
     for i in range(K):
         log_binom = (math.lgamma(K + 1)
                      - math.lgamma(i + 1)
                      - math.lgamma(K - i + 1))
-        log_pow = n * math.log((K - i) / K)
+        log_pow = n_draws * math.log((K - i) / K)
         term = math.exp(log_binom + log_pow)
         total += ((-1) ** i) * term
     return float(min(max(total, 0.0), 1.0))
 
 
 def mothers_for_full_detection(K: int, target_prob: float,
-                               draws_per_mother: int = 31,
+                               draws_per_mother_val: int | None = None,
                                m_max: int = 100) -> int:
     """Smallest M such that P(all K uniform alleles observed) >= target_prob,
-    given draws_per_mother allele draws per mother (default 31 = 2 maternal
-    + 29 paternal under the Rule-2 seed lot)."""
+    given `draws_per_mother_val` allele draws per mother. If None,
+    defaults to `draws_per_mother(n_for_miss_probability())` — under
+    tetraploid, 4 maternal + 2·15 = 34 draws per mother."""
     if K <= 1:
         return 1
+    if draws_per_mother_val is None:
+        draws_per_mother_val = draws_per_mother(n_for_miss_probability())
     for M in range(1, m_max + 1):
-        if prob_all_observed(K, M * draws_per_mother) >= target_prob:
+        if prob_all_observed(K, M * draws_per_mother_val) >= target_prob:
             return M
     return m_max
 
@@ -277,13 +326,13 @@ def spatial_neighborhood_stats(events: pd.DataFrame,
         N_fertile_in_neighbors_<R>m
         N_compatible_spatial_<R>m
             = (self N_fertile - 1) + neighbors' N_fertile
-        K_spatial_<R>m = 2 * N_compatible_spatial_<R>m
+        K_spatial_<R>m = PLOIDY * N_compatible_spatial_<R>m
     """
     within = (dist_m > 0) & (dist_m <= radius_m)
     n_neighbors = within.sum(axis=1)
     n_fert_neighbors = (within * events["n_fertile"].values[None, :]).sum(axis=1)
     n_comp_spatial = (events["n_fertile"].values - 1) + n_fert_neighbors
-    K_spatial = 2 * np.clip(n_comp_spatial, 0, None)
+    K_spatial = PLOIDY * np.clip(n_comp_spatial, 0, None)
     R = int(round(radius_m))
     return pd.DataFrame({
         "eventID": events["eventID"].values,
@@ -366,10 +415,10 @@ def load_mother_table(db_path: Path, year: int | None = None) -> pd.DataFrame:
 def build_per_mother_table(df: pd.DataFrame) -> pd.DataFrame:
     # No SI filter yet: N_compatible = organismQuantityFertile - 1
     n_comp = (df["n_fertile"].astype(float) - 1).clip(lower=0).astype(int)
-    K = (2 * n_comp).clip(lower=1).astype(int)   # 2 SRK alleles per mate
+    K = (PLOIDY * n_comp).clip(lower=1).astype(int)   # PLOIDY SRK alleles / mate
 
-    n_exp = np.array([n_for_expected_coverage(k) for k in K])
-    n_miss = n_for_miss_probability()    # constant
+    n_exp = np.array([n_for_expected_coverage(k) for k in K])   # SEEDS
+    n_miss = n_for_miss_probability()                            # SEEDS (=15)
     seeds_est = df["seeds_est"].astype(float)
     seeds_low = df["seeds_low"].astype(float)
     seeds_upr = df["seeds_upr"].astype(float)
@@ -380,22 +429,27 @@ def build_per_mother_table(df: pd.DataFrame) -> pd.DataFrame:
     budget_ok_miss = seeds_est >= n_miss
 
     # --- Seed-production-aware quantities --------------------------------
-    # (1) Achieved coverage per mother, given how many of her seeds she
-    #     actually has: 1 - (1 - 1/K)^n_use, where n_use = min(n_rec, S).
-    #     Under uniform pollen weights.
+    # Achieved coverage per mother, given how many of her seeds she
+    # actually has. Each seed contributes PATERNAL_ALLELES_PER_SEED
+    # paternal allele draws, so paternal draws = PATERNAL_ALLELES_PER_SEED
+    # * min(n_rec, S). Under uniform pollen weights:
+    #     achieved = 1 - (1 - 1/K)^(paternal draws)
     K_arr = K.astype(float).values
     n_use_exp  = n_achievable_exp.astype(float).values
     n_use_miss = n_achievable_miss.astype(float).values
     S = seeds_est.astype(float).values
     with np.errstate(divide="ignore", invalid="ignore"):
         one_minus_1_over_K = np.where(K_arr > 0, 1.0 - 1.0 / K_arr, 0.0)
-    achieved_cov_exp  = 1.0 - one_minus_1_over_K ** n_use_exp
-    achieved_cov_miss = 1.0 - one_minus_1_over_K ** n_use_miss
+    achieved_cov_exp  = 1.0 - one_minus_1_over_K ** (
+        PATERNAL_ALLELES_PER_SEED * n_use_exp)
+    achieved_cov_miss = 1.0 - one_minus_1_over_K ** (
+        PATERNAL_ALLELES_PER_SEED * n_use_miss)
 
-    # (2) Expected distinct paternal SRK alleles present in the mother's
-    #     complete seed lot (the biological ceiling — no amount of
-    #     genotyping can exceed this): K * (1 - (1 - 1/K)^S).
-    expected_distinct_in_lot = K_arr * (1.0 - one_minus_1_over_K ** S)
+    # Expected distinct paternal SRK alleles present in the mother's
+    # complete seed lot (the biological ceiling): K * (1 - (1 - 1/K)^(2S))
+    # under tetraploid (2 paternal alleles per seed).
+    expected_distinct_in_lot = K_arr * (1.0 - one_minus_1_over_K ** (
+        PATERNAL_ALLELES_PER_SEED * S))
 
     out = pd.DataFrame({
         "occurrenceID":          df["occurrenceID"],
@@ -461,8 +515,10 @@ def augment_per_mother_with_spatial(per_mother: pd.DataFrame,
         n_use = np.minimum(n_exp_arr, S).astype(int)
         with np.errstate(divide="ignore", invalid="ignore"):
             one_minus_1_over_K = np.where(K_arr > 0, 1.0 - 1.0 / K_arr, 0.0)
-        achieved_cov = 1.0 - one_minus_1_over_K ** n_use
-        exp_in_lot = K_arr * (1.0 - one_minus_1_over_K ** S)
+        achieved_cov = 1.0 - one_minus_1_over_K ** (
+            PATERNAL_ALLELES_PER_SEED * n_use)
+        exp_in_lot = K_arr * (1.0 - one_minus_1_over_K ** (
+            PATERNAL_ALLELES_PER_SEED * S))
 
         df[n_exp_col]   = n_exp_arr
         df[n_ach_col]   = n_use
@@ -490,20 +546,24 @@ def build_curves_by_bin(rng: np.random.Generator) -> pd.DataFrame:
     """
     rows = []
     for label, lo, hi in NFERTILE_BINS:
-        # representative K: average of 2*(N-1) over the bin range, rounded,
-        # then capped at the species-wide Fg ceiling.
+        # representative K: PLOIDY * (N-1) at the bin's midpoint N,
+        # capped at the species-wide Fg ceiling.
         n_rep = (lo + min(hi, 200)) / 2      # cap >50 bin at 200 for display
-        K_uncapped = max(2 * (int(round(n_rep)) - 1), 1)
+        K_uncapped = K_pool(int(round(n_rep))) or 1
         K = min(K_uncapped, K_SPECIES_FG)
-        for n in SEEDS_GRID:
-            e = expected_coverage(K, int(n))
-            sim = simulate_coverage(K, int(n), n_sim=N_SIM, rng=rng)
+        for n_seeds in SEEDS_GRID:
+            # Each seed contributes PATERNAL_ALLELES_PER_SEED paternal
+            # allele draws in this per-mother figure (Panel A).
+            n_draws = PATERNAL_ALLELES_PER_SEED * int(n_seeds)
+            e = expected_coverage(K, n_draws)
+            sim = simulate_coverage(K, n_draws, n_sim=N_SIM, rng=rng)
             rows.append({
                 "bin":            label,
                 "N_rep":          int(round(n_rep)),
                 "K_uncapped":     K_uncapped,
                 "K":              K,
-                "n_seeds":        int(n),
+                "n_seeds":        int(n_seeds),
+                "n_paternal_draws": n_draws,
                 "E_cov":          e,
                 "E_alleles":      e * K,
                 "sim_mean":       sim.mean(),
@@ -523,7 +583,7 @@ FULL_DETECTION_TARGET_PROB = 0.90
 
 def build_full_detection_bins_table(
         target_prob: float = FULL_DETECTION_TARGET_PROB) -> pd.DataFrame:
-    """Per-bin M target: smallest number of mothers (29 seeds each) that
+    """Per-bin M target: smallest number of mothers (Rule-2 seeds each) that
     delivers at least `target_prob` probability of observing every one
     of the local pool's distinct alleles under the uniform-frequency
     coupon-collector model.
@@ -536,19 +596,19 @@ def build_full_detection_bins_table(
     least one mother per event so no event's private alleles are missed.
     """
     rows = []
+    n_miss_seeds = n_for_miss_probability()
     for label, lo, hi in NFERTILE_BINS:
         n_rep = (lo + min(hi, 200)) / 2
-        K_uncapped = max(2 * (int(round(n_rep)) - 1), 1)
+        K_uncapped = K_pool(int(round(n_rep))) or 1
         K = min(K_uncapped, K_SPECIES_FG)
+        M_full = mothers_for_full_detection(K, target_prob)
         rows.append({
             "bin":                     label,
             "N_rep":                   int(round(n_rep)),
             "K":                       K,
             "target_prob":             target_prob,
-            "M_uniform_full_detection": mothers_for_full_detection(
-                K, target_prob),
-            "cum_seeds_uniform":       mothers_for_full_detection(
-                K, target_prob) * 29,
+            "M_uniform_full_detection": M_full,
+            "cum_seeds_uniform":       M_full * n_miss_seeds,
         })
     return pd.DataFrame(rows)
 
@@ -560,7 +620,7 @@ def build_full_detection_location_table(
 
       * `M_uniform_full_detection` — the uniform coupon-collector bound
         on M needed for P(all local alleles observed) >= target_prob,
-        using K_local = min(2 * (total_N_fertile - 1), K_SPECIES_FG).
+        using K_local = min(PLOIDY * (total_N_fertile - 1), K_SPECIES_FG).
       * `M_event_coverage` — the number of distinct events at the
         location; this floor exists because preliminary data show
         private alleles across events, so no event can be skipped.
@@ -573,7 +633,7 @@ def build_full_detection_location_table(
     for loc_id, sub in spatial_frame.groupby("locationID"):
         total_nf = int(sub["n_fertile"].astype(int).sum())
         n_events = int(len(sub))
-        K_uncapped = max(2 * (total_nf - 1), 1)
+        K_uncapped = K_pool(total_nf) or 1
         K_local = min(K_uncapped, K_SPECIES_FG)
         M_uniform = mothers_for_full_detection(K_local, target_prob)
         M_recommended = max(M_uniform, n_events)
@@ -586,7 +646,7 @@ def build_full_detection_location_table(
             "M_uniform_full_detection":  M_uniform,
             "M_event_coverage":          n_events,
             "M_recommended":             M_recommended,
-            "cum_seeds_recommended":     M_recommended * 29,
+            "cum_seeds_recommended":     M_recommended * n_for_miss_probability(),
             "mothers_per_event_hint":    round(M_recommended / max(n_events, 1), 2),
         })
     return pd.DataFrame(rows)
@@ -655,7 +715,8 @@ def plot_full_detection_by_location(df: pd.DataFrame,
 
     axes[-1].set_xlabel(
         f"Recommended number of mothers per location "
-        f"(29 seeds each; {int(target_prob*100)} % chance to observe "
+        f"({n_for_miss_probability()} seeds each; "
+        f"{int(target_prob*100)} % chance to observe "
         f"every local SRK allele, and ≥ 1 mother per event)",
         fontsize=11,
     )
@@ -670,21 +731,21 @@ def plot_full_detection_by_location(df: pd.DataFrame,
 def build_aggregation_curves(rng: np.random.Generator) -> pd.DataFrame:
     """Expected distinct alleles at a location as we aggregate mothers.
 
-    Each mother contributes DRAWS_PER_MOTHER = 31 independent allele
-    draws from the local pool (2 maternal alleles she carries + 29
-    paternal alleles the Rule-2 seed lot reveals). M mothers therefore
-    contribute M · 31 draws. This closes the gap the per-mother panel
-    exposes at large events: even though one mother's 29 seeds cannot
-    saturate a 32-allele pool, the location saturates once ~5–10
-    mothers are aggregated.
-    """
+    Each mother contributes `draws_per_mother(n_miss_seeds)` independent
+    allele draws from the local pool: PLOIDY maternal alleles from her
+    own genotype + PATERNAL_ALLELES_PER_SEED per seed × Rule-2 seed
+    count. Under tetraploid with Rule 2 = 15 seeds, that's 4 + 2·15 = 34
+    draws per mother. M mothers therefore contribute M · 34 draws. This
+    closes the gap the per-mother panel exposes at large events."""
     rows = []
+    n_miss_seeds = n_for_miss_probability()
+    per_mother_draws = draws_per_mother(n_miss_seeds)
     for label, lo, hi in NFERTILE_BINS:
         n_rep = (lo + min(hi, 200)) / 2
-        K_uncapped = max(2 * (int(round(n_rep)) - 1), 1)
+        K_uncapped = K_pool(int(round(n_rep))) or 1
         K = min(K_uncapped, K_SPECIES_FG)
         for M in M_GRID:
-            draws = int(M) * DRAWS_PER_MOTHER
+            draws = int(M) * per_mother_draws
             e = expected_coverage(K, draws)
             sim = simulate_coverage(K, draws, n_sim=N_SIM, rng=rng)
             rows.append({
@@ -692,7 +753,7 @@ def build_aggregation_curves(rng: np.random.Generator) -> pd.DataFrame:
                 "N_rep":          int(round(n_rep)),
                 "K":              K,
                 "M_mothers":      int(M),
-                "cum_seeds":      int(M) * 29,
+                "cum_seeds":      int(M) * n_miss_seeds,
                 "cum_draws":      draws,
                 "E_cov":          e,
                 "E_alleles":      e * K,
@@ -729,19 +790,17 @@ def plot_coverage_curves(curves: pd.DataFrame,
 
     Panel A (left): expected distinct SRK alleles a **single mother's**
     seed lot reveals as we increase the number of seeds genotyped, with
-    the 29-seed operational cap (Rule 2). Shows why one mother alone
-    plateaus at ~19 of 32 alleles at large events — the coupon-collector
-    limit for a single sampler.
+    the Rule-2 operational cap. Under tetraploid LEPA (2 paternal
+    alleles per seed), Rule 2 gives n = 15 seeds.
 
     Panel B (right): the **aggregation rescue**. Same y-axis, but x =
-    number of mother plants sampled at the location (29 seeds each).
-    Each mother contributes 2 maternal + 29 paternal = 31 allele draws
-    to the local pool, so M mothers deliver M · 31 draws. Locations
-    saturate near the species ceiling once ~5–10 mothers are aggregated;
-    the apparent "undersampling of large events" in Panel A is not a
-    real gap.
+    number of mother plants sampled at the location (15 seeds each under
+    tetraploid Rule 2). Each mother contributes PLOIDY = 4 maternal +
+    PATERNAL_ALLELES_PER_SEED · 15 = 30 paternal = 34 allele draws to
+    the local pool.
     """
-    RULE2 = 29
+    RULE2 = n_for_miss_probability()
+    dpm = draws_per_mother(RULE2)
     fig, (axA, axB) = plt.subplots(1, 2, figsize=(15.5, 6.0), sharey=True)
 
     # ---------- Panel A: per-mother ----------
@@ -776,7 +835,7 @@ def plot_coverage_curves(curves: pd.DataFrame,
              fontsize=9, color="#333333", ha="right", va="bottom")
     axA.axvline(RULE2, color="#b2182b", ls="-", lw=1.6, alpha=0.85)
     axA.text(RULE2 - 1.5, 0.5,
-             f"29 seeds — operational cap (Rule 2)\n"
+             f"{RULE2} seeds — operational cap (Rule 2, tetraploid)\n"
              f"the recipe never asks for more than this per mother",
              fontsize=9, color="#b2182b",
              ha="right", va="bottom")
@@ -784,7 +843,7 @@ def plot_coverage_curves(curves: pd.DataFrame,
     axA.set_ylim(0, K_SPECIES_FG + 2)
     axA.set_xlabel("Number of seeds genotyped per mother")
     axA.set_ylabel("Expected number of distinct SRK alleles detected")
-    axA.set_title("A. Per mother (29 seeds each)", fontsize=12)
+    axA.set_title(f"A. Per mother ({RULE2} seeds each)", fontsize=12)
     axA.legend(loc="lower right", fontsize=9, frameon=True,
                title="Event size (per-mother pool)")
     axA.spines["top"].set_visible(False)
@@ -818,13 +877,13 @@ def plot_coverage_curves(curves: pd.DataFrame,
                 ls="--", lw=1.0, alpha=0.6)
     axB.axvline(m_bench, color="#1b7837", ls=":", lw=1.4, alpha=0.85)
     axB.text(m_bench - 0.3, 0.5,
-             f"{m_bench} mothers × 29 seeds\n"
-             f"= {m_bench * 29} cumulative seeds at the location",
+             f"{m_bench} mothers × {RULE2} seeds\n"
+             f"= {m_bench * RULE2} cumulative seeds at the location",
              fontsize=9, color="#1b7837",
              ha="right", va="bottom")
     axB.set_xlim(1, M_GRID.max())
-    axB.set_xlabel("Number of mother plants sampled at the location "
-                   "(29 seeds each)")
+    axB.set_xlabel(f"Number of mother plants sampled at the location "
+                   f"({RULE2} seeds each)")
     axB.set_title("B. Aggregation across mothers at a location",
                   fontsize=12)
     axB.legend(loc="lower right", fontsize=9, frameon=True,
