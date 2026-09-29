@@ -60,7 +60,7 @@ DEFAULT_FIGURES = Path("figures/Phase5")
 EVENT_TSV = DEFAULT_TABLES / "step28_events_spatial_neighborhood.tsv"
 CURRENT_M_TSV = (DEFAULT_TABLES /
                  "step28_mothers_for_full_detection_by_location.tsv")
-R_PRIMARY = 25.0
+R_PRIMARY = 50.0
 TARGET_PROB = 0.90
 
 

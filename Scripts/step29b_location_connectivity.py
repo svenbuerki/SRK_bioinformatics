@@ -118,7 +118,7 @@ def build_connectivity(spatial: pd.DataFrame,
 
 
 def plot_connectivity_by_bl(df: pd.DataFrame, out_png: Path, out_pdf: Path,
-                            radius_m: int = 25):
+                            radius_m: int = 50):
     """Per-location bars of `connected_share_{R}m`, panelled by BL."""
     df = df.copy()
     df["locationCode"] = df["locationCode"]
@@ -269,8 +269,8 @@ def main() -> None:
     # picture changes with a longer pollen-flight assumption.
     for R in RADII_M:
         R_i = int(round(R))
-        # 25 m is the primary radius (unlabelled), 10 m and 50 m are sensitivity.
-        suffix = "" if R_i == 25 else f"_{R_i}m"
+        # 50 m is the primary radius (unlabelled), 10 m and 25 m are sensitivity.
+        suffix = "" if R_i == 50 else f"_{R_i}m"
         plot_connectivity_by_bl(
             df,
             out_png=DEFAULT_FIGURES / f"step29_location_connectivity{suffix}.png",

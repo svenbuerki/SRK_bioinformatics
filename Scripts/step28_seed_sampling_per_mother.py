@@ -89,7 +89,7 @@ K_SPECIES_FG = 32
 # Spatial mating-neighbourhood radii (metres). R = 10 is the primary
 # assumption; R = 25 and R = 50 are sensitivity checks.
 SPATIAL_RADII_M = (10.0, 25.0, 50.0)
-PRIMARY_SPATIAL_RADIUS_M = 25.0
+PRIMARY_SPATIAL_RADIUS_M = 50.0  # primary radius adopted after § A.5.1 sensitivity analysis
 
 # For the aggregate curves figure
 NFERTILE_BINS = [

@@ -114,8 +114,8 @@ def predicted_diversity_per_location(locations: pd.DataFrame,
          that drift already removed.
 
     M = number of mothers actually recorded in the seed bank
-    (`M_actual_in_step28`). `N_fertile` uses `N_fertile_effective_25m`
-    (census × largest-connected-component share at 25 m) when the
+    (`M_actual_in_step28`). `N_fertile` uses `N_fertile_effective_50m`
+    (census × largest-connected-component share at 50 m) when the
     Step 29b connectivity output has been merged in; otherwise falls
     back to the raw census `total_n_fertile`.
     """
@@ -131,10 +131,10 @@ def predicted_diversity_per_location(locations: pd.DataFrame,
             M_used = int(row["M_actual_in_step28"])
         else:
             M_used = M_ceiling
-        # Effective N_fertile drives the LOCAL pool (uses 25 m
+        # Effective N_fertile drives the LOCAL pool (uses 50 m
         # connectivity when available).
-        n_fert_raw = (row.get("N_fertile_effective_25m")
-                      if pd.notna(row.get("N_fertile_effective_25m"))
+        n_fert_raw = (row.get("N_fertile_effective_50m")
+                      if pd.notna(row.get("N_fertile_effective_50m"))
                       else row.get("total_n_fertile"))
         try:
             N_fertile = int(n_fert_raw) if pd.notna(n_fert_raw) else 0
@@ -294,10 +294,10 @@ def predicted_pcompat_per_location(locations: pd.DataFrame,
     rows = []
     for _, row in locations.iterrows():
         # Effective mating N — adults in the largest within-location
-        # connected component at the primary pollen-flight radius (25 m,
+        # connected component at the primary pollen-flight radius (50 m,
         # from Step 29b). Falls back to the raw census total when the
         # connectivity column is absent.
-        n_fert_raw = row.get("N_fertile_effective_25m",
+        n_fert_raw = row.get("N_fertile_effective_50m",
                               row.get("total_n_fertile"))
         try:
             N_fertile = int(n_fert_raw) if pd.notna(n_fert_raw) else 0
@@ -527,7 +527,7 @@ def mate_limitation_regression(seeds: pd.DataFrame,
         mean_seeds_per_mother ~ mean_P_compat + mean_K_spatial + connectivity
 
     weighted by n_mothers per location. `connectivity` (optional) is the
-    per-location `largest_component_share_25m` from Step 28c — the
+    per-location `largest_component_share_50m` from Step 28c — the
     fraction of the location's adults connected via 10 m pollen flow.
     When provided, it enters the regression as an explicit predictor
     so we can separate three effects:
@@ -590,13 +590,13 @@ def mate_limitation_regression(seeds: pd.DataFrame,
 
     # Merge in connectivity as an explicit predictor if available.
     have_connectivity = False
-    if connectivity is not None and "largest_component_share_25m" in connectivity.columns:
+    if connectivity is not None and "largest_component_share_50m" in connectivity.columns:
         per_location = per_location.merge(
-            connectivity[["locationID", "largest_component_share_25m"]],
+            connectivity[["locationID", "largest_component_share_50m"]],
             on="locationID", how="left",
         )
-        per_location["largest_component_share_25m"] = (
-            per_location["largest_component_share_25m"].fillna(1.0)
+        per_location["largest_component_share_50m"] = (
+            per_location["largest_component_share_50m"].fillna(1.0)
         )
         have_connectivity = True
 
@@ -608,7 +608,7 @@ def mate_limitation_regression(seeds: pd.DataFrame,
     }
     terms = ["P_compat", "K_spatial"]
     if have_connectivity:
-        X_dict["connectivity"] = per_location["largest_component_share_25m"].astype(float).values
+        X_dict["connectivity"] = per_location["largest_component_share_50m"].astype(float).values
         terms.append("connectivity")
     X = pd.DataFrame(X_dict).astype(float)
     y = per_location["mean_seeds"].values.astype(float)
@@ -1361,7 +1361,7 @@ def main() -> None:
     # compatibility: an event that shares no mating neighbourhood with
     # the rest of its "location" behaves as a smaller population and
     # therefore sees more drift and lower compatibility. We use
-    # `largest_component_share_25m` (the share of adults in the largest
+    # `largest_component_share_50m` (the share of adults in the largest
     # within-location connected component at 10 m) to define the
     # effective mating N; if connectivity data are missing the fallback
     # is `total_n_fertile` (i.e. treat the location as one unit).
@@ -1380,19 +1380,19 @@ def main() -> None:
         locations = locations.merge(conn, on="locationID", how="left")
         # Effective mating N = adults in the largest connected component
         # at the 10 m primary radius.
-        locations["N_fertile_effective_25m"] = (
+        locations["N_fertile_effective_50m"] = (
             locations["total_n_fertile"].astype(float)
-            * locations["largest_component_share_25m"].fillna(1.0)
+            * locations["largest_component_share_50m"].fillna(1.0)
         ).round().astype(int)
         print(f"[step30] Woven in within-location connectivity from "
               f"{DEFAULT_CONNECTIVITY_TSV.name} "
               f"(mean largest-component share at 10 m = "
-              f"{locations['largest_component_share_25m'].mean():.2f}).")
+              f"{locations['largest_component_share_50m'].mean():.2f}).")
     else:
         print(f"[step30] {DEFAULT_CONNECTIVITY_TSV} not found — "
               "connectivity predictor unavailable. Run step28c first.")
-        locations["largest_component_share_25m"] = 1.0
-        locations["N_fertile_effective_25m"] = locations["total_n_fertile"]
+        locations["largest_component_share_50m"] = 1.0
+        locations["N_fertile_effective_50m"] = locations["total_n_fertile"]
 
     # ---- Prediction outputs ----
     pred_div = predicted_diversity_per_location(locations, prior, rng)
@@ -1525,9 +1525,9 @@ def main() -> None:
         # ---- Test 1: Mate-limitation regression (§ 2.2.1) ----
         if mothers is not None:
             conn_df = None
-            if "largest_component_share_25m" in locations.columns:
+            if "largest_component_share_50m" in locations.columns:
                 conn_df = locations[[
-                    "locationID", "largest_component_share_25m"
+                    "locationID", "largest_component_share_50m"
                 ]].copy()
             reg_df, per_loc_reg, coefs = mate_limitation_regression(
                 seeds, mothers, prior, connectivity=conn_df)

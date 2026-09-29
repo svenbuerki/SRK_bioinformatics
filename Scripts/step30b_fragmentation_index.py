@@ -4,7 +4,7 @@
 A **purely spatial** metric of how much pollen flow at each LEPA site
 is limited by pollinator range. It does not use allele frequencies or
 drift; it only asks *how many pollen-donor plants can a mother reach
-within 25 m?* — the biological definition of fragmentation for a
+within 50 m?* — the biological definition of fragmentation for a
 selfing-incompatible plant with short-range pollinators.
 
 Two scales are reported side by side so the effect can be traced from
@@ -12,32 +12,32 @@ the individual mother up to the location:
 
 Event scale (per event)
 -----------------------
-    K_spatial_25m = 2 · (sum of N_fertile in events within 25 m − 1)
+    K_spatial_50m = PLOIDY · (sum of N_fertile in events within 50 m − 1)
 
 The number of pollen-donor SRK allele copies a mother at that event
-can access under the 25 m primary radius. Small K_spatial_25m = few
+can access under the 50 m primary radius. Small K_spatial_50m = few
 donors reachable = fragmentation-limited event.
 
-We report, per event, the raw K_spatial_25m, the "any-neighbour" flag
-(has ≥ 1 other event within 25 m), and the fragmentation index at
+We report, per event, the raw K_spatial_50m, the "any-neighbour" flag
+(has ≥ 1 other event within 50 m), and the fragmentation index at
 event scale
-    F_event = 1 − K_spatial_25m / K_SPECIES_FG
+    F_event = 1 − K_spatial_50m / K_SPECIES_FG
 so 0 = pollinator range gives the mother the full 32-allele species
 pool, 1 = she has no reachable donor at all.
 
 Location scale (per location)
 -----------------------------
-    connected_share_25m         (from step29_location_connectivity.tsv)
-    largest_component_share_25m (from same)
+    connected_share_50m         (from step29_location_connectivity.tsv)
+    largest_component_share_50m (from same)
 
 At the location level, fragmentation is the fraction of adults NOT in
 a multi-event pollen-flow component. We report
-    F_location = 1 − connected_share_25m
+    F_location = 1 − connected_share_50m
 plus the median event-scale F within the location, so the two scales
 are visible together.
 
 Both scales are inputs to Phase C's mate-limitation regression: the
-per-mother K_spatial_25m becomes the β₂ (fragmentation) predictor; the
+per-mother K_spatial_50m becomes the β₂ (fragmentation) predictor; the
 per-location F_location becomes an explicit location-level covariate.
 
 Outputs
@@ -65,9 +65,9 @@ DEFAULT_FIGURES = Path("figures/Phase5")
 CONN_TSV  = DEFAULT_TABLES / "step29_location_connectivity.tsv"
 EVENT_TSV = DEFAULT_TABLES / "step28_events_spatial_neighborhood.tsv"
 
-R_PRIMARY = 25
+R_PRIMARY = 50
 # Under tetraploid (PLOIDY = 4), each donor plant contributes 4 SRK allele
-# copies. The reference point where a mother's 25 m neighbourhood delivers
+# copies. The reference point where a mother's 50 m neighbourhood delivers
 # enough copies to potentially saturate the 32-Fg species pool is
 # N_ceiling_plants such that PLOIDY * (N-1) >= K_SPECIES_FG, i.e.
 # N >= K_SPECIES_FG / PLOIDY + 1 = 9. Rounded to 8 (the point at which
@@ -86,35 +86,35 @@ def build_event_table() -> pd.DataFrame:
     N_reach_col = f"N_compatible_spatial_{R_PRIMARY}m"
 
     df = ev.merge(loc_meta, on="locationID", how="left")
-    df["K_spatial_25m"] = df[K_col].astype(int)          # PLOIDY-aware
-    # N_reachable_25m = donor plant count in the 25 m neighbourhood
+    df["K_spatial_50m"] = df[K_col].astype(int)          # PLOIDY-aware
+    # N_reachable_50m = donor plant count in the 50 m neighbourhood
     # (excluding the mother's own N_fertile-1). This is the axis the
     # A.7 figure now uses so readers see plants, not allele copies.
-    df["N_reachable_25m"] = df[N_reach_col].astype(int)
-    df["has_neighbour_25m"] = (df[N_col].astype(int) > 0).astype(int)
-    df["F_event"] = 1.0 - np.minimum(df["K_spatial_25m"], K_SPECIES_FG) / K_SPECIES_FG
+    df["N_reachable_50m"] = df[N_reach_col].astype(int)
+    df["has_neighbour_50m"] = (df[N_col].astype(int) > 0).astype(int)
+    df["F_event"] = 1.0 - np.minimum(df["K_spatial_50m"], K_SPECIES_FG) / K_SPECIES_FG
     df["BL"] = locationCode_to_bl(df["locationCode"]).values
     df["BL"] = df["BL"].fillna("Unassigned")
     return df[[
         "eventID", "locationID", "locationCode", "BL",
-        "n_fertile", "N_reachable_25m", "K_spatial_25m",
-        "has_neighbour_25m", "F_event",
+        "n_fertile", "N_reachable_50m", "K_spatial_50m",
+        "has_neighbour_50m", "F_event",
     ]].sort_values(["locationCode", "F_event"], ascending=[True, False])
 
 
 def build_location_table(event_df: pd.DataFrame) -> pd.DataFrame:
     conn = pd.read_csv(CONN_TSV, sep="\t", encoding="utf-8-sig")
     agg = (event_df.groupby("locationID")
-           .agg(median_K_spatial_25m=("K_spatial_25m", "median"),
-                min_K_spatial_25m=("K_spatial_25m", "min"),
-                frac_isolated_events=("has_neighbour_25m",
+           .agg(median_K_spatial_50m=("K_spatial_50m", "median"),
+                min_K_spatial_50m=("K_spatial_50m", "min"),
+                frac_isolated_events=("has_neighbour_50m",
                                        lambda s: float((s == 0).mean())),
                 median_F_event=("F_event", "median"))
            .reset_index())
     df = conn[["locationID", "locationCode", "n_events", "total_n_fertile",
-               "connected_share_25m", "largest_component_share_25m",
-               "n_components_25m"]].merge(agg, on="locationID", how="left")
-    df["F_location"] = 1.0 - df["connected_share_25m"]
+               "connected_share_50m", "largest_component_share_50m",
+               "n_components_50m"]].merge(agg, on="locationID", how="left")
+    df["F_location"] = 1.0 - df["connected_share_50m"]
     df["BL"] = locationCode_to_bl(df["locationCode"]).values
     df["BL"] = df["BL"].fillna("Unassigned")
     return df.sort_values(["F_location", "median_F_event"],
@@ -124,9 +124,9 @@ def build_location_table(event_df: pd.DataFrame) -> pd.DataFrame:
 def plot_event_K_by_location(ev_df: pd.DataFrame, loc_df: pd.DataFrame,
                               out_png: Path, out_pdf: Path):
     """Per-location distribution of the event-scale pollen-donor plant
-    count reachable within 25 m, panelled by BL.
+    count reachable within 50 m, panelled by BL.
 
-    x-axis: N_reachable_25m = donor plants a mother at that event can
+    x-axis: N_reachable_50m = donor plants a mother at that event can
     physically reach within pollinator range (excludes the mother's own
     event's plants but includes the mother's neighbours' plants). Plotted
     as a plain plant count so readers cannot confuse it with the 32-Fg
@@ -148,7 +148,7 @@ def plot_event_K_by_location(ev_df: pd.DataFrame, loc_df: pd.DataFrame,
     floor) and the 8 → 500 range (above it) legible.
     """
     ev = ev_df.copy()
-    ev["N_plot"] = np.maximum(ev["N_reachable_25m"].astype(int), 1)
+    ev["N_plot"] = np.maximum(ev["N_reachable_50m"].astype(int), 1)
 
     bls = [b for b in BL_ORDER if b in loc_df["BL"].values]
     if (loc_df["BL"] == "Unassigned").any():
@@ -167,7 +167,7 @@ def plot_event_K_by_location(ev_df: pd.DataFrame, loc_df: pd.DataFrame,
 
     for ax, bl in zip(axes, bls):
         sub_locs = (loc_df[loc_df["BL"] == bl]
-                    .sort_values("median_K_spatial_25m", ascending=True)
+                    .sort_values("median_K_spatial_50m", ascending=True)
                     .reset_index(drop=True))
         colour = palette[bl]
         for i, r in sub_locs.iterrows():
@@ -208,8 +208,8 @@ def plot_event_K_by_location(ev_df: pd.DataFrame, loc_df: pd.DataFrame,
         ax.spines["right"].set_visible(False)
 
     axes[-1].set_xlabel(
-        "Pollen-donor plants reachable within 25 m per event  "
-        "(N_reachable_25m = Σ N_fertile in events within 25 m − 1)\n"
+        "Pollen-donor plants reachable within 50 m per event  "
+        "(N_reachable_50m = Σ N_fertile in events within 50 m − 1)\n"
         f"Red dotted: N = {N_FLOOR_SINGLE} single-plant SI floor  ·  "
         f"Grey dashed: N = {N_CEILING_SPECIES} plants = {PLOIDY * N_CEILING_SPECIES} "
         f"tetraploid allele copies, the coupon-collector floor for the 32-Fg "
@@ -221,7 +221,7 @@ def plot_event_K_by_location(ev_df: pd.DataFrame, loc_df: pd.DataFrame,
     axes[-1].set_xticklabels([str(x) for x in xticks])
     fig.suptitle(
         "Event-scale pollen-donor plant count per LEPA location "
-        "(purely spatial, 25 m pollinator range, LEPA tetraploid)",
+        "(purely spatial, 50 m pollinator range, LEPA tetraploid)",
         fontsize=13, y=0.995,
     )
     fig.tight_layout(rect=[0, 0, 0.94, 0.97])
@@ -242,9 +242,9 @@ def main() -> None:
     loc.to_csv(out_loc, sep="\t", index=False)
     print(f"[step30b] Wrote {out_loc}  ({len(loc)} locations)")
 
-    print("[step30b] Fragmentation summary (25 m primary):")
-    print(f"  Events with ≥ 1 neighbour within 25 m : "
-          f"{int(ev['has_neighbour_25m'].sum())} / {len(ev)}")
+    print("[step30b] Fragmentation summary (50 m primary):")
+    print(f"  Events with ≥ 1 neighbour within 50 m : "
+          f"{int(ev['has_neighbour_50m'].sum())} / {len(ev)}")
     print(f"  Locations with F_location ≥ 0.5      : "
           f"{int((loc['F_location'] >= 0.5).sum())} / {len(loc)}")
     print(f"  Median event-scale F_event           : "
