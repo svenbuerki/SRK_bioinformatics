@@ -159,9 +159,10 @@ output family:
 > and Phase C's β₁ interpretation follows the new sporophytic scale.
 
 Once Part B's sampling protocol is executed, we will have a batch
-of seed DNA per mother. Each seed is diploid at each locus — 2 maternal
-+ 2 paternal SRK alleles — so one seed lot per mother recovers, in a
-single extraction batch, two independent samples:
+of seed DNA per mother. Each seed is **tetraploid** like its parents —
+2 maternal + 2 paternal SRK alleles at each SRK locus — so one seed
+lot per mother recovers, in a single extraction batch, two independent
+samples:
 
 | Generation | What we recover | How |
 |---|---|---|
@@ -316,11 +317,15 @@ its predictions.
 
 Self-incompatibility rejects pollen whose SRK identity matches the
 stigma's, preventing self-fertilisation. LEPA is a Brassicaceae, so
-its SI is **sporophytic**: the pollen grain carries proteins from
-the pollen *parent*'s diploid tissue, so the stigma decides against
-the whole parent's expressed genotype rather than the individual
-gamete's allele. Compatibility depends on both parents' expressed
-genotypes under whatever within-plant dominance rules apply.
+its SI is **sporophytic**: SRK recognition is determined by the
+**sporophyte generation** (2n) rather than the haploid gamete (n).
+The pollen coat carries proteins deposited during pollen development
+by the sporophyte tapetum, so the stigma decides against the whole
+pollen *parent*'s expressed genotype rather than the individual
+gamete's allele. In LEPA the sporophyte is **tetraploid (2n = 4x)**,
+so the pollen parent contributes 4 SRK alleles' worth of expression
+information (subject to the dominance rules in § A.6.3). Compatibility
+depends on both parents' expressed genotypes.
 
 #### A.6.2 Two allelic classes
 

@@ -8,10 +8,13 @@ Phase 5 Part 1's § A.6.
 Biological model
 ----------------
 LEPA is tetraploid (see § A.3 of the Phase 5 doc). Each somatic plant
-carries 4 SRK allele copies. Sporophytic self-incompatibility means the
-pollen-parent's diploid genotype determines rejection at the stigma —
-NOT the individual haploid gamete's allele. This module implements the
-classical Brassicaceae Class I / Class II dominance rule:
+carries 4 SRK allele copies. Sporophytic self-incompatibility means
+recognition is decided in the sporophyte generation (2n = 4x in LEPA)
+— the pollen coat carries proteins deposited by the pollen parent's
+sporophyte tissue, so the stigma decides against the whole parent's
+expressed genotype, NOT against the individual haploid gamete's
+allele. This module implements the classical Brassicaceae Class I /
+Class II dominance rule:
 
   * **Within a plant**: Class I strictly dominant over Class II.
       - Plant carries ≥ 1 Class I allele → only Class I alleles are
