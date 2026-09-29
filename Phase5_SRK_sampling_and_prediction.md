@@ -373,15 +373,15 @@ Same rule for mother and father.
 
 #### A.6.4 The between-plant recognition rule
 
-A cross (father → mother) is **compatible** iff:
+A cross (father → mother) is **compatible** if and only if:
 
 **Mother's expressed set ∩ Father's expressed set = ∅.**
 
-- **Class I × Class I** — compatible iff no shared expressed Class I
+- **Class I × Class I** — compatible if and only if no shared expressed Class I
   allele.
 - **Class I × Class II** — always compatible; the two expressed sets
   belong to disjoint classes by construction.
-- **Class II × Class II** — compatible iff no shared expressed
+- **Class II × Class II** — compatible if and only if no shared expressed
   Class II allele.
 
 The between-class rule is why sporophytic SI buffers reproduction
@@ -420,7 +420,7 @@ approximation used in Part 1 could not:
 
 - **Sporophytic SI.** Rejection is determined by the pollen parent's
   diploid (here, tetraploid) genotype — not by the individual pollen
-  gamete's allele. Cross A × B is compatible iff parents A and B
+  gamete's allele. Cross A × B is compatible if and only if parents A and B
   share no expressed allele.
 - **Class I dominance within a plant.** A tetraploid carrying any
   Class I alleles expresses only those Class I alleles on pollen
