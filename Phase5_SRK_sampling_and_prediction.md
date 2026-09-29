@@ -32,7 +32,7 @@ LEPA populations:
    show reduced per-mother seed set? Formally: does per-mother
    `germplasmQuantityEstimate` decline with predicted per-mother
    pollen compatibility (sporophytic Class I / II tetraploid model,
-   see § A.6 for the biology and § A.7 for the maths)?
+   see § A.7 for the biology and § A.8 for the maths)?
 2. **SI-escape test.** Under strict SI, no seed can carry a paternal Fg
    matching either of its mother's Fgs. A location where seeds with
    maternal-matching paternal Fgs appear above the strict-SI null is a
@@ -42,9 +42,9 @@ LEPA populations:
    Fg frequencies at small isolated locations. Both reduce pollen
    compatibility but through different channels; the framework
    predicts them on two independent axes in Part A — **drift** via
-   predicted SRK diversity and pollen compatibility (§ A.5–A.7) and **fragmentation**
+   predicted SRK diversity and pollen compatibility (§ A.7–A.8) and **fragmentation**
    via the purely spatial pollen-flow index at event and location scales
-   (§ A.8) — and Phase C's mate-limitation regression (§ C.1) then tests
+   (§ A.5) — and Phase C's mate-limitation regression (§ C.1) then tests
    both simultaneously as two independent coefficients (β₁ = drift,
    β₂ = fragmentation).
 4. **Phenotype cross-validation (deferred).** SRK-based predictions can be
@@ -154,7 +154,7 @@ output family:
 > count-based formula in Parts A and B via a single project-wide
 > constant `PLOIDY = 4` (see `step28_seed_sampling_per_mother.py`).
 > **The sporophytic self-incompatibility model** with Class I / Class II
-> dominance now drives § A.6's pollen compatibility formula ([`srk_si_model.py`](srk_si_model.py)
+> dominance now drives § A.7's pollen compatibility formula ([`srk_si_model.py`](srk_si_model.py)
 > + [`tables/Phase5/srk_fg_class.tsv`](tables/Phase5/srk_fg_class.tsv))
 > and Phase C's β₁ interpretation follows the new sporophytic scale.
 
@@ -255,7 +255,106 @@ corresponding *comparison* outputs (Phase B, once seed genotypes exist)
 carry a different prefix (`step30_B_*`) so prediction and comparison
 cannot be mistaken for one another.
 
-### A.5 Predicted SRK diversity per location
+### A.5 Fragmentation of pollen flow — event and location scales
+
+**What this predicts and why it is separate from A.5–A.7.** A.5
+(predicted SRK diversity) and A.7 (predicted pollen compatibility)
+both live on the **drift axis**: they answer *"what alleles has drift
+left at this location, and how compatible is a mother against those
+local frequencies?"* This section adds the **spatial-flow axis**: how
+much of the surviving diversity a mother can actually **reach** given
+where LEPA events sit on the landscape and how far the pollinators
+fly. Both are goal-3 predictions, but they answer different questions
+— *"what alleles remain?"* (A.5) vs *"which alleles can pollinate
+her?"* (A.8) — and they are **independent**: a fragmented location
+can still be drift-neutral (many alleles, none reachable) and a
+well-connected location can still be drift-collapsed (few alleles,
+all reachable). Splitting them here lets Phase C (§ C.1) test which
+channel is dominant at each location as two independent coefficients
+(β₁ = drift via pollen compatibility, β₂ = fragmentation via K^(25m)).
+
+**Why this metric is honest.** The fragmentation index uses only three
+inputs: event coordinates, N_fertile per event, and the 25 m primary
+pollinator radius. It uses **no allele frequencies, no priors, no
+simulations** — so it can be published today, independent of any
+SRK genotype work, and it depends on no modelling choice beyond the
+25 m radius (already justified in § B.2 with the 10 m / 50 m
+sensitivity view).
+
+**Event scale — the mother-level view.** For each event we compute
+
+$$K^{(25\text{m})} \;=\; 4 \times \Bigl( \sum_{e \in \text{neighbours}_{\leq 25\text{m}}} N_{\text{fertile}}(e) \,-\, 1 \Bigr)$$
+
+the number of pollen-donor SRK allele copies a mother at that event
+can reach within pollinator range. This is exactly the K used in
+§ B.3 for the coupon-collector formulas, viewed here as a
+**fragmentation predictor** at the mother scale.
+[Figure 1](#fig-1) shows the **distribution of K^(25m) across events
+within each location**, panelled by BL. Plotting the raw distribution
+rather than a single summary keeps the fine-scale process visible —
+which is exactly the level at which mate limitation acts, since a
+mother at an N_reachable = 1 event and a mother at an N_reachable ≈
+100 event of the same locationID face very different pollen contexts.
+In the 2025 field, **439 / 704 events (62 %)** have at least one other
+event within 25 m; the number of reachable donor plants per event
+ranges from **0** (isolated singletons) to **> 250** (dense BL3, BL4
+clusters), and under tetraploid this corresponds to K^(25m) allele
+copies from **0** to **> 1 000**.
+
+**Location scale — the site-level view.** At the location scale
+fragmentation is the fraction of adults NOT in a multi-event
+pollen-flow component,
+
+$$F_{\text{location}} \;=\; 1 - \text{connected-share at 25 m}$$
+
+using the connected-share metric from § B.2. `F_location = 0` when
+every adult exchanges pollen with at least one other event; `F_location = 1`
+when every adult is an isolated island. In the 2025 field, **21 / 39
+locations (54 %) sit at F_location ≥ 0.5** — the majority of LEPA
+sites are structurally fragmented at pollinator scale. The
+location-scale summary is shown in Figure 6 (§ B.2); [Figure 1](#fig-1)
+here shows the event-scale distribution underneath it so the two views
+are complementary rather than duplicative.
+
+**Reading the boxplot.** Three patterns dominate [Figure 1](#fig-1):
+
+- **Well-connected locations** — a tight box entirely to the right of
+  the **N = 8 species-pool floor**. Every event reaches ≥ 32 tetraploid
+  allele copies; mothers experience a uniform pollen environment.
+  Examples: EO30-1, EO27-3, EO29, EO70.
+- **Mixed-connectivity locations** — a wide box spanning **N = 1 → ≥
+  100**. Some events are isolated singletons while others sit in
+  connected clusters, and mothers of the same locationID face radically
+  different mate contexts. Examples: EO27-1, EO18-7, EO26-3, EO8
+  (several sub-locations). These are the locations where goal 3's β₂
+  (fragmentation) coefficient in Phase C will have the most
+  within-location leverage.
+- **Uniformly isolated locations** — a tight box at **N ≤ 1** (or a
+  single dot at N = 0). Every event is a lone plant; under strict SI
+  no seed set is possible. Examples: EO24, EO24-1, EO24-2, EO24-7.
+  These are the sites where fragmentation is predicted to be *fully*
+  driving mate limitation.
+
+**How A.8 hooks into Phase C.** The per-mother K^(25m) is the β₂
+predictor in the mate-limitation regression (§ C.1); the per-location
+F_location is available as an explicit location-level covariate. Both
+are pure spatial metrics — no drift contamination — so β₂ isolates
+the fragmentation channel cleanly. Locations with wide event-scale
+K^(25m) spread (mixed-connectivity boxes above) contribute the most
+within-location statistical leverage for identifying β₂ separately
+from between-location random effects.
+
+**Take-home for reviewers.** Fragmentation is a distinct, testable
+prediction. It is what a pollinator sees, not what a SRK allele
+frequency looks like. Publishing it alongside A.5–A.7 gives goal 3
+two clean prediction axes (drift, fragmentation) before any seed
+genotype exists — and Phase C then quantifies which axis is dominant
+at each location.
+
+<a id="fig-1"></a>
+![Figure 1: Event-scale distribution of the pollen-donor **plant count** reachable within 25 m per LEPA location, panelled by Bottleneck Lineage in the standard BL_ORDER (BL4, BL5, BL3, BL1, BL2). X-axis = `N_reachable_25m` = Σ N_fertile in events within 25 m − 1 (donor plants, not allele copies — plotted as plants to avoid conflation with the 32-Fg species allele-class count). Vertical **red dotted line at N = 1**: single-plant SI floor; every event at or below this line has zero reachable pollen donors and no seed set is possible under strict self-incompatibility. Vertical **grey dashed line at N = 8 plants**: coupon-collector floor for the 32-Fg species pool under **tetraploid LEPA** (4 alleles per plant × 8 plants = 32 allele copies). A mother reaching ≥ 8 donor plants has enough allele copies for the species pool to be *physically* reachable in principle; whether drift preserved the diversity is A.5's question. Log₂ x-axis so the 1 → 8 range (below the species floor) and the 8 → 500 range are both legible. Row labels give the location code, number of events, and total adult census. The figure exposes the fine-scale spatial process that a location-scale metric collapses: **a tight box far right of 8** (EO30-1, EO29, EO70) = every event well-connected, uniform pollen environment; **a wide box spanning 1 → hundreds** (EO27-1, EO18-7, EO26-3, EO8 groups) = the location holds a mix of isolated singletons and connected clusters, so mothers at different events face very different mate-availability contexts under the same locationID; **a tight box at N ≤ 1** (EO24 group, EO24-1, EO24-2, EO24-7) = every event is a lone plant. The metric uses only event coordinates, N_fertile, and the 25 m primary pollinator radius — no allele frequencies, no priors. Source: `step30b_fragmentation_index.py`. Data: [`step30_A_fragmentation_per_event.tsv`](tables/Phase5/step30_A_fragmentation_per_event.tsv), [`step30_A_fragmentation_per_location.tsv`](tables/Phase5/step30_A_fragmentation_per_location.tsv).](figures/Phase5/step30_A_fragmentation_index.png)
+
+### A.6 Predicted SRK diversity per location
 
 **What we did.** Under the species-wide 32-Fg prior, we predicted how
 many distinct SRK alleles Phase B seed genotyping should recover at
@@ -304,23 +403,23 @@ but for Phase B mate-limitation and SI-escape tests the local coverage
 is what matters: we are testing reproductive dynamics on the alleles
 that are physically present, not attempting a species-wide inventory.
 
-<a id="fig-1"></a>
-![Figure 1: Predicted number of distinct SRK alleles detected per LEPA location under the P1 species-wide prior (32 Fgs from the Canu-amplicon preliminary study). Horizontal layout, one dot per location, panelled by Bottleneck Lineage in the standard BL_ORDER (BL4, BL5, BL3, BL1, BL2). Dot size ∝ √M (permit-realistic count of mothers with seed records in the LEPA DB); error bars = 95 % credible interval from Dirichlet posterior draws. Y-tick labels give `locationCode (n = mothers sampled)`. Vertical dashed line marks the species-wide SRK allele ceiling of 32. **BL3 (EO76, EO38) and BL1 (EO61) predict ~21 distinct alleles; the BL5 tail (EO24 group) predicts 2–5.** Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_prediction_diversity.png)
-
-### A.6 Sporophytic self-incompatibility with Class I / Class II dominance
-
-This section states the biological SI model; § A.7 is the
-mathematical implementation and § C.1 the Phase C test that uses
-its predictions. [Figure 2](#fig-2) below is a purely pedagogical
-schematic that summarises the whole section in three panels — the
-dominance rule inside one plant (§ A.6.3), the worked example of
-one mother vs three candidate fathers (§ A.6.5), and the
-compatibility rule by cross type (§ A.6.4).
-
 <a id="fig-2"></a>
-![Figure 2 — Sporophytic SI with Class I / Class II dominance in tetraploid LEPA (Phase 5 § A.6). **Panel A — dominance within one plant.** Case A (plant with ≥ 1 Class I allele): only its Class I alleles are expressed on both pollen and stigma; Class II alleles are silent (shown faded). Case B (plant with only Class II alleles): all four Class II alleles are expressed co-dominantly. **Panel B — between-plant recognition, worked example.** Mother M carries `{FG001, FG002, FG024, FG031}`; her Case-A expressed set is {FG001, FG002}. Three candidate fathers: F1 shares FG001 with M → rejected; F2 is all-Class-II so between-class → always compatible; F3 shares FG002 with M → rejected. **Panel C — compatibility rule by cross type.** Class I × Class I: compatible if their expressed Class I alleles differ (Class II silent on both sides — sharing them is irrelevant). Class I × Class II: always compatible by construction (disjoint expressed classes). Class II × Class II: all four alleles expressed on both sides, compatible only if none are shared. Source: `si_model_schematic.py`.](figures/Phase5/step30_A_si_model_schematic.png)
+![Figure 2: Predicted number of distinct SRK alleles detected per LEPA location under the P1 species-wide prior (32 Fgs from the Canu-amplicon preliminary study). Horizontal layout, one dot per location, panelled by Bottleneck Lineage in the standard BL_ORDER (BL4, BL5, BL3, BL1, BL2). Dot size ∝ √M (permit-realistic count of mothers with seed records in the LEPA DB); error bars = 95 % credible interval from Dirichlet posterior draws. Y-tick labels give `locationCode (n = mothers sampled)`. Vertical dashed line marks the species-wide SRK allele ceiling of 32. **BL3 (EO76, EO38) and BL1 (EO61) predict ~21 distinct alleles; the BL5 tail (EO24 group) predicts 2–5.** Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_prediction_diversity.png)
 
-#### A.6.1 Sporophytic recognition
+### A.7 Sporophytic self-incompatibility with Class I / Class II dominance
+
+This section states the biological SI model; § A.8 is the
+mathematical implementation and § C.1 the Phase C test that uses
+its predictions. [Figure 3](#fig-3) below is a purely pedagogical
+schematic that summarises the whole section in three panels — the
+dominance rule inside one plant (§ A.8.3), the worked example of
+one mother vs three candidate fathers (§ A.8.5), and the
+compatibility rule by cross type (§ A.8.4).
+
+<a id="fig-3"></a>
+![Figure 3 — Sporophytic SI with Class I / Class II dominance in tetraploid LEPA (Phase 5 § A.7). **Panel A — dominance within one plant.** Case A (plant with ≥ 1 Class I allele): only its Class I alleles are expressed on both pollen and stigma; Class II alleles are silent (shown faded). Case B (plant with only Class II alleles): all four Class II alleles are expressed co-dominantly. **Panel B — between-plant recognition, worked example.** Mother M carries `{FG001, FG002, FG024, FG031}`; her Case-A expressed set is {FG001, FG002}. Three candidate fathers: F1 shares FG001 with M → rejected; F2 is all-Class-II so between-class → always compatible; F3 shares FG002 with M → rejected. **Panel C — compatibility rule by cross type.** Class I × Class I: compatible if their expressed Class I alleles differ (Class II silent on both sides — sharing them is irrelevant). Class I × Class II: always compatible by construction (disjoint expressed classes). Class II × Class II: all four alleles expressed on both sides, compatible only if none are shared. Source: `si_model_schematic.py`.](figures/Phase5/step30_A_si_model_schematic.png)
+
+#### A.7.1 Sporophytic recognition
 
 Self-incompatibility rejects pollen whose SRK identity matches the
 stigma's, preventing self-fertilisation. LEPA is a Brassicaceae, so
@@ -331,10 +430,10 @@ by the sporophyte tapetum, so the stigma decides against the whole
 pollen *parent*'s expressed genotype rather than the individual
 gamete's allele. In LEPA the sporophyte is **tetraploid (2n = 4x)**,
 so the pollen parent contributes 4 SRK alleles' worth of expression
-information (subject to the dominance rules in § A.6.3). Compatibility
+information (subject to the dominance rules in § A.8.3). Compatibility
 depends on both parents' expressed genotypes.
 
-#### A.6.2 Two allelic classes
+#### A.7.2 Two allelic classes
 
 Brassicaceae S-haplotypes fall into two dominance classes:
 
@@ -356,7 +455,7 @@ The mapping is stored as a first-class TSV
 `step30_srk_diversity_prediction_vs_observed.py` regenerates every
 downstream number from the current version.
 
-#### A.6.3 Dominance within a tetraploid plant
+#### A.7.3 Dominance within a tetraploid plant
 
 LEPA carries 4 SRK allele copies (§ A.3). Under the classical
 Brassicaceae rule:
@@ -378,7 +477,7 @@ shown on stigma and pollen. Two cases:
 
 Same rule for mother and father.
 
-#### A.6.3a How many identities does each plant display?
+#### A.7.3a How many identities does each plant display?
 
 Because every plant carries 4 SRK allele *copies* but not all of them
 are always distinct identities and not all distinct identities are
@@ -402,7 +501,7 @@ recognised at the stigma is smaller than 4:
 *identity* level, not the copy level. A Class I homozygote AAAA
 displays a single identity {A}; the fact that A occurs on 4 copies
 means more SRK protein (dosage) but a single receptor phenotype at the
-stigma. Under the § A.7 Case-A formula `P_compat = (1 − p(M))⁴` a
+stigma. Under the § A.8 Case-A formula `P_compat = (1 − p(M))⁴` a
 Class I homozygote has *higher* `P_compat` than a diverse heterozygote
 of the same class, because `p(M)` — the local frequency mass of the
 expressed set — is smaller when the set is smaller. Homozygosity is
@@ -430,12 +529,12 @@ finite-population simulation therefore draws each mother's genotype
 from this empirical distribution: 65.7 % of simulated mothers are
 homozygous, 32.2 % are 2-distinct, 2.2 % are 3-distinct. Candidate
 fathers are drawn from the same distribution, giving a symmetric
-mother/father empirical-zygosity model. The § A.7 species-mean
+mother/father empirical-zygosity model. The § A.8 species-mean
 `P_compat` jumps from **0.16 (naive independent-draws model) →
 0.69 (empirical LEPA zygosity)** — a huge biological signal that
 homozygosity is doing real protective work in this system.
 
-#### A.6.4 The between-plant recognition rule
+#### A.7.4 The between-plant recognition rule
 
 A cross (father → mother) is **compatible** if and only if:
 
@@ -452,7 +551,7 @@ The between-class rule is why sporophytic SI buffers reproduction
 under drift: a location holding both classes still crosses freely
 regardless of allele identity.
 
-#### A.6.5 A worked example
+#### A.7.5 A worked example
 
 Mother **M** carries `{FG001, FG002, FG024, FG031}` — two Class I
 (FG001, FG002) + two Class II. Case A: her expressed set =
@@ -467,11 +566,11 @@ Three candidate fathers:
 - **F3** = `{FG002, FG003, FG010, FG018}` — Case A, expressed
   {FG002, FG003}. Shares FG002 with M → **rejected**.
 
-Under random mating, the fraction of compatible fathers is the § A.7
+Under random mating, the fraction of compatible fathers is the § A.8
 Case-A formula `P_compat = (1 − p(M))⁴`, where `p(M)` is the local
 frequency mass of {FG001, FG002}.
 
-### A.7 Finite-population prediction of pollen compatibility
+### A.8 Finite-population prediction of pollen compatibility
 
 **What we did.** For each location we simulated the local mating
 pool by drawing 4 × N_fertile alleles from the species-wide prior
@@ -517,7 +616,7 @@ mass p(M) = Σ_{j ∈ M} f_j is closed-form:
 - Case B — mother has only Class II alleles (M = her 4 alleles):
   $P_{\text{compat}} = 1 - (1 - p_I)^4 + (1 - p_I - p(M))^4$
 
-**Result under empirical LEPA zygosity (§ A.6.3a).** Species-mean
+**Result under empirical LEPA zygosity (§ A.8.3a).** Species-mean
 pollen compatibility is **~0.69** — very close to the Part-1 diploid
 gametophytic estimate of 0.63, but reached via a completely different
 mechanism. Under a naive independent-tetraploid-draw assumption the
@@ -553,122 +652,23 @@ gross "compatibility floor" the diploid model implied.
 so that any downstream analysis can join against them and reproduce
 the categorical labels.
 
-<a id="fig-3"></a>
-![Figure 3: Predicted per-mother pollen compatibility under the sporophytic tetraploid Class I / Class II model with **empirical LEPA zygosity** (§ A.6.3a). One dot per LEPA location, panelled by Bottleneck Lineage. Traffic-light background bands mark **failed** (pollen compatibility < 0.231, red), **struggling** (0.231–0.462, orange) and **sustainable** (≥ 0.462, green) — recalibrated against the sporophytic + empirical-zygosity species-mean of **0.693** (green dotted line). Dot position = mean predicted pollen compatibility from a Monte-Carlo finite-population simulation: 4 × N_fertile local alleles drawn from P1 (N_fertile scaled by within-25 m connectivity), M mothers drawn from that pool with the empirical LEPA zygosity distribution (66 % single-identity homozygotes, 32 % 2-distinct, 2 % 3-distinct — see [`srk_zygosity_empirical.tsv`](tables/Phase5/srk_zygosity_empirical.tsv)), and each mother's pollen compatibility computed against 300 candidate fathers drawn the same way. Error bars = 95 % credible interval across simulation replicates; dot size ∝ √M (mothers with seed records in DB). **Every LEPA location's mean sits close to the species mean because 66 % of mothers express only one SRK identity, which minimises their p(M) footprint under the § A.6.4 recognition rule; BL5 tiny slickspots retain wide CI reflecting founder-effect variance in class + zygosity composition.** Source: `step30_srk_diversity_prediction_vs_observed.py`. Class assignments: [`srk_fg_class.tsv`](tables/Phase5/srk_fg_class.tsv). Empirical zygosity: [`srk_zygosity_empirical.tsv`](tables/Phase5/srk_zygosity_empirical.tsv). Bands: [`step30_A_traffic_light_bands.tsv`](tables/Phase5/step30_A_traffic_light_bands.tsv).](figures/Phase5/step30_A_prediction_fecundation.png)
-
-### A.8 Fragmentation of pollen flow — event and location scales
-
-**What this predicts and why it is separate from A.5–A.7.** A.5
-(predicted SRK diversity) and A.7 (predicted pollen compatibility)
-both live on the **drift axis**: they answer *"what alleles has drift
-left at this location, and how compatible is a mother against those
-local frequencies?"* This section adds the **spatial-flow axis**: how
-much of the surviving diversity a mother can actually **reach** given
-where LEPA events sit on the landscape and how far the pollinators
-fly. Both are goal-3 predictions, but they answer different questions
-— *"what alleles remain?"* (A.5) vs *"which alleles can pollinate
-her?"* (A.8) — and they are **independent**: a fragmented location
-can still be drift-neutral (many alleles, none reachable) and a
-well-connected location can still be drift-collapsed (few alleles,
-all reachable). Splitting them here lets Phase C (§ C.1) test which
-channel is dominant at each location as two independent coefficients
-(β₁ = drift via pollen compatibility, β₂ = fragmentation via K^(25m)).
-
-**Why this metric is honest.** The fragmentation index uses only three
-inputs: event coordinates, N_fertile per event, and the 25 m primary
-pollinator radius. It uses **no allele frequencies, no priors, no
-simulations** — so it can be published today, independent of any
-SRK genotype work, and it depends on no modelling choice beyond the
-25 m radius (already justified in § B.2 with the 10 m / 50 m
-sensitivity view).
-
-**Event scale — the mother-level view.** For each event we compute
-
-$$K^{(25\text{m})} \;=\; 4 \times \Bigl( \sum_{e \in \text{neighbours}_{\leq 25\text{m}}} N_{\text{fertile}}(e) \,-\, 1 \Bigr)$$
-
-the number of pollen-donor SRK allele copies a mother at that event
-can reach within pollinator range. This is exactly the K used in
-§ B.3 for the coupon-collector formulas, viewed here as a
-**fragmentation predictor** at the mother scale.
-[Figure 4](#fig-4) shows the **distribution of K^(25m) across events
-within each location**, panelled by BL. Plotting the raw distribution
-rather than a single summary keeps the fine-scale process visible —
-which is exactly the level at which mate limitation acts, since a
-mother at an N_reachable = 1 event and a mother at an N_reachable ≈
-100 event of the same locationID face very different pollen contexts.
-In the 2025 field, **439 / 704 events (62 %)** have at least one other
-event within 25 m; the number of reachable donor plants per event
-ranges from **0** (isolated singletons) to **> 250** (dense BL3, BL4
-clusters), and under tetraploid this corresponds to K^(25m) allele
-copies from **0** to **> 1 000**.
-
-**Location scale — the site-level view.** At the location scale
-fragmentation is the fraction of adults NOT in a multi-event
-pollen-flow component,
-
-$$F_{\text{location}} \;=\; 1 - \text{connected-share at 25 m}$$
-
-using the connected-share metric from § B.2. `F_location = 0` when
-every adult exchanges pollen with at least one other event; `F_location = 1`
-when every adult is an isolated island. In the 2025 field, **21 / 39
-locations (54 %) sit at F_location ≥ 0.5** — the majority of LEPA
-sites are structurally fragmented at pollinator scale. The
-location-scale summary is shown in Figure 6 (§ B.2); [Figure 4](#fig-4)
-here shows the event-scale distribution underneath it so the two views
-are complementary rather than duplicative.
-
-**Reading the boxplot.** Three patterns dominate [Figure 4](#fig-4):
-
-- **Well-connected locations** — a tight box entirely to the right of
-  the **N = 8 species-pool floor**. Every event reaches ≥ 32 tetraploid
-  allele copies; mothers experience a uniform pollen environment.
-  Examples: EO30-1, EO27-3, EO29, EO70.
-- **Mixed-connectivity locations** — a wide box spanning **N = 1 → ≥
-  100**. Some events are isolated singletons while others sit in
-  connected clusters, and mothers of the same locationID face radically
-  different mate contexts. Examples: EO27-1, EO18-7, EO26-3, EO8
-  (several sub-locations). These are the locations where goal 3's β₂
-  (fragmentation) coefficient in Phase C will have the most
-  within-location leverage.
-- **Uniformly isolated locations** — a tight box at **N ≤ 1** (or a
-  single dot at N = 0). Every event is a lone plant; under strict SI
-  no seed set is possible. Examples: EO24, EO24-1, EO24-2, EO24-7.
-  These are the sites where fragmentation is predicted to be *fully*
-  driving mate limitation.
-
-**How A.8 hooks into Phase C.** The per-mother K^(25m) is the β₂
-predictor in the mate-limitation regression (§ C.1); the per-location
-F_location is available as an explicit location-level covariate. Both
-are pure spatial metrics — no drift contamination — so β₂ isolates
-the fragmentation channel cleanly. Locations with wide event-scale
-K^(25m) spread (mixed-connectivity boxes above) contribute the most
-within-location statistical leverage for identifying β₂ separately
-from between-location random effects.
-
-**Take-home for reviewers.** Fragmentation is a distinct, testable
-prediction. It is what a pollinator sees, not what a SRK allele
-frequency looks like. Publishing it alongside A.5–A.7 gives goal 3
-two clean prediction axes (drift, fragmentation) before any seed
-genotype exists — and Phase C then quantifies which axis is dominant
-at each location.
-
 <a id="fig-4"></a>
-![Figure 4: Event-scale distribution of the pollen-donor **plant count** reachable within 25 m per LEPA location, panelled by Bottleneck Lineage in the standard BL_ORDER (BL4, BL5, BL3, BL1, BL2). X-axis = `N_reachable_25m` = Σ N_fertile in events within 25 m − 1 (donor plants, not allele copies — plotted as plants to avoid conflation with the 32-Fg species allele-class count). Vertical **red dotted line at N = 1**: single-plant SI floor; every event at or below this line has zero reachable pollen donors and no seed set is possible under strict self-incompatibility. Vertical **grey dashed line at N = 8 plants**: coupon-collector floor for the 32-Fg species pool under **tetraploid LEPA** (4 alleles per plant × 8 plants = 32 allele copies). A mother reaching ≥ 8 donor plants has enough allele copies for the species pool to be *physically* reachable in principle; whether drift preserved the diversity is A.5's question. Log₂ x-axis so the 1 → 8 range (below the species floor) and the 8 → 500 range are both legible. Row labels give the location code, number of events, and total adult census. The figure exposes the fine-scale spatial process that a location-scale metric collapses: **a tight box far right of 8** (EO30-1, EO29, EO70) = every event well-connected, uniform pollen environment; **a wide box spanning 1 → hundreds** (EO27-1, EO18-7, EO26-3, EO8 groups) = the location holds a mix of isolated singletons and connected clusters, so mothers at different events face very different mate-availability contexts under the same locationID; **a tight box at N ≤ 1** (EO24 group, EO24-1, EO24-2, EO24-7) = every event is a lone plant. The metric uses only event coordinates, N_fertile, and the 25 m primary pollinator radius — no allele frequencies, no priors. Source: `step30b_fragmentation_index.py`. Data: [`step30_A_fragmentation_per_event.tsv`](tables/Phase5/step30_A_fragmentation_per_event.tsv), [`step30_A_fragmentation_per_location.tsv`](tables/Phase5/step30_A_fragmentation_per_location.tsv).](figures/Phase5/step30_A_fragmentation_index.png)
+![Figure 4: Predicted per-mother pollen compatibility under the sporophytic tetraploid Class I / Class II model with **empirical LEPA zygosity** (§ A.8.3a). One dot per LEPA location, panelled by Bottleneck Lineage. Traffic-light background bands mark **failed** (pollen compatibility < 0.231, red), **struggling** (0.231–0.462, orange) and **sustainable** (≥ 0.462, green) — recalibrated against the sporophytic + empirical-zygosity species-mean of **0.693** (green dotted line). Dot position = mean predicted pollen compatibility from a Monte-Carlo finite-population simulation: 4 × N_fertile local alleles drawn from P1 (N_fertile scaled by within-25 m connectivity), M mothers drawn from that pool with the empirical LEPA zygosity distribution (66 % single-identity homozygotes, 32 % 2-distinct, 2 % 3-distinct — see [`srk_zygosity_empirical.tsv`](tables/Phase5/srk_zygosity_empirical.tsv)), and each mother's pollen compatibility computed against 300 candidate fathers drawn the same way. Error bars = 95 % credible interval across simulation replicates; dot size ∝ √M (mothers with seed records in DB). **Every LEPA location's mean sits close to the species mean because 66 % of mothers express only one SRK identity, which minimises their p(M) footprint under the § A.8.4 recognition rule; BL5 tiny slickspots retain wide CI reflecting founder-effect variance in class + zygosity composition.** Source: `step30_srk_diversity_prediction_vs_observed.py`. Class assignments: [`srk_fg_class.tsv`](tables/Phase5/srk_fg_class.tsv). Empirical zygosity: [`srk_zygosity_empirical.tsv`](tables/Phase5/srk_zygosity_empirical.tsv). Bands: [`step30_A_traffic_light_bands.tsv`](tables/Phase5/step30_A_traffic_light_bands.tsv).](figures/Phase5/step30_A_prediction_fecundation.png)
 
 ### A.9 Cross-plot: SRK diversity vs pollen compatibility
 
 **What we did.** We plotted per-location predicted SRK allele
-diversity (x, from § A.5) against predicted sporophytic pollen
-compatibility (y, from § A.7), with locations coloured by BL and the
+diversity (x, from § A.6) against predicted sporophytic pollen
+compatibility (y, from § A.8), with locations coloured by BL and the
 sporophytic + empirical-zygosity species-mean pollen compatibility
 (0.693) drawn as a horizontal reference line.
 
 **Result.** Under the sporophytic Class I / II model with the
-empirical LEPA zygosity distribution (§ A.6.3a), **most locations
+empirical LEPA zygosity distribution (§ A.8.3a), **most locations
 sit near the species mean 0.69**. The BL5 tail (EO24 group) is
 displaced left on the diversity axis (only ~2–5 alleles present)
 but stays close to the species mean on the compatibility axis — the
-combination of between-class buffering (§ A.6.4) and the ~66 %
+combination of between-class buffering (§ A.8.4) and the ~66 %
 homozygosity rate prevents even severely drift-collapsed populations
 from falling into "failed" territory at the mean. What *does*
 separate small locations from large ones is the **width of the 95 %
@@ -691,7 +691,7 @@ biologically honest signal than the "global compatibility floor"
 narrative that the diploid gametophytic model implied.
 
 <a id="fig-5"></a>
-![Figure 5: Predicted SRK allele diversity (x) vs predicted sporophytic pollen compatibility (y) per LEPA location, coloured by Bottleneck Lineage (Set1 palette: BL1 purple, BL2 blue, BL3 red, BL4 orange, BL5 green), under the sporophytic + empirical-zygosity model (§ A.6.3a). Error bars on both axes come from the same Dirichlet posterior draws that produced the two single-quantity Phase A figures. Dot size ∝ √M (mothers with seed records in DB). **Green dotted horizontal line = sporophytic + empirical-zygosity species-mean pollen compatibility (0.693)** — the reference every location can be read against under the § A.6 model. Most locations sit right on the species mean because ~66 % of LEPA plants express only one SRK identity, giving them a small p(M) footprint and therefore high pollen compatibility. **BL5 tail (EO24, EO24-1, EO24-2)** sits at low predicted diversity (x ≈ 2–5) but stays close to the species mean on the y-axis with much *wider* credible intervals — the honest founder-effect signal that a small slickspot can drop into "struggling" (y < 0.462) if class + zygosity composition breaks unfavourably at that specific site. This figure is the single-figure summary of goal 3's fragmentation × drift decomposition: **sporophytic + empirical zygosity flatten the mean, but small locations still carry drift-driven risk in their credible intervals**. Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_diversity_vs_pcompat.png)
+![Figure 5: Predicted SRK allele diversity (x) vs predicted sporophytic pollen compatibility (y) per LEPA location, coloured by Bottleneck Lineage (Set1 palette: BL1 purple, BL2 blue, BL3 red, BL4 orange, BL5 green), under the sporophytic + empirical-zygosity model (§ A.8.3a). Error bars on both axes come from the same Dirichlet posterior draws that produced the two single-quantity Phase A figures. Dot size ∝ √M (mothers with seed records in DB). **Green dotted horizontal line = sporophytic + empirical-zygosity species-mean pollen compatibility (0.693)** — the reference every location can be read against under the § A.7 model. Most locations sit right on the species mean because ~66 % of LEPA plants express only one SRK identity, giving them a small p(M) footprint and therefore high pollen compatibility. **BL5 tail (EO24, EO24-1, EO24-2)** sits at low predicted diversity (x ≈ 2–5) but stays close to the species mean on the y-axis with much *wider* credible intervals — the honest founder-effect signal that a small slickspot can drop into "struggling" (y < 0.462) if class + zygosity composition breaks unfavourably at that specific site. This figure is the single-figure summary of goal 3's fragmentation × drift decomposition: **sporophytic + empirical zygosity flatten the mean, but small locations still carry drift-driven risk in their credible intervals**. Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_diversity_vs_pcompat.png)
 
 ---
 
@@ -1083,7 +1083,7 @@ at the same locationID are not one mating unit — no pollen crosses
 between them. Treating them as one pool implicitly assumes a mother
 sampled at event A pays for detection at event B, which is only true
 when A and B are within pollinator range. The event-scale K^(25m)
-distribution in [Figure 4](#fig-4) (§ A.8) makes this vivid: at
+distribution in [Figure 1](#fig-1) (§ A.5) makes this vivid: at
 locations like EO8 (82 events split across 46 disjoint mating units),
 the aggregate pool is a mathematical fiction.
 
@@ -1163,7 +1163,7 @@ per-mother K^(25m), which is a property of the landscape and doesn't
 depend on which allocation delivered her seeds. What *does* change is
 the **statistical power** — the fragmentation-aware allocation adds
 mothers exactly at the locations where within-location K^(25m)
-variance is highest (§ A.8 "mixed-connectivity" boxes), which is
+variance is highest (§ A.5 "mixed-connectivity" boxes), which is
 where β₂ has the most identifiability. So the extra effort is not
 distributed randomly across the study — it goes to the locations where
 the test needs it most.
@@ -1227,8 +1227,8 @@ four scientific goals of the framework.
 ### C.1 Test 1 — Mate-limitation regression (goals 1 + 3)
 
 Under strict SI + random mating in a **tetraploid sporophytic** system
-(§ A.3, § A.7), a mother's per-mother compatibility is given by the
-closed-form § A.7 Case-A / Case-B formulas, driven by the local Fg
+(§ A.3, § A.8), a mother's per-mother compatibility is given by the
+closed-form § A.8 Case-A / Case-B formulas, driven by the local Fg
 frequency vector *f* and the Class I / II assignment in
 [`srk_fg_class.tsv`](tables/Phase5/srk_fg_class.tsv):
 
@@ -1239,7 +1239,7 @@ frequency vector *f* and the Class I / II assignment in
 
 The species-mean sporophytic + empirical-zygosity pollen compatibility is ~0.69 (matching, via a different mechanism, the
 diploid gametophytic 0.63), so the regression coefficient β₁ lives on
-that rescaled axis — the traffic-light bands in § A.7 anchor the
+that rescaled axis — the traffic-light bands in § A.8 anchor the
 interpretation. Her expected seed set is proportional to
 $P_{\text{compat}}(m)$:
 
@@ -1259,7 +1259,7 @@ distinct causal channels:
   model, this fires when the drift-shifted local Fg composition shifts
   the mother out of the "sustainable" pollen compatibility band. Because between-
   class compatibility (Class I × Class II) buffers most locations
-  against drift (§ A.7), the sporophytic β₁ signal is expected to be
+  against drift (§ A.8), the sporophytic β₁ signal is expected to be
   subtler than the diploid gametophytic version would have implied —
   the mate-limited locations are the ones where drift has removed a
   whole class from the local pool.
@@ -1453,7 +1453,7 @@ signal by construction.
 | **Predicted local pool size** (SRK alleles at this location) | ~6 alleles | ~22 alleles |
 | **Predicted local coverage** (of the alleles at this location) | **~100 %** ✓ | **~100 %** ✓ |
 | Predicted species-wide coverage (of 32 P1 alleles — biased against drifted-out alleles) | ~18 % | ~55 % |
-| Predicted random-mating compatibility (sporophytic Class I / II + empirical zygosity, § A.6-A.7) | mean **0.67**, 95 % CI [0.42, 0.87] — *"sustainable"* band at the mean, CI stays sustainable throughout | mean **0.69**, tight CI [0.59, 0.77] — solidly *"sustainable"* |
+| Predicted random-mating compatibility (sporophytic Class I / II + empirical zygosity, § A.7-A.7) | mean **0.67**, 95 % CI [0.42, 0.87] — *"sustainable"* band at the mean, CI stays sustainable throughout | mean **0.69**, tight CI [0.59, 0.77] — solidly *"sustainable"* |
 
 **Reading the two coverage numbers.**
 The **local coverage** (~100 % at both pilot locations) is the biologically
@@ -1546,8 +1546,8 @@ or right-click → *Save link as…* to pull the TSV into your local pipeline.
 - [`step30_A_prediction_location_diversity.tsv`](tables/Phase5/step30_A_prediction_location_diversity.tsv) — predicted SRK allele diversity per location.
 - [`step30_A_prediction_location_pcompat.tsv`](tables/Phase5/step30_A_prediction_location_pcompat.tsv) — predicted random-mating pollen compatibility per location (finite-population model at 25 m).
 - [`step30_A_prediction_per_mother_fecundation.tsv`](tables/Phase5/step30_A_prediction_per_mother_fecundation.tsv) — species-wide compatibility reference distribution under the sporophytic tetraploid model.
-- [`srk_fg_class.tsv`](tables/Phase5/srk_fg_class.tsv) — Fg → dominance class (I / II) mapping used by the sporophytic pollen compatibility model in § A.7. Provisional data-driven default; editable by hand as biology is refined.
-- [`srk_zygosity_empirical.tsv`](tables/Phase5/srk_zygosity_empirical.tsv) — empirical LEPA distribution of distinct functional SRK identities per plant, from Canu-amplicon Step 23 (n = 367). Used to draw mother and father genotypes under the sporophytic finite-population model (§ A.6.3a, § A.7).
+- [`srk_fg_class.tsv`](tables/Phase5/srk_fg_class.tsv) — Fg → dominance class (I / II) mapping used by the sporophytic pollen compatibility model in § A.8. Provisional data-driven default; editable by hand as biology is refined.
+- [`srk_zygosity_empirical.tsv`](tables/Phase5/srk_zygosity_empirical.tsv) — empirical LEPA distribution of distinct functional SRK identities per plant, from Canu-amplicon Step 23 (n = 367). Used to draw mother and father genotypes under the sporophytic finite-population model (§ A.8.3a, § A.8).
 - [`step30_A_traffic_light_bands.tsv`](tables/Phase5/step30_A_traffic_light_bands.tsv) — recalibrated failed / struggling / sustainable band boundaries against the sporophytic species-mean pollen compatibility.
 - [`step30_A_fragmentation_per_event.tsv`](tables/Phase5/step30_A_fragmentation_per_event.tsv) — per-event fragmentation index F_event = 1 − K_spatial_25m / 32 (purely spatial, no allele frequencies).
 - [`step30_A_fragmentation_per_location.tsv`](tables/Phase5/step30_A_fragmentation_per_location.tsv) — per-location fragmentation index F_location = 1 − within-location connectivity at 25 m, with median event-scale F for the same location.
@@ -1566,7 +1566,7 @@ or right-click → *Save link as…* to pull the TSV into your local pipeline.
 - [`step29_location_connectivity_50m.pdf`](figures/Phase5/step29_location_connectivity_50m.pdf) / [`.png`](figures/Phase5/step29_location_connectivity_50m.png) — sensitivity: 50 m optimistic.
 - [`step29_location_connectivity_radius_sensitivity.pdf`](figures/Phase5/step29_location_connectivity_radius_sensitivity.pdf) / [`.png`](figures/Phase5/step29_location_connectivity_radius_sensitivity.png) — aggregate across radii (justification for 25 m primary).
 - [`step30_A_prediction_diversity.pdf`](figures/Phase5/step30_A_prediction_diversity.pdf) / [`.png`](figures/Phase5/step30_A_prediction_diversity.png) — BL-panelled SRK allele richness per location.
-- [`step30_A_si_model_schematic.pdf`](figures/Phase5/step30_A_si_model_schematic.pdf) / [`.png`](figures/Phase5/step30_A_si_model_schematic.png) — three-panel pedagogical schematic of the sporophytic Class I / II model (§ A.6): dominance within a plant, worked example, compatibility rule by cross type.
+- [`step30_A_si_model_schematic.pdf`](figures/Phase5/step30_A_si_model_schematic.pdf) / [`.png`](figures/Phase5/step30_A_si_model_schematic.png) — three-panel pedagogical schematic of the sporophytic Class I / II model (§ A.7): dominance within a plant, worked example, compatibility rule by cross type.
 - [`step30_A_prediction_fecundation.pdf`](figures/Phase5/step30_A_prediction_fecundation.pdf) / [`.png`](figures/Phase5/step30_A_prediction_fecundation.png) — BL-panelled compatibility per location, traffic-light bands.
 - [`step30_A_diversity_vs_pcompat.pdf`](figures/Phase5/step30_A_diversity_vs_pcompat.pdf) / [`.png`](figures/Phase5/step30_A_diversity_vs_pcompat.png) — cross-plot: SRK diversity × pollen compatibility.
 - [`step30_A_fragmentation_index.pdf`](figures/Phase5/step30_A_fragmentation_index.pdf) / [`.png`](figures/Phase5/step30_A_fragmentation_index.png) — event-scale × location-scale fragmentation scatter, BL-coloured (pure spatial, no drift).
