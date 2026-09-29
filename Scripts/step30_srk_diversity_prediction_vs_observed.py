@@ -939,7 +939,7 @@ def plot_prediction_fecundation(pcompat_per_loc: pd.DataFrame,
         Line2D([0], [0], color="#1b7837", ls=":", lw=1.2,
                label=f"sporophytic species mean  ({SPECIES_MEAN:.3f})"),
     ]
-    axes[0].legend(handles=tl_handles, loc="upper right",
+    axes[0].legend(handles=tl_handles, loc="upper left",
                     fontsize=9, frameon=True)
 
     axes[-1].set_xlabel(
