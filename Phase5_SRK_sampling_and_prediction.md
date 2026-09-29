@@ -378,6 +378,63 @@ shown on stigma and pollen. Two cases:
 
 Same rule for mother and father.
 
+#### A.6.3a How many identities does each plant display?
+
+Because every plant carries 4 SRK allele *copies* but not all of them
+are always distinct identities and not all distinct identities are
+always expressed, it is useful to state clearly how many identities a
+plant actually shows on its pollen and stigma. All 4 gene copies
+produce SRK protein, but if any of them encode the same identity or
+are Class-II-silent under Case A, the number of *distinct identities*
+recognised at the stigma is smaller than 4:
+
+| Genotype | 4-copy composition | Expressed identity set | # distinct identities |
+|---|---|---|---|
+| Class I homozygote | `{A, A, A, A}` (A Class I) | `{A}` | 1 |
+| Class I duplex (AABB) | `{A, A, B, B}` (both Class I) | `{A, B}` | 2 |
+| Class I diverse | `{A, B, C, D}` (all Class I) | `{A, B, C, D}` | 4 |
+| Mixed with dominance | `{A, A, B, B}` (A Class I, B Class II) | `{A}` (Class II silent) | 1 |
+| Class II homozygote | `{B, B, B, B}` (B Class II) | `{B}` | 1 |
+| Class II heterozygote | `{B, B, C, C}` (both Class II) | `{B, C}` | 2 |
+| Class II diverse | `{B, C, D, E}` (all Class II) | `{B, C, D, E}` | 4 |
+
+**Consequence for compatibility.** SI recognition operates on the
+*identity* level, not the copy level. A Class I homozygote AAAA
+displays a single identity {A}; the fact that A occurs on 4 copies
+means more SRK protein (dosage) but a single receptor phenotype at the
+stigma. Under the § A.7 Case-A formula `P_compat = (1 − p(M))⁴` a
+Class I homozygote has *higher* `P_compat` than a diverse heterozygote
+of the same class, because `p(M)` — the local frequency mass of the
+expressed set — is smaller when the set is smaller. Homozygosity is
+therefore *protective* against mate limitation at the individual
+scale, not a disadvantage.
+
+**Empirical LEPA zygosity — this actually matters a lot.** The
+Canu-amplicon Step 23 analysis of 367 preliminary genotyped
+individuals with ≥ 1 functional SRK copy reveals the observed
+distribution of distinct functional SRK identities per plant:
+
+| # distinct functional identities | Genotype pattern | Count | Fraction |
+|---|---|---|---|
+| **1** (single identity — homozygous) | AAAA + AAA0 + AA00 | 241 | **65.7 %** |
+| **2** (two identities) | AABB + AAAB + AAB0 | 118 | **32.2 %** |
+| **3** (three identities) | AABC | 8 | **2.2 %** |
+| 4 (four identities) | — | 0 | 0 % |
+
+Source: [`srk_zygosity_empirical.tsv`](tables/Phase5/srk_zygosity_empirical.tsv).
+
+**Two-thirds of LEPA plants carry only one distinct SRK identity** —
+this is far higher than a naive independent-tetraploid-draw model
+would predict (~5 % homozygosity under P1). The step30
+finite-population simulation therefore draws each mother's genotype
+from this empirical distribution: 65.7 % of simulated mothers are
+homozygous, 32.2 % are 2-distinct, 2.2 % are 3-distinct. Candidate
+fathers are drawn from the same distribution, giving a symmetric
+mother/father empirical-zygosity model. The § A.7 species-mean
+`P_compat` jumps from **0.16 (naive independent-draws model) →
+0.69 (empirical LEPA zygosity)** — a huge biological signal that
+homozygosity is doing real protective work in this system.
+
 #### A.6.4 The between-plant recognition rule
 
 A cross (father → mother) is **compatible** if and only if:
@@ -460,22 +517,25 @@ mass p(M) = Σ_{j ∈ M} f_j is closed-form:
 - Case B — mother has only Class II alleles (M = her 4 alleles):
   $P_{\text{compat}} = 1 - (1 - p_I)^4 + (1 - p_I - p(M))^4$
 
-**Result.** Species-mean pollen compatibility under sporophytic is **~0.16** (vs
-the diploid gametophytic 0.63 used in Part 1) — a much lower absolute
-value, because the sporophytic denominator counts pollen *parents*
-not pollen *alleles*. The traffic-light bands are recalibrated
-against this new species mean: **failed < 0.053, struggling
-0.053–0.106, sustainable ≥ 0.106** (1/3 and 2/3 of species mean —
-same ratios as the Part-1 gametophytic bands vs their mean).
-Every LEPA location's mean pollen compatibility sits close to the species mean
-because the between-class compatibility rule buffers drift: a
-Class-II-only mother at a drift-collapsed site is *always* compatible
-with any Class I father, so total isolation is much harder to reach
-than the gametophytic model predicted. **Small-slickspot uncertainty
-still shows up in wide credible intervals** — the BL5 tail (EO24
-group, EO24-1, EO24-2, EO24-7) still has 95 % CIs spanning from
-"failed" to "sustainable", honestly reflecting founder-effect
-variance in the class composition of their tiny local pools.
+**Result under empirical LEPA zygosity (§ A.6.3a).** Species-mean
+pollen compatibility is **~0.69** — very close to the Part-1 diploid
+gametophytic estimate of 0.63, but reached via a completely different
+mechanism. Under a naive independent-tetraploid-draw assumption the
+species mean is only ~0.16, but that model over-counts heterozygosity
+(it predicts ~5 % homozygotes; LEPA shows ~66 %). Once each mother
+and father is drawn under the empirical zygosity distribution, ~66 %
+of mothers are single-identity Case A homozygotes with a very small
+expressed set → high per-mother pollen compatibility, ~32 % have
+two identities → intermediate, ~2 % have three → lower. The
+weighted mean lands at 0.69. Traffic-light bands are recalibrated
+against this new species mean: **failed < 0.231, struggling
+0.231–0.462, sustainable ≥ 0.462** (1/3 and 2/3 of species mean).
+Every LEPA location's mean sits close to 0.69; **small-slickspot
+uncertainty still shows up in wide credible intervals** — the BL5
+tail (EO24 group, EO24-1, EO24-2, EO24-7) has 95 % CIs spanning
+from "struggling" to nearly-1, honestly reflecting founder-effect
+variance in the class + zygosity composition of their tiny local
+pools.
 
 **Take-home for reviewers.** The sporophytic model is more forgiving
 than the Part-1 diploid gametophytic approximation. Two independent
@@ -494,7 +554,7 @@ so that any downstream analysis can join against them and reproduce
 the categorical labels.
 
 <a id="fig-3"></a>
-![Figure 3: Predicted per-mother pollen compatibility under the sporophytic tetraploid Class I / Class II model for each LEPA location. Horizontal layout, one dot per location, panelled by Bottleneck Lineage. Traffic-light background bands mark **failed** (pollen compatibility < 0.053, red), **struggling** (0.053–0.106, orange) and **sustainable** (≥ 0.106, green) — recalibrated against the sporophytic species-mean of 0.159 (green dotted line). Dot position = mean predicted pollen compatibility from the finite-population simulation (4 × N_fertile local alleles drawn from P1, N_fertile scaled by within-25 m connectivity; per-mother pollen compatibility computed analytically from § A.7 Cases A / B under `srk_fg_class.tsv`); error bars = 95 % credible interval across simulation replicates; dot size ∝ √M (mothers with seed records in DB). **Every LEPA location's mean sits close to the species mean because between-class compatibility buffers drift; BL5 tiny slickspots retain wide CI reflecting founder-effect variance in class composition, honestly bracketing the range from "failed" to "sustainable".** Source: `step30_srk_diversity_prediction_vs_observed.py`. Class assignments: [`srk_fg_class.tsv`](tables/Phase5/srk_fg_class.tsv). Bands: [`step30_A_traffic_light_bands.tsv`](tables/Phase5/step30_A_traffic_light_bands.tsv).](figures/Phase5/step30_A_prediction_fecundation.png)
+![Figure 3: Predicted per-mother pollen compatibility under the sporophytic tetraploid Class I / Class II model with **empirical LEPA zygosity** (§ A.6.3a). One dot per LEPA location, panelled by Bottleneck Lineage. Traffic-light background bands mark **failed** (pollen compatibility < 0.231, red), **struggling** (0.231–0.462, orange) and **sustainable** (≥ 0.462, green) — recalibrated against the sporophytic + empirical-zygosity species-mean of **0.693** (green dotted line). Dot position = mean predicted pollen compatibility from a Monte-Carlo finite-population simulation: 4 × N_fertile local alleles drawn from P1 (N_fertile scaled by within-25 m connectivity), M mothers drawn from that pool with the empirical LEPA zygosity distribution (66 % single-identity homozygotes, 32 % 2-distinct, 2 % 3-distinct — see [`srk_zygosity_empirical.tsv`](tables/Phase5/srk_zygosity_empirical.tsv)), and each mother's pollen compatibility computed against 300 candidate fathers drawn the same way. Error bars = 95 % credible interval across simulation replicates; dot size ∝ √M (mothers with seed records in DB). **Every LEPA location's mean sits close to the species mean because 66 % of mothers express only one SRK identity, which minimises their p(M) footprint under the § A.6.4 recognition rule; BL5 tiny slickspots retain wide CI reflecting founder-effect variance in class + zygosity composition.** Source: `step30_srk_diversity_prediction_vs_observed.py`. Class assignments: [`srk_fg_class.tsv`](tables/Phase5/srk_fg_class.tsv). Empirical zygosity: [`srk_zygosity_empirical.tsv`](tables/Phase5/srk_zygosity_empirical.tsv). Bands: [`step30_A_traffic_light_bands.tsv`](tables/Phase5/step30_A_traffic_light_bands.tsv).](figures/Phase5/step30_A_prediction_fecundation.png)
 
 ### A.8 Fragmentation of pollen flow — event and location scales
 
@@ -600,35 +660,38 @@ at each location.
 **What we did.** We plotted per-location predicted SRK allele
 diversity (x, from § A.5) against predicted sporophytic pollen
 compatibility (y, from § A.7), with locations coloured by BL and the
-sporophytic species-mean pollen compatibility (0.160) drawn as a horizontal
-reference line.
+sporophytic + empirical-zygosity species-mean pollen compatibility
+(0.693) drawn as a horizontal reference line.
 
-**Result.** Under the sporophytic Class I / II model, **most
-locations sit near the species mean 0.16**. The BL5 tail (EO24
-group) is displaced left on the diversity axis (only ~2–5 alleles
-present) but drops only modestly on the compatibility axis (down to
-~0.11) — the between-class buffering (§ A.6.4) prevents even
-severely drift-collapsed populations from falling into "failed"
-territory at the mean. What *does* separate small locations from
-large ones is the **width of the 95 % credible interval on
-pollen compatibility**: large slickspots have tight CIs anchored on the species
-mean; small ones have wide CIs that span "failed" through
-"sustainable", honestly reflecting the founder-effect risk of a
-class composition that could go either way.
+**Result.** Under the sporophytic Class I / II model with the
+empirical LEPA zygosity distribution (§ A.6.3a), **most locations
+sit near the species mean 0.69**. The BL5 tail (EO24 group) is
+displaced left on the diversity axis (only ~2–5 alleles present)
+but stays close to the species mean on the compatibility axis — the
+combination of between-class buffering (§ A.6.4) and the ~66 %
+homozygosity rate prevents even severely drift-collapsed populations
+from falling into "failed" territory at the mean. What *does*
+separate small locations from large ones is the **width of the 95 %
+credible interval**: large slickspots have tight CIs anchored on the
+species mean; small ones have wide CIs that can extend into
+"struggling" territory, honestly reflecting the founder-effect risk
+that a small pool draws an unlucky class + zygosity combination.
 
-**Take-home for reviewers.** The sporophytic model reframes goal 3.
-The story is no longer "drift-collapsed sites are predicted to fail
-outright" — because Class I / Class II buffering makes outright
-failure hard. Instead, the risk is that a specific small slickspot
-draws an unlucky class composition (e.g., a Class-II-only pool with
-one high-frequency allele) and lands in "failed" territory *within*
+**Take-home for reviewers.** The sporophytic + empirical-zygosity
+model reframes goal 3. The story is no longer "drift-collapsed sites
+are predicted to fail outright" — because Class I / Class II
+buffering plus 66 % single-identity homozygosity make outright failure
+extremely hard. Instead, the risk is that a specific small slickspot
+draws an unlucky combination (Class-II-only pool with one high-
+frequency allele, or a rare 3-distinct heterozygote that ties up
+its expressed footprint) and lands in "struggling" territory *within*
 its own credible interval. Phase C's β₁ test picks this up as
 localised within-class allele skew, which is a more subtle and more
 biologically honest signal than the "global compatibility floor"
 narrative that the diploid gametophytic model implied.
 
 <a id="fig-5"></a>
-![Figure 5: Predicted SRK allele diversity (x) vs predicted sporophytic pollen compatibility (y) per LEPA location, coloured by Bottleneck Lineage (Set1 palette: BL1 purple, BL2 blue, BL3 red, BL4 orange, BL5 green). Error bars on both axes come from the same Dirichlet posterior draws that produced the two single-quantity Phase A figures. Dot size ∝ √M (mothers with seed records in DB). **Green dotted horizontal line = sporophytic species-mean pollen compatibility (0.160)** — the reference every location can be read against under the § A.6 Class I / II model. **BL5 tail (EO24, EO24-1, EO24-2)** sits at low predicted diversity (x ≈ 2–5) but only modestly below the species mean on the y-axis (pollen compatibility ≈ 0.11–0.16); **large slickspots (EO8, EO27-5, EO30-2, EO61, EO76)** sit right on the species-mean line with much tighter credible intervals. The wide y-axis CI on small-M locations is the honest founder-effect signal — a drift-collapsed small slickspot can drop into "failed" (y < 0.053) if class composition breaks unfavourably at that specific site. This figure is the single-figure summary of goal 3's fragmentation × drift decomposition: **sporophytic buffering flattens the mean, but small locations still carry drift-driven risk in their credible intervals**. Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_diversity_vs_pcompat.png)
+![Figure 5: Predicted SRK allele diversity (x) vs predicted sporophytic pollen compatibility (y) per LEPA location, coloured by Bottleneck Lineage (Set1 palette: BL1 purple, BL2 blue, BL3 red, BL4 orange, BL5 green), under the sporophytic + empirical-zygosity model (§ A.6.3a). Error bars on both axes come from the same Dirichlet posterior draws that produced the two single-quantity Phase A figures. Dot size ∝ √M (mothers with seed records in DB). **Green dotted horizontal line = sporophytic + empirical-zygosity species-mean pollen compatibility (0.693)** — the reference every location can be read against under the § A.6 model. Most locations sit right on the species mean because ~66 % of LEPA plants express only one SRK identity, giving them a small p(M) footprint and therefore high pollen compatibility. **BL5 tail (EO24, EO24-1, EO24-2)** sits at low predicted diversity (x ≈ 2–5) but stays close to the species mean on the y-axis with much *wider* credible intervals — the honest founder-effect signal that a small slickspot can drop into "struggling" (y < 0.462) if class + zygosity composition breaks unfavourably at that specific site. This figure is the single-figure summary of goal 3's fragmentation × drift decomposition: **sporophytic + empirical zygosity flatten the mean, but small locations still carry drift-driven risk in their credible intervals**. Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_diversity_vs_pcompat.png)
 
 ---
 
@@ -1174,7 +1237,7 @@ frequency vector *f* and the Class I / II assignment in
 - **Case B** — mother is all Class II; expressed set M = her 4 alleles;
   $P_{\text{compat}}(m) = 1 - (1 - p_I)^4 + (1 - p_I - p(M))^4$.
 
-The species-mean sporophytic pollen compatibility is ~0.16 (much lower than the
+The species-mean sporophytic + empirical-zygosity pollen compatibility is ~0.69 (matching, via a different mechanism, the
 diploid gametophytic 0.63), so the regression coefficient β₁ lives on
 that rescaled axis — the traffic-light bands in § A.7 anchor the
 interpretation. Her expected seed set is proportional to
@@ -1390,7 +1453,7 @@ signal by construction.
 | **Predicted local pool size** (SRK alleles at this location) | ~6 alleles | ~22 alleles |
 | **Predicted local coverage** (of the alleles at this location) | **~100 %** ✓ | **~100 %** ✓ |
 | Predicted species-wide coverage (of 32 P1 alleles — biased against drifted-out alleles) | ~18 % | ~55 % |
-| Predicted random-mating compatibility (sporophytic Class I / II, § A.6-A.7) | mean **0.15**, 95 % CI [0.02, 0.42] — *"sustainable"* band at the mean but 95 % CI spans "failed" → "sustainable" | mean **0.16**, tight CI [0.08, 0.25] — solidly *"sustainable"* |
+| Predicted random-mating compatibility (sporophytic Class I / II + empirical zygosity, § A.6-A.7) | mean **0.67**, 95 % CI [0.42, 0.87] — *"sustainable"* band at the mean, CI stays sustainable throughout | mean **0.69**, tight CI [0.59, 0.77] — solidly *"sustainable"* |
 
 **Reading the two coverage numbers.**
 The **local coverage** (~100 % at both pilot locations) is the biologically
@@ -1405,14 +1468,16 @@ the species pool.
 
 **Why this pair is well-chosen for a pilot.** EO67 tests the
 **budget-limited / founder-effect regime** — small population, few
-mothers, and although the *mean* sporophytic pollen compatibility sits near the
-species mean, its 95 % CI [0.02, 0.42] spans "failed" to
-"sustainable", so this location will decisively either confirm or
-rule out the drift-driven mate-limitation prediction. EO27-1 tests
-the **aggregation regime** (many mothers, permit-realistic 33
-mothers × 34 tetraploid draws per mother = 1 122 allele draws,
-easily crossing the A_target = 704 species threshold; tight
-sporophytic CI [0.08, 0.25] anchors the "sustainable" prediction). Both locations
+mothers; the mean sporophytic + empirical-zygosity pollen
+compatibility sits near the species mean (0.67), and the 95 % CI
+[0.42, 0.87] stays inside the "sustainable" band. Any Phase C
+observation dropping this location out of sustainable would be
+decisive evidence of drift-driven mate limitation. EO27-1 tests the
+**aggregation regime** (many mothers, permit-realistic 33 mothers ×
+34 tetraploid draws per mother = 1 122 allele draws, easily crossing
+the A_target = 704 species threshold; the sporophytic + empirical-
+zygosity CI [0.59, 0.77] anchors the "sustainable" prediction).
+Both locations
 sit in the same BL, so their pilot outputs are directly comparable —
 a *within-BL* contrast that avoids between-BL confounds. The
 two-location pilot uses ≤ 555 seed genotypes total (< 5 % of the full
@@ -1482,6 +1547,7 @@ or right-click → *Save link as…* to pull the TSV into your local pipeline.
 - [`step30_A_prediction_location_pcompat.tsv`](tables/Phase5/step30_A_prediction_location_pcompat.tsv) — predicted random-mating pollen compatibility per location (finite-population model at 25 m).
 - [`step30_A_prediction_per_mother_fecundation.tsv`](tables/Phase5/step30_A_prediction_per_mother_fecundation.tsv) — species-wide compatibility reference distribution under the sporophytic tetraploid model.
 - [`srk_fg_class.tsv`](tables/Phase5/srk_fg_class.tsv) — Fg → dominance class (I / II) mapping used by the sporophytic pollen compatibility model in § A.7. Provisional data-driven default; editable by hand as biology is refined.
+- [`srk_zygosity_empirical.tsv`](tables/Phase5/srk_zygosity_empirical.tsv) — empirical LEPA distribution of distinct functional SRK identities per plant, from Canu-amplicon Step 23 (n = 367). Used to draw mother and father genotypes under the sporophytic finite-population model (§ A.6.3a, § A.7).
 - [`step30_A_traffic_light_bands.tsv`](tables/Phase5/step30_A_traffic_light_bands.tsv) — recalibrated failed / struggling / sustainable band boundaries against the sporophytic species-mean pollen compatibility.
 - [`step30_A_fragmentation_per_event.tsv`](tables/Phase5/step30_A_fragmentation_per_event.tsv) — per-event fragmentation index F_event = 1 − K_spatial_25m / 32 (purely spatial, no allele frequencies).
 - [`step30_A_fragmentation_per_location.tsv`](tables/Phase5/step30_A_fragmentation_per_location.tsv) — per-location fragmentation index F_location = 1 − within-location connectivity at 25 m, with median event-scale F for the same location.

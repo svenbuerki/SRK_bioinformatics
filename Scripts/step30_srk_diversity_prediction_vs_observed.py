@@ -218,20 +218,27 @@ def predicted_pcompat_distribution(prior: pd.DataFrame,
     """
     from step28_seed_sampling_per_mother import PLOIDY
     from srk_si_model import (
-        load_class_map, build_class_i_mask, p_compat_sporophytic_batch,
+        load_class_map, build_class_i_mask,
+        load_zygosity_dist, sample_genotypes_empirical,
+        p_compat_sporophytic_empirical,
     )
     f_mean = prior["f_mean"].values
     fg_ids = prior["Fg"].astype(str).values
     class_map = load_class_map()
     class_i_mask = build_class_i_mask(fg_ids.tolist(), class_map)
-    K_fg = len(f_mean)
-    # sample mother tetraploid genotypes (PLOIDY alleles from prior each)
-    mothers = rng.choice(K_fg, size=(n_mothers, PLOIDY), p=f_mean)
-    p_compat = p_compat_sporophytic_batch(mothers, f_mean, class_i_mask)
+    zygosity_probs = load_zygosity_dist()
+    # Sample mother tetraploid genotypes under EMPIRICAL LEPA zygosity.
+    mothers = sample_genotypes_empirical(n_mothers, f_mean, zygosity_probs, rng)
+    p_compat = p_compat_sporophytic_empirical(
+        mothers, f_mean, class_i_mask, zygosity_probs,
+        n_fathers=2_000, rng=rng)
     has_class_i = class_i_mask[mothers].any(axis=1)
+    # Distinct-identity count per mother
+    n_distinct = np.array([len(set(m.tolist())) for m in mothers])
     return pd.DataFrame({
         "sim_mother_id":  np.arange(n_mothers),
         **{f"mother_Fg_{i+1}": fg_ids[mothers[:, i]] for i in range(PLOIDY)},
+        "n_distinct_functional_alleles": n_distinct,
         "expresses_class_I": has_class_i,
         "P_compat":       p_compat,
         "fecundation_failure_rate": 1.0 - p_compat,
@@ -241,7 +248,7 @@ def predicted_pcompat_distribution(prior: pd.DataFrame,
 def predicted_pcompat_per_location(locations: pd.DataFrame,
                                     prior: pd.DataFrame,
                                     rng: np.random.Generator,
-                                    n_draws: int = 2000) -> pd.DataFrame:
+                                    n_draws: int = 400) -> pd.DataFrame:
     """Phase-A per-location prediction of random-mating P_compat under
     the **sporophytic tetraploid** SI model with Class I / Class II
     dominance (see `srk_si_model.py` and § A.6 of the Phase 5 doc).
@@ -271,7 +278,9 @@ def predicted_pcompat_per_location(locations: pd.DataFrame,
     from srk_si_model import (
         load_class_map,
         build_class_i_mask,
-        p_compat_sporophytic_batch,
+        load_zygosity_dist,
+        sample_genotypes_empirical,
+        p_compat_sporophytic_empirical,
     )
 
     f_mean = prior["f_mean"].values
@@ -280,6 +289,7 @@ def predicted_pcompat_per_location(locations: pd.DataFrame,
                 [f"FG{i+1:03d}" for i in range(K_fg)]
     class_map = load_class_map()
     class_i_mask = build_class_i_mask(fg_labels, class_map)
+    zygosity_probs = load_zygosity_dist()
 
     rows = []
     for _, row in locations.iterrows():
@@ -316,16 +326,22 @@ def predicted_pcompat_per_location(locations: pd.DataFrame,
             local_alleles = rng.choice(K_fg, size=pool_size, p=f_mean)
             # (2) Local Fg frequencies.
             local_f = np.bincount(local_alleles, minlength=K_fg) / pool_size
-            # (3) Sample M mothers: pair PLOIDY alleles into N_fertile
-            # tetraploid plants, then draw M plants (with replacement if
-            # M > N_fertile).
-            plants = local_alleles.reshape(N_fertile, PLOIDY)
-            mother_idx = rng.choice(N_fertile, size=M,
-                                    replace=(M > N_fertile))
-            mother_genotypes = plants[mother_idx]           # (M, 4)
-            # (4) Sporophytic P_compat under Class I / II dominance.
-            pc = p_compat_sporophytic_batch(mother_genotypes,
-                                             local_f, class_i_mask)
+            if not (local_f > 0).any():
+                loc_means[k] = 0.0
+                continue
+            # (3) Sample M mothers under EMPIRICAL LEPA zygosity
+            # (66 % single-identity homozygotes, 32 % 2-distinct,
+            # 2 % 3-distinct, 0 % 4-distinct — see § A.6.3a and
+            # srk_zygosity_empirical.tsv), drawing their identities
+            # from the local Fg frequency vector.
+            mother_genotypes = sample_genotypes_empirical(
+                M, local_f, zygosity_probs, rng)
+            # (4) Monte-Carlo P_compat: for each mother, evaluate
+            # against 500 empirically-zygotic candidate fathers drawn
+            # from the same local pool, under Class I / II dominance.
+            pc = p_compat_sporophytic_empirical(
+                mother_genotypes, local_f, class_i_mask,
+                zygosity_probs, n_fathers=300, rng=rng)
             loc_means[k] = pc.mean()
         rows.append({
             "locationID":              row["locationID"],
@@ -1398,35 +1414,42 @@ def main() -> None:
     pcompat_loc.to_csv(pcompat_loc_path, sep="\t", index=False)
     print(f"[step30] Wrote {pcompat_loc_path}")
 
-    # --- Recalibrate traffic-light bands against the sporophytic species mean
+    # --- Recalibrate traffic-light bands against the sporophytic
+    # + empirical-zygosity species mean (see § A.7)
     from srk_si_model import (
         load_class_map, build_class_i_mask,
-        species_mean_p_compat, traffic_light_bands,
+        load_zygosity_dist,
+        species_mean_p_compat_empirical, traffic_light_bands,
     )
     fg_labels_ordered = prior["Fg"].astype(str).tolist() \
         if "Fg" in prior.columns \
         else [f"FG{i+1:03d}" for i in range(len(prior))]
     class_map = load_class_map()
     class_i_mask = build_class_i_mask(fg_labels_ordered, class_map)
-    species_mean_pc = species_mean_p_compat(prior["f_mean"].values,
-                                             class_i_mask, rng=rng)
+    zygosity_probs_main = load_zygosity_dist()
+    species_mean_pc = species_mean_p_compat_empirical(
+        prior["f_mean"].values, class_i_mask, zygosity_probs_main,
+        n_mothers=10_000, n_fathers=1_500, rng=rng)
     bands = traffic_light_bands(species_mean_pc)
-    # Persist bands as a small reference TSV
     bands_df = pd.DataFrame([{
-        "si_model":           "sporophytic_class_I_dominant",
-        "species_mean":       bands["species_mean"],
-        "failed_max":         bands["failed_max"],
-        "struggling_max":     bands["struggling_max"],
-        "class_I_count":      int(class_i_mask.sum()),
-        "class_I_P1_freq":    float(prior["f_mean"].values[class_i_mask].sum()),
+        "si_model":                    "sporophytic_class_I_dominant_empirical_zygosity",
+        "species_mean":                bands["species_mean"],
+        "failed_max":                  bands["failed_max"],
+        "struggling_max":              bands["struggling_max"],
+        "class_I_count":               int(class_i_mask.sum()),
+        "class_I_P1_freq":             float(prior["f_mean"].values[class_i_mask].sum()),
+        "zygosity_p_1_distinct":       float(zygosity_probs_main[0]),
+        "zygosity_p_2_distinct":       float(zygosity_probs_main[1]),
+        "zygosity_p_3_distinct":       float(zygosity_probs_main[2]),
+        "zygosity_p_4_distinct":       float(zygosity_probs_main[3]),
     }])
     bands_path = tables_dir / "step30_A_traffic_light_bands.tsv"
     bands_df.to_csv(bands_path, sep="\t", index=False)
-    print(f"[step30] Sporophytic species-mean P_compat = "
-          f"{bands['species_mean']:.4f}; "
-          f"bands failed < {bands['failed_max']:.4f}, "
-          f"struggling < {bands['struggling_max']:.4f}, "
-          f"sustainable ≥ {bands['struggling_max']:.4f}.")
+    print(f"[step30] Sporophytic + empirical-zygosity species-mean "
+          f"P_compat = {bands['species_mean']:.4f}; bands failed < "
+          f"{bands['failed_max']:.4f}, struggling < "
+          f"{bands['struggling_max']:.4f}, sustainable ≥ "
+          f"{bands['struggling_max']:.4f}.")
     print(f"[step30] Wrote {bands_path}")
 
     plot_prediction_diversity(pred_div, prior,

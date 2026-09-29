@@ -73,6 +73,7 @@ import numpy as np
 import pandas as pd
 
 DEFAULT_CLASS_TSV = Path("Tables/Phase5/srk_fg_class.tsv")
+DEFAULT_ZYGOSITY_TSV = Path("Tables/Phase5/srk_zygosity_empirical.tsv")
 
 
 def load_class_map(tsv_path: Path = DEFAULT_CLASS_TSV) -> dict[str, str]:
@@ -167,11 +168,167 @@ def species_mean_p_compat(prior_f: np.ndarray,
                            rng: np.random.Generator | None = None) -> float:
     """Species-mean P_compat under the P1 prior: expected sporophytic
     P_compat for a random mother drawn from the species-wide
-    distribution. Used to recalibrate the traffic-light bands."""
+    distribution. Used to recalibrate the traffic-light bands.
+    NOTE: this is the naive independent-draws model. Under empirical
+    LEPA zygosity (~66 % of plants are single-identity homozygotes),
+    the species mean is substantially higher — use
+    `species_mean_p_compat_empirical` instead."""
     rng = rng or np.random.default_rng(2029)
     K_fg = len(prior_f)
     mothers = rng.choice(K_fg, size=(n_mothers, 4), p=prior_f)
     return float(p_compat_sporophytic_batch(mothers, prior_f, class_i_mask).mean())
+
+
+# ---------------------------------------------------------------------------
+# Empirical LEPA zygosity — Canu-amplicon Step 23 observation that
+# ~66 % of individuals carry a single distinct functional SRK identity
+# (AAAA-like), 32 % carry two, 2 % carry three. This is much higher than
+# any independent-tetraploid-draw model would predict (~5 % under P1).
+# ---------------------------------------------------------------------------
+
+
+def load_zygosity_dist(tsv_path: Path = DEFAULT_ZYGOSITY_TSV) -> np.ndarray:
+    """Return array [p_1, p_2, p_3, p_4] of empirical probabilities that
+    a random LEPA plant carries 1, 2, 3, or 4 distinct functional SRK
+    identities. Normalised to sum to 1."""
+    if not tsv_path.exists():
+        raise FileNotFoundError(f"Missing zygosity TSV at {tsv_path}")
+    df = pd.read_csv(tsv_path, sep="\t", encoding="utf-8-sig")
+    lookup = dict(zip(
+        df["n_distinct_functional_alleles"].astype(int),
+        df["fraction"].astype(float)))
+    probs = np.array([lookup.get(k, 0.0) for k in (1, 2, 3, 4)],
+                     dtype=float)
+    s = probs.sum()
+    if s <= 0:
+        raise ValueError(f"Zygosity TSV at {tsv_path} sums to 0")
+    return probs / s
+
+
+def sample_genotypes_empirical(n: int,
+                                local_f: np.ndarray,
+                                zygosity_probs: np.ndarray,
+                                rng: np.random.Generator) -> np.ndarray:
+    """Sample n tetraploid genotypes from the local Fg frequency vector
+    `local_f`, using the empirical LEPA zygosity distribution
+    `zygosity_probs`.
+
+    Each genotype is returned as a length-4 array of Fg indices, with
+    duplicates padding out homozygous plants (a 1-distinct plant returns
+    [A, A, A, A]; a 2-distinct plant returns [A, B, ?, ?] with the last
+    two slots filled with the first allele to keep shape consistent).
+    Downstream SI functions only inspect the DISTINCT set within each
+    row, so the padding does not affect any calculation.
+
+    Vectorised per n_distinct category; only the (rare) 2- and 3-distinct
+    samples fall back to a per-row loop for without-replacement draws.
+    """
+    available_idx = np.where(local_f > 0)[0]
+    if len(available_idx) == 0:
+        raise ValueError("local_f has no non-zero entries")
+    available_f = local_f[available_idx]
+    available_f = available_f / available_f.sum()
+    max_n = min(4, len(available_idx))
+    probs_clipped = zygosity_probs[:max_n].copy()
+    if probs_clipped.sum() <= 0:
+        probs_clipped = np.ones(max_n)
+    probs_clipped = probs_clipped / probs_clipped.sum()
+
+    n_distinct_draws = rng.choice(
+        np.arange(1, max_n + 1), size=n, p=probs_clipped)
+    genotypes = np.empty((n, 4), dtype=int)
+    for k in range(1, max_n + 1):
+        mask = (n_distinct_draws == k)
+        n_k = int(mask.sum())
+        if n_k == 0:
+            continue
+        if k == 1:
+            positions = rng.choice(
+                len(available_idx), size=n_k, p=available_f)
+            distinct = available_idx[positions][:, None]        # (n_k, 1)
+        else:
+            distinct_positions = np.empty((n_k, k), dtype=int)
+            for i in range(n_k):
+                distinct_positions[i] = rng.choice(
+                    len(available_idx), size=k, replace=False, p=available_f)
+            distinct = available_idx[distinct_positions]        # (n_k, k)
+        if k < 4:
+            pad_col = distinct[:, 0:1]
+            padded = np.concatenate(
+                [distinct, np.tile(pad_col, (1, 4 - k))], axis=1)
+        else:
+            padded = distinct
+        genotypes[mask] = padded
+    return genotypes
+
+
+def p_compat_sporophytic_empirical(
+        mother_genotypes: np.ndarray,
+        local_f: np.ndarray,
+        class_i_mask: np.ndarray,
+        zygosity_probs: np.ndarray,
+        n_fathers: int = 2_000,
+        rng: np.random.Generator | None = None) -> np.ndarray:
+    """Monte-Carlo P_compat for each mother against a population of
+    candidate tetraploid fathers drawn from `local_f` under the
+    empirical LEPA zygosity distribution.
+
+    For each of the M mothers, sample `n_fathers` fathers with the same
+    empirical zygosity structure that produced the mothers themselves;
+    for each mother, return the fraction of fathers whose expressed
+    SRK identity set does NOT overlap the mother's expressed set.
+
+    This replaces the naive analytical formulas (which assumed
+    independent-tetraploid-draw fathers with ~5 % homozygosity), giving
+    a symmetric mother/father empirical-zygosity model."""
+    rng = rng or np.random.default_rng(2029)
+    M = mother_genotypes.shape[0]
+    K_fg = len(local_f)
+
+    # Sample fathers ONCE per call — used across all mothers for
+    # efficiency; each mother sees the same simulated father sub-population.
+    fathers = sample_genotypes_empirical(n_fathers, local_f, zygosity_probs, rng)
+    father_class_i = class_i_mask[fathers]                    # (F, 4)
+    father_has_i   = father_class_i.any(axis=1)               # (F,)
+    # A father allele participates in SI iff:
+    #   father has Class I AND allele is Class I, OR
+    #   father has no Class I (Case B) — then ALL alleles participate.
+    father_include = father_class_i | ~father_has_i[:, None]  # (F, 4)
+
+    results = np.empty(M, dtype=float)
+    for i in range(M):
+        m = mother_genotypes[i]
+        m_is_i = class_i_mask[m]
+        if m_is_i.any():
+            m_expr = np.unique(m[m_is_i])
+        else:
+            m_expr = np.unique(m)
+        m_mask = np.zeros(K_fg, dtype=bool)
+        m_mask[m_expr] = True
+        # For each father, is any of his EXPRESSED alleles in M?
+        father_in_M = m_mask[fathers]                          # (F, 4)
+        overlap_positions = father_in_M & father_include       # (F, 4)
+        compat = ~overlap_positions.any(axis=1)                # (F,)
+        results[i] = float(compat.mean())
+    return results
+
+
+def species_mean_p_compat_empirical(
+        prior_f: np.ndarray,
+        class_i_mask: np.ndarray,
+        zygosity_probs: np.ndarray | None = None,
+        n_mothers: int = 20_000,
+        n_fathers: int = 2_000,
+        rng: np.random.Generator | None = None) -> float:
+    """Species-mean P_compat under the P1 prior + empirical LEPA
+    zygosity structure. This is the number to calibrate the § A.7
+    traffic-light bands against."""
+    rng = rng or np.random.default_rng(2029)
+    if zygosity_probs is None:
+        zygosity_probs = load_zygosity_dist()
+    mothers = sample_genotypes_empirical(n_mothers, prior_f, zygosity_probs, rng)
+    return float(p_compat_sporophytic_empirical(
+        mothers, prior_f, class_i_mask, zygosity_probs, n_fathers, rng).mean())
 
 
 def traffic_light_bands(species_mean: float,

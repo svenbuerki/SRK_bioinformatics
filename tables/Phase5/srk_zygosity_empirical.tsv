@@ -1,0 +1,5 @@
+n_distinct_functional_alleles	count	fraction	source
+1	241	0.657	Canu-amplicon Step 23 (step23_individual_zygosity_with_nulls.tsv) — 234 AAAA + 5 AAA0 + 2 AA00 = 241 individuals with a single distinct functional SRK identity
+2	118	0.322	Canu-amplicon Step 23 — 60 AABB + 56 AAAB + 2 AAB0 = 118 individuals with two distinct functional SRK identities
+3	8	0.022	Canu-amplicon Step 23 — 8 AABC individuals with three distinct functional SRK identities
+4	0	0.000	Not observed in P1 sample (n = 367 individuals with ≥ 1 functional copy)
