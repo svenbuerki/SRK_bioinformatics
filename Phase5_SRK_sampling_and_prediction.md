@@ -31,19 +31,20 @@ LEPA populations:
    donors — driven by small mate pool, skewed Fg frequencies, or both —
    show reduced per-mother seed set? Formally: does per-mother
    `germplasmQuantityEstimate` decline with predicted per-mother
-   $P_{\text{compat}} = 1 - f_a - f_b$?
+   pollen compatibility (sporophytic Class I / II tetraploid model,
+   see § A.6 for the biology and § A.7 for the maths)?
 2. **SI-escape test.** Under strict SI, no seed can carry a paternal Fg
    matching either of its mother's Fgs. A location where seeds with
    maternal-matching paternal Fgs appear above the strict-SI null is a
    candidate for partial-SI transition (a breakdown of the SI machinery).
 3. **Fragmentation × drift decomposition.** Habitat fragmentation depresses
    K (the pollen-donor Fg pool a mother can access); genetic drift skews
-   Fg frequencies at small isolated locations. Both reduce
-   $P_{\text{compat}}$ but through different channels; the framework
+   Fg frequencies at small isolated locations. Both reduce pollen
+   compatibility but through different channels; the framework
    predicts them on two independent axes in Part A — **drift** via
-   predicted SRK diversity and P_compat (§ A.5–A.6) and **fragmentation**
+   predicted SRK diversity and pollen compatibility (§ A.5–A.7) and **fragmentation**
    via the purely spatial pollen-flow index at event and location scales
-   (§ A.7) — and Phase C's mate-limitation regression (§ C.1) then tests
+   (§ A.8) — and Phase C's mate-limitation regression (§ C.1) then tests
    both simultaneously as two independent coefficients (β₁ = drift,
    β₂ = fragmentation).
 4. **Phenotype cross-validation (deferred).** SRK-based predictions can be
@@ -80,7 +81,7 @@ genotypes are available:
 
 | Phase | State of data | Uses | Produces |
 |---|---|---|---|
-| **A — Preliminary** (before SRK genotyping) | Field data only (`Germplasm.germplasmQuantityEstimate`, `Events.organismQuantityFertile`, event coordinates), plus the P1 species-wide prior | Steps 28, 29, and Step 30 in `prediction` mode | Per-mother sampling recipe + per-location seed-count recommendations, **plus** predicted SRK diversity, P_compat, fecundation failure |
+| **A — Preliminary** (before SRK genotyping) | Field data only (`Germplasm.germplasmQuantityEstimate`, `Events.organismQuantityFertile`, event coordinates), plus the P1 species-wide prior | Steps 28, 29, and Step 30 in `prediction` mode | Per-mother sampling recipe + per-location seed-count recommendations, **plus** predicted SRK diversity, pollen compatibility, fecundation failure |
 | **B — Post-genotyping** (after SRK data are back) | Everything above + observed seed genotypes (from Phase A's sampling) | Step 30 in `comparison` mode + Tests 1 & 2 | Observed vs predicted SRK diversity, mate-limitation regression, SI-escape rate test — all only for the locations that have observed data |
 
 **Filename conventions make the phase — and its data provenance —
@@ -152,12 +153,10 @@ output family:
 > paternal SRK alleles** (not 1 + 1). This is baked into every
 > count-based formula in Parts A and B via a single project-wide
 > constant `PLOIDY = 4` (see `step28_seed_sampling_per_mother.py`).
-> The sporophytic self-incompatibility model that governs which
-> pollen parents are compatible with which stigmas is a separate
-> modelling choice handled in Part C's § C.1 and NOT yet applied to
-> § A.6 P_compat; the current A.6 formula is a per-pollen-allele
-> approximation and will be revisited under the sporophytic model in
-> a follow-up sweep.
+> **The sporophytic self-incompatibility model** with Class I / Class II
+> dominance now drives § A.6's pollen compatibility formula ([`srk_si_model.py`](srk_si_model.py)
+> + [`tables/Phase5/srk_fg_class.tsv`](tables/Phase5/srk_fg_class.tsv))
+> and Phase C's β₁ interpretation follows the new sporophytic scale.
 
 Once Part B's sampling protocol is executed, we will have a batch
 of seed DNA per mother. Each seed is diploid at each locus — 2 maternal
@@ -200,7 +199,7 @@ is the workhorse** used by every prediction below.
 
 ### A.4 Finite-population model and prediction methodology
 
-Every Part A prediction (A.5–A.7) comes from the same **finite-population
+Every Part A prediction (A.5–A.8) comes from the same **finite-population
 simulation model**, applied per location, with the **25 m connectivity
 radius** as the biological scope of pollen movement. Four steps:
 
@@ -307,49 +306,188 @@ that are physically present, not attempting a species-wide inventory.
 <a id="fig-1"></a>
 ![Figure 1: Predicted number of distinct SRK alleles detected per LEPA location under the P1 species-wide prior (32 Fgs from the Canu-amplicon preliminary study). Horizontal layout, one dot per location, panelled by Bottleneck Lineage in the standard BL_ORDER (BL4, BL5, BL3, BL1, BL2). Dot size ∝ √M (permit-realistic count of mothers with seed records in the LEPA DB); error bars = 95 % credible interval from Dirichlet posterior draws. Y-tick labels give `locationCode (n = mothers sampled)`. Vertical dashed line marks the species-wide SRK allele ceiling of 32. **BL3 (EO76, EO38) and BL1 (EO61) predict ~21 distinct alleles; the BL5 tail (EO24 group) predicts 2–5.** Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_prediction_diversity.png)
 
-### A.6 Finite-population prediction of pollen compatibility
+### A.6 Sporophytic self-incompatibility with Class I / Class II dominance
 
-> **Part-2 caveat.** The numbers, formula and figure in this section
-> still use the **diploid per-pollen-allele** compatibility model
-> (P_compat = 1 − f_a − f_b, drawing 2·N_fertile alleles per replicate).
-> Under **LEPA's tetraploid + sporophytic SI**, the correct formula
-> uses 4·N_fertile draws per replicate and a mother's 4 SRK alleles,
-> and the "sporophytic" interpretation replaces `P_compat` by a
-> per-parent probability that reduces the "sustainable" band
-> considerably. This is the Part 2 sweep queued after the tetraploid
-> allele-copy accounting in Parts A/B (see the § A.3 ploidy note).
-> The A.5 diversity predictions and Parts B/C sampling framework
-> already use the tetraploid PLOIDY = 4 convention.
+This section states the biological SI model; § A.7 is the
+mathematical implementation and § C.1 the Phase C test that uses
+its predictions.
+
+#### A.6.1 Sporophytic recognition
+
+Self-incompatibility rejects pollen whose SRK identity matches the
+stigma's, preventing self-fertilisation. LEPA is a Brassicaceae, so
+its SI is **sporophytic**: the pollen grain carries proteins from
+the pollen *parent*'s diploid tissue, so the stigma decides against
+the whole parent's expressed genotype rather than the individual
+gamete's allele. Compatibility depends on both parents' expressed
+genotypes under whatever within-plant dominance rules apply.
+
+#### A.6.2 Two allelic classes
+
+Brassicaceae S-haplotypes fall into two dominance classes:
+
+- **Class I** — older lineages, deep sub-allele polymorphism,
+  dominant within a plant.
+- **Class II** — younger lineages, tight single sub-allele, recessive
+  or co-dominant among themselves.
+
+The same pattern is visible in LEPA's P1 empirical prior:
+
+| Class | Fgs | Sub-alleles per Fg | Total P1 frequency |
+|---|---|---|---|
+| **Class I candidates** | 6 (FG001–FG006) | 2 – 10 | ~65 % |
+| **Class II candidates** | 26 (FG007–FG032 except FG024) | 1 | ~35 % |
+| *Anomaly* | FG024 | 1 | 18 % — flagged `REVIEW` |
+
+The mapping is stored as a first-class TSV
+([`srk_fg_class.tsv`](tables/Phase5/srk_fg_class.tsv)); rerunning
+`step30_srk_diversity_prediction_vs_observed.py` regenerates every
+downstream number from the current version.
+
+#### A.6.3 Dominance within a tetraploid plant
+
+LEPA carries 4 SRK allele copies (§ A.3). Under the classical
+Brassicaceae rule:
+
+- Class I strictly dominates Class II. A plant with ≥ 1 Class I
+  allele expresses only its Class I alleles on both stigma and
+  pollen; Class II alleles are silent.
+- An all-Class-II plant expresses all four alleles co-dominantly.
+- Within a class, alleles are co-dominant (a within-Class-I
+  hierarchy for LEPA, if any, is not yet resolved).
+
+A plant's **expressed set** is the subset of its 4 alleles actually
+shown on stigma and pollen. Two cases:
+
+- **Case A** — plant has ≥ 1 Class I allele → expressed set = its
+  Class I alleles.
+- **Case B** — plant has 0 Class I alleles → expressed set = all 4
+  Class II alleles.
+
+Same rule for mother and father.
+
+#### A.6.4 The between-plant recognition rule
+
+A cross (father → mother) is **compatible** iff:
+
+**Mother's expressed set ∩ Father's expressed set = ∅.**
+
+- **Class I × Class I** — compatible iff no shared expressed Class I
+  allele.
+- **Class I × Class II** — always compatible; the two expressed sets
+  belong to disjoint classes by construction.
+- **Class II × Class II** — compatible iff no shared expressed
+  Class II allele.
+
+The between-class rule is why sporophytic SI buffers reproduction
+under drift: a location holding both classes still crosses freely
+regardless of allele identity.
+
+#### A.6.5 A worked example
+
+Mother **M** carries `{FG001, FG002, FG024, FG031}` — two Class I
+(FG001, FG002) + two Class II. Case A: her expressed set =
+{FG001, FG002}; her Class II alleles are silent.
+
+Three candidate fathers:
+
+- **F1** = `{FG001, FG007, FG024, FG032}` — Case A, expressed
+  {FG001}. Shares FG001 with M → **rejected**.
+- **F2** = `{FG015, FG018, FG024, FG032}` — Case B, expressed all
+  four Class II. No overlap with M's Class I set → **compatible**.
+- **F3** = `{FG002, FG003, FG010, FG018}` — Case A, expressed
+  {FG002, FG003}. Shares FG002 with M → **rejected**.
+
+Under random mating, the fraction of compatible fathers is the § A.7
+Case-A formula `P_compat = (1 − p(M))⁴`, where `p(M)` is the local
+frequency mass of {FG001, FG002}.
+
+### A.7 Finite-population prediction of pollen compatibility
 
 **What we did.** For each location we simulated the local mating
-pool by drawing 2 × N_fertile alleles from the species-wide prior,
-computed local allele frequencies, and evaluated the expected
-random-mating compatibility of a sampled mother against those local
-frequencies. This captures the *founder effect* on small
-populations directly: a slickspot of two plants literally has
-four SRK alleles and no others.
+pool by drawing 4 × N_fertile alleles from the species-wide prior
+(tetraploid, see § A.3), paired them into N_fertile tetraploid
+plants, and evaluated each sampled mother's random-mating
+compatibility under the **sporophytic Class I / Class II dominance
+model** implemented in [`srk_si_model.py`](srk_si_model.py). The
+model captures three biological facts that the diploid gametophytic
+approximation used in Part 1 could not:
 
-**Result.** Large locations (N_fertile ≥ 50) converge to the
-species-wide expected compatibility of ~0.63 (the "sustainable"
-traffic-light band) with tight 95 % credible intervals. Small BL5
-slickspots collapse into "struggling" (EO24-1, EO24-7 at ~0.31)
-or "failed" (EO24-2 at exactly 0 — a single plant has no
-compatible partner). Credible intervals widen accordingly, honestly
-reflecting founder-effect uncertainty.
+- **Sporophytic SI.** Rejection is determined by the pollen parent's
+  diploid (here, tetraploid) genotype — not by the individual pollen
+  gamete's allele. Cross A × B is compatible iff parents A and B
+  share no expressed allele.
+- **Class I dominance within a plant.** A tetraploid carrying any
+  Class I alleles expresses only those Class I alleles on pollen
+  and stigma; a plant carrying only Class II alleles expresses all
+  of them co-dominantly.
+- **Between-class always compatible.** A Class I plant × Class II
+  plant share no expressed alleles by construction, so their cross
+  is always compatible. This is the mechanism behind the H1b
+  hypothesis in the existing cross-plan
+  ([`step26e_cross_plan_H1b_between_class_baseline.tsv`](tables/Phase5/step26e_cross_plan_H1b_between_class_baseline.tsv)).
 
-**Take-home for reviewers.** Fragmentation-driven drift is
-predicted, quantitatively, to depress pollen compatibility below
-the "failed" threshold at ≥ 3 Idaho slickspots before we
-even open a seed lot. These are the specific sites where
-mate-limitation is the working hypothesis.
+**Class assignment.** The Fg → Class mapping lives in
+[`tables/Phase5/srk_fg_class.tsv`](tables/Phase5/srk_fg_class.tsv)
+as a first-class TSV, editable by hand. The **provisional data-driven
+default** puts the 6 Fgs with ≥ 2 sub-alleles in Class I (FG001,
+FG002, FG003, FG004, FG005, FG006 — together ~65 % of P1 frequency)
+and the 26 single-allele Fgs in Class II (~35 %). FG024 is flagged
+`REVIEW` because it is single-allele but 18 % of P1 carriers, and
+its class may deserve manual reclassification once the SI literature
+is checked. Rerunning `step30_srk_diversity_prediction_vs_observed.py`
+regenerates every downstream number from an edited TSV.
+
+**Analytical formulas.** Under a local Fg frequency vector *f* and
+Class I total mass p_I = Σ_{j ∈ Class I} f_j, the sporophytic
+pollen compatibility for a tetraploid mother with expressed set M and expressed
+mass p(M) = Σ_{j ∈ M} f_j is closed-form:
+
+- Case A — mother has ≥ 1 Class I allele (M ⊆ her Class I alleles):
+  $P_{\text{compat}} = (1 - p(M))^4$
+- Case B — mother has only Class II alleles (M = her 4 alleles):
+  $P_{\text{compat}} = 1 - (1 - p_I)^4 + (1 - p_I - p(M))^4$
+
+**Result.** Species-mean pollen compatibility under sporophytic is **~0.16** (vs
+the diploid gametophytic 0.63 used in Part 1) — a much lower absolute
+value, because the sporophytic denominator counts pollen *parents*
+not pollen *alleles*. The traffic-light bands are recalibrated
+against this new species mean: **failed < 0.053, struggling
+0.053–0.106, sustainable ≥ 0.106** (1/3 and 2/3 of species mean —
+same ratios as the Part-1 gametophytic bands vs their mean).
+Every LEPA location's mean pollen compatibility sits close to the species mean
+because the between-class compatibility rule buffers drift: a
+Class-II-only mother at a drift-collapsed site is *always* compatible
+with any Class I father, so total isolation is much harder to reach
+than the gametophytic model predicted. **Small-slickspot uncertainty
+still shows up in wide credible intervals** — the BL5 tail (EO24
+group, EO24-1, EO24-2, EO24-7) still has 95 % CIs spanning from
+"failed" to "sustainable", honestly reflecting founder-effect
+variance in the class composition of their tiny local pools.
+
+**Take-home for reviewers.** The sporophytic model is more forgiving
+than the Part-1 diploid gametophytic approximation. Two independent
+mechanisms defend LEPA reproduction against drift: **(1)** the
+between-class compatibility of Class I × Class II crosses, and
+**(2)** the sheer numerical dominance of Class I (65 % of P1
+frequency), which makes most mothers Class I heterozygotes with
+non-zero pollen compatibility almost regardless of local drift. The mate-limited
+signal Phase C's β₁ will pick up is therefore expected to be
+**subtle** — driven by within-class allele skew rather than the
+gross "compatibility floor" the diploid model implied.
+
+**Traffic-light bands are recorded** in
+[`step30_A_traffic_light_bands.tsv`](tables/Phase5/step30_A_traffic_light_bands.tsv)
+so that any downstream analysis can join against them and reproduce
+the categorical labels.
 
 <a id="fig-2"></a>
-![Figure 2: Predicted per-mother pollen compatibility under random mating for each LEPA location. Horizontal layout, one dot per location, panelled by Bottleneck Lineage. Traffic-light background bands mark **failed** (compatibility < 0.20, red), **struggling** (0.20–0.40, orange) and **sustainable** (≥ 0.40, green) — matching the wording used elsewhere in the SRK random-mating framework. Dot position = mean predicted compatibility from the finite-population model (2 × N_fertile local alleles drawn from P1, N_fertile scaled by the location's within-25 m connectivity share); error bars = 95 % credible interval across simulation replicates; dot size ∝ √M (mothers with seed records in DB). **Large slickspots converge on ~0.63 with tight CI; BL5 tiny slickspots collapse into "struggling" or "failed" bands with wide CI reflecting founder-effect uncertainty.** Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_prediction_fecundation.png)
+![Figure 2: Predicted per-mother pollen compatibility under the sporophytic tetraploid Class I / Class II model for each LEPA location. Horizontal layout, one dot per location, panelled by Bottleneck Lineage. Traffic-light background bands mark **failed** (pollen compatibility < 0.053, red), **struggling** (0.053–0.106, orange) and **sustainable** (≥ 0.106, green) — recalibrated against the sporophytic species-mean of 0.159 (green dotted line). Dot position = mean predicted pollen compatibility from the finite-population simulation (4 × N_fertile local alleles drawn from P1, N_fertile scaled by within-25 m connectivity; per-mother pollen compatibility computed analytically from § A.7 Cases A / B under `srk_fg_class.tsv`); error bars = 95 % credible interval across simulation replicates; dot size ∝ √M (mothers with seed records in DB). **Every LEPA location's mean sits close to the species mean because between-class compatibility buffers drift; BL5 tiny slickspots retain wide CI reflecting founder-effect variance in class composition, honestly bracketing the range from "failed" to "sustainable".** Source: `step30_srk_diversity_prediction_vs_observed.py`. Class assignments: [`srk_fg_class.tsv`](tables/Phase5/srk_fg_class.tsv). Bands: [`step30_A_traffic_light_bands.tsv`](tables/Phase5/step30_A_traffic_light_bands.tsv).](figures/Phase5/step30_A_prediction_fecundation.png)
 
-### A.7 Fragmentation of pollen flow — event and location scales
+### A.8 Fragmentation of pollen flow — event and location scales
 
-**What this predicts and why it is separate from A.5–A.6.** A.5
-(predicted SRK diversity) and A.6 (predicted pollen compatibility)
+**What this predicts and why it is separate from A.5–A.7.** A.5
+(predicted SRK diversity) and A.7 (predicted pollen compatibility)
 both live on the **drift axis**: they answer *"what alleles has drift
 left at this location, and how compatible is a mother against those
 local frequencies?"* This section adds the **spatial-flow axis**: how
@@ -357,12 +495,12 @@ much of the surviving diversity a mother can actually **reach** given
 where LEPA events sit on the landscape and how far the pollinators
 fly. Both are goal-3 predictions, but they answer different questions
 — *"what alleles remain?"* (A.5) vs *"which alleles can pollinate
-her?"* (A.7) — and they are **independent**: a fragmented location
+her?"* (A.8) — and they are **independent**: a fragmented location
 can still be drift-neutral (many alleles, none reachable) and a
 well-connected location can still be drift-collapsed (few alleles,
 all reachable). Splitting them here lets Phase C (§ C.1) test which
 channel is dominant at each location as two independent coefficients
-(β₁ = drift via P_compat, β₂ = fragmentation via K^(25m)).
+(β₁ = drift via pollen compatibility, β₂ = fragmentation via K^(25m)).
 
 **Why this metric is honest.** The fragmentation index uses only three
 inputs: event coordinates, N_fertile per event, and the 25 m primary
@@ -426,7 +564,7 @@ are complementary rather than duplicative.
   These are the sites where fragmentation is predicted to be *fully*
   driving mate limitation.
 
-**How A.7 hooks into Phase C.** The per-mother K^(25m) is the β₂
+**How A.8 hooks into Phase C.** The per-mother K^(25m) is the β₂
 predictor in the mate-limitation regression (§ C.1); the per-location
 F_location is available as an explicit location-level covariate. Both
 are pure spatial metrics — no drift contamination — so β₂ isolates
@@ -437,7 +575,7 @@ from between-location random effects.
 
 **Take-home for reviewers.** Fragmentation is a distinct, testable
 prediction. It is what a pollinator sees, not what a SRK allele
-frequency looks like. Publishing it alongside A.5–A.6 gives goal 3
+frequency looks like. Publishing it alongside A.5–A.7 gives goal 3
 two clean prediction axes (drift, fragmentation) before any seed
 genotype exists — and Phase C then quantifies which axis is dominant
 at each location.
@@ -445,25 +583,40 @@ at each location.
 <a id="fig-3"></a>
 ![Figure 3: Event-scale distribution of the pollen-donor **plant count** reachable within 25 m per LEPA location, panelled by Bottleneck Lineage in the standard BL_ORDER (BL4, BL5, BL3, BL1, BL2). X-axis = `N_reachable_25m` = Σ N_fertile in events within 25 m − 1 (donor plants, not allele copies — plotted as plants to avoid conflation with the 32-Fg species allele-class count). Vertical **red dotted line at N = 1**: single-plant SI floor; every event at or below this line has zero reachable pollen donors and no seed set is possible under strict self-incompatibility. Vertical **grey dashed line at N = 8 plants**: coupon-collector floor for the 32-Fg species pool under **tetraploid LEPA** (4 alleles per plant × 8 plants = 32 allele copies). A mother reaching ≥ 8 donor plants has enough allele copies for the species pool to be *physically* reachable in principle; whether drift preserved the diversity is A.5's question. Log₂ x-axis so the 1 → 8 range (below the species floor) and the 8 → 500 range are both legible. Row labels give the location code, number of events, and total adult census. The figure exposes the fine-scale spatial process that a location-scale metric collapses: **a tight box far right of 8** (EO30-1, EO29, EO70) = every event well-connected, uniform pollen environment; **a wide box spanning 1 → hundreds** (EO27-1, EO18-7, EO26-3, EO8 groups) = the location holds a mix of isolated singletons and connected clusters, so mothers at different events face very different mate-availability contexts under the same locationID; **a tight box at N ≤ 1** (EO24 group, EO24-1, EO24-2, EO24-7) = every event is a lone plant. The metric uses only event coordinates, N_fertile, and the 25 m primary pollinator radius — no allele frequencies, no priors. Source: `step30b_fragmentation_index.py`. Data: [`step30_A_fragmentation_per_event.tsv`](tables/Phase5/step30_A_fragmentation_per_event.tsv), [`step30_A_fragmentation_per_location.tsv`](tables/Phase5/step30_A_fragmentation_per_location.tsv).](figures/Phase5/step30_A_fragmentation_index.png)
 
-### A.8 Cross-plot: SRK diversity vs pollen compatibility
+### A.9 Cross-plot: SRK diversity vs pollen compatibility
 
 **What we did.** We plotted per-location predicted SRK allele
-diversity against predicted pollen compatibility, with locations
-coloured by BL and the theoretical mean-compatibility curve
-$1 - 2/k_{\text{eff}}$ overlaid.
+diversity (x, from § A.5) against predicted sporophytic pollen
+compatibility (y, from § A.7), with locations coloured by BL and the
+sporophytic species-mean pollen compatibility (0.160) drawn as a horizontal
+reference line.
 
-**Result.** The BL5 tail sits below the P1 expectation on both
-axes — the direct signature of the fragmentation → drift → SRK
-diversity loss → mate-limitation chain. Larger slickspots
-converge on the P1 mean.
+**Result.** Under the sporophytic Class I / II model, **most
+locations sit near the species mean 0.16**. The BL5 tail (EO24
+group) is displaced left on the diversity axis (only ~2–5 alleles
+present) but drops only modestly on the compatibility axis (down to
+~0.11) — the between-class buffering (§ A.6.4) prevents even
+severely drift-collapsed populations from falling into "failed"
+territory at the mean. What *does* separate small locations from
+large ones is the **width of the 95 % credible interval on
+pollen compatibility**: large slickspots have tight CIs anchored on the species
+mean; small ones have wide CIs that span "failed" through
+"sustainable", honestly reflecting the founder-effect risk of a
+class composition that could go either way.
 
-**Take-home for reviewers.** This single figure is the causal-chain
-summary of Objective 3: fragmentation and drift are not abstract
-threats to LEPA; they translate into a measurable, testable drop
-in the number of compatible mates a mother can access.
+**Take-home for reviewers.** The sporophytic model reframes goal 3.
+The story is no longer "drift-collapsed sites are predicted to fail
+outright" — because Class I / Class II buffering makes outright
+failure hard. Instead, the risk is that a specific small slickspot
+draws an unlucky class composition (e.g., a Class-II-only pool with
+one high-frequency allele) and lands in "failed" territory *within*
+its own credible interval. Phase C's β₁ test picks this up as
+localised within-class allele skew, which is a more subtle and more
+biologically honest signal than the "global compatibility floor"
+narrative that the diploid gametophytic model implied.
 
 <a id="fig-4"></a>
-![Figure 4: Predicted SRK allele diversity (x) vs predicted random-mating pollen compatibility (y) per LEPA location, coloured by Bottleneck Lineage (Set1 palette: BL1 purple, BL2 blue, BL3 red, BL4 orange, BL5 green). Error bars on both axes come from the same Dirichlet posterior draws that produced the two single-quantity Phase A figures. Dot size ∝ √M (mothers with seed records in DB). Dashed grey reference curve = the theoretical mean-compatibility relation `1 − 2 / k_eff` under uniform allele frequencies — locations sit ON this curve when Fg diversity is even, below it when the local pool is skewed toward one or two common alleles (drift signature). **The BL5 tail (EO24, EO24-1, EO24-2) sits at the extreme low-diversity / low-compatibility corner; large BL3 (EO76) and BL1 (EO61) sit near the top-right where both quantities saturate near P1.** This is the single-figure summary of the fragmentation → drift → SRK diversity loss → mate-limitation chain that anchors Objective 3. Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_diversity_vs_pcompat.png)
+![Figure 4: Predicted SRK allele diversity (x) vs predicted sporophytic pollen compatibility (y) per LEPA location, coloured by Bottleneck Lineage (Set1 palette: BL1 purple, BL2 blue, BL3 red, BL4 orange, BL5 green). Error bars on both axes come from the same Dirichlet posterior draws that produced the two single-quantity Phase A figures. Dot size ∝ √M (mothers with seed records in DB). **Green dotted horizontal line = sporophytic species-mean pollen compatibility (0.160)** — the reference every location can be read against under the § A.6 Class I / II model. **BL5 tail (EO24, EO24-1, EO24-2)** sits at low predicted diversity (x ≈ 2–5) but only modestly below the species mean on the y-axis (pollen compatibility ≈ 0.11–0.16); **large slickspots (EO8, EO27-5, EO30-2, EO61, EO76)** sit right on the species-mean line with much tighter credible intervals. The wide y-axis CI on small-M locations is the honest founder-effect signal — a drift-collapsed small slickspot can drop into "failed" (y < 0.053) if class composition breaks unfavourably at that specific site. This figure is the single-figure summary of goal 3's fragmentation × drift decomposition: **sporophytic buffering flattens the mean, but small locations still carry drift-driven risk in their credible intervals**. Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_diversity_vs_pcompat.png)
 
 ---
 
@@ -855,7 +1008,7 @@ at the same locationID are not one mating unit — no pollen crosses
 between them. Treating them as one pool implicitly assumes a mother
 sampled at event A pays for detection at event B, which is only true
 when A and B are within pollinator range. The event-scale K^(25m)
-distribution in [Figure 3](#fig-3) (§ A.7) makes this vivid: at
+distribution in [Figure 3](#fig-3) (§ A.8) makes this vivid: at
 locations like EO8 (82 events split across 46 disjoint mating units),
 the aggregate pool is a mathematical fiction.
 
@@ -935,7 +1088,7 @@ per-mother K^(25m), which is a property of the landscape and doesn't
 depend on which allocation delivered her seeds. What *does* change is
 the **statistical power** — the fragmentation-aware allocation adds
 mothers exactly at the locations where within-location K^(25m)
-variance is highest (§ A.7 "mixed-connectivity" boxes), which is
+variance is highest (§ A.8 "mixed-connectivity" boxes), which is
 where β₂ has the most identifiability. So the extra effort is not
 distributed randomly across the study — it goes to the locations where
 the test needs it most.
@@ -998,16 +1151,22 @@ four scientific goals of the framework.
 
 ### C.1 Test 1 — Mate-limitation regression (goals 1 + 3)
 
-Under strict SI + random mating, a mother of Fg genotype $(a, b)$ has a
-predicted proportion of ovules that will encounter compatible pollen equal
-to her per-mother compatibility
+Under strict SI + random mating in a **tetraploid sporophytic** system
+(§ A.3, § A.7), a mother's per-mother compatibility is given by the
+closed-form § A.7 Case-A / Case-B formulas, driven by the local Fg
+frequency vector *f* and the Class I / II assignment in
+[`srk_fg_class.tsv`](tables/Phase5/srk_fg_class.tsv):
 
-$$P_{\text{compat}}(m) \;=\; 1 - f_a - f_b$$
+- **Case A** — mother has ≥ 1 Class I allele; expressed set M ⊆
+  Class I; $P_{\text{compat}}(m) = (1 - p(M))^4$.
+- **Case B** — mother is all Class II; expressed set M = her 4 alleles;
+  $P_{\text{compat}}(m) = 1 - (1 - p_I)^4 + (1 - p_I - p(M))^4$.
 
-where $f_j$ is the Fg frequency at her mating neighbourhood (the location's
-posterior for the pooled-year analysis; the year-specific spatial
-neighbourhood for the repeated-measures analysis). Her expected seed set
-is proportional to $P_{\text{compat}}(m)$:
+The species-mean sporophytic pollen compatibility is ~0.16 (much lower than the
+diploid gametophytic 0.63), so the regression coefficient β₁ lives on
+that rescaled axis — the traffic-light bands in § A.7 anchor the
+interpretation. Her expected seed set is proportional to
+$P_{\text{compat}}(m)$:
 
 $$E[\text{seeds}_m] \;\propto\; \text{ovules}_m \times P_{\text{compat}}(m)$$
 
@@ -1021,8 +1180,14 @@ pollen-donor pool at the 25 m radius (§ B.3). Two coefficients, two
 distinct causal channels:
 
 - $\beta_1 > 0$ with 95 % CI excluding 0 → **evidence of mate
-  limitation driven by allele-frequency drift** (skewed local
-  frequencies reduce compatibility).
+  limitation driven by allele-frequency drift**. Under the sporophytic
+  model, this fires when the drift-shifted local Fg composition shifts
+  the mother out of the "sustainable" pollen compatibility band. Because between-
+  class compatibility (Class I × Class II) buffers most locations
+  against drift (§ A.7), the sporophytic β₁ signal is expected to be
+  subtler than the diploid gametophytic version would have implied —
+  the mate-limited locations are the ones where drift has removed a
+  whole class from the local pool.
 - $\beta_2 > 0$ conditional on $\beta_1$ → **fragmentation effect
   independent of drift** — spatial isolation reduces seed set above
   and beyond what allele skew alone explains.
@@ -1213,7 +1378,7 @@ signal by construction.
 | **Predicted local pool size** (SRK alleles at this location) | ~6 alleles | ~22 alleles |
 | **Predicted local coverage** (of the alleles at this location) | **~100 %** ✓ | **~100 %** ✓ |
 | Predicted species-wide coverage (of 32 P1 alleles — biased against drifted-out alleles) | ~18 % | ~55 % |
-| Predicted random-mating compatibility | *"struggling"* band | *"sustainable"* band |
+| Predicted random-mating compatibility (sporophytic Class I / II, § A.6-A.7) | mean **0.15**, 95 % CI [0.02, 0.42] — *"sustainable"* band at the mean but 95 % CI spans "failed" → "sustainable" | mean **0.16**, tight CI [0.08, 0.25] — solidly *"sustainable"* |
 
 **Reading the two coverage numbers.**
 The **local coverage** (~100 % at both pilot locations) is the biologically
@@ -1227,11 +1392,15 @@ dynamics on the alleles that are present, not attempting to inventory
 the species pool.
 
 **Why this pair is well-chosen for a pilot.** EO67 tests the
-**budget-limited / founder-effect regime** (small population, few
-mothers, low predicted compatibility, high risk of mate limitation).
-EO27-1 tests the **aggregation regime** (many mothers, permit-realistic
-33 mothers × 34 tetraploid draws per mother = 1 122 allele draws,
-easily crossing the A_target = 704 species threshold). Both locations
+**budget-limited / founder-effect regime** — small population, few
+mothers, and although the *mean* sporophytic pollen compatibility sits near the
+species mean, its 95 % CI [0.02, 0.42] spans "failed" to
+"sustainable", so this location will decisively either confirm or
+rule out the drift-driven mate-limitation prediction. EO27-1 tests
+the **aggregation regime** (many mothers, permit-realistic 33
+mothers × 34 tetraploid draws per mother = 1 122 allele draws,
+easily crossing the A_target = 704 species threshold; tight
+sporophytic CI [0.08, 0.25] anchors the "sustainable" prediction). Both locations
 sit in the same BL, so their pilot outputs are directly comparable —
 a *within-BL* contrast that avoids between-BL confounds. The
 two-location pilot uses ≤ 555 seed genotypes total (< 5 % of the full
@@ -1299,7 +1468,9 @@ or right-click → *Save link as…* to pull the TSV into your local pipeline.
 - [`step30_A_prediction_prior_frequencies.tsv`](tables/Phase5/step30_A_prediction_prior_frequencies.tsv) — the P1 species-wide Fg prior.
 - [`step30_A_prediction_location_diversity.tsv`](tables/Phase5/step30_A_prediction_location_diversity.tsv) — predicted SRK allele diversity per location.
 - [`step30_A_prediction_location_pcompat.tsv`](tables/Phase5/step30_A_prediction_location_pcompat.tsv) — predicted random-mating pollen compatibility per location (finite-population model at 25 m).
-- [`step30_A_prediction_per_mother_fecundation.tsv`](tables/Phase5/step30_A_prediction_per_mother_fecundation.tsv) — species-wide compatibility reference distribution.
+- [`step30_A_prediction_per_mother_fecundation.tsv`](tables/Phase5/step30_A_prediction_per_mother_fecundation.tsv) — species-wide compatibility reference distribution under the sporophytic tetraploid model.
+- [`srk_fg_class.tsv`](tables/Phase5/srk_fg_class.tsv) — Fg → dominance class (I / II) mapping used by the sporophytic pollen compatibility model in § A.7. Provisional data-driven default; editable by hand as biology is refined.
+- [`step30_A_traffic_light_bands.tsv`](tables/Phase5/step30_A_traffic_light_bands.tsv) — recalibrated failed / struggling / sustainable band boundaries against the sporophytic species-mean pollen compatibility.
 - [`step30_A_fragmentation_per_event.tsv`](tables/Phase5/step30_A_fragmentation_per_event.tsv) — per-event fragmentation index F_event = 1 − K_spatial_25m / 32 (purely spatial, no allele frequencies).
 - [`step30_A_fragmentation_per_location.tsv`](tables/Phase5/step30_A_fragmentation_per_location.tsv) — per-location fragmentation index F_location = 1 − within-location connectivity at 25 m, with median event-scale F for the same location.
 

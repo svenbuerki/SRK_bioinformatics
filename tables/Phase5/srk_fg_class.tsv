@@ -1,0 +1,33 @@
+Fg	class	n_alleles	p1_freq_pct	rationale
+FG001	I	10	40.72	Multi-allele lineage — Class I dominant candidate
+FG002	I	4	11.58	Multi-allele lineage — Class I dominant candidate
+FG003	I	3	2.59	Multi-allele lineage — Class I dominant candidate
+FG004	I	2	1.80	Multi-allele lineage — Class I dominant candidate
+FG005	I	2	1.40	Multi-allele lineage — Class I dominant candidate
+FG006	I	2	6.99	Multi-allele lineage — Class I dominant candidate
+FG007	II	1	0.40	Single-allele Fg
+FG008	II	1	0.40	Single-allele Fg
+FG009	II	1	0.40	Single-allele Fg
+FG010	II	1	1.80	Single-allele Fg
+FG011	II	1	0.20	Single-allele Fg
+FG012	II	1	2.59	Single-allele Fg
+FG013	II	1	0.20	Single-allele Fg
+FG014	II	1	0.60	Single-allele Fg
+FG015	II	1	1.20	Single-allele Fg
+FG016	II	1	0.20	Single-allele Fg
+FG017	II	1	1.40	Single-allele Fg
+FG018	II	1	1.20	Single-allele Fg
+FG019	II	1	1.40	Single-allele Fg
+FG020	II	1	0.20	Single-allele Fg
+FG021	II	1	1.40	Single-allele Fg
+FG022	II	1	0.20	Single-allele Fg
+FG023	II	1	1.00	Single-allele Fg
+FG024	II	1	18.36	REVIEW: single-allele but 18 % of P1 carriers — may deserve manual reclassification
+FG025	II	1	0.20	Single-allele Fg
+FG026	II	1	0.20	Single-allele Fg
+FG027	II	1	0.20	Single-allele Fg
+FG028	II	1	0.20	Single-allele Fg
+FG029	II	1	0.20	Single-allele Fg
+FG030	II	1	0.40	Single-allele Fg
+FG031	II	1	0.20	Single-allele Fg
+FG032	II	1	0.20	Single-allele Fg

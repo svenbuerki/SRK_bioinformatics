@@ -210,27 +210,29 @@ def predicted_diversity_matched_to_seeds(seeds: pd.DataFrame,
 def predicted_pcompat_distribution(prior: pd.DataFrame,
                                     n_mothers: int,
                                     rng: np.random.Generator) -> pd.DataFrame:
-    """Simulate n_mothers random mother genotypes drawn from the prior (as
-    two independent Fg draws, i.e. random mating parental generation).
-    Return the per-mother P_compat = 1 - f_a - f_b (with a=b handled).
+    """Species-wide reference distribution of per-mother P_compat under
+    the **sporophytic tetraploid** Class I / II model (see
+    `srk_si_model.py`). Simulates `n_mothers` random tetraploid mothers
+    from the P1 prior — one row per mother with her genotype (4 alleles)
+    and her analytical sporophytic P_compat.
     """
+    from step28_seed_sampling_per_mother import PLOIDY
+    from srk_si_model import (
+        load_class_map, build_class_i_mask, p_compat_sporophytic_batch,
+    )
     f_mean = prior["f_mean"].values
-    fg_ids = prior["Fg"].values
-    # sample mother Fg pairs from prior (random mating parental generation)
-    a = rng.choice(len(f_mean), size=n_mothers, p=f_mean)
-    b = rng.choice(len(f_mean), size=n_mothers, p=f_mean)
-    # P_compat = 1 - freq of any allele matching the mother's Fgs
-    #           = 1 - f_a - f_b       (a != b)
-    #           = 1 - f_a              (a == b, homozygote — same allele)
-    match = a == b
-    p_compat = 1.0 - f_mean[a] - f_mean[b]
-    p_compat = np.where(match, 1.0 - f_mean[a], p_compat)
-    p_compat = np.clip(p_compat, 0.0, 1.0)
+    fg_ids = prior["Fg"].astype(str).values
+    class_map = load_class_map()
+    class_i_mask = build_class_i_mask(fg_ids.tolist(), class_map)
+    K_fg = len(f_mean)
+    # sample mother tetraploid genotypes (PLOIDY alleles from prior each)
+    mothers = rng.choice(K_fg, size=(n_mothers, PLOIDY), p=f_mean)
+    p_compat = p_compat_sporophytic_batch(mothers, f_mean, class_i_mask)
+    has_class_i = class_i_mask[mothers].any(axis=1)
     return pd.DataFrame({
         "sim_mother_id":  np.arange(n_mothers),
-        "mother_Fg_a":    fg_ids[a],
-        "mother_Fg_b":    fg_ids[b],
-        "homozygous":     match,
+        **{f"mother_Fg_{i+1}": fg_ids[mothers[:, i]] for i in range(PLOIDY)},
+        "expresses_class_I": has_class_i,
         "P_compat":       p_compat,
         "fecundation_failure_rate": 1.0 - p_compat,
     })
@@ -240,38 +242,50 @@ def predicted_pcompat_per_location(locations: pd.DataFrame,
                                     prior: pd.DataFrame,
                                     rng: np.random.Generator,
                                     n_draws: int = 2000) -> pd.DataFrame:
-    """Phase-A per-location prediction of random-mating P_compat that
-    respects the local population size.
+    """Phase-A per-location prediction of random-mating P_compat under
+    the **sporophytic tetraploid** SI model with Class I / Class II
+    dominance (see `srk_si_model.py` and § A.6 of the Phase 5 doc).
 
     For each location, on each of `n_draws` simulation replicates:
 
-      1. Simulate the local pollen pool: draw 2 × `total_n_fertile`
-         SRK alleles i.i.d. from the species-wide P1 prior. This is the
-         realised local Fg composition — it drifts from P1 by an amount
-         governed by 1/√(2 N_fertile), so small slickspots show large
-         founder-effect variance in local frequencies.
+      1. Simulate the local pool: draw PLOIDY · N_fertile = 4 · N_fertile
+         SRK alleles i.i.d. from the species-wide P1 prior. Small
+         slickspots drift from P1 by ~1/√(4 N_fertile).
       2. Compute local Fg frequencies from that pool.
-      3. Sample M mother genotypes by picking M of the N_fertile plants
-         (a plant carries two adjacent alleles in the pool).
-      4. Per mother, P_compat = 1 − f_a_local − f_b_local
-         (or 1 − f_a_local if she is homozygous), using LOCAL
-         frequencies.
+      3. Sample M mother genotypes by picking M of the N_fertile
+         tetraploid plants (each carries 4 adjacent alleles in the pool).
+      4. Per mother, compute sporophytic P_compat using the analytical
+         formulas in `srk_si_model.p_compat_sporophytic_batch()` — Class
+         I dominant over Class II within-plant, between-class crosses
+         always compatible.
       5. Location mean = mean over the M sampled mothers.
       6. Report the posterior mean and 95 % credible interval across
          the n_draws replicates.
 
-    Under this model, large slickspots converge to the P1 expectation
-    (~0.63) with tight CrI; small slickspots drift away — sometimes up,
-    sometimes down — with wide CrI capturing the founder-effect
-    uncertainty.
+    Species-mean P_compat under this model is roughly 0.16 (vs 0.63
+    under the diploid gametophytic Part-1 approximation). Traffic-light
+    band boundaries are recalibrated to preserve the semantic labels
+    against the new scale.
     """
+    from step28_seed_sampling_per_mother import PLOIDY
+    from srk_si_model import (
+        load_class_map,
+        build_class_i_mask,
+        p_compat_sporophytic_batch,
+    )
+
     f_mean = prior["f_mean"].values
     K_fg = len(f_mean)
+    fg_labels = prior["Fg"].astype(str).tolist() if "Fg" in prior.columns else \
+                [f"FG{i+1:03d}" for i in range(K_fg)]
+    class_map = load_class_map()
+    class_i_mask = build_class_i_mask(fg_labels, class_map)
+
     rows = []
     for _, row in locations.iterrows():
         # Effective mating N — adults in the largest within-location
-        # connected component at the primary pollen-flight radius (10 m,
-        # from Step 28c). Falls back to the raw census total when the
+        # connected component at the primary pollen-flight radius (25 m,
+        # from Step 29b). Falls back to the raw census total when the
         # connectivity column is absent.
         n_fert_raw = row.get("N_fertile_effective_25m",
                               row.get("total_n_fertile"))
@@ -296,22 +310,22 @@ def predicted_pcompat_per_location(locations: pd.DataFrame,
             N_fertile = max(N_fertile, M)
 
         loc_means = np.empty(n_draws)
+        pool_size = PLOIDY * N_fertile
         for k in range(n_draws):
-            # (1) Local pollen pool: 2 * N_fertile alleles from P1.
-            local_alleles = rng.choice(K_fg, size=2 * N_fertile, p=f_mean)
+            # (1) Local pool: PLOIDY · N_fertile alleles from P1.
+            local_alleles = rng.choice(K_fg, size=pool_size, p=f_mean)
             # (2) Local Fg frequencies.
-            local_f = np.bincount(local_alleles, minlength=K_fg) / (2 * N_fertile)
-            # (3) Sample M mothers: pair alleles into N_fertile plants,
-            # then draw M plants without replacement.
-            pairs = local_alleles.reshape(N_fertile, 2)
-            mother_idx = rng.choice(N_fertile, size=M, replace=(M > N_fertile))
-            ma = pairs[mother_idx, 0]
-            mb = pairs[mother_idx, 1]
-            # (4) Per-mother P_compat using LOCAL frequencies.
-            pc = np.where(ma == mb,
-                          1.0 - local_f[ma],
-                          1.0 - local_f[ma] - local_f[mb])
-            pc = np.clip(pc, 0.0, 1.0)
+            local_f = np.bincount(local_alleles, minlength=K_fg) / pool_size
+            # (3) Sample M mothers: pair PLOIDY alleles into N_fertile
+            # tetraploid plants, then draw M plants (with replacement if
+            # M > N_fertile).
+            plants = local_alleles.reshape(N_fertile, PLOIDY)
+            mother_idx = rng.choice(N_fertile, size=M,
+                                    replace=(M > N_fertile))
+            mother_genotypes = plants[mother_idx]           # (M, 4)
+            # (4) Sporophytic P_compat under Class I / II dominance.
+            pc = p_compat_sporophytic_batch(mother_genotypes,
+                                             local_f, class_i_mask)
             loc_means[k] = pc.mean()
         rows.append({
             "locationID":              row["locationID"],
@@ -816,12 +830,12 @@ def plot_prediction_diversity(pred: pd.DataFrame, prior: pd.DataFrame,
 
 def plot_prediction_fecundation(pcompat_per_loc: pd.DataFrame,
                                 out_png: Path, out_pdf: Path,
-                                year: int | None = None):
-    """Per-location Phase-A prediction of random-mating pollen compatibility,
+                                year: int | None = None,
+                                bands: dict[str, float] | None = None):
+    """Per-location Phase-A prediction of random-mating pollen compatibility
+    under the sporophytic tetraploid Class I / II model (§ A.6, Part 2),
     grouped by BL, with the failed / struggling / sustainable traffic-light
-    bands from the mate-limitation figure. Under P1 the *mean* prediction
-    is the same at every location; per-location error bars show how much
-    the M seed-record count sharpens or blurs that prediction.
+    bands recalibrated against the sporophytic species mean.
     """
     from srk_bl_constants import BL_COLORS, BL_ORDER, locationCode_to_bl
 
@@ -844,8 +858,11 @@ def plot_prediction_fecundation(pcompat_per_loc: pd.DataFrame,
     if len(bls) == 1:
         axes = [axes]
 
-    # Traffic-light thresholds (same as mate-limitation figure)
-    T_FAILED_HI, T_STRUGGLING_HI = 0.20, 0.40
+    # Traffic-light thresholds — recalibrated against sporophytic species mean
+    T_FAILED_HI     = bands["failed_max"]     if bands else 0.20
+    T_STRUGGLING_HI = bands["struggling_max"] if bands else 0.40
+    SPECIES_MEAN    = bands["species_mean"]   if bands else 0.63
+    x_upper = max(0.30, min(1.0, 2.0 * SPECIES_MEAN))
     band_alpha = 0.12
 
     for ax, bl in zip(axes, bls):
@@ -859,8 +876,10 @@ def plot_prediction_fecundation(pcompat_per_loc: pd.DataFrame,
                     alpha=band_alpha, zorder=0)
         ax.axvspan(T_FAILED_HI, T_STRUGGLING_HI, color="#e08214",
                     alpha=band_alpha, zorder=0)
-        ax.axvspan(T_STRUGGLING_HI, 1.0,   color="#1b7837",
+        ax.axvspan(T_STRUGGLING_HI, x_upper, color="#1b7837",
                     alpha=band_alpha, zorder=0)
+        # Species-mean reference line
+        ax.axvline(SPECIES_MEAN, color="#1b7837", ls=":", lw=1.0, alpha=0.7)
 
         xerr_lo = sub["predicted_P_compat_mean"] - sub["predicted_P_compat_lo"]
         xerr_hi = sub["predicted_P_compat_hi"] - sub["predicted_P_compat_mean"]
@@ -882,7 +901,7 @@ def plot_prediction_fecundation(pcompat_per_loc: pd.DataFrame,
                                      sub["M_mothers_in_db"])]
         ax.set_yticks(y)
         ax.set_yticklabels(labels, fontsize=8)
-        ax.set_xlim(0.0, 1.0)
+        ax.set_xlim(0.0, x_upper)
         ax.set_ylim(-0.7, len(sub) - 0.3)
         ax.text(1.01, 0.5, bl,
                 transform=ax.transAxes,
@@ -893,15 +912,18 @@ def plot_prediction_fecundation(pcompat_per_loc: pd.DataFrame,
 
     # Traffic-light legend at the top of the first panel
     from matplotlib.patches import Patch
+    from matplotlib.lines import Line2D
     tl_handles = [
         Patch(facecolor="#b2182b", alpha=0.35,
-              label=f"failed  (< {T_FAILED_HI:.2f})"),
+              label=f"failed  (< {T_FAILED_HI:.3f})"),
         Patch(facecolor="#e08214", alpha=0.35,
-              label=f"struggling  ({T_FAILED_HI:.2f}–{T_STRUGGLING_HI:.2f})"),
+              label=f"struggling  ({T_FAILED_HI:.3f}–{T_STRUGGLING_HI:.3f})"),
         Patch(facecolor="#1b7837", alpha=0.35,
-              label=f"sustainable  (≥ {T_STRUGGLING_HI:.2f})"),
+              label=f"sustainable  (≥ {T_STRUGGLING_HI:.3f})"),
+        Line2D([0], [0], color="#1b7837", ls=":", lw=1.2,
+               label=f"sporophytic species mean  ({SPECIES_MEAN:.3f})"),
     ]
-    axes[0].legend(handles=tl_handles, loc="upper left",
+    axes[0].legend(handles=tl_handles, loc="upper right",
                     fontsize=9, frameon=True)
 
     axes[-1].set_xlabel(
@@ -924,7 +946,8 @@ def plot_diversity_vs_pcompat(pred_div: pd.DataFrame,
                                pred_pc: pd.DataFrame,
                                prior: pd.DataFrame,
                                out_png: Path, out_pdf: Path,
-                               year: int | None = None):
+                               year: int | None = None,
+                               bands: dict[str, float] | None = None):
     """Cross-plot of the two Phase-A per-location predictions:
       x = predicted number of distinct SRK alleles at that location
       y = predicted mean pollen compatibility under random mating
@@ -956,9 +979,10 @@ def plot_diversity_vs_pcompat(pred_div: pd.DataFrame,
     # as a proxy for effective k, so the curve is qualitative — a visual
     # reminder that mate compatibility rises with SRK diversity.
     ks = np.arange(1, len(prior) + 1)
-    ax.plot(ks, 1.0 - 2.0 / np.maximum(ks, 1),
-            color="#333", ls="--", lw=1.0, alpha=0.5,
-            label="theory: mean compatibility = 1 − 2/k_eff  (uniform f)")
+    # Species-mean P_compat reference (sporophytic Part 2)
+    SPECIES_MEAN = bands["species_mean"] if bands else 0.63
+    ax.axhline(SPECIES_MEAN, color="#1b7837", ls=":", lw=1.2, alpha=0.7,
+               label=f"sporophytic species-mean P_compat  ({SPECIES_MEAN:.3f})")
 
     bls = [b for b in BL_ORDER if b in m["BL"].values]
     if (m["BL"] == "Unassigned").any():
@@ -1008,7 +1032,8 @@ def plot_diversity_vs_pcompat(pred_div: pd.DataFrame,
         fontsize=11,
     )
     ax.set_xlim(0, len(prior) + 2)
-    ax.set_ylim(0.0, 1.0)
+    y_upper = max(0.30, min(1.0, 2.0 * SPECIES_MEAN))
+    ax.set_ylim(0.0, y_upper)
     ax.set_title(
         f"SRK allele diversity vs pollen compatibility across LEPA locations"
         f"{_year_suffix(year)}",
@@ -1026,7 +1051,8 @@ def plot_diversity_vs_pcompat(pred_div: pd.DataFrame,
 def plot_mate_limitation(per_location: pd.DataFrame, coefs: pd.DataFrame,
                          out_png: Path, out_pdf: Path,
                          year: int | None = None,
-                         demo: bool = False):
+                         demo: bool = False,
+                         bands: dict[str, float] | None = None):
     """Single-panel LOCATION-level scatter of mean seeds per mother vs
     location-mean random-mating compatibility. Dot size = √n_mothers;
     error bars on both axes = per-mother SEM. Background traffic-light
@@ -1049,18 +1075,21 @@ def plot_mate_limitation(per_location: pd.DataFrame, coefs: pd.DataFrame,
     x_sem = per_location["std_P_compat"] / np.sqrt(per_location["n_mothers"].clip(lower=1))
 
     # Traffic-light bands: failed (red) / struggling (orange) / sustainable
-    # (green). Wording matches the SRK-based random-mating framework used
-    # elsewhere in the project. Thresholds tuned to the LEPA-scale analysis
-    # (worst ~0.08, best ~0.4).
-    T_FAILED_HI     = 0.20    # below this — failed
-    T_STRUGGLING_HI = 0.40    # 0.2 – 0.4 — struggling
+    # (green). Thresholds recalibrated against the sporophytic tetraploid
+    # species mean (§ A.6, Part 2). Defaults preserve backward-compatible
+    # gametophytic thresholds if `bands` is not supplied.
+    T_FAILED_HI     = bands["failed_max"]     if bands else 0.20
+    T_STRUGGLING_HI = bands["struggling_max"] if bands else 0.40
+    SPECIES_MEAN    = bands["species_mean"]   if bands else 0.63
+    x_upper = max(0.30, min(1.0, 2.0 * SPECIES_MEAN))
     band_alpha  = 0.14
     ax_scatter.axvspan(0.0, T_FAILED_HI,
                         color="#b2182b", alpha=band_alpha, zorder=0)
     ax_scatter.axvspan(T_FAILED_HI, T_STRUGGLING_HI,
                         color="#e08214", alpha=band_alpha, zorder=0)
-    ax_scatter.axvspan(T_STRUGGLING_HI, 1.0,
+    ax_scatter.axvspan(T_STRUGGLING_HI, x_upper,
                         color="#1b7837", alpha=band_alpha, zorder=0)
+    ax_scatter.axvline(SPECIES_MEAN, color="#1b7837", ls=":", lw=1.0, alpha=0.7)
 
     ax_scatter.errorbar(
         x, y, xerr=x_sem, yerr=y_sem,
@@ -1105,17 +1134,20 @@ def plot_mate_limitation(per_location: pd.DataFrame, coefs: pd.DataFrame,
                         color="#333333", ls="--", lw=1.6, alpha=0.9,
                         label=slope_line_label, zorder=3)
 
-    # Traffic-light legend — wording matches SRK random-mating framework:
-    # failed / struggling / sustainable.
+    # Traffic-light legend — sporophytic bands rescaled to species mean.
     from matplotlib.patches import Patch
+    from matplotlib.lines import Line2D
     tl_handles = [
         Patch(facecolor="#b2182b", alpha=0.35,
-              label=f"failed  (< {T_FAILED_HI:.2f})"),
+              label=f"failed  (< {T_FAILED_HI:.3f})"),
         Patch(facecolor="#e08214", alpha=0.35,
-              label=f"struggling  ({T_FAILED_HI:.2f} – {T_STRUGGLING_HI:.2f})"),
+              label=f"struggling  ({T_FAILED_HI:.3f} – {T_STRUGGLING_HI:.3f})"),
         Patch(facecolor="#1b7837", alpha=0.35,
-              label=f"sustainable  (≥ {T_STRUGGLING_HI:.2f})"),
+              label=f"sustainable  (≥ {T_STRUGGLING_HI:.3f})"),
+        Line2D([0], [0], color="#1b7837", ls=":", lw=1.2,
+               label=f"species mean  ({SPECIES_MEAN:.3f})"),
     ]
+    ax_scatter.set_xlim(0.0, x_upper)
     lg_handles, lg_labels = ax_scatter.get_legend_handles_labels()
     ax_scatter.legend(
         lg_handles + tl_handles,
@@ -1366,6 +1398,37 @@ def main() -> None:
     pcompat_loc.to_csv(pcompat_loc_path, sep="\t", index=False)
     print(f"[step30] Wrote {pcompat_loc_path}")
 
+    # --- Recalibrate traffic-light bands against the sporophytic species mean
+    from srk_si_model import (
+        load_class_map, build_class_i_mask,
+        species_mean_p_compat, traffic_light_bands,
+    )
+    fg_labels_ordered = prior["Fg"].astype(str).tolist() \
+        if "Fg" in prior.columns \
+        else [f"FG{i+1:03d}" for i in range(len(prior))]
+    class_map = load_class_map()
+    class_i_mask = build_class_i_mask(fg_labels_ordered, class_map)
+    species_mean_pc = species_mean_p_compat(prior["f_mean"].values,
+                                             class_i_mask, rng=rng)
+    bands = traffic_light_bands(species_mean_pc)
+    # Persist bands as a small reference TSV
+    bands_df = pd.DataFrame([{
+        "si_model":           "sporophytic_class_I_dominant",
+        "species_mean":       bands["species_mean"],
+        "failed_max":         bands["failed_max"],
+        "struggling_max":     bands["struggling_max"],
+        "class_I_count":      int(class_i_mask.sum()),
+        "class_I_P1_freq":    float(prior["f_mean"].values[class_i_mask].sum()),
+    }])
+    bands_path = tables_dir / "step30_A_traffic_light_bands.tsv"
+    bands_df.to_csv(bands_path, sep="\t", index=False)
+    print(f"[step30] Sporophytic species-mean P_compat = "
+          f"{bands['species_mean']:.4f}; "
+          f"bands failed < {bands['failed_max']:.4f}, "
+          f"struggling < {bands['struggling_max']:.4f}, "
+          f"sustainable ≥ {bands['struggling_max']:.4f}.")
+    print(f"[step30] Wrote {bands_path}")
+
     plot_prediction_diversity(pred_div, prior,
         out_png=figures_dir / "step30_A_prediction_diversity.png",
         out_pdf=figures_dir / "step30_A_prediction_diversity.pdf",
@@ -1373,11 +1436,11 @@ def main() -> None:
     plot_prediction_fecundation(pcompat_loc,
         out_png=figures_dir / "step30_A_prediction_fecundation.png",
         out_pdf=figures_dir / "step30_A_prediction_fecundation.pdf",
-        year=args.year)
+        year=args.year, bands=bands)
     plot_diversity_vs_pcompat(pred_div, pcompat_loc, prior,
         out_png=figures_dir / "step30_A_diversity_vs_pcompat.png",
         out_pdf=figures_dir / "step30_A_diversity_vs_pcompat.pdf",
-        year=args.year)
+        year=args.year, bands=bands)
     print(f"[step30] Phase A prediction figures in {figures_dir}/")
 
     # ---- Comparison outputs (optional) ----
@@ -1465,7 +1528,7 @@ def main() -> None:
             plot_mate_limitation(per_loc_reg, coefs,
                 out_png=figures_dir / f"step30_B{tag}_mate_limitation.png",
                 out_pdf=figures_dir / f"step30_B{tag}_mate_limitation.pdf",
-                year=args.year, demo=is_demo)
+                year=args.year, demo=is_demo, bands=bands)
 
             # ---- Test 2: SI-escape permutation (§ 2.2.2) ----
             perm = si_escape_permutation(seeds, mothers, rng=rng)
