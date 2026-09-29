@@ -606,7 +606,7 @@ copies from **0** to **> 1 000**.
 fragmentation is the fraction of adults NOT in a multi-event
 pollen-flow component,
 
-$$F_{\text{location}} \;=\; 1 - \text{connected\_share\_25m}$$
+$$F_{\text{location}} \;=\; 1 - \text{connected-share at 25 m}$$
 
 using the connected-share metric from § B.2. `F_location = 0` when
 every adult exchanges pollen with at least one other event; `F_location = 1`
@@ -903,7 +903,7 @@ $$n_{\text{draws}} \;=\; \left\lceil \frac{\log \alpha}{\log(1 - p_{\min})} \rig
 Under **tetraploid LEPA** each seed carries 2 paternal alleles, so the
 required seed count is
 
-$$n_{\text{seeds}} \;=\; \left\lceil \frac{n_{\text{draws}}}{\text{PATERNAL\_ALLELES\_PER\_SEED}} \right\rceil \;=\; \left\lceil \frac{29}{2} \right\rceil \;=\; 15$$
+$$n_{\text{seeds}} \;=\; \left\lceil \frac{n_{\text{draws}}}{\text{paternal alleles per seed}} \right\rceil \;=\; \left\lceil \frac{29}{2} \right\rceil \;=\; 15$$
 
 This is a **K-independent floor** — the honest per-mother cap when
 Rule 1 becomes impractical at very large events. (Under a diploid
@@ -983,7 +983,7 @@ reaches 0.90. Under the current P1 prior this target is **A = 704
 total allele draws / location**. Each sampled mother contributes both
 her own genotype and the paternal alleles of any seeds we genotype:
 
-$$A_{\text{delivered}} \;=\; M \times (\text{PLOIDY} + \text{PATERNAL\_ALLELES\_PER\_SEED} \times n_{\text{seeds}}) \;=\; M \times (4 + 2 n_{\text{seeds}})$$
+$$A_{\text{delivered}} \;=\; M \times (\text{ploidy} + \text{paternal alleles per seed} \times n_{\text{seeds}}) \;=\; M \times (4 + 2 n_{\text{seeds}})$$
 
 under tetraploid LEPA. The target A can be reached either by more
 mothers, more seeds per mother, or both. When M is fixed by field
