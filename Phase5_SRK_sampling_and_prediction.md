@@ -475,7 +475,7 @@ adjusted number that every Phase A prediction relies on:
   through the entire chain rooted in `N_fert_eff`; β₂ (mating-
   neighbourhood effect) directly uses `K^(50m)` per mother, which is
   the per-mother analogue of `N_fert_eff` at the individual scale.
-- **§ B.4.2 fragmentation-aware sampling** — the reason 43 / 52
+- **§ B.4.2 fragmentation-aware sampling** — the reason 22 / 39
   locations need MORE mothers than the pooled Step 29 recommendation
   is the same `largest_component_share_50m` shrinkage exposed in
   Panel C of Figure 2b.
@@ -1279,16 +1279,16 @@ even when frequency skew is severe.
 
 #### B.4.2 Fragmentation-aware sampling — comparison with the current allocation
 
-**Why the B.4.1 allocation under-counts fragmentation.** § B.4.1
+**Why the § B.4.1 allocation under-counts fragmentation.** § B.4.1
 computes the coupon-collector M using the location's **aggregate**
 `total_N_fertile` as a single pool. But two events sitting 300 m apart
 at the same locationID are not one mating unit — no pollen crosses
 between them. Treating them as one pool implicitly assumes a mother
 sampled at event A pays for detection at event B, which is only true
-when A and B are within pollinator range. The event-scale K^(25m)
+when A and B are within pollinator range. The event-scale K^(50m)
 distribution in [Figure 2](#fig-2) (§ A.5) makes this vivid: at
-locations like EO8 (82 events split across 46 disjoint mating units),
-the aggregate pool is a mathematical fiction.
+locations like EO27-1 (8 events across multiple disjoint 50 m mating
+units), the aggregate pool is a mathematical fiction.
 
 **Fragmentation-aware allocation — the method.** For each location we
 build the 50 m adjacency graph on its events (same graph § B.2 uses
@@ -1297,39 +1297,34 @@ coupon-collector 90 %-full-detection rule **per component** rather
 than per whole location:
 
 1. **Per component c** — total N_fertile in c → local pool
-   K_c = min(2·(N_c − 1), 32 species alleles) → mothers needed
+   K_c = min(4·(N_c − 1), 32 species alleles) → mothers needed
    M_c = mothers_for_full_detection(K_c, 0.90). Isolated singleton
    components → M_c = 1.
 2. **Within a component**, distribute M_c across events proportional
    to N_fertile(e), with a **maternal-genotype floor of ≥ 1 mother
-   per event** so every event gets visited (records who is standing
-   there, even when its paternal coverage is "free" via a
-   neighbouring event's mother in the same component).
+   per event** so every event gets visited.
 3. **Location total**: M_frag_aware = Σ_c mothers allocated to c.
 
-**Result** (tetraploid). All 52 LEPA locations were re-allocated; the
-head-to-head comparison against § B.4.1 is in [Figure 12](#fig-12):
+**Result — the locked recipe.** All 39 LEPA locations were
+re-allocated; the head-to-head comparison against § B.4.1 is in
+[Figure 12](#fig-12):
 
-- **43 / 52 locations need MORE mothers under fragmentation-aware
-  allocation** (Δ from +1 to +114 per location).
-- **9 / 52 unchanged (Δ = 0)** — locations that are one single 50 m
-  component (or a single event), so per-component and per-location
-  coupon-collector maths agree.
-- **0 / 52 need fewer** — under the honest allocation, no location
+- **22 / 39 locations need MORE mothers under fragmentation-aware
+  allocation** (Δ from +1 to +28 per location).
+- **17 / 39 unchanged (Δ = 0)** — single 50 m component or single-
+  event locations, where per-component and per-location coupon-
+  collector maths agree.
+- **0 / 39 need fewer** — under the honest allocation, no location
   can reduce effort.
-- **Total effort: 748 → 1 712 mothers** (a 2.3× increase in the 90 %
-  guarantee's cost across the 2025 field). The tetraploid math
-  amplifies this vs the diploid version because K_c per component
-  doubles (4·(N−1) instead of 2·(N−1)) while the tetraploid
-  per-mother draws (34) only slightly exceed the diploid (31).
+- **Total effort: 267 → 505 mothers** (a 1.9× increase in the 90 %
+  guarantee's cost across the 2025 field).
 
 **Where the extra mothers come from.** For the top-Δ locations, most
 of the increase is the paternal (coupon-collector) side, not the
-maternal-genotype floor. EO8 (82 events, 46 components) needs 182
-mothers for the paternal 90 % guarantee summed across components; the
-maternal floor adds 14 more for a final M_frag_aware = 196. The
-current B.4.1 allocation of 82 is understating the honest paternal
-cost of that location's fragmentation by ~114 mothers.
+maternal-genotype floor. EO27-1 (Δ = +28), EO27-1 duplicate (Δ = +23),
+EO27RT (Δ = +20), EO76 (Δ = +20), EO32 (Δ = +19), and EO8 (Δ = +18)
+are the biggest single deltas — all locations where a large connected
+cluster coexists with several spatially isolated singleton events.
 
 **Interpretation.** The B.4.1 allocation is **optimistic** because it
 assumes pollen mixes across the whole location. Fragmentation-aware
@@ -1339,15 +1334,15 @@ implicitly assuming would come "for free" through pollen sharing that
 doesn't actually happen.
 
 **Decision — we adopt fragmentation-aware allocation as the default
-for Phase 5.** The 2.0× effort increase is a real permit implication,
+for Phase 5.** The 1.9× effort increase is a real permit implication,
 but the alternative — publishing a 90 % coverage claim that only
 holds under an unrealistic single-pool assumption — is worse for
-goal 3 specifically, which is the fragmentation × drift decomposition.
-If our sampling protocol builds the fragmentation assumption *in* by
-under-allocating at fragmented locations, we cannot then use those
-locations to *test* fragmentation as a mate-limitation channel; we
-would be arguing from a floor we ourselves lowered. B.4.2 is the
-allocation that Phase C's β₂ regression is entitled to inherit.
+the fragmentation × drift decomposition (Goal 2). If our sampling
+protocol builds the fragmentation assumption *in* by under-allocating
+at fragmented locations, we cannot then use those locations to *test*
+fragmentation as a mate-limitation channel; we would be arguing from a
+floor we ourselves lowered. § B.4.2 is the allocation that Phase C's
+β₂ regression is entitled to inherit.
 
 **What supersedes what.** § B.4.1's per-location `M_recommended`
 column and § B.4's proportional-to-N_fertile allocation are now
@@ -1357,30 +1352,56 @@ operational per-event allocation is
 column `M_frag` — one row per event, one number per event, which
 already satisfies both the per-component coupon-collector 90 %
 guarantee and the ≥ 1 mother-per-event maternal-genotype floor.
-[`step29c_sampling_comparison_per_location.tsv`](tables/Phase5/step29c_sampling_comparison_per_location.tsv)
-keeps both allocations side by side for permit and audit purposes.
 
 **How this hooks into Phase C.** Phase C's mate-limitation regression
 (§ C.1) inherits the new allocation automatically: the β₂ predictor is
-per-mother K^(25m), which is a property of the landscape and doesn't
+per-mother K^(50m), which is a property of the landscape and doesn't
 depend on which allocation delivered her seeds. What *does* change is
 the **statistical power** — the fragmentation-aware allocation adds
-mothers exactly at the locations where within-location K^(25m)
-variance is highest (§ A.5 "mixed-connectivity" boxes), which is
-where β₂ has the most identifiability. So the extra effort is not
-distributed randomly across the study — it goes to the locations where
-the test needs it most.
-
-**Permit / field-team next step.** The per-event `M_frag` column is
-the number the field team needs to hit at each event. The current
-[`step29_field_team_sampling_recipe.tsv`](tables/Phase5/step29_field_team_sampling_recipe.tsv)
-is based on the older per-mother allocation and should be regenerated
-against `M_frag` before the next field season — a one-line change in
-Step 29 pulling `M_frag` from the step29c per-event TSV instead of
-Step 29's own proportional allocation.
+mothers exactly at the locations where within-location K^(50m)
+variance is highest, which is where β₂ has the most identifiability.
 
 <a id="fig-12"></a>
-![Figure 12: Head-to-head sampling recommendation — current § B.4.1 (light bar) vs fragmentation-aware § B.4.2 (solid bar) per LEPA location under tetraploid LEPA, panelled by Bottleneck Lineage. Rows sorted within each BL by Δ = fragmentation-aware − current, ascending. Row labels give locationCode, number of events, number of 50 m components, and total adult census; Δ printed to the right of each row-pair. **43 / 52 locations need more mothers under fragmentation-aware allocation (Δ from +1 to +114); 9 / 52 unchanged (Δ = 0, single-component locations); 0 / 52 need fewer.** Total effort: current 748 mothers → fragmentation-aware 1 712 mothers (2.3×). The biggest Δ locations (EO8 +114, EO32 +81, EO27-1 +79, EO27RT +77) are all locations where a small number of large connected clusters coexist with many spatially isolated singleton events — each singleton contributing 1 mother and each cluster contributing its own coupon-collector M ≈ 6. Source: `step29c_fragmentation_aware_sampling.py`. Data: [`step29c_sampling_comparison_per_location.tsv`](tables/Phase5/step29c_sampling_comparison_per_location.tsv), [`step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv).](figures/Phase5/step29c_sampling_comparison.png)
+![Figure 12: Head-to-head sampling recommendation — current § B.4.1 (light bar) vs fragmentation-aware § B.4.2 (solid bar) per LEPA location under tetraploid LEPA, panelled by Bottleneck Lineage. Rows sorted within each BL by Δ = fragmentation-aware − current, ascending. Row labels give locationCode, number of events, number of 50 m components, and total adult census; Δ printed to the right of each row-pair. **22 / 39 locations need more mothers under fragmentation-aware allocation (Δ from +1 to +28); 17 / 39 unchanged (Δ = 0, single-component locations); 0 / 39 need fewer.** Total effort: current 267 mothers → fragmentation-aware 505 mothers (1.9×). Source: `step29c_fragmentation_aware_sampling.py`. Data: [`step29c_sampling_comparison_per_location.tsv`](tables/Phase5/step29c_sampling_comparison_per_location.tsv), [`step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv).](figures/Phase5/step29c_sampling_comparison.png)
+
+#### B.4.3 The locked field-team recipe
+
+**Design decisions locked-in for the next field season:**
+
+| Quantity | Value | Source |
+|---|---|---|
+| Primary pollinator radius | **50 m** | § A.5, [Figure 1](#fig-1), step29a sensitivity sweep |
+| Effective mating pool metric | **N_fert_eff** = census × 50 m largest-component share | § A.5.1, [Figure 2b](#fig-2b) |
+| Seeds per mother (tetraploid Rule 2) | **15 seeds** | § B.3, step28 |
+| Mother allocation per location | Fragmentation-aware `M_frag` (per 50 m component + ≥ 1 per event) | § B.4.2, step29c |
+| **Total mothers across 39 locations** | **505** | step29c |
+| **Total seed genotypes** | **505 × 15 = 7 575 seeds** | Locked |
+| Coupon-collector target | 90 % probability of detecting every allele in each 50 m component | step28, step29c |
+
+**Rationale — why these are the minimum.** Under tetraploid Rule 2
+(15 seeds/mother), each mother delivers 4 maternal + 30 paternal =
+34 allele draws. At the biggest 50 m component (EO76's largest cluster
+with ~150 fertile plants), the coupon-collector floor for 90 %
+detection of a 32-Fg pool is roughly 6 mothers × 34 draws each — well
+below 15 seeds per mother. Reducing seeds per mother below 15 would
+require adding more mothers to compensate, which is a worse trade
+because the paternal contribution per seed doubles the allele draws
+much more efficiently than adding a fresh mother's 4-copy genotype.
+
+**Rationale — why fragmentation-aware.** The pivotal `N_fert_eff`
+metric (§ A.5.1) tells us that many locations have a raw census far
+larger than their drift-relevant mating pool. Sampling proportional
+to raw census would over-sample well-connected locations and
+under-sample fragmented ones. Sampling per 50 m component (this
+recipe) puts effort where mate limitation is actually expected —
+the locations whose `N_fert_eff` is a small fraction of their raw
+census.
+
+**Authoritative file.**
+[`Tables/Phase5/step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv)
+is the definitive field-team recipe. One row per event, column
+`M_frag` = number of mothers to sample at that event. No further
+lookup is needed at collection time.
 
 ### B.5 Two-year design
 

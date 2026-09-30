@@ -1,4 +1,4 @@
-locationID	locationCode	BL	n_events	n_components_25m	total_N_fertile	K_local	M_current_uniform	M_current_event_floor	M_current	sum_M_paternal_only	M_frag_aware	delta
+locationID	locationCode	BL	n_events	n_components_50m	total_N_fertile	K_local	M_current_uniform	M_current_event_floor	M_current	sum_M_paternal_only	M_frag_aware	delta
 8	EO29	BL1	5	1	417	32	6	5	6	6	6	0
 31	EO26-3	BL1	9	1	121	32	6	9	9	6	9	0
 33	EO26-3	BL1	3	2	5	16	3	3	3	3	3	0

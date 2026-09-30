@@ -165,16 +165,37 @@ requirements to obtain the location's honest mother allocation
 
 **Result.**
 
-- **43 / 52 locations require MORE mothers** under fragmentation-aware
+- **22 / 39 locations require MORE mothers** under fragmentation-aware
   allocation than under the pooled Step-29 recommendation.
-- **9 / 52 locations unchanged** — single 50 m component already
+- **17 / 39 locations unchanged** — single 50 m component already
   covered.
-- **Total effort scales from 748 → 1 712 mothers** (2.3× increase).
+- **Total effort scales from 267 → 505 mothers** (1.9× increase).
 
 This is the most consequential design shift: the old pooled
 allocation systematically under-sampled fragmented locations.
 `M_frag` is now the authoritative field-team recipe (see
 [`step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv)).
+
+**Locked field-team recipe.** With the fragmentation-aware allocation
+in place, the design is now frozen for the next field season:
+
+| Quantity | Value |
+|---|---|
+| Primary pollinator radius | **50 m** |
+| Effective mating pool metric | **N_fert_eff** = census × 50 m largest-component share |
+| Seeds per mother (tetraploid Rule 2) | **15 seeds** |
+| Mother allocation per location | Fragmentation-aware `M_frag` |
+| **Total mothers across 39 locations** | **505** |
+| **Total seed genotypes** | **505 × 15 = 7 575 seeds** |
+| Coupon-collector target | 90 % detection per 50 m component |
+
+15 seeds is the minimum defensible per-mother count under tetraploid
+Rule 2 — each mother contributes 4 maternal + 30 paternal = 34 allele
+draws, well above the coupon-collector floor for the largest 50 m
+components. Going below 15 would require adding more mothers, which
+is a worse trade because paternal draws double the allele yield per
+seed. Authoritative file:
+[`step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv).
 
 ---
 
@@ -218,7 +239,7 @@ number that every Phase A per-location prediction is built on:
   fragmentation indices decompose into the same shrinkage factor
   used to compute `N_fert_eff`.
 - **§ B.4.2 fragmentation-aware sampling** — the reason
-  43 / 52 locations need MORE mothers under the honest allocation
+  22 / 39 locations need MORE mothers under the honest allocation
   is the same 50 m connectivity shrinkage exposed here.
 
 Wherever the framework refers to `N_fertile` as a biological input,
