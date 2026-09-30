@@ -163,14 +163,25 @@ def predicted_diversity_per_location(locations: pd.DataFrame,
         # For each replicate: simulate the local pool by drawing
         # PLOIDY × N_fertile alleles from P1 (tetraploid), then evaluate
         # the expected fraction of local alleles detected at A_delivered draws.
-        local_pool_sizes = np.empty(n_local_replicates)
-        local_coverages  = np.empty(n_local_replicates)
+        # `local_pool_sizes` is the UNBIASED local Fg diversity — the
+        # number of distinct Fgs physically present at the location
+        # under drift. Depends on N_fertile only, NOT on sampling.
+        # `local_coverages` is the fraction of that local pool detected
+        # by the sampling design (M × 15 seeds under tetraploid Rule 2).
+        # `local_Fgs_detected` = pool_size × coverage is what the seed
+        # data are expected to actually recover per location.
+        local_pool_sizes    = np.empty(n_local_replicates)
+        local_coverages     = np.empty(n_local_replicates)
+        local_Fgs_detected  = np.empty(n_local_replicates)
         for k in range(n_local_replicates):
             local = rng.choice(K_fg, size=PLOIDY * N_fertile, p=f_mean)
             _, counts = np.unique(local, return_counts=True)
             f_local = counts / counts.sum()
-            local_pool_sizes[k] = len(counts)
-            local_coverages[k]  = float(np.mean(1.0 - (1.0 - f_local) ** A_delivered))
+            pool_k = len(counts)
+            cov_k  = float(np.mean(1.0 - (1.0 - f_local) ** A_delivered))
+            local_pool_sizes[k]   = pool_k
+            local_coverages[k]    = cov_k
+            local_Fgs_detected[k] = pool_k * cov_k
 
         rows.append({
             "locationID":                    row["locationID"],
@@ -185,10 +196,15 @@ def predicted_diversity_per_location(locations: pd.DataFrame,
             "predicted_distinct_Fgs_hi":     float(np.quantile(exp_distinct, 0.975)),
             "predicted_species_coverage_mean": float(np.mean(exp_distinct) / K_fg),
             "n_fg_species_wide":             K_fg,
-            # Location-local:
+            # Location-local — UNBIASED (N_fertile only, no sampling):
             "predicted_local_pool_size_mean": float(local_pool_sizes.mean()),
             "predicted_local_pool_size_lo":   float(np.quantile(local_pool_sizes, 0.025)),
             "predicted_local_pool_size_hi":   float(np.quantile(local_pool_sizes, 0.975)),
+            # Location-local — SAMPLING (M × 15 seeds against the true local pool):
+            "predicted_local_Fgs_detected_from_sampling_mean": float(local_Fgs_detected.mean()),
+            "predicted_local_Fgs_detected_from_sampling_lo":   float(np.quantile(local_Fgs_detected, 0.025)),
+            "predicted_local_Fgs_detected_from_sampling_hi":   float(np.quantile(local_Fgs_detected, 0.975)),
+            # Location-local — COVERAGE (sampling / unbiased):
             "predicted_local_coverage_mean": float(local_coverages.mean()),
             "predicted_local_coverage_lo":   float(np.quantile(local_coverages, 0.025)),
             "predicted_local_coverage_hi":   float(np.quantile(local_coverages, 0.975)),
@@ -860,6 +876,179 @@ def plot_prediction_diversity(pred: pd.DataFrame, prior: pd.DataFrame,
     plt.close(fig)
 
 
+def plot_diversity_unbiased_vs_sampling(pred: pd.DataFrame,
+                                         prior: pd.DataFrame,
+                                         out_png: Path, out_pdf: Path,
+                                         year: int | None = None):
+    """Three-panel figure separating the UNBIASED local Fg diversity per
+    location (what Nature holds, driven by N_fertile_effective alone)
+    from the SAMPLING-inferred detection (what our seed genotyping
+    will recover, driven by M × 15 seeds) and the coverage ratio.
+
+    Panel A — Unbiased local Fg diversity. Depends only on
+              N_fertile_effective. Answers: how many SRK alleles does
+              this location actually hold under drift?
+    Panel B — Sampling-inferred detection. Depends on M × 15 seeds
+              against the true local pool. Each mother's 15 seeds
+              contribute 2·15 = 30 paternal-allele samples of the
+              local pollen donor pool; the mother's own 4-copy
+              genotype adds 4 maternal-allele samples. Total
+              A_delivered = M × 34 draws.
+    Panel C — Coverage fraction = Panel B / Panel A. Dotted target
+              line at 0.90. Answers: how well does our sampling
+              recover the truth?
+    """
+    from srk_bl_constants import BL_COLORS, BL_ORDER, locationCode_to_bl
+
+    K_species = len(prior)
+    df = pred.copy()
+    df["BL"] = locationCode_to_bl(df["locationCode"]).values
+    df["BL"] = df["BL"].fillna("Unassigned")
+    m_col = "M_mothers_in_db" if "M_mothers_in_db" in df.columns \
+        else "M_achievable_location"
+    df["M"] = df[m_col].astype(float)
+    df["N_eff"] = df["N_fertile_effective"].astype(float)
+
+    # Sort locations by unbiased pool size (largest at top for readability),
+    # break ties by BL then by locationCode.
+    bl_rank = {bl: i for i, bl in enumerate(BL_ORDER)}
+    bl_rank.setdefault("Unassigned", len(BL_ORDER))
+    df["_bl_rank"] = df["BL"].map(bl_rank)
+    df = df.sort_values(
+        ["predicted_local_pool_size_mean", "_bl_rank", "locationCode"],
+        ascending=[True, True, True],
+    ).reset_index(drop=True)
+
+    y = np.arange(len(df))
+    colours = np.array([BL_COLORS.get(b, "#8a8a8a") for b in df["BL"]])
+    labels = [
+        f"{code}  (N_eff = {int(n)}, mothers = {int(m)})"
+        for code, n, m in zip(df["locationCode"], df["N_eff"], df["M"])
+    ]
+
+    fig, axes = plt.subplots(
+        1, 3,
+        figsize=(15.5, max(6.0, 0.24 * len(df) + 1.5)),
+        gridspec_kw={"width_ratios": [1.0, 1.0, 0.75]},
+        sharey=True,
+    )
+
+    # ---- Panel A: Unbiased local Fg diversity ----
+    axA = axes[0]
+    xerr_lo = df["predicted_local_pool_size_mean"] - df["predicted_local_pool_size_lo"]
+    xerr_hi = df["predicted_local_pool_size_hi"]   - df["predicted_local_pool_size_mean"]
+    for i in range(len(df)):
+        axA.errorbar(
+            df["predicted_local_pool_size_mean"].iloc[i], y[i],
+            xerr=[[xerr_lo.iloc[i]], [xerr_hi.iloc[i]]],
+            fmt="none", ecolor=colours[i], alpha=0.4,
+            elinewidth=1.0, capsize=2.0, zorder=1,
+        )
+    axA.scatter(
+        df["predicted_local_pool_size_mean"], y,
+        s=50, c=colours, edgecolor="white", linewidth=0.6, zorder=2,
+    )
+    axA.axvline(K_species, color="#333", ls="--", lw=1.0, alpha=0.5)
+    axA.set_xlim(0, K_species + 2)
+    axA.set_xlabel(
+        "Number of SRK allele classes present at the location\n"
+        "(unbiased truth — depends on N_fertile × connectivity only)",
+        fontsize=10,
+    )
+    axA.set_title("A. What Nature holds at each location", fontsize=11)
+    axA.set_yticks(y)
+    axA.set_yticklabels(labels, fontsize=8)
+    axA.text(
+        K_species - 0.3, len(df) - 0.5,
+        f"species-wide ceiling = {K_species}",
+        fontsize=8, color="#333", ha="right", va="top",
+    )
+    axA.spines["top"].set_visible(False)
+    axA.spines["right"].set_visible(False)
+
+    # ---- Panel B: Sampling-inferred detection ----
+    axB = axes[1]
+    xerr_lo = df["predicted_local_Fgs_detected_from_sampling_mean"] \
+              - df["predicted_local_Fgs_detected_from_sampling_lo"]
+    xerr_hi = df["predicted_local_Fgs_detected_from_sampling_hi"] \
+              - df["predicted_local_Fgs_detected_from_sampling_mean"]
+    for i in range(len(df)):
+        axB.errorbar(
+            df["predicted_local_Fgs_detected_from_sampling_mean"].iloc[i], y[i],
+            xerr=[[xerr_lo.iloc[i]], [xerr_hi.iloc[i]]],
+            fmt="none", ecolor=colours[i], alpha=0.4,
+            elinewidth=1.0, capsize=2.0, zorder=1,
+        )
+    axB.scatter(
+        df["predicted_local_Fgs_detected_from_sampling_mean"], y,
+        s=50, c=colours, edgecolor="white", linewidth=0.6, zorder=2,
+    )
+    axB.axvline(K_species, color="#333", ls="--", lw=1.0, alpha=0.5)
+    axB.set_xlim(0, K_species + 2)
+    axB.set_xlabel(
+        "Number of SRK allele classes recovered by our seed genotyping\n"
+        "(sampling — M mothers × 15 seeds each; 4 + 2·15 = 34 draws per mother)",
+        fontsize=10,
+    )
+    axB.set_title("B. What our sampling will detect", fontsize=11)
+    axB.spines["top"].set_visible(False)
+    axB.spines["right"].set_visible(False)
+
+    # ---- Panel C: Coverage fraction ----
+    axC = axes[2]
+    xerr_lo = df["predicted_local_coverage_mean"] - df["predicted_local_coverage_lo"]
+    xerr_hi = df["predicted_local_coverage_hi"]   - df["predicted_local_coverage_mean"]
+    for i in range(len(df)):
+        axC.errorbar(
+            df["predicted_local_coverage_mean"].iloc[i], y[i],
+            xerr=[[xerr_lo.iloc[i]], [xerr_hi.iloc[i]]],
+            fmt="none", ecolor=colours[i], alpha=0.4,
+            elinewidth=1.0, capsize=2.0, zorder=1,
+        )
+    axC.scatter(
+        df["predicted_local_coverage_mean"], y,
+        s=50, c=colours, edgecolor="white", linewidth=0.6, zorder=2,
+    )
+    axC.axvline(0.9, color="#333", ls=":", lw=1.0, alpha=0.6)
+    axC.axvline(1.0, color="#333", ls="--", lw=1.0, alpha=0.4)
+    axC.set_xlim(0, 1.05)
+    axC.set_xlabel(
+        "Fraction of local SRK pool recovered\n"
+        "(coverage — Panel B ÷ Panel A; dotted line = 90 % target)",
+        fontsize=10,
+    )
+    axC.set_title("C. How well the sampling recovers the truth", fontsize=11)
+    axC.spines["top"].set_visible(False)
+    axC.spines["right"].set_visible(False)
+
+    # BL legend on top of the figure
+    handles = [
+        plt.Line2D([0], [0], marker="o", color="w",
+                   markerfacecolor=BL_COLORS[b], markersize=8, label=b)
+        for b in BL_ORDER if b in df["BL"].values
+    ]
+    if "Unassigned" in df["BL"].values:
+        handles.append(plt.Line2D([0], [0], marker="o", color="w",
+                                   markerfacecolor="#8a8a8a", markersize=8,
+                                   label="Unassigned"))
+    fig.legend(handles=handles, loc="upper center",
+               ncol=len(handles), fontsize=9,
+               bbox_to_anchor=(0.5, 1.01), frameon=False)
+
+    fig.suptitle(
+        "Predicted SRK allele diversity per LEPA location — "
+        "unbiased truth (A) vs sampling recovery (B) vs coverage (C)"
+        f"{_year_suffix(year)}\n"
+        "Under the tetraploid P1 finite-population model, each seed's "
+        "2 paternal alleles sample the local pollen donor pool.",
+        fontsize=11, y=1.05,
+    )
+    fig.tight_layout()
+    fig.savefig(out_png, dpi=200, bbox_inches="tight")
+    fig.savefig(out_pdf, bbox_inches="tight")
+    plt.close(fig)
+
+
 def plot_prediction_fecundation(pcompat_per_loc: pd.DataFrame,
                                 out_png: Path, out_pdf: Path,
                                 year: int | None = None,
@@ -1471,6 +1660,10 @@ def main() -> None:
     plot_prediction_diversity(pred_div, prior,
         out_png=figures_dir / "step30_A_prediction_diversity.png",
         out_pdf=figures_dir / "step30_A_prediction_diversity.pdf",
+        year=args.year)
+    plot_diversity_unbiased_vs_sampling(pred_div, prior,
+        out_png=figures_dir / "step30_A_diversity_unbiased_vs_sampling.png",
+        out_pdf=figures_dir / "step30_A_diversity_unbiased_vs_sampling.pdf",
         year=args.year)
     plot_prediction_fecundation(pcompat_loc,
         out_png=figures_dir / "step30_A_prediction_fecundation.png",

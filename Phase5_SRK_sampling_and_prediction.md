@@ -421,56 +421,83 @@ at each location.
 
 ### A.6 Predicted SRK diversity per location
 
-**What we did.** Under the species-wide 32-Fg prior, we predicted how
-many distinct SRK alleles Phase B seed genotyping should recover at
-each location, using the permit-realistic count of mothers actually
-sampled (55 at EO61, 62 at EO76, down to 1–4 at the smallest
-slickspots). Predictions are panelled by Bottleneck Lineage
-(BL4 → BL5 → BL3 → BL1 → BL2).
+**Two questions, kept strictly separate.** SRK diversity at a
+location has two very different meanings, and the pipeline predicts
+both:
 
-**Result.** Under tetraploid sampling (PLOIDY × M = 4M allele draws per
-location — see § A.3 and § B.3), large, well-buffered slickspots in BL3
-(EO76) and BL1 (EO61) are predicted to recover 24–25 distinct alleles
-out of the species-wide 32. BL5 is highly bimodal: the well-sampled
-locations (EO32, EO18-7 group) reach 20–22 alleles, while the BL5 tail
-(EO24, EO24-1, EO24-2, EO24-7) can recover only 3–8 alleles from their
-tiny local populations.
+1. **What Nature actually holds at this location** — the *unbiased*
+   local Fg diversity. Depends only on the effective mating pool size
+   `N_fertile_effective = N_fertile × largest-connected-component share at 50 m`
+   (§ B.2). Not conditioned on sampling. This is the number that
+   feeds Link 2 → Link 3 of the causal chain: the local drifted Fg
+   pool composition is what the P_compat prediction (§ A.7–A.8) is
+   built on. It is what we are trying to characterise.
+2. **What our seed sampling will recover** — the *sampling-inferred*
+   detection. Depends on `M mothers × 15 seeds/mother` under
+   tetraploid Rule 2, giving `A_delivered = M × (PLOIDY + PATERNAL_ALLELES_PER_SEED · 15) = 34 · M`
+   allele observations per location. Each seed's 2 paternal alleles
+   are direct samples of the **local pollen donor pool** — the seed
+   genotyping is literally a pollen-pool characterisation experiment.
 
-**Take-home for reviewers.** The predicted-diversity gradient across
-BLs is the biological signal of habitat fragmentation and drift
-operating at different intensities across the species. BL5's tail
-is where drift has already collapsed local SRK diversity to the
-point of predicted mate-limitation — the primary conservation
-concern.
+The comparison between the two — **coverage = sampling / unbiased** —
+tells us how well the sampling design recovers the biological truth
+at each location.
 
-**Species-wide vs location-local coverage — two honest metrics.**
-The numbers above answer *"how many of the 32 species-wide SRK alleles
-will our seed genotyping recover at each location?"* — a metric biased
-against small populations because it counts alleles that drift already
-removed. The **location-local coverage** metric answers the more
-biologically relevant question *"how many of the SRK alleles that are
-actually at this location will we detect?"*. Both quantities are
-computed for every location (see the `predicted_local_pool_size_mean`
-and `predicted_local_coverage_mean` columns in
-[`step30_A_prediction_location_diversity.tsv`](tables/Phase5/step30_A_prediction_location_diversity.tsv)):
+**What Nature holds (Link 2 of the causal chain — unbiased).** Under
+the tetraploid P1 finite-population model, the expected number of
+distinct Fgs physically present at a location is a coupon-collector
+draw of `PLOIDY × N_fertile_effective` alleles from P1:
 
-| Location | Effective N (50 m) | Local pool (alleles present) | Local coverage at 15 seeds × M (tetraploid Rule 2) | Species coverage (of 32) |
-|---|---|---|---|---|
-| EO24-2 (1 plant) | 1 | ~3 | **~100 %** | ~11 % |
-| EO67 (small pilot) | 6 | ~8 | **~100 %** | ~28 % |
-| EO27-1 (large pilot) | 116 | ~27 | **~98 %** | ~68 % |
-| EO32 (well-sampled BL5) | 327 | ~31 | ~95 % | ~70 % |
-| EO76 (largest BL3) | 416 | ~32 | ~98 % | ~77 % |
+- Large, well-buffered slickspots (**EO30-1, EO29, EO76, EO61, EO32**
+  with `N_fertile_effective` ≥ 300) hold **~31–32 of the 32
+  species-wide Fgs** — drift is not yet a concern at that census
+  size.
+- Mid-sized locations (`N_fertile_effective` 100–200) hold
+  **~26–30 Fgs** — drift has begun to erode diversity but the
+  local pool still covers most of the species pool.
+- Small locations (`N_fertile_effective` < 50) hold **~15–22 Fgs**.
+- The BL5 tail (**EO24, EO24-1, EO24-2, EO24-7** with 1–3 plants
+  each) holds **only ~3–6 Fgs**: drift has already collapsed the
+  local pool to a handful of alleles. This is Link 2 of the causal
+  chain firing in Nature — the P_compat prediction (§ A.8) at these
+  locations then reflects the mate-limitation consequence of that
+  collapse.
 
-**Every LEPA location — including the tiny BL5 slickspots — is
-essentially fully characterised at the local level (~95–100 %).** The
-species-wide coverage number remains useful as a cataloguing metric,
-but for the Phase B mate-limitation test the local coverage
-is what matters: we are testing reproductive dynamics on the alleles
-that are physically present, not attempting a species-wide inventory.
+**What our sampling will recover (sampling-inferred).** Given the
+permit-realistic M at each location and 15 seeds/mother, expected
+detection of the true local pool is:
+
+| Location | Effective N (50 m) | M mothers | Nature holds | Sampling detects | Coverage |
+|---|---|---|---|---|---|
+| EO30-1 | 420 | 23 | ~32 | ~28 | **89 %** ⚠ |
+| EO29 | 417 | 22 | ~32 | ~28 | **89 %** ⚠ |
+| EO76 (largest BL3) | 416 | 62 | ~32 | ~31 | 98 % |
+| EO32 (well-sampled BL5) | 327 | 38 | ~31 | ~30 | 95 % |
+| EO27-1 (large BL4 pilot) | 116 | 33 | ~27 | ~26 | 98 % |
+| EO67 (small BL4 pilot) | 6 | 4 | ~8 | ~8 | ~100 % |
+| EO24-2 (1 plant, BL5 tail) | 1 | 1 | ~3 | ~3 | ~100 % |
+
+**Two under-sampled outliers** stand out — **EO30-1 and EO29** (both
+n = 22–23 mothers but N_fertile_effective > 400) fall to ~89 %
+coverage. These are the two locations where the current permit-realistic
+M does not comfortably clear the 90 % target. Adding ~5–10 more
+mothers at either location would restore coverage to > 95 %.
+Everywhere else the design delivers ≥ 95 % coverage.
+
+**Take-home for reviewers.** The unbiased local Fg pool (Panel A of
+Figure 3) is the biological signal — the *raw material* on which the
+sporophytic P_compat prediction (§ A.8) operates and therefore the
+quantity that carries the mate-limitation story. The sampling-inferred
+detection (Panel B) confirms that our field-team recipe recovers
+that signal at ≥ 95 % coverage at all but two locations (Panel C).
+The BL5 tail's low diversity in Panel A is not an artefact of
+sampling — it is what drift has already done to those slickspots.
 
 <a id="fig-3"></a>
-![Figure 3: Predicted number of distinct SRK alleles detected per LEPA location under the P1 species-wide prior (32 Fgs from the Canu-amplicon preliminary study). Horizontal layout, one dot per location, panelled by Bottleneck Lineage in the standard BL_ORDER (BL4, BL5, BL3, BL1, BL2). Dot size ∝ √M (permit-realistic count of mothers with seed records in the LEPA DB); error bars = 95 % credible interval from Dirichlet posterior draws. Y-tick labels give `locationCode (n = mothers sampled)`. Vertical dashed line marks the species-wide SRK allele ceiling of 32. **BL3 (EO76, EO38) and BL1 (EO61) predict ~24–25 distinct alleles under tetraploid sampling (PLOIDY · M = 4M allele draws per location); the BL5 tail (EO24 group) predicts 3–8.** Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_prediction_diversity.png)
+![Figure 3 — Predicted SRK allele diversity per LEPA location under the tetraploid P1 finite-population model. **Panel A** — What Nature actually holds. Number of distinct SRK Fgs physically present at each location, driven by `N_fertile_effective` (fertile plants × 50 m connectivity) alone. Not conditioned on sampling. Feeds Link 2 → Link 3 of the causal chain. **Panel B** — What our sampling will detect. Expected number of Fgs recovered by seed genotyping (M mothers × 15 seeds each; 4 maternal + 2·15 = 30 paternal allele observations per mother = 34 draws total; each seed's paternal alleles are direct samples of the local pollen donor pool). **Panel C** — Coverage fraction = Panel B ÷ Panel A. Dotted line = 90 % target. Locations sorted by unbiased pool size. Dot colour = Bottleneck Lineage; error bars = 95 % credible interval from Dirichlet posterior draws. **Two under-sampled outliers (EO30-1 and EO29, both at 89 % coverage) flag where the permit-realistic M could be raised**; every other location clears the 90 % target. Vertical dashed line in Panels A/B = species-wide ceiling of 32 Fgs. Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.png)
+
+<a id="fig-3b"></a>
+![Figure 3b — Legacy species-wide-conditioned view (kept for continuity with earlier drafts). Predicted number of distinct Fgs recovered at each location under the species-wide P1 prior — mixes the two questions Figure 3 separates and is biased against small locations because it counts species-wide alleles that local drift has already removed. Use Figure 3 for the biological signal; this figure is a cataloguing metric only. Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_prediction_diversity.png)
 
 ### A.7 Sporophytic self-incompatibility with Class I / Class II dominance
 
@@ -1713,7 +1740,8 @@ or right-click → *Save link as…* to pull the TSV into your local pipeline.
 - [`step29_location_connectivity_10m.pdf`](figures/Phase5/step29_location_connectivity_10m.pdf) / [`.png`](figures/Phase5/step29_location_connectivity_10m.png) — sensitivity: 10 m conservative.
 - [`step29_location_connectivity_50m.pdf`](figures/Phase5/step29_location_connectivity_50m.pdf) / [`.png`](figures/Phase5/step29_location_connectivity_50m.png) — sensitivity: 50 m optimistic.
 - [`step29_location_connectivity_radius_sensitivity.pdf`](figures/Phase5/step29_location_connectivity_radius_sensitivity.pdf) / [`.png`](figures/Phase5/step29_location_connectivity_radius_sensitivity.png) — aggregate across radii (justification for 50 m primary).
-- [`step30_A_prediction_diversity.pdf`](figures/Phase5/step30_A_prediction_diversity.pdf) / [`.png`](figures/Phase5/step30_A_prediction_diversity.png) — BL-panelled SRK allele richness per location.
+- [`step30_A_diversity_unbiased_vs_sampling.pdf`](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.pdf) / [`.png`](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.png) — **primary diversity figure**: three-panel view separating what Nature holds (unbiased local Fg pool, driven by `N_fertile_effective`) from what our sampling detects (M × 15 seeds → 34 draws/mother) and the coverage fraction. Flags under-sampled locations against the 90 % target.
+- [`step30_A_prediction_diversity.pdf`](figures/Phase5/step30_A_prediction_diversity.pdf) / [`.png`](figures/Phase5/step30_A_prediction_diversity.png) — legacy species-wide-conditioned view, kept for continuity.
 - [`step30_A_si_model_schematic.pdf`](figures/Phase5/step30_A_si_model_schematic.pdf) / [`.png`](figures/Phase5/step30_A_si_model_schematic.png) — three-panel pedagogical schematic of the sporophytic Class I / II model (§ A.7): dominance within a plant, worked example, compatibility rule by cross type.
 - [`step30_A_prediction_fecundation.pdf`](figures/Phase5/step30_A_prediction_fecundation.pdf) / [`.png`](figures/Phase5/step30_A_prediction_fecundation.png) — BL-panelled compatibility per location, traffic-light bands.
 - [`step30_A_diversity_vs_pcompat.pdf`](figures/Phase5/step30_A_diversity_vs_pcompat.pdf) / [`.png`](figures/Phase5/step30_A_diversity_vs_pcompat.png) — cross-plot: SRK diversity × pollen compatibility.
