@@ -178,6 +178,58 @@ allocation systematically under-sampled fragmented locations.
 
 ---
 
+## The pivotal metric — `N_fertile_effective`
+
+**Question.** How many adults at a location actually share a pollen
+environment, and therefore contribute to genetic drift on the local
+SRK pool?
+
+**Approach.** Combine the raw census with the 50 m connectivity
+share from Step 29b:
+
+```
+N_fert_eff = total_n_fertile × largest_component_share_50m
+```
+
+**Result.**
+
+- **Well-connected locations (connectivity share ≈ 1).** EO29,
+  EO70, EO118, EO26-3 (small), EO67, EO24 group — every fertile
+  plant sits in the same 50 m mating pool. Raw census = `N_fert_eff`.
+- **Partially fragmented (share 0.5 – 0.9).** EO76 (536 → 416),
+  EO61 (543 → 315), EO32 (471 → 327), EO18-7 (242 → 158) — a large
+  census loses 10 – 40 % of adults to fragmentation.
+- **Heavily fragmented (share < 0.5).** EO27-1 (395 → 147, 37 %),
+  EO27-1 (371 → 116, 31 %), EO18-8 (123 → 52, 42 %), EO26-2
+  (22 → 11, 50 %) — half or more of the raw census is drift-
+  irrelevant.
+
+**Why it matters.** `N_fert_eff` is the single connectivity-adjusted
+number that every Phase A per-location prediction is built on:
+
+- **Figure 3 (§ 30.1)** — Panel A (unbiased local Fg diversity) is a
+  coupon-collector draw of `4 × N_fert_eff` alleles from P1. Small
+  `N_fert_eff` → small local pool → drift-collapsed diversity.
+- **Figure 4 (§ 30.2)** — random-mating pollen compatibility is
+  simulated on a local Fg pool sized by `4 × N_fert_eff`. Small
+  `N_fert_eff` → skewed local frequencies → mothers overlap more
+  with candidate fathers.
+- **Figure 5 (§ 30.3)** — event-scale and location-scale
+  fragmentation indices decompose into the same shrinkage factor
+  used to compute `N_fert_eff`.
+- **§ B.4.2 fragmentation-aware sampling** — the reason
+  43 / 52 locations need MORE mothers under the honest allocation
+  is the same 50 m connectivity shrinkage exposed here.
+
+Wherever the framework refers to `N_fertile` as a biological input,
+it means `N_fert_eff`. The raw census is Nature's biological
+potential; the effective count is what actually matters for
+reproduction under 50 m pollinator flight.
+
+![Figure — `N_fertile_effective` per LEPA location, panelled by Bottleneck Lineage in BL_ORDER. Y-axis labels give `locationCode (raw N, N_fert_eff)`. **Panel A** — raw census, log scale. Nature's biological potential. **Panel B** — `N_fert_eff = raw N × largest_component_share_50m`, log scale. Adults that actually share a 50 m mating pool. **Panel C** — connectivity share = Panel B ÷ Panel A. Dashed line at 1.0 = no fragmentation. This is the single input that drives Figures 3, 4, and 5.](figures/Phase5/step30_A_N_fertile_effective.png)
+
+---
+
 ## Step 30 Phase A — Per-location predictions
 
 ### 30.1 Predicted SRK diversity per location — unbiased truth vs sampling
@@ -406,6 +458,8 @@ prediction on each end.
   — three-panel: what Nature holds (unbiased) vs what our sampling detects vs coverage.
 - [`step30_A_prediction_fecundation.png`](figures/Phase5/step30_A_prediction_fecundation.png)
   — predicted P_compat per location, traffic-light bands.
+- [`step30_A_N_fertile_effective.png`](figures/Phase5/step30_A_N_fertile_effective.png)
+  — raw census vs `N_fert_eff` vs connectivity share per location. The pivotal metric.
 - [`step30_A_fragmentation_index.png`](figures/Phase5/step30_A_fragmentation_index.png)
   — event-scale × location-scale fragmentation scatter.
 - [`step30_C_pcompat_observed_vs_predicted.png`](figures/Phase5/step30_C_pcompat_observed_vs_predicted.png)

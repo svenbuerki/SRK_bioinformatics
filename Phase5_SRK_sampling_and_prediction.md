@@ -419,6 +419,75 @@ at each location.
 <a id="fig-2"></a>
 ![Figure 2: Event-scale distribution of the pollen-donor **plant count** reachable within 50 m per LEPA location, panelled by Bottleneck Lineage in the standard BL_ORDER (BL4, BL5, BL3, BL1, BL2). X-axis = `N_reachable_50m` = Σ N_fertile in events within 50 m − 1 (donor plants, not allele copies — plotted as plants to avoid conflation with the 32-Fg species allele-class count). Vertical **red dotted line at N = 1**: single-plant SI floor; every event at or below this line has zero reachable pollen donors and no seed set is possible under strict self-incompatibility. Vertical **grey dashed line at N = 8 plants**: coupon-collector floor for the 32-Fg species pool under **tetraploid LEPA** (4 alleles per plant × 8 plants = 32 allele copies). A mother reaching ≥ 8 donor plants has enough allele copies for the species pool to be *physically* reachable in principle; whether drift preserved the diversity is A.5's question. Log₂ x-axis so the 1 → 8 range (below the species floor) and the 8 → 500 range are both legible. Row labels give the location code, number of events, and total adult census. The figure exposes the fine-scale spatial process that a location-scale metric collapses: **a tight box far right of 8** (EO30-1, EO29, EO70) = every event well-connected, uniform pollen environment; **a wide box spanning 1 → hundreds** (EO27-1, EO18-7, EO26-3, EO8 groups) = the location holds a mix of isolated singletons and connected clusters, so mothers at different events face very different mate-availability contexts under the same locationID; **a tight box at N ≤ 1** (EO24 group, EO24-1, EO24-2, EO24-7) = every event is a lone plant. The metric uses only event coordinates, N_fertile, and the 50 m primary pollinator radius — no allele frequencies, no priors. Source: `step30b_fragmentation_index.py`. Data: [`step30_A_fragmentation_per_event.tsv`](tables/Phase5/step30_A_fragmentation_per_event.tsv), [`step30_A_fragmentation_per_location.tsv`](tables/Phase5/step30_A_fragmentation_per_location.tsv).](figures/Phase5/step30_A_fragmentation_index.png)
 
+#### A.5.1 `N_fertile_effective` — the pivotal metric
+
+The fragmentation quantities above (F_event, F_location, event-scale
+K^(50m)) are useful diagnostics, but they are all downstream of a
+single derived population number that carries the causal chain into
+Link 2 and Link 3:
+
+$$N\_fert\_eff = total\_n\_fertile \times largest\_component\_share\_50m$$
+
+**What it means.** `N_fertile_effective` is the number of adults that
+actually share a pollen environment at each location, given the 50 m
+primary pollinator flight range. The **raw census** at a location
+tells us how many fertile plants exist there; `N_fertile_effective`
+tells us how many of them are close enough to each other to trade
+pollen. It is the *drift-relevant* population size: the value that
+determines how strongly random loss and skew act on local SRK allele
+frequencies (§ A.6, Link 2 of the causal chain) and therefore how
+random-mating pollen compatibility drops at fragmented locations
+(§ A.8, Link 3 of the causal chain).
+
+**How it differs between locations.** [Figure 2b](#fig-2b) shows
+`N_fert_eff` per location alongside the raw census and their ratio
+(the connectivity share). Three patterns emerge:
+
+- **Well-connected locations** (connectivity share ≈ 1). EO24 group,
+  EO118, EO70, EO29, EO26-3 (small), EO67, EO72-2, EO26-4 — every
+  fertile plant sits in the same 50 m mating pool. Raw census =
+  `N_fert_eff`. Small BL5-tail locations sit here by default because
+  a location of 1–3 plants cannot be fragmented further.
+- **Partially fragmented locations** (connectivity share 0.5 – 0.9).
+  EO76, EO32, EO18-7, EO61, EO8 clones — a large census but the
+  50 m connectivity is imperfect, so 10 – 50 % of the raw census is
+  invisible to drift. EO61 (raw 543 → `N_fert_eff` 315) loses 42 %
+  of its adults to fragmentation.
+- **Heavily fragmented locations** (connectivity share < 0.5).
+  EO27-1 (raw 371 → 116, share 31 %), EO27-1 (raw 395 → 147, share
+  37 %), EO18-8 (raw 123 → 52, share 42 %), EO26-2 (raw 22 → 11,
+  share 50 %). Half or more of the raw census does not contribute
+  to drift-relevant N. These are the locations where a census
+  number would systematically overstate the *effective* mating pool.
+
+**How it is used downstream.** `N_fert_eff` is the single connectivity-
+adjusted number that every Phase A prediction relies on:
+
+- **Figure 3 (§ A.6)** — Panel A (unbiased local Fg diversity) is a
+  coupon-collector draw of `PLOIDY × N_fert_eff` alleles from P1.
+  Small N_fert_eff → small local pool → drift-collapsed diversity.
+- **Figure 4 / Figure 5 (§ A.8)** — pollen compatibility is
+  simulated on a local Fg pool sized by `PLOIDY × N_fert_eff`, with
+  M mothers drawn from that pool. Small N_fert_eff → skewed local
+  frequencies → mothers more likely to face fathers with overlapping
+  expressed alleles.
+- **§ C.1 mate-limitation regression** — β₁ (P_compat effect) fires
+  through the entire chain rooted in `N_fert_eff`; β₂ (mating-
+  neighbourhood effect) directly uses `K^(50m)` per mother, which is
+  the per-mother analogue of `N_fert_eff` at the individual scale.
+- **§ B.4.2 fragmentation-aware sampling** — the reason 43 / 52
+  locations need MORE mothers than the pooled Step 29 recommendation
+  is the same `largest_component_share_50m` shrinkage exposed in
+  Panel C of Figure 2b.
+
+**Take-home.** Wherever the doc previously said "N_fertile" as a
+biological input, it means `N_fertile_effective`. The raw census is
+Nature's biological potential; the effective count is what actually
+matters for reproduction under 50 m pollinator flight.
+
+<a id="fig-2b"></a>
+![Figure 2b — `N_fertile_effective` per LEPA location, panelled by Bottleneck Lineage in canonical BL_ORDER. Within each BL, locations sorted by `N_fert_eff` ascending. Y-axis labels give `locationCode (raw N, N_fert_eff)`. **Panel A** — raw census `total_n_fertile`, log scale. Nature's biological potential at each location. **Panel B** — `N_fert_eff = total_n_fertile × largest_component_share_50m`, log scale. Number of adults that actually share a 50 m mating pool. **Panel C** — connectivity share = Panel B ÷ Panel A, linear 0–1. Dashed line at 1.0 = fully connected (no fragmentation). Locations far to the left of 1.0 lose a substantial fraction of their raw census to spatial fragmentation. This is the single input that drives Figure 3 (diversity), Figure 4 (per-mother P_compat), and Figure 5 (fecundation). Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_N_fertile_effective.png)
+
 ### A.6 Predicted SRK diversity per location
 
 **Two questions, kept strictly separate.** SRK diversity at a
@@ -1771,6 +1840,7 @@ or right-click → *Save link as…* to pull the TSV into your local pipeline.
 - [`step30_A_prediction_fecundation.pdf`](figures/Phase5/step30_A_prediction_fecundation.pdf) / [`.png`](figures/Phase5/step30_A_prediction_fecundation.png) — BL-panelled compatibility per location, traffic-light bands.
 - [`step30_A_diversity_vs_pcompat.pdf`](figures/Phase5/step30_A_diversity_vs_pcompat.pdf) / [`.png`](figures/Phase5/step30_A_diversity_vs_pcompat.png) — cross-plot: SRK diversity × pollen compatibility.
 - [`step30_A_fragmentation_index.pdf`](figures/Phase5/step30_A_fragmentation_index.pdf) / [`.png`](figures/Phase5/step30_A_fragmentation_index.png) — event-scale × location-scale fragmentation scatter, BL-coloured (pure spatial, no drift).
+- [`step30_A_N_fertile_effective.pdf`](figures/Phase5/step30_A_N_fertile_effective.pdf) / [`.png`](figures/Phase5/step30_A_N_fertile_effective.png) — three-panel per-location view of the pivotal `N_fertile_effective` metric: raw census, connectivity-adjusted `N_fert_eff`, and the connectivity share. The single input that drives Figures 3, 4, and 5.
 
 **Phase A validation (adult SRK genotypes from Phase 4 — Part C § C.0):**
 

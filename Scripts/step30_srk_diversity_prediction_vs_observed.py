@@ -987,6 +987,153 @@ def plot_diversity_unbiased_vs_sampling(pred: pd.DataFrame,
     plt.close(fig)
 
 
+def plot_N_fertile_effective_per_location(locations: pd.DataFrame,
+                                           out_png: Path, out_pdf: Path,
+                                           year: int | None = None):
+    """Three-column × BL-row figure surfacing the pivotal
+    `N_fertile_effective` metric explicitly — the drift-relevant
+    population size that drives Link 1 → Link 2 → Link 3 of the causal
+    chain (Figures 3, 4, and 5 all use it, but until now it lived only
+    inside their calculations).
+
+    Panel A — Raw census `total_n_fertile` per location. Every fertile
+              plant present at the location, ignoring spatial spread.
+              This is the *biological potential* — Nature's raw count.
+    Panel B — `N_fertile_effective = total_n_fertile ×
+              largest_component_share_50m`. The number of adults that
+              actually share a pollen environment at the 50 m primary
+              pollinator radius. This is what drives drift on the local
+              Fg pool (Figure 3, Panel A) and the P_compat prediction
+              (Figures 4 – 5).
+    Panel C — Connectivity share = Panel B ÷ Panel A. Dotted line at
+              1.0 = no fragmentation. Locations at 1.0 have all their
+              adults in one 50 m mating pool; locations near 0.2 have
+              lost ~80 % of their drift-relevant N to spatial
+              fragmentation.
+    """
+    from srk_bl_constants import BL_COLORS, BL_ORDER, locationCode_to_bl
+
+    df = locations.copy()
+    if "locationCode" not in df.columns:
+        raise ValueError("locations must have a locationCode column")
+    df["BL"] = locationCode_to_bl(df["locationCode"]).values
+    df["BL"] = df["BL"].fillna("Unassigned")
+    df["N_raw"]   = df["total_n_fertile"].astype(float)
+    df["N_eff"]   = df.get(
+        "N_fertile_effective_50m",
+        df["total_n_fertile"] * df.get("largest_component_share_50m", 1.0),
+    ).astype(float)
+    df["conn_share"] = np.where(
+        df["N_raw"] > 0, df["N_eff"] / df["N_raw"], 1.0
+    )
+
+    bls = [b for b in BL_ORDER if b in df["BL"].values]
+    if (df["BL"] == "Unassigned").any():
+        bls.append("Unassigned")
+    panel_colours = {**BL_COLORS, "Unassigned": "#8a8a8a"}
+
+    heights = [max(int((df["BL"] == b).sum()), 1) for b in bls]
+    fig, axes = plt.subplots(
+        len(bls), 3,
+        figsize=(15.5, max(6.5, 0.30 * sum(heights) + 2.5)),
+        gridspec_kw={
+            "height_ratios": heights,
+            "width_ratios":  [1.0, 1.0, 0.75],
+        },
+        sharex="col",
+    )
+    if len(bls) == 1:
+        axes = np.array([axes])
+
+    x_upper_log = max(df["N_raw"].max(), df["N_eff"].max()) * 1.4
+
+    for row_idx, bl in enumerate(bls):
+        sub = df[df["BL"] == bl].sort_values("N_eff", ascending=True).reset_index(drop=True)
+        y = np.arange(len(sub))
+        colour = panel_colours[bl]
+        axA_row, axB_row, axC_row = axes[row_idx]
+
+        # ---- Panel A: raw census (log-x) ----
+        axA_row.scatter(
+            np.clip(sub["N_raw"], 1, None), y,
+            s=55, c=colour, edgecolor="white", linewidth=0.6, zorder=2,
+        )
+        axA_row.set_xscale("log")
+        axA_row.set_xlim(0.8, max(2.0, x_upper_log))
+        axA_row.set_ylim(-0.7, len(sub) - 0.3)
+        labels = [
+            f"{code}  (raw N = {int(nr)}, N_fert_eff = {int(ne)})"
+            for code, nr, ne in zip(sub["locationCode"], sub["N_raw"], sub["N_eff"])
+        ]
+        axA_row.set_yticks(y)
+        axA_row.set_yticklabels(labels, fontsize=8)
+        axA_row.spines["top"].set_visible(False)
+        axA_row.spines["right"].set_visible(False)
+
+        # ---- Panel B: N_fertile_effective (log-x) ----
+        axB_row.scatter(
+            np.clip(sub["N_eff"], 1, None), y,
+            s=55, c=colour, edgecolor="white", linewidth=0.6, zorder=2,
+        )
+        axB_row.set_xscale("log")
+        axB_row.set_xlim(0.8, max(2.0, x_upper_log))
+        axB_row.set_ylim(-0.7, len(sub) - 0.3)
+        axB_row.set_yticks(y); axB_row.set_yticklabels([])
+        axB_row.spines["top"].set_visible(False)
+        axB_row.spines["right"].set_visible(False)
+
+        # ---- Panel C: connectivity share ----
+        axC_row.scatter(
+            sub["conn_share"], y,
+            s=55, c=colour, edgecolor="white", linewidth=0.6, zorder=2,
+        )
+        axC_row.axvline(1.0, color="#333", ls="--", lw=1.0, alpha=0.4)
+        axC_row.set_xlim(0, 1.05)
+        axC_row.set_ylim(-0.7, len(sub) - 0.3)
+        axC_row.set_yticks(y); axC_row.set_yticklabels([])
+        axC_row.spines["top"].set_visible(False)
+        axC_row.spines["right"].set_visible(False)
+
+        # BL label
+        axC_row.text(
+            1.03, 0.5, bl,
+            transform=axC_row.transAxes,
+            fontsize=13, fontweight="bold", color=colour,
+            va="center", ha="left",
+        )
+
+    axes[0, 0].set_title("A. Raw census (Nature's biological potential)",
+                          fontsize=11)
+    axes[0, 1].set_title("B. N_fertile_effective (drift-relevant pool)",
+                          fontsize=11)
+    axes[0, 2].set_title("C. Connectivity share (B ÷ A)",
+                          fontsize=11)
+    axes[-1, 0].set_xlabel(
+        "Fertile plants at the location (log scale)",
+        fontsize=10)
+    axes[-1, 1].set_xlabel(
+        "Adults in the largest 50 m mating pool (log scale)",
+        fontsize=10)
+    axes[-1, 2].set_xlabel(
+        "Fraction of raw census retained after 50 m fragmentation",
+        fontsize=10)
+
+    fig.suptitle(
+        f"N_fertile_effective — the drift-relevant population size per LEPA location"
+        f"{_year_suffix(year)}\n"
+        "A: raw census (total_n_fertile).  "
+        "B: N_fert_eff = total_n_fertile × largest_component_share_50m.  "
+        "C: connectivity share = B ÷ A (dashed line = 100 %, no fragmentation).\n"
+        "Panelled by Bottleneck Lineage in BL_ORDER. Same input drives Figure 3 (diversity), "
+        "Figure 4 (P_compat), and Figure 5 (fecundation).",
+        fontsize=11, y=0.995,
+    )
+    fig.tight_layout(rect=[0, 0, 0.96, 0.97])
+    fig.savefig(out_png, dpi=200, bbox_inches="tight")
+    fig.savefig(out_pdf, bbox_inches="tight")
+    plt.close(fig)
+
+
 def plot_prediction_fecundation(pcompat_per_loc: pd.DataFrame,
                                 out_png: Path, out_pdf: Path,
                                 year: int | None = None,
@@ -1600,6 +1747,10 @@ def main() -> None:
           f"{bands['struggling_max']:.4f}.")
     print(f"[step30] Wrote {bands_path}")
 
+    plot_N_fertile_effective_per_location(locations,
+        out_png=figures_dir / "step30_A_N_fertile_effective.png",
+        out_pdf=figures_dir / "step30_A_N_fertile_effective.pdf",
+        year=args.year)
     plot_diversity_unbiased_vs_sampling(pred_div, prior,
         out_png=figures_dir / "step30_A_diversity_unbiased_vs_sampling.png",
         out_pdf=figures_dir / "step30_A_diversity_unbiased_vs_sampling.pdf",
