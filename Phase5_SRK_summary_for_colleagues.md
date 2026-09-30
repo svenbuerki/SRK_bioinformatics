@@ -100,6 +100,8 @@ A single mother sitting in a large event cannot saturate the local
 when several mothers' seed lots aggregate at the location scale
 (Step 29).
 
+![Figure 1 — Step 28 coverage curves. Panel A: per-mother detection of the local Fg pool as a function of seeds genotyped, one curve per event-size bin; the vertical red line at 15 marks the tetraploid Rule 2 cap. Panel B: aggregation of coverage across mothers at a location (15 seeds × M). Every event size reaches its local ceiling by 5 mothers.](figures/Phase5/step28_coverage_curves.png)
+
 ---
 
 ## Step 29 — How many mothers per location?
@@ -136,17 +138,17 @@ location, given that a pollinator's flight radius is finite?
 connected if they are within `R_primary = 50 m` of each other; extract
 the largest connected component; define
 `N_fertile_effective_50m = N_census × (largest-component share)`. The
-50 m primary radius is validated in the sensitivity sweep (see
-[Figure 1](figures/Phase5/step29_location_connectivity_radius_sensitivity.png)
-of the long doc): connectivity plateaus at ≥ 75 m; sampling cost
-stabilises at 75–100 m; predicted P_compat is radius-independent
-under empirical zygosity.
+50 m primary radius is validated in the sensitivity sweep (Figure 2):
+connectivity plateaus at ≥ 75 m; sampling cost stabilises at 75–100 m;
+predicted P_compat is radius-independent under empirical zygosity.
 
 **Result.** Median location retains **77 % of its census adults** in
 the largest 50 m connected component. Some locations drop to 20 %,
 because their census is spread across several slickspots more than
 50 m apart. This connectivity factor is what pulls `N_fertile`
 downstream in the P_compat and fragmentation calculations.
+
+![Figure 2 — Pollinator-radius sensitivity sweep. Four panels showing how connectivity, fragmentation-aware sampling cost, predicted P_compat, and the sustainable-band fraction of locations change across radii from 10 to 200 m. Connectivity plateaus at ≥ 75 m and P_compat is radius-independent under empirical zygosity, justifying 50 m as the primary radius.](figures/Phase5/step29_location_connectivity_radius_sensitivity.png)
 
 ---
 
@@ -206,6 +208,8 @@ The species-wide coverage remains low at drift-eroded small
 locations, because drift has already removed most Fgs from their
 local pool: those are alleles that no genotyping effort can recover.
 
+![Figure 3 — Predicted SRK allele richness per location under P1 + tetraploid finite-population sampling. One dot per location, dot size ∝ √M (mothers sampled), error bars = 95 % credible interval, panelled by Bottleneck Lineage. BL3 (EO76) and BL1 (EO61) top the diversity chart at ~24–25 of 32 alleles; the BL5 tail (EO24 group) sits at 3–8 alleles because drift has already removed most Fgs from those slickspots.](figures/Phase5/step30_A_prediction_diversity.png)
+
 ### 30.2 Predicted pollen compatibility per location
 
 **Question.** Under the sporophytic Class I / II + empirical-zygosity
@@ -230,6 +234,8 @@ replicates.
 - All other BLs sit in the sustainable band at the mean; the tightest
   credible intervals belong to the largest locations (EO76, EO61).
 
+![Figure 4 — Predicted per-location pollen compatibility under sporophytic Class I / II + empirical LEPA zygosity. One dot per location, error bars = 95 % credible interval, panelled by Bottleneck Lineage. Traffic-light bands: red = failed (< 0.23), amber = struggling (0.23–0.45), green = sustainable (≥ 0.45). Species mean = 0.68. BL5 tail slips into the struggling band; all other locations sit in the sustainable band at the mean.](figures/Phase5/step30_A_prediction_fecundation.png)
+
 ### 30.3 Fragmentation index
 
 **Question.** Independent of drift on allele frequencies, how
@@ -245,8 +251,9 @@ BL5 (uniformly small, isolated events → high fragmentation on both
 axes). BL3 and BL1 show the widest spread — some locations have
 tight event-scale connectivity but many disconnected components at
 the location scale, so their mating environment is layered rather
-than uniformly fragmented. See
-[`step30_A_fragmentation_index.png`](figures/Phase5/step30_A_fragmentation_index.png).
+than uniformly fragmented.
+
+![Figure 5 — Event-scale × location-scale fragmentation scatter, one dot per location, coloured by Bottleneck Lineage. Pure spatial indices — no allele frequencies enter. Diagonal locations have matched fragmentation at both scales; off-diagonal locations reveal layered structure (e.g. tight event-scale connectivity but multiple disconnected components at the location scale).](figures/Phase5/step30_A_fragmentation_index.png)
 
 ---
 
@@ -288,7 +295,7 @@ random-mating compatibility, holding the mothers themselves fixed.
   species-wide) — consistent with its perfect-match position on
   the diagonal.
 
-![Figure: EO-level compatibility observed vs predicted, plus per-EO zygosity distribution.](figures/Phase5/step30_C_pcompat_observed_vs_predicted.png)
+![Figure 6 — EO-level empirical validation of the sporophytic P_compat model. Panel A: observed vs predicted mean pollen compatibility per EO (n ≥ 10 individuals), with 1:1 diagonal and traffic-light bands. 4/6 EOs sit on the diagonal within their 95 % CI; EO70 is a striking outlier (observed 0.41 in the struggling band vs predicted 0.60 sustainable) — genuine local Fg pool skew, not model failure. Panel B: distinct-identity distribution per EO vs the species-wide reference (66 / 32 / 2 %).](figures/Phase5/step30_C_pcompat_observed_vs_predicted.png)
 
 **Caveat.** P1 was built from these same individuals, so this
 comparison does not test absolute calibration but robustness to

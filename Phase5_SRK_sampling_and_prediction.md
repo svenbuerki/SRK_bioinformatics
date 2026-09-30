@@ -1,5 +1,12 @@
 # Phase 5 — SRK sampling & prediction framework (Steps 28–30)
 
+> **Looking for a shorter overview?** A compact companion doc
+> [`Phase5_SRK_summary_for_colleagues.md`](Phase5_SRK_summary_for_colleagues.md)
+> covers the same framework in ~400 lines with Question → Approach →
+> Result blocks per step and one figure per link of the causal chain.
+> Share that with collaborators; use the doc you are currently reading
+> for methods, formulas, code, and full outputs.
+
 ## Contents
 
 The document is organised in **three parts** that follow the causal
@@ -7,7 +14,7 @@ order of the study — we first build the model and generate location-
 level predictions, then derive the sampling protocol from those
 predictions, then test the predictions with real seed data:
 
-- [Scientific goals](#scientific-goals) — the four hypotheses this framework tests
+- [Scientific goals](#scientific-goals) — the central hypothesis (a causal chain: fragmentation → drift → mate limitation) and how the framework tests it
 - **Part A** — [Model and predictions](#part-a--model-and-predictions) · data scope, species-wide P1 prior, finite-population model, and the Phase A predictions of SRK diversity and pollen compatibility per location (Step 30 Phase A outputs, Figures 4–6). *This is what we expect each location to look like — before we ever open a seed lot.*
 - **Part B** — [Sampling protocol derived from the predictions](#part-b--sampling-protocol-derived-from-the-predictions) · within-location pollen connectivity, per-mother seed count (Step 28), per-location mother count with private-allele floor (Step 29), and two-year design. *This is what the field team must do to test the Part A predictions.*
 - **Part C** — [Testing predictions with observed SRK data (Phase B)](#part-c--testing-predictions-with-observed-srk-data-phase-b) · preliminary EO-level validation with Phase 4 adult genotypes (§ C.0), mate-limitation regression, script behaviour, data-generation pipeline, and the BL4 pilot.
