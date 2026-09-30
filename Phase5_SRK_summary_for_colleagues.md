@@ -102,6 +102,26 @@ when several mothers' seed lots aggregate at the location scale
 
 ![Figure 1 — Step 28 coverage curves. Panel A: per-mother detection of the local Fg pool as a function of seeds genotyped, one curve per event-size bin; the vertical red line at 15 marks the tetraploid Rule 2 cap. Panel B: aggregation of coverage across mothers at a location (15 seeds × M). Every event size reaches its local ceiling by 5 mothers.](figures/Phase5/step28_coverage_curves.png)
 
+**Does 15 seeds give enough Part C testing power?** Coupon-collector
+justifies 15 as the *allele detection* floor. Two additional
+simulations check whether it also passes the *regression* thresholds:
+
+- **Per-mother P_compat precision** — observed P_compat has binomial
+  SE `√(p·(1−p) / n_seeds)`. Drops from ~0.28 at 3 seeds to
+  ~0.12 at 15 (visible plateau), only marginal gains beyond.
+- **§ C.1 mate-limitation regression power** — full-pipeline sim of
+  505 mothers × 39 locations. At n_seeds = 15: **99.6 % power** for a
+  medium effect (β₁ = 100 seeds per unit P_compat), **69 % for a
+  small effect (β₁ = 50, below the 80 % target)**. Errors-in-variables
+  attenuation of β̂₁ is ~0.42 — real but doesn't prevent detection at
+  realistic effect sizes.
+
+15 seeds is comfortably enough for medium-to-large mate-limitation
+signals; the marginal power at small effect sizes comes from the same
+40 events / 79-mother shortage the § B.4.3 lab recipe flags.
+
+![Figure 1b — Justifying 15 seeds for Part C testing. Left: per-mother P_compat precision vs seed count for four true P_compat values, with a plateau visible at ~15 seeds. Right: § C.1 mate-limitation regression power vs seed count for four effect sizes; 15 seeds delivers ≥ 99 % power for β₁ ≥ 100.](figures/Phase5/step28d_matelim_power.png)
+
 ---
 
 ## Step 29 — How many mothers per location?

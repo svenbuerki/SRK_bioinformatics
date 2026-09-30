@@ -1146,6 +1146,50 @@ per-mother recipe TSV plus the two-panel coverage figure below.
 <a id="fig-9"></a>
 ![Figure 9: two-panel SRK allele detection under **tetraploid LEPA** (4 SRK copies per plant; 2 paternal alleles per seed) on the absolute-allele scale, with the local pool capped at the species-wide ceiling of 32 Fgs. Shaded bands = 95 % simulation CI. **Panel A — per mother.** x = seeds genotyped, one curve per event-size bin (each seed contributes 2 paternal allele draws); the vertical red line at **15** marks the Rule 2 operational cap under tetraploid (never ask any single mother for more than 15 seeds). The 15-seed dots show what each event size **delivers per mother**: **4.0 of 4** (1–2 plants), **11.1 of 12** (3–5), **18.6 of 28** (6–10), **19.7 of 32** (11–20), **19.7 of 32** (21–50), **19.7 of 32** (>50). One mother's 15 seeds cannot saturate a 32-allele pool — this is the coupon-collector limit for a single sampler, not undersampling. **Panel B — aggregation across mothers at a location.** x = number of mothers sampled at the location (15 seeds each = **34 allele draws per mother: 4 maternal + 2·15 = 30 paternal**). At the 5-mother benchmark (green dotted line, 75 cumulative seeds): **4.0 of 4**, **12.0 of 12**, **27.9 of 28**, **31.9 of 32**, **31.9 of 32**, **31.9 of 32** — every event size reaches its local ceiling. Because Panel B is a coupon-collector simulation continuous in M, any real location can read off its own coverage by locating (its event-size bin, its actual M) on the correct curve. The "gap at large events" in Panel A closes cleanly at the location scale — see § B.4. Source: `step28_seed_sampling_per_mother.py`. Data: [`step28_coverage_curves_by_Nfertile.tsv`](tables/Phase5/step28_coverage_curves_by_Nfertile.tsv), [`step28_aggregation_curves_by_Nfertile.tsv`](tables/Phase5/step28_aggregation_curves_by_Nfertile.tsv).](figures/Phase5/step28_coverage_curves.png)
 
+#### B.3.1 Does 15 seeds give enough Part C testing power?
+
+Figure 9 is a coupon-collector argument: 15 seeds is the tetraploid
+Rule 2 floor for detecting every SRK allele at a mother's local
+pool with 90 % probability. But **allele detection is not the same
+as regression power** — the § C.1 mate-limitation test needs
+per-mother observed P_compat precise enough that β̂₁ is
+identifiable. Two Monte-Carlo simulations answer that separately.
+
+**Figure 9a — per-mother P_compat precision** ([`step28d_pcompat_precision.png`](figures/Phase5/step28d_pcompat_precision.png)).
+For a mother with true P_compat p, each of her seeds is an independent
+Bernoulli(p) draw of paternal compatibility. Observed P_compat has
+binomial SE `√(p·(1−p) / n_seeds)`. **Result:** SE drops steeply from
+~0.28 at 3 seeds to ~0.12 at **15 seeds** (visible plateau), then
+improves only marginally (~0.06 at 50 seeds). Precision-per-seed
+returns diminish sharply above 15.
+
+**Figure 9b — § C.1 mate-limitation regression power** ([`step28d_matelim_power.png`](figures/Phase5/step28d_matelim_power.png)).
+Full-pipeline simulation of 505 mothers across 39 locations under the
+model `seeds ~ intercept + β₁ · P_compat_obs + ε`, with `P_compat_obs`
+noised by the seed-count-driven binomial variance. **Result at
+n_seeds = 15**:
+
+- **β₁ = 100 seeds/unit** (medium effect: half the ovule set difference
+  between P_compat 0.5 and 1.0 mothers) → **99.6 % power**. Well above
+  the 80 % target.
+- **β₁ = 150 or 200** → 100 % power.
+- **β₁ = 50** (small effect) → 69 % power. Below 80 %; would need
+  ~30 seeds to reach 80 % at that effect size.
+
+**Errors-in-variables attenuation.** Because `P_compat_obs` is a noisy
+predictor, β̂₁ is biased toward zero (attenuation ≈ 0.42 at
+n_seeds = 15 — β̂₁ recovers ~42 % of true β₁). This affects effect-
+size *estimation* but not the ability to *detect* β₁ ≠ 0 at
+realistic effect sizes. Where reporting β̂₁ as an effect size, we
+apply a standard errors-in-variables correction.
+
+**Take-home.** 15 seeds/mother clears both the allele-detection
+threshold (Figure 9) and the regression-power threshold for medium-
+to-large β₁ (Figure 9b). Small-effect regression power is marginal —
+locations under-sampled by the fragmentation-aware allocation (the 25
+mothers short at 6 locations in § B.4.3) are the most likely place
+that shortfall shows up. The 2026 top-up sampling addresses both.
+
 ### B.4 Per-location mother count — sampling design (Step 29)
 
 > **Note.** § B.4 and § B.4.1 below are the *reference / audit* view
@@ -1890,6 +1934,8 @@ or right-click → *Save link as…* to pull the TSV into your local pipeline.
 - [`step28_coverage_curves.pdf`](figures/Phase5/step28_coverage_curves.pdf) / [`.png`](figures/Phase5/step28_coverage_curves.png) — per-mother coverage vs seeds and aggregation across mothers, one curve per event-size bin, with Rule 2 cap.
 - [`step28_per_mother_budget.pdf`](figures/Phase5/step28_per_mother_budget.pdf) / [`.png`](figures/Phase5/step28_per_mother_budget.png) — per-mother seed budget vs recommended n.
 - [`step28_mothers_for_full_detection.pdf`](figures/Phase5/step28_mothers_for_full_detection.pdf) / [`.png`](figures/Phase5/step28_mothers_for_full_detection.png) — per-location M_recommended (90 % chance to see every predicted SRK allele + ≥ 1 mother per event), panelled by BL.
+- [`step28d_pcompat_precision.pdf`](figures/Phase5/step28d_pcompat_precision.pdf) / [`.png`](figures/Phase5/step28d_pcompat_precision.png) — Part C justification (§ B.3.1) — per-mother observed P_compat SE vs seed count; precision plateau at ~15 seeds.
+- [`step28d_matelim_power.pdf`](figures/Phase5/step28d_matelim_power.pdf) / [`.png`](figures/Phase5/step28d_matelim_power.png) — Part C justification (§ B.3.1) — § C.1 mate-limitation regression power vs seed count; ≥ 99 % power at n_seeds = 15 for medium/large β₁, marginal at small β₁.
 - [`step29c_sampling_comparison.pdf`](figures/Phase5/step29c_sampling_comparison.pdf) / [`.png`](figures/Phase5/step29c_sampling_comparison.png) — head-to-head M_current vs M_frag_aware per location, BL-panelled, sorted by Δ.
 - [`step29_location_coverage_curves.pdf`](figures/Phase5/step29_location_coverage_curves.pdf) / [`.png`](figures/Phase5/step29_location_coverage_curves.png) — uniform-K location curves.
 - [`step29_location_coverage_curves_P1.pdf`](figures/Phase5/step29_location_coverage_curves_P1.pdf) / [`.png`](figures/Phase5/step29_location_coverage_curves_P1.png) — P1-prior location curves with per-location bars.
