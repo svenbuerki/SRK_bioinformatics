@@ -1,40 +1,52 @@
 # Phase 5 — Mate limitation and fragmentation in *Lepidium papilliferum*
 
-**A compact overview for collaborators.** Framed on two scientific
-questions; each step below is presented as Question → Approach →
-Result. Full technical detail (formulas, code, output filenames) lives
-in the long companion doc [`Phase5_SRK_sampling_and_prediction.md`](Phase5_SRK_sampling_and_prediction.md).
+**A compact overview for collaborators.** Framed on a single causal
+chain (**fragmentation → genetic drift → mate limitation**); each
+step below is presented as Question → Approach → Result. Full
+technical detail (formulas, code, output filenames) lives in the long
+companion doc [`Phase5_SRK_sampling_and_prediction.md`](Phase5_SRK_sampling_and_prediction.md).
 
 ---
 
-## The two questions
+## The central hypothesis — a causal chain
 
 *Lepidium papilliferum* (slickspot peppergrass, LEPA) is a tetraploid
-Brassicaceae with **sporophytic self-incompatibility** — a plant
+Brassicaceae with **sporophytic self-incompatibility (SI)** — a plant
 rejects pollen carrying any of the SRK alleles the pollen parent
-expresses on its own stigma. In small, fragmented populations, two
-independent processes can reduce reproduction:
+expresses on its own stigma. In small, patchy populations we
+hypothesise a single causal chain that drives reproductive failure:
 
-1. **Mate limitation from drift.** In a small isolated slickspot,
-   random loss and skew of SRK alleles reduces the fraction of
-   pollen a mother is compatible with, even if pollinator visitation
-   is unlimited.
-2. **Fragmentation of pollen flow.** LEPA slickspots are patchy; a
-   50 m pollinator flight range means adults farther than 50 m apart
-   effectively belong to separate mating pools. A location that looks
-   large on a census can be a mosaic of disconnected small pools.
+> **Fragmentation → genetic drift → mate limitation.**
+>
+> Habitat fragmentation shrinks the effective mating pool at each
+> location (fewer plants within ~50 m pollinator flight of each
+> other). Small effective mating pools intensify genetic drift on
+> SRK, which erodes local SRK diversity and skews local Fg
+> composition. The eroded and skewed local pool reduces the fraction
+> of pollen a mother is compatible with — **mate limitation** — which
+> reduces per-mother seed set.
 
-The Phase 5 framework quantifies each process at every LEPA location,
-and derives the sampling design needed to test whether the predicted
-per-location mate limitation actually translates into reduced seed set
-in the field (that test happens in Part C once seed genotypes are in
-hand).
+The pipeline evaluates the chain in order — **fragmentation first**,
+then its drift consequences, then its mate-limitation consequences —
+because fragmentation is the physical driver upstream of everything
+else. It is where location size enters the model (via
+`N_fertile_effective`); a census of 1 000 plants split across
+20 disconnected slickspots behaves like a location of ~50 plants for
+every downstream calculation.
 
-**Note.** Detecting cases where SI has broken down entirely
-(self-compatibility escape) is *not* an outcome of this framework —
-those individuals are identified during the Canu-amplicon SRK
-genotyping (Phase 4 Step 22b) and enter Phase 5 as prior information
-via the empirical zygosity distribution, not as an experimental target.
+| Link | What we measure | Steps that produce it |
+|---|---|---|
+| **1. Fragmentation** | Spatial isolation of adult plants; effective mating pool size per location | Step 29b, Step 30b (§ A.5, § B.2 of long doc) |
+| **2. Genetic drift on SRK** | Predicted local Fg pool size and Fg frequency composition, driven by `N_fertile_effective` | Step 30 Phase A (§ A.6) |
+| **3. Mate limitation** | Predicted per-location random-mating pollen compatibility `P_compat` under sporophytic Class I / II SI | Step 30 Phase A (§ A.7, § A.8); Step 30c empirical validation on adult SRK genotypes (§ C.0) |
+| **4. Reduced seed set** | Observed per-mother seed set regressed on predicted `P_compat` | Step 30 Phase B mate-limitation regression (§ C.1) — needs seed genotypes |
+
+**Not part of this framework.** Detecting cases where SI has broken
+down entirely (self-compatibility escape) is *not* an outcome of
+Phase 5. Such individuals are identified during the Canu-amplicon
+SRK genotyping (Phase 4 Step 22b) and enter Phase 5 as prior
+information via the empirical zygosity distribution, not as an
+experimental target.
 
 ---
 
@@ -285,22 +297,29 @@ will happen in Phase B once seed genotypes are available.
 
 ---
 
-## Phase B — Testing the predictions with seed data
+## Phase B — Closing the causal chain with seed data
 
 **Test 1 — Mate-limitation regression (§ C.1 of the long doc).**
 Once seed genotypes are back, per-location observed P_compat is
 computed from real mother-father pairings. The regression
-`per-mother seed set ~ observed P_compat + K_spatial + connectivity`
-tests whether **(β₁) drift-driven Fg loss** reduces reproduction, and
-**(β₂) spatial fragmentation of the mating pool** independently
-reduces reproduction. Both coefficients enter as pre-registered
-predictions from Phase A.
+`per-mother seed set ~ β₁ · P_compat + β₂ · mating_neighbourhood + …`
+decomposes the fragmentation effect into two pathways:
 
-Positive β₁ and β₂ with matching magnitudes to Phase A predictions
-= framework validated. Deviations flag either model refinements
-needed (adjust the Fg → Class mapping, the ESS of P1) or genuine
-biological surprises (a location where reproduction depends on
-something we haven't modelled).
+- **β₁ (P_compat effect)** measures the strength of the **complete
+  drift → mate-limitation branch** — the reproductive consequence of
+  the fragmentation-driven Fg loss and skew that Phase A predicted.
+- **β₂ (mating-neighbourhood effect)** measures whether fragmentation
+  has **direct effects on seed set that are NOT mediated through Fg
+  composition** (e.g. fewer neighbouring adults means fewer pollinator
+  visits, independent of which alleles they carry).
+
+Together the two coefficients tell us how much of fragmentation's
+reproductive cost flows through drift, and how much bypasses it. A
+large β₁ + small β₂ = the drift chain fully explains the fragmentation
+effect; a large β₂ + small β₁ = fragmentation reduces seed set through
+pollinator-behaviour pathways we haven't modelled; both large = both
+channels contribute. All three interpretations can be pre-registered
+before seed data arrive.
 
 ---
 

@@ -23,48 +23,93 @@ and keep their existing `step28_*` / `step29_*` names.
 
 ## Scientific goals
 
-The purpose of this framework is not diversity estimation for its own sake.
-It is a location-level SRK sampling and inference pipeline that lets us test
-connected hypotheses about **mate limitation and fragmentation** in small,
-isolated LEPA populations:
+### The central hypothesis — a causal chain
 
-1. **Mate-limitation test.** Do locations with fewer compatible pollen
-   donors — driven by small mate pool, skewed Fg frequencies, or both —
-   show reduced per-mother seed set? Formally: does per-mother
-   `germplasmQuantityEstimate` decline with predicted per-mother
-   pollen compatibility (sporophytic Class I / II tetraploid model,
-   see § A.7 for the biology and § A.8 for the maths)?
-2. **Fragmentation × drift decomposition.** Habitat fragmentation depresses
-   K (the pollen-donor Fg pool a mother can access); genetic drift skews
-   Fg frequencies at small isolated locations. Both reduce pollen
-   compatibility but through different channels; the framework
-   predicts them on two independent axes in Part A — **drift** via
-   predicted SRK diversity and pollen compatibility (§ A.7–A.8) and **fragmentation**
-   via the purely spatial pollen-flow index at event and location scales
-   (§ A.5) — and Phase C's mate-limitation regression (§ C.1) then tests
-   both simultaneously as two independent coefficients (β₁ = drift,
-   β₂ = fragmentation).
-3. **Phenotype cross-validation (deferred).** SRK-based predictions can be
-   cross-checked against per-site ISI / fruit set in the Genetic-Rescue-DB
-   repository. This adds independent lines of evidence but does not shape
-   the sampling design and is not modelled here in v1.
+The purpose of this framework is not diversity estimation for its own
+sake. It tests a **single causal hypothesis about how habitat
+fragmentation degrades reproduction in *Lepidium papilliferum***:
 
-**Not addressed by this framework.** Self-incompatibility escape (plants
-in which SI has broken down entirely, producing viable self-seed) is
-*not* an outcome of Phase 5. Such individuals are identified during the
-Canu-amplicon SRK genotyping (Phase 4 Step 22b) and enter Phase 5 as
-prior information via the empirical zygosity distribution (§ A.7.3a),
-not as an experimental target. A DEMO SI-escape permutation-test
-scaffold exists in the Step 30 code for pipeline-validation purposes
-only — it is documented in the "Out of scope / future work" appendix
-at the end of this doc.
+> **Fragmentation → genetic drift → mate limitation.**
+>
+> Spatial isolation of adult plants (fragmentation of pollen flow)
+> shrinks the effective mating pool at each location. Small effective
+> mating pools intensify genetic drift on SRK allele frequencies,
+> which erodes local SRK diversity and skews local Fg composition.
+> The eroded and skewed local pool reduces the probability that any
+> given pollen grain is compatible with any given mother
+> (**mate limitation**), which in turn reduces per-mother seed set.
 
-The framework has two design consequences: **(1)** the sampling protocol
-must scale with each mother's real mate-availability context (Steps 28–29),
-and **(2)** the inference layer must produce testable predictions under
-random-mating and strict-SI nulls that can be compared to observed seed
-genotypes (Step 30). Part A publishes the predictions; Part B derives the
-sampling protocol needed to test them; Part C runs the tests.
+The chain has four measurable links, and the framework operationalises
+them in the order they must be evaluated:
+
+| # | Link | Where measured | What it produces |
+|---|---|---|---|
+| 1 | **Fragmentation** — spatial isolation of adult plants at each location | § A.5 fragmentation indices; § B.2 within-location connectivity (Step 29b) | `N_fertile_effective_50m` = census × largest-connected-component share at 50 m; per-event / per-location fragmentation indices `F_event`, `F_location` |
+| 2 | **Genetic drift on SRK** — small effective mating pools lose alleles and skew Fg frequencies | § A.6 predicted SRK diversity per location (Step 30 Phase A) | Predicted local Fg pool size and predicted per-EO local Fg frequencies (with 95 % CI), driven by `N_fertile_effective` |
+| 3 | **Mate limitation** — the drifted local Fg pool determines random-mating pollen compatibility under sporophytic Class I / II SI | § A.7 SI biology, § A.8 finite-population P_compat (Step 30 Phase A) | Predicted per-location `P_compat` (with 95 % CI); § C.0 empirical validation on adult SRK genotypes |
+| 4 | **Reduced seed set** — the reproductive consequence at the mother | § C.1 mate-limitation regression (Phase B, needs seed genotypes) | Observed per-mother seed set regressed on predicted `P_compat` and on the direct fragmentation term |
+
+**Reading order — why fragmentation must be evaluated first.**
+Fragmentation is the physical driver upstream of everything else. It
+determines `N_fertile_effective`, which is the *only* place where
+location size enters the drift-diversity-compatibility chain. This is
+why Step 29b (spatial connectivity) runs before Step 30 (drift +
+compatibility predictions), and why § A.5 (fragmentation) precedes
+§ A.6 (diversity) and § A.7–A.8 (compatibility) in the doc. A location
+with 1 000 census adults but only 60 in its largest 50 m mating pool
+is drift-limited as if it were a 60-plant location, and the whole
+downstream chain (loss of Fgs → lower P_compat → lower seed set) is
+what the pipeline predicts on that reduced N.
+
+### What the Phase B regression will test — and how it distinguishes the two mechanisms
+
+Once seed genotypes are available (Phase B), the § C.1 regression
+`seeds_per_mother ~ β₁ · predicted_P_compat + β₂ · mating_neighbourhood + …`
+puts numbers on the chain:
+
+- **β₁ (P_compat effect)** measures the strength of the
+  drift-diversity-compatibility branch — the *complete chain* from
+  Link 1 through Link 4.
+- **β₂ (mating-neighbourhood effect)** measures whether fragmentation
+  has *additional* direct effects on seed set that are NOT mediated
+  through Fg composition (e.g. reduced pollinator visitation because
+  neighbouring adults are too sparse to draw pollinators, independent
+  of which alleles they carry).
+
+The two coefficients together decompose the fragmentation effect into
+"acting through drift" (β₁) and "acting through other pathways" (β₂),
+and can be pre-registered before seed data arrive.
+
+### Complementary goal — phenotype cross-validation (deferred)
+
+SRK-based predictions can be cross-checked against per-site ISI /
+fruit set in the Genetic-Rescue-DB repository. This adds independent
+lines of evidence but does not shape the sampling design and is not
+modelled here in v1.
+
+### Not addressed by this framework
+
+Self-incompatibility escape (plants in which SI has broken down
+entirely, producing viable self-seed) is *not* an outcome of Phase 5.
+Such individuals are identified during the Canu-amplicon SRK
+genotyping (Phase 4 Step 22b) and enter Phase 5 as prior information
+via the empirical zygosity distribution (§ A.7.3a), not as an
+experimental target. A DEMO SI-escape permutation-test scaffold
+exists in the Step 30 code for pipeline-validation purposes only —
+it is documented in the "Out of scope / future work" appendix at
+the end of this doc.
+
+### Design consequences
+
+The causal chain drives two design decisions: **(1)** the sampling
+protocol must scale with each mother's *real* mate-availability
+context — her fragmentation-adjusted local mating pool, not the raw
+census (Steps 28–29 build this into `N_fertile_effective`); and
+**(2)** the inference layer must publish testable per-location
+predictions of drift-loss and compatibility that can be regressed
+against observed seed set (Step 30 in `prediction` mode). Part A
+publishes the predictions; Part B derives the sampling protocol
+needed to test them; Part C runs the test.
 
 ---
 
@@ -1367,28 +1412,37 @@ $$E[\text{seeds}_m] \;\propto\; \text{ovules}_m \times P_{\text{compat}}(m)$$
 The **test** is a mixed-effects regression of observed
 `germplasmQuantityEstimate` on predicted $P_{\text{compat}}$:
 
-$$\text{seeds}_m \;=\; \beta_0 + \beta_1 \cdot P_{\text{compat}}(m) + \beta_2 \cdot K^{(25\text{m})}(m) + u_{\text{location}(m)} + u_{\text{year}(m)} + \epsilon_m$$
+$$\text{seeds}_m \;=\; \beta_0 + \beta_1 \cdot P_{\text{compat}}(m) + \beta_2 \cdot K^{(50\text{m})}(m) + u_{\text{location}(m)} + u_{\text{year}(m)} + \epsilon_m$$
 
-where $K^{(25\text{m})}$ is the mother's mating-neighbourhood
-pollen-donor pool at the 50 m radius (§ B.3). Two coefficients, two
-distinct causal channels:
+where $K^{(50\text{m})}$ is the mother's mating-neighbourhood
+pollen-donor pool at the 50 m radius (§ B.3). Two coefficients that
+together decompose the fragmentation effect into a drift-mediated
+pathway and a direct pathway:
 
-- $\beta_1 > 0$ with 95 % CI excluding 0 → **evidence of mate
-  limitation driven by allele-frequency drift**. Under the sporophytic
-  model, this fires when the drift-shifted local Fg composition shifts
-  the mother out of the "sustainable" pollen compatibility band. Because between-
-  class compatibility (Class I × Class II) buffers most locations
-  against drift (§ A.8), the sporophytic β₁ signal is expected to be
-  subtler than the diploid gametophytic version would have implied —
-  the mate-limited locations are the ones where drift has removed a
-  whole class from the local pool.
-- $\beta_2 > 0$ conditional on $\beta_1$ → **fragmentation effect
-  independent of drift** — spatial isolation reduces seed set above
-  and beyond what allele skew alone explains.
-- A significant $\beta_1$ with $\beta_2 \approx 0$ → **drift-dominant**
-  mate limitation (small locations look fragmented but their
-  mating-neighbourhood pool gains them a comparable pollen-donor
-  count; the harm is the skewed local frequencies).
+- **β₁ > 0 with 95 % CI excluding 0 → the complete fragmentation → drift →
+  mate-limitation chain fires.** Fragmentation reduced
+  `N_fertile_effective`; small N_e drove allele-frequency drift; the
+  drifted local Fg pool reduces `P_compat`; reduced `P_compat`
+  reduces seed set. Under the sporophytic Class I / II model,
+  between-class compatibility (Class I × Class II always compatible)
+  buffers most locations against drift (§ A.8), so β₁ is expected to
+  fire at locations where drift has removed a whole class from the
+  local pool — this signal is subtler than a diploid gametophytic
+  version would have implied.
+- **β₂ > 0 conditional on β₁ → fragmentation has additional effects
+  beyond the drift chain.** Spatial isolation reduces seed set above
+  and beyond what allele skew alone explains — for example, sparser
+  neighbouring adults may attract fewer pollinator visits regardless
+  of which alleles they carry.
+- **β₁ > 0 with β₂ ≈ 0 → the drift chain fully explains the
+  fragmentation effect.** The fragmentation effect on seed set is
+  entirely captured by its downstream consequence on `P_compat`;
+  no non-drift pathway is needed.
+- **β₁ ≈ 0 with β₂ > 0 → fragmentation acts entirely outside the
+  drift channel.** Small locations lose seed set for reasons other
+  than SRK-mediated mate limitation (e.g. pollinator behaviour).
+  Would indicate a model refinement: either the SRK Fg → Class map
+  needs revising, or non-genetic mechanisms need to be added.
 
 The regression uses `location` as a random intercept (to absorb time-
 invariant site effects) and `year` as a fixed effect (to control for
