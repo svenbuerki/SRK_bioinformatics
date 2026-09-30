@@ -844,15 +844,12 @@ def plot_diversity_unbiased_vs_sampling(pred: pd.DataFrame,
         else "M_achievable_location"
     df["M"] = df[m_col].astype(float)
     df["N_eff"] = df["N_fertile_effective"].astype(float)
-    # Per-mother seed count for the label — the ACTUAL average seeds
-    # per mother recorded in the LEPA DB at this location. Used to
-    # answer the whole-dataset question ("what will our real data show?")
-    # rather than the design question (§ B.3/B.4: "how many are needed?").
-    df["seeds_per_mother_actual"] = np.where(
-        df["M"] > 0,
-        df["total_n_seeds_realised_exp"].astype(float) / df["M"],
-        np.nan,
-    )
+    # Total seeds recorded at each location in the LEPA DB — the raw
+    # per-location input that drives Panel B (A_delivered = 4·M +
+    # 2·total_seeds). Showing the total, not a per-mother mean, keeps
+    # the arithmetic transparent and does not hide the (often skewed)
+    # per-mother distribution behind an average.
+    df["total_seeds"] = df["total_n_seeds_realised_exp"].astype(float)
 
     # BL row order — canonical BL_ORDER first, Unassigned last (if any).
     bls = [b for b in BL_ORDER if b in df["BL"].values]
@@ -907,10 +904,10 @@ def plot_diversity_unbiased_vs_sampling(pred: pd.DataFrame,
         axA_row.set_ylim(-0.7, len(sub) - 0.3)
         labels = [
             f"{code}  (N_fert_eff = {int(n)}, M_mothers = {int(m)}, "
-            f"seeds/mother = {int(round(s)) if s == s else 0})"
+            f"total_seeds = {int(s)})"
             for code, n, m, s in zip(
                 sub["locationCode"], sub["N_eff"], sub["M"],
-                sub["seeds_per_mother_actual"],
+                sub["total_seeds"],
             )
         ]
         axA_row.set_yticks(y)
@@ -978,10 +975,10 @@ def plot_diversity_unbiased_vs_sampling(pred: pd.DataFrame,
         "Predicted SRK allele diversity per LEPA location"
         f"{_year_suffix(year)}\n"
         "A: unbiased truth (N_fert_eff = N_fertile × 50 m connectivity).  "
-        "B: sampling recovery (4·M + 2·total_seeds allele draws from the LEPA DB).  "
+        "B: sampling recovery (4·M_mothers + 2·total_seeds allele draws from the LEPA DB).  "
         "C: coverage = B ÷ A (dotted line = 90 % target).\n"
         "Panelled by Bottleneck Lineage in BL_ORDER. Y-label = "
-        "locationCode (N_fert_eff, M_mothers, seeds/mother).",
+        "locationCode (N_fert_eff, M_mothers, total_seeds).",
         fontsize=11, y=0.995,
     )
     fig.tight_layout(rect=[0, 0, 0.96, 0.97])

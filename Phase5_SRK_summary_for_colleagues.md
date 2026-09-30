@@ -208,15 +208,15 @@ the unbiased local Fg diversity and its 95 % credible interval;
 
 **Result.**
 
-| Location | BL | N_fert_eff (50 m) | M_mothers | seeds/mother | Nature holds | Sampling detects | Coverage |
+| Location | BL | N_fert_eff (50 m) | M_mothers | total_seeds | Nature holds | Sampling detects | Coverage |
 |---|---|---|---|---|---|---|---|
 | EO24-2 (1 plant, BL5 tail) | BL5 | 1 | 1 | 1 | ~3 | ~2.6 | **88 %** |
 | EO24 (BL5 tail) | BL5 | 2 | 1 | 5 | ~4.5 | ~4.1 | **91 %** |
-| EO67 (small BL4 pilot) | BL4 | 6 | 4 | 18 | ~8 | ~8 | ~100 % |
-| EO27-1 (large BL4 pilot) | BL4 | 116 | 33 | 75 | ~27 | ~27 | ~100 % |
-| EO32 (well-sampled BL5) | BL5 | 327 | 38 | 159 | ~31 | ~31 | ~100 % |
-| EO29 | BL1 | 417 | 22 | 246 | ~32 | ~31.5 | ~100 % |
-| EO76 (largest BL3) | BL3 | 416 | 62 | 189 | ~32 | ~31.5 | ~100 % |
+| EO67 (small BL4 pilot) | BL4 | 6 | 4 | 71 | ~8 | ~8 | ~100 % |
+| EO27-1 (large BL4 pilot) | BL4 | 116 | 33 | 2465 | ~27 | ~27 | ~100 % |
+| EO32 (well-sampled BL5) | BL5 | 327 | 38 | 6028 | ~31 | ~31 | ~100 % |
+| EO29 | BL1 | 417 | 22 | 5419 | ~32 | ~31.5 | ~100 % |
+| EO76 (largest BL3) | BL3 | 416 | 62 | 11723 | ~32 | ~31.5 | ~100 % |
 
 **Every location clears the 90 % target and almost all reach ≥ 99 %
 coverage.** The two locations noticeably below full recovery
@@ -225,10 +225,10 @@ coverage is capped by seed lot size, not by mother sampling
 (EO24-2 has only one plant, so no more mothers exist to add).
 
 The existing LEPA dataset therefore characterises Nature's truth at
-every location. Per-mother seed counts in the DB span 1 (EO24-2) →
-246 (EO29), so most locations are well provisioned.
+every location. Total seed counts in the DB span 1 (EO24-2) →
+11 723 (EO76), so most locations are well provisioned.
 
-![Figure 3 — Predicted SRK allele diversity per LEPA location under the tetraploid P1 finite-population model. Panelled by Bottleneck Lineage in canonical BL_ORDER (BL4 → BL5 → BL3 → BL1 → BL2). Y-axis labels give `locationCode (N_fert_eff, M_mothers, seeds/mother)`. **Panel A** — What Nature actually holds (unbiased truth, driven by `N_fertile_effective` alone; feeds the P_compat prediction). **Panel B** — What our sampling detects (from the actual LEPA DB seed counts; each seed's 2 paternal alleles sample the local pollen donor pool). **Panel C** — Coverage = Panel B ÷ Panel A; dotted line = 90 % target. Two single-plant BL5 slickspots (EO24-2, EO24) sit at ~88–91 % coverage — capped by seed lot size; every other location clears ≥ 99 %.](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.png)
+![Figure 3 — Predicted SRK allele diversity per LEPA location under the tetraploid P1 finite-population model. Panelled by Bottleneck Lineage in canonical BL_ORDER (BL4 → BL5 → BL3 → BL1 → BL2). Y-axis labels give `locationCode (N_fert_eff, M_mothers, total_seeds)` where `total_seeds` is the raw count of seeds recorded at the location across all mothers (not a mean — per-mother counts vary widely at the same location). **Panel A** — What Nature actually holds (unbiased truth, driven by `N_fertile_effective` alone; feeds the P_compat prediction). **Panel B** — What our sampling detects (from the actual LEPA DB seed counts; each seed's 2 paternal alleles sample the local pollen donor pool). **Panel C** — Coverage = Panel B ÷ Panel A; dotted line = 90 % target. Two single-plant BL5 slickspots (EO24-2, EO24) sit at ~88–91 % coverage — capped by seed lot size; every other location clears ≥ 99 %.](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.png)
 
 ### 30.2 Predicted pollen compatibility per location
 
