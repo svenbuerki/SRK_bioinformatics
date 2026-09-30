@@ -423,7 +423,11 @@ at each location.
 
 **Two questions, kept strictly separate.** SRK diversity at a
 location has two very different meanings, and the pipeline predicts
-both:
+both. This section uses the **whole existing LEPA dataset** — actual
+M mothers × actual seeds/mother recorded in the DB — to describe
+what our real data show. The prospective design question ("how many
+mothers × how many seeds do we NEED?") is answered separately in
+Steps 28 and 29 (§ B.3 – § B.4).
 
 1. **What Nature actually holds at this location** — the *unbiased*
    local Fg diversity. Depends only on the effective mating pool size
@@ -432,16 +436,16 @@ both:
    feeds Link 2 → Link 3 of the causal chain: the local drifted Fg
    pool composition is what the P_compat prediction (§ A.7–A.8) is
    built on. It is what we are trying to characterise.
-2. **What our seed sampling will recover** — the *sampling-inferred*
-   detection. Depends on `M mothers × 15 seeds/mother` under
-   tetraploid Rule 2, giving `A_delivered = M × (PLOIDY + PATERNAL_ALLELES_PER_SEED · 15) = 34 · M`
-   allele observations per location. Each seed's 2 paternal alleles
-   are direct samples of the **local pollen donor pool** — the seed
-   genotyping is literally a pollen-pool characterisation experiment.
+2. **What our sampling will recover** — the *sampling-inferred*
+   detection under the existing LEPA DB.
+   `A_delivered = 4·M + 2·(total seeds recorded at the location)`,
+   where each seed's 2 paternal alleles are direct samples of the
+   **local pollen donor pool** — the seed genotyping is a pollen-pool
+   characterisation experiment. Per-mother seed counts in the real DB
+   span **1 (EO24-2) → 246 (EO29)**.
 
-The comparison between the two — **coverage = sampling / unbiased** —
-tells us how well the sampling design recovers the biological truth
-at each location.
+**Coverage = sampling / unbiased** measures how well the existing
+LEPA dataset recovers the biological truth at each location.
 
 **What Nature holds (Link 2 of the causal chain — unbiased).** Under
 the tetraploid P1 finite-population model, the expected number of
@@ -463,26 +467,37 @@ draw of `PLOIDY × N_fertile_effective` alleles from P1:
   locations then reflects the mate-limitation consequence of that
   collapse.
 
-**What our sampling will recover (sampling-inferred).** Given the
-permit-realistic M at each location and 15 seeds/mother, expected
-detection of the true local pool is:
+**What our sampling will recover (sampling-inferred).** Applying
+`A_delivered_actual` from the existing LEPA DB to the coupon-collector
+against each location's true local pool:
 
-| Location | Effective N (50 m) | M mothers | Nature holds | Sampling detects | Coverage |
-|---|---|---|---|---|---|
-| EO30-1 | 420 | 23 | ~32 | ~28 | **89 %** ⚠ |
-| EO29 | 417 | 22 | ~32 | ~28 | **89 %** ⚠ |
-| EO76 (largest BL3) | 416 | 62 | ~32 | ~31 | 98 % |
-| EO32 (well-sampled BL5) | 327 | 38 | ~31 | ~30 | 95 % |
-| EO27-1 (large BL4 pilot) | 116 | 33 | ~27 | ~26 | 98 % |
-| EO67 (small BL4 pilot) | 6 | 4 | ~8 | ~8 | ~100 % |
-| EO24-2 (1 plant, BL5 tail) | 1 | 1 | ~3 | ~3 | ~100 % |
+| Location | BL | N_fert_eff (50 m) | M_mothers | seeds/mother | Nature holds | Sampling detects | Coverage |
+|---|---|---|---|---|---|---|---|
+| EO24-2 (1 plant, BL5 tail) | BL5 | 1 | 1 | 1 | ~3 | ~2.6 | **88 %** ⚠ |
+| EO24 (BL5 tail) | BL5 | 2 | 1 | 5 | ~4.5 | ~4.1 | **91 %** ⚠ |
+| EO24-1 (BL5 tail) | BL5 | 2 | 2 | 5 | ~4.5 | ~4.5 | 99 % |
+| EO26-3 (small BL1) | BL1 | 4 | 4 | 5 | ~6.6 | ~6.5 | 99 % |
+| EO67 (small BL4 pilot) | BL4 | 6 | 4 | 18 | ~8 | ~8 | ~100 % |
+| EO27 (BL4) | BL4 | 173 | 15 | 83 | ~29 | ~29 | ~100 % |
+| EO30-1 (BL4) | BL4 | 420 | 23 | 98 | ~32 | ~31.5 | ~100 % |
+| EO27-1 (large BL4 pilot) | BL4 | 116 | 33 | 75 | ~27 | ~27 | ~100 % |
+| EO32 (well-sampled BL5) | BL5 | 327 | 38 | 159 | ~31 | ~31 | ~100 % |
+| EO29 (BL1) | BL1 | 417 | 22 | 246 | ~32 | ~31.5 | ~100 % |
+| EO61 | BL1 | 315 | 55 | 179 | ~31 | ~31 | ~100 % |
+| EO76 (largest BL3) | BL3 | 416 | 62 | 189 | ~32 | ~31.5 | ~100 % |
 
-**Two under-sampled outliers** stand out — **EO30-1 and EO29** (both
-n = 22–23 mothers but N_fertile_effective > 400) fall to ~89 %
-coverage. These are the two locations where the current permit-realistic
-M does not comfortably clear the 90 % target. Adding ~5–10 more
-mothers at either location would restore coverage to > 95 %.
-Everywhere else the design delivers ≥ 95 % coverage.
+**Every LEPA location clears the 90 % target and almost all reach
+≥ 99 % coverage.** The only two locations noticeably below full
+recovery are single-plant slickspots in the BL5 tail — **EO24-2**
+(1 plant × 1 seed = 6 allele observations against a ~3-Fg pool)
+and **EO24** (1 plant × 5 seeds). Their coverage is capped by the
+seed lot's size, not by mother sampling: EO24-2 has only one plant,
+so no more mothers exist to add.
+
+The existing LEPA dataset therefore characterises Nature's truth at
+every location. The prospective sampling design in § B.3 – § B.4
+carries forward the Rule 2 tetraploid target of 15 seeds/mother as
+a floor for new field seasons.
 
 **Take-home for reviewers.** The unbiased local Fg pool (Panel A of
 Figure 3) is the biological signal — the *raw material* on which the
@@ -494,10 +509,8 @@ The BL5 tail's low diversity in Panel A is not an artefact of
 sampling — it is what drift has already done to those slickspots.
 
 <a id="fig-3"></a>
-![Figure 3 — Predicted SRK allele diversity per LEPA location under the tetraploid P1 finite-population model. **Panel A** — What Nature actually holds. Number of distinct SRK Fgs physically present at each location, driven by `N_fertile_effective` (fertile plants × 50 m connectivity) alone. Not conditioned on sampling. Feeds Link 2 → Link 3 of the causal chain. **Panel B** — What our sampling will detect. Expected number of Fgs recovered by seed genotyping (M mothers × 15 seeds each; 4 maternal + 2·15 = 30 paternal allele observations per mother = 34 draws total; each seed's paternal alleles are direct samples of the local pollen donor pool). **Panel C** — Coverage fraction = Panel B ÷ Panel A. Dotted line = 90 % target. Locations sorted by unbiased pool size. Dot colour = Bottleneck Lineage; error bars = 95 % credible interval from Dirichlet posterior draws. **Two under-sampled outliers (EO30-1 and EO29, both at 89 % coverage) flag where the permit-realistic M could be raised**; every other location clears the 90 % target. Vertical dashed line in Panels A/B = species-wide ceiling of 32 Fgs. Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.png)
+![Figure 3 — Predicted SRK allele diversity per LEPA location under the tetraploid P1 finite-population model. Panelled by Bottleneck Lineage in canonical BL_ORDER (BL4 → BL5 → BL3 → BL1 → BL2, top-to-bottom); within each BL row, locations sorted by unbiased pool size (small → large). Y-axis labels give `locationCode (N_fert_eff, M_mothers, seeds/mother)` where `N_fert_eff` = fertile plants × 50 m largest-connected-component share, `M_mothers` = mothers in the LEPA DB, `seeds/mother` = mean seeds per mother in the LEPA DB. **Panel A** — What Nature actually holds. Number of distinct SRK Fgs physically present at each location, driven by `N_fert_eff` alone. Not conditioned on sampling. Feeds Link 2 → Link 3 of the causal chain. **Panel B** — What our sampling will detect. Expected number of Fgs recovered by the seed data already in the LEPA DB (`A_delivered = 4·M + 2·total_seeds`; each seed's 2 paternal alleles are direct samples of the local pollen donor pool). **Panel C** — Coverage fraction = Panel B ÷ Panel A. Dotted line = 90 % target. Error bars = 95 % credible interval from Dirichlet posterior draws. Two single-plant BL5 slickspots (EO24-2, EO24) sit at ~88–91 % coverage — capped by seed lot size, not by mother count; every other location clears ≥ 99 %. Vertical dashed line in Panels A/B = species-wide ceiling of 32 Fgs. Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.png)
 
-<a id="fig-3b"></a>
-![Figure 3b — Legacy species-wide-conditioned view (kept for continuity with earlier drafts). Predicted number of distinct Fgs recovered at each location under the species-wide P1 prior — mixes the two questions Figure 3 separates and is biased against small locations because it counts species-wide alleles that local drift has already removed. Use Figure 3 for the biological signal; this figure is a cataloguing metric only. Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_prediction_diversity.png)
 
 ### A.7 Sporophytic self-incompatibility with Class I / Class II dominance
 
@@ -1740,8 +1753,7 @@ or right-click → *Save link as…* to pull the TSV into your local pipeline.
 - [`step29_location_connectivity_10m.pdf`](figures/Phase5/step29_location_connectivity_10m.pdf) / [`.png`](figures/Phase5/step29_location_connectivity_10m.png) — sensitivity: 10 m conservative.
 - [`step29_location_connectivity_50m.pdf`](figures/Phase5/step29_location_connectivity_50m.pdf) / [`.png`](figures/Phase5/step29_location_connectivity_50m.png) — sensitivity: 50 m optimistic.
 - [`step29_location_connectivity_radius_sensitivity.pdf`](figures/Phase5/step29_location_connectivity_radius_sensitivity.pdf) / [`.png`](figures/Phase5/step29_location_connectivity_radius_sensitivity.png) — aggregate across radii (justification for 50 m primary).
-- [`step30_A_diversity_unbiased_vs_sampling.pdf`](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.pdf) / [`.png`](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.png) — **primary diversity figure**: three-panel view separating what Nature holds (unbiased local Fg pool, driven by `N_fertile_effective`) from what our sampling detects (M × 15 seeds → 34 draws/mother) and the coverage fraction. Flags under-sampled locations against the 90 % target.
-- [`step30_A_prediction_diversity.pdf`](figures/Phase5/step30_A_prediction_diversity.pdf) / [`.png`](figures/Phase5/step30_A_prediction_diversity.png) — legacy species-wide-conditioned view, kept for continuity.
+- [`step30_A_diversity_unbiased_vs_sampling.pdf`](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.pdf) / [`.png`](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.png) — three-panel per-location diversity figure: what Nature holds (unbiased, `N_fertile_effective`), what our sampling detects (from actual LEPA DB seed counts), and the coverage fraction. Flags coverage against the 90 % target.
 - [`step30_A_si_model_schematic.pdf`](figures/Phase5/step30_A_si_model_schematic.pdf) / [`.png`](figures/Phase5/step30_A_si_model_schematic.png) — three-panel pedagogical schematic of the sporophytic Class I / II model (§ A.7): dominance within a plant, worked example, compatibility rule by cross type.
 - [`step30_A_prediction_fecundation.pdf`](figures/Phase5/step30_A_prediction_fecundation.pdf) / [`.png`](figures/Phase5/step30_A_prediction_fecundation.png) — BL-panelled compatibility per location, traffic-light bands.
 - [`step30_A_diversity_vs_pcompat.pdf`](figures/Phase5/step30_A_diversity_vs_pcompat.pdf) / [`.png`](figures/Phase5/step30_A_diversity_vs_pcompat.png) — cross-plot: SRK diversity × pollen compatibility.

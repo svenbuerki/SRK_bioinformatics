@@ -150,10 +150,34 @@ def predicted_diversity_per_location(locations: pd.DataFrame,
         except (TypeError, ValueError):
             N_fertile = 0
         N_fertile = max(N_fertile, max(M_used, 1))
-        # Per-mother allele draws under tetraploid sporophytic sampling:
-        # PLOIDY alleles from her leaf-tissue genotype +
-        # PATERNAL_ALLELES_PER_SEED paternal alleles per seed.
-        A_delivered = M_used * (PLOIDY + PATERNAL_ALLELES_PER_SEED * seeds_per_mother)
+        # Per-mother allele draws — TWO scenarios, both computed:
+        #   A_delivered_actual   = what the actual LEPA DB seed counts
+        #                          per mother deliver at this location.
+        #                          Used for the whole-dataset diversity
+        #                          prediction in § A.6 (answers: what
+        #                          will our real data show?).
+        #   A_delivered_design   = M × (PLOIDY + PATERNAL_ALLELES_PER_SEED
+        #                          × seeds_per_mother) = M × 34 under
+        #                          tetraploid Rule 2 (design target).
+        #                          Used for § B.3/B.4 design questions
+        #                          (answers: how many mothers × seeds
+        #                          are NEEDED to hit the predictions?).
+        # Separating the two prevents the sampling-design → prediction
+        # circularity (using the design to validate the design).
+        A_delivered_design = M_used * (PLOIDY + PATERNAL_ALLELES_PER_SEED * seeds_per_mother)
+        realised_seeds = row.get("total_n_seeds_realised_exp")
+        if pd.notna(realised_seeds) and realised_seeds > 0:
+            # Actual per-mother maternal-genotype contribution + paternal
+            # allele draws from the observed seed counts:
+            # A = PLOIDY × M_used + PATERNAL_ALLELES_PER_SEED × Σ seeds.
+            A_delivered_actual = int(
+                PLOIDY * M_used
+                + PATERNAL_ALLELES_PER_SEED * int(realised_seeds))
+        else:
+            A_delivered_actual = A_delivered_design
+        # The figure uses the ACTUAL A_delivered because § A.6 is about
+        # the whole dataset. § B.3/B.4 keeps the design number.
+        A_delivered = A_delivered_actual
 
         # --- 1. Species-wide coverage (tetraploid: PLOIDY · M draws) ---
         alleles_drawn = PLOIDY * M_used
@@ -189,7 +213,9 @@ def predicted_diversity_per_location(locations: pd.DataFrame,
             "M_mothers_in_db":               M_used,
             "M_achievable_ceiling":          M_ceiling,
             "N_fertile_effective":           N_fertile,
-            "A_delivered_at_15seeds":        A_delivered,
+            "A_delivered_actual":            A_delivered_actual,
+            "A_delivered_design_at_15seeds": A_delivered_design,
+            "total_n_seeds_realised_exp":    int(realised_seeds) if pd.notna(realised_seeds) else 0,
             # Species-wide (of the 32 P1 alleles):
             "predicted_distinct_Fgs":        float(np.mean(exp_distinct)),
             "predicted_distinct_Fgs_lo":     float(np.quantile(exp_distinct, 0.025)),
@@ -779,111 +805,21 @@ def _add_demo_watermark(fig, demo: bool):
     )
 
 
-def plot_prediction_diversity(pred: pd.DataFrame, prior: pd.DataFrame,
-                              out_png: Path, out_pdf: Path,
-                              year: int | None = None):
-    """Predicted number of distinct SRK alleles per LEPA location under the
-    species-wide P1 prior — one panel per Bottleneck Lineage (BL), with
-    locations sorted within each panel small → big (bottom → top). Panel
-    order matches BL_ORDER (habitat area DESC, connectivity DESC).
-    Bar / dot colour uses the project-wide BL palette so this figure lines
-    up with every other BL-grouped LEPA figure. Dot size ∝ √M (mothers
-    with seed records in DB). Error bars = 95 % credible interval.
-    """
-    from srk_bl_constants import BL_COLORS, BL_ORDER, locationCode_to_bl
-
-    df = pred.copy()
-    m_col = "M_mothers_in_db" if "M_mothers_in_db" in df.columns \
-        else "M_achievable_location"
-    df["M"]  = df[m_col].astype(float)
-    df["BL"] = locationCode_to_bl(df["locationCode"]).values
-    df["BL"] = df["BL"].fillna("Unassigned")
-
-    # BL order — canonical BL_ORDER first, unassigned last.
-    bls = [b for b in BL_ORDER if b in df["BL"].values]
-    if (df["BL"] == "Unassigned").any():
-        bls.append("Unassigned")
-    panel_colours = {**BL_COLORS, "Unassigned": "#8a8a8a"}
-
-    # Panel heights ∝ # locations per BL so the y-spacing is comparable
-    # across panels regardless of how many locations each BL has.
-    heights = [max(int((df["BL"] == b).sum()), 1) for b in bls]
-    fig, axes = plt.subplots(
-        len(bls), 1,
-        figsize=(9.5, max(6.0, 0.28 * sum(heights) + 1.5)),
-        gridspec_kw={"height_ratios": heights},
-        sharex=True,
-    )
-    if len(bls) == 1:
-        axes = [axes]
-
-    for ax, bl in zip(axes, bls):
-        sub = df[df["BL"] == bl].sort_values(
-            "predicted_distinct_Fgs", ascending=True,
-        ).reset_index(drop=True)
-        y = np.arange(len(sub))
-        xerr_lo = sub["predicted_distinct_Fgs"] - sub["predicted_distinct_Fgs_lo"]
-        xerr_hi = sub["predicted_distinct_Fgs_hi"] - sub["predicted_distinct_Fgs"]
-        colour = panel_colours[bl]
-        ax.errorbar(
-            sub["predicted_distinct_Fgs"], y,
-            xerr=[xerr_lo, xerr_hi],
-            fmt="none", ecolor=colour, alpha=0.4,
-            elinewidth=1.1, capsize=2.5, zorder=1,
-        )
-        sizes = 30 + 8 * np.sqrt(np.clip(sub["M"], 1, None))
-        ax.scatter(
-            sub["predicted_distinct_Fgs"], y,
-            s=sizes, c=colour, edgecolor="white",
-            linewidth=0.6, zorder=2,
-        )
-        labels = [f"{code}   (n = {int(m)})"
-                  for code, m in zip(sub["locationCode"], sub["M"])]
-        ax.set_yticks(y)
-        ax.set_yticklabels(labels, fontsize=8)
-        ax.set_xlim(0, len(prior) + 2)
-        ax.set_ylim(-0.7, len(sub) - 0.3)
-        ax.axvline(len(prior), color="#333", ls="--", lw=1.0, alpha=0.5)
-        # BL label on the right, aligned with the panel
-        ax.text(
-            1.01, 0.5, bl,
-            transform=ax.transAxes,
-            fontsize=13, fontweight="bold", color=colour,
-            va="center", ha="left",
-        )
-        ax.spines["top"].set_visible(False)
-        ax.spines["right"].set_visible(False)
-
-    # species-wide ceiling label — only on the top panel to avoid clutter
-    axes[0].text(
-        len(prior) - 0.3,
-        axes[0].get_ylim()[1] - 0.2,
-        f"species-wide SRK allele pool = {len(prior)}",
-        fontsize=9, color="#333", ha="right", va="top",
-    )
-    axes[-1].set_xlabel(
-        "Predicted number of distinct SRK alleles detected",
-        fontsize=11,
-    )
-    fig.suptitle(
-        f"Predicted SRK allele diversity per LEPA location"
-        f"{_year_suffix(year)}",
-        fontsize=13, y=0.995,
-    )
-    fig.tight_layout(rect=[0, 0, 0.94, 0.97])
-    fig.savefig(out_png, dpi=200)
-    fig.savefig(out_pdf)
-    plt.close(fig)
-
-
 def plot_diversity_unbiased_vs_sampling(pred: pd.DataFrame,
                                          prior: pd.DataFrame,
                                          out_png: Path, out_pdf: Path,
                                          year: int | None = None):
-    """Three-panel figure separating the UNBIASED local Fg diversity per
-    location (what Nature holds, driven by N_fertile_effective alone)
-    from the SAMPLING-inferred detection (what our seed genotyping
-    will recover, driven by M × 15 seeds) and the coverage ratio.
+    """Three-column × BL-row figure separating the UNBIASED local Fg
+    diversity per location (what Nature holds, driven by
+    N_fertile_effective alone) from the SAMPLING-inferred detection
+    (what our seed genotyping will recover, driven by M × 15 seeds)
+    and the coverage ratio.
+
+    Layout matches every other Phase 5 per-location figure: rows =
+    Bottleneck Lineages in canonical BL_ORDER (BL4 → BL5 → BL3 → BL1
+    → BL2, top-to-bottom); columns = Panel A / B / C. Row heights
+    ∝ number of locations per BL. Within each BL row, locations are
+    sorted by unbiased pool size (ascending, small → large).
 
     Panel A — Unbiased local Fg diversity. Depends only on
               N_fertile_effective. Answers: how many SRK alleles does
@@ -908,142 +844,147 @@ def plot_diversity_unbiased_vs_sampling(pred: pd.DataFrame,
         else "M_achievable_location"
     df["M"] = df[m_col].astype(float)
     df["N_eff"] = df["N_fertile_effective"].astype(float)
+    # Per-mother seed count for the label — the ACTUAL average seeds
+    # per mother recorded in the LEPA DB at this location. Used to
+    # answer the whole-dataset question ("what will our real data show?")
+    # rather than the design question (§ B.3/B.4: "how many are needed?").
+    df["seeds_per_mother_actual"] = np.where(
+        df["M"] > 0,
+        df["total_n_seeds_realised_exp"].astype(float) / df["M"],
+        np.nan,
+    )
 
-    # Sort locations by unbiased pool size (largest at top for readability),
-    # break ties by BL then by locationCode.
-    bl_rank = {bl: i for i, bl in enumerate(BL_ORDER)}
-    bl_rank.setdefault("Unassigned", len(BL_ORDER))
-    df["_bl_rank"] = df["BL"].map(bl_rank)
-    df = df.sort_values(
-        ["predicted_local_pool_size_mean", "_bl_rank", "locationCode"],
-        ascending=[True, True, True],
-    ).reset_index(drop=True)
+    # BL row order — canonical BL_ORDER first, Unassigned last (if any).
+    bls = [b for b in BL_ORDER if b in df["BL"].values]
+    if (df["BL"] == "Unassigned").any():
+        bls.append("Unassigned")
+    panel_colours = {**BL_COLORS, "Unassigned": "#8a8a8a"}
 
-    y = np.arange(len(df))
-    colours = np.array([BL_COLORS.get(b, "#8a8a8a") for b in df["BL"]])
-    labels = [
-        f"{code}  (N_eff = {int(n)}, mothers = {int(m)})"
-        for code, n, m in zip(df["locationCode"], df["N_eff"], df["M"])
-    ]
-
+    # Row heights ∝ N locations per BL (min 1 for empty rows).
+    heights = [max(int((df["BL"] == b).sum()), 1) for b in bls]
     fig, axes = plt.subplots(
-        1, 3,
-        figsize=(15.5, max(6.0, 0.24 * len(df) + 1.5)),
-        gridspec_kw={"width_ratios": [1.0, 1.0, 0.75]},
-        sharey=True,
+        len(bls), 3,
+        figsize=(15.5, max(6.5, 0.30 * sum(heights) + 2.5)),
+        gridspec_kw={
+            "height_ratios": heights,
+            "width_ratios":  [1.0, 1.0, 0.75],
+        },
+        sharex="col",
     )
+    if len(bls) == 1:
+        axes = np.array([axes])
 
-    # ---- Panel A: Unbiased local Fg diversity ----
-    axA = axes[0]
-    xerr_lo = df["predicted_local_pool_size_mean"] - df["predicted_local_pool_size_lo"]
-    xerr_hi = df["predicted_local_pool_size_hi"]   - df["predicted_local_pool_size_mean"]
-    for i in range(len(df)):
-        axA.errorbar(
-            df["predicted_local_pool_size_mean"].iloc[i], y[i],
-            xerr=[[xerr_lo.iloc[i]], [xerr_hi.iloc[i]]],
-            fmt="none", ecolor=colours[i], alpha=0.4,
-            elinewidth=1.0, capsize=2.0, zorder=1,
+    def _plot_metric(ax, sub, y, mean_col, lo_col, hi_col, colour):
+        xerr_lo = sub[mean_col] - sub[lo_col]
+        xerr_hi = sub[hi_col]   - sub[mean_col]
+        for i in range(len(sub)):
+            ax.errorbar(
+                sub[mean_col].iloc[i], y[i],
+                xerr=[[xerr_lo.iloc[i]], [xerr_hi.iloc[i]]],
+                fmt="none", ecolor=colour, alpha=0.4,
+                elinewidth=1.0, capsize=2.0, zorder=1,
+            )
+        ax.scatter(
+            sub[mean_col], y,
+            s=55, c=colour, edgecolor="white", linewidth=0.6, zorder=2,
         )
-    axA.scatter(
-        df["predicted_local_pool_size_mean"], y,
-        s=50, c=colours, edgecolor="white", linewidth=0.6, zorder=2,
-    )
-    axA.axvline(K_species, color="#333", ls="--", lw=1.0, alpha=0.5)
-    axA.set_xlim(0, K_species + 2)
-    axA.set_xlabel(
-        "Number of SRK allele classes present at the location\n"
-        "(unbiased truth — depends on N_fertile × connectivity only)",
-        fontsize=10,
-    )
-    axA.set_title("A. What Nature holds at each location", fontsize=11)
-    axA.set_yticks(y)
-    axA.set_yticklabels(labels, fontsize=8)
-    axA.text(
-        K_species - 0.3, len(df) - 0.5,
-        f"species-wide ceiling = {K_species}",
-        fontsize=8, color="#333", ha="right", va="top",
-    )
-    axA.spines["top"].set_visible(False)
-    axA.spines["right"].set_visible(False)
 
-    # ---- Panel B: Sampling-inferred detection ----
-    axB = axes[1]
-    xerr_lo = df["predicted_local_Fgs_detected_from_sampling_mean"] \
-              - df["predicted_local_Fgs_detected_from_sampling_lo"]
-    xerr_hi = df["predicted_local_Fgs_detected_from_sampling_hi"] \
-              - df["predicted_local_Fgs_detected_from_sampling_mean"]
-    for i in range(len(df)):
-        axB.errorbar(
-            df["predicted_local_Fgs_detected_from_sampling_mean"].iloc[i], y[i],
-            xerr=[[xerr_lo.iloc[i]], [xerr_hi.iloc[i]]],
-            fmt="none", ecolor=colours[i], alpha=0.4,
-            elinewidth=1.0, capsize=2.0, zorder=1,
+    for row_idx, bl in enumerate(bls):
+        sub = df[df["BL"] == bl].sort_values(
+            "predicted_local_pool_size_mean", ascending=True
+        ).reset_index(drop=True)
+        y = np.arange(len(sub))
+        colour = panel_colours[bl]
+        axA_row, axB_row, axC_row = axes[row_idx]
+
+        # ---- Panel A: unbiased ----
+        _plot_metric(axA_row, sub, y,
+                     "predicted_local_pool_size_mean",
+                     "predicted_local_pool_size_lo",
+                     "predicted_local_pool_size_hi", colour)
+        axA_row.axvline(K_species, color="#333", ls="--", lw=1.0, alpha=0.4)
+        axA_row.set_xlim(0, K_species + 2)
+        axA_row.set_ylim(-0.7, len(sub) - 0.3)
+        labels = [
+            f"{code}  (N_fert_eff = {int(n)}, M_mothers = {int(m)}, "
+            f"seeds/mother = {int(round(s)) if s == s else 0})"
+            for code, n, m, s in zip(
+                sub["locationCode"], sub["N_eff"], sub["M"],
+                sub["seeds_per_mother_actual"],
+            )
+        ]
+        axA_row.set_yticks(y)
+        axA_row.set_yticklabels(labels, fontsize=8)
+        axA_row.spines["top"].set_visible(False)
+        axA_row.spines["right"].set_visible(False)
+
+        # ---- Panel B: sampling ----
+        _plot_metric(axB_row, sub, y,
+                     "predicted_local_Fgs_detected_from_sampling_mean",
+                     "predicted_local_Fgs_detected_from_sampling_lo",
+                     "predicted_local_Fgs_detected_from_sampling_hi", colour)
+        axB_row.axvline(K_species, color="#333", ls="--", lw=1.0, alpha=0.4)
+        axB_row.set_xlim(0, K_species + 2)
+        axB_row.set_ylim(-0.7, len(sub) - 0.3)
+        axB_row.set_yticks(y); axB_row.set_yticklabels([])
+        axB_row.spines["top"].set_visible(False)
+        axB_row.spines["right"].set_visible(False)
+
+        # ---- Panel C: coverage ----
+        _plot_metric(axC_row, sub, y,
+                     "predicted_local_coverage_mean",
+                     "predicted_local_coverage_lo",
+                     "predicted_local_coverage_hi", colour)
+        axC_row.axvline(0.9, color="#333", ls=":", lw=1.0, alpha=0.6)
+        axC_row.axvline(1.0, color="#333", ls="--", lw=1.0, alpha=0.4)
+        axC_row.set_xlim(0, 1.05)
+        axC_row.set_ylim(-0.7, len(sub) - 0.3)
+        axC_row.set_yticks(y); axC_row.set_yticklabels([])
+        axC_row.spines["top"].set_visible(False)
+        axC_row.spines["right"].set_visible(False)
+
+        # BL label on the right of Panel C
+        axC_row.text(
+            1.03, 0.5, bl,
+            transform=axC_row.transAxes,
+            fontsize=13, fontweight="bold", color=colour,
+            va="center", ha="left",
         )
-    axB.scatter(
-        df["predicted_local_Fgs_detected_from_sampling_mean"], y,
-        s=50, c=colours, edgecolor="white", linewidth=0.6, zorder=2,
-    )
-    axB.axvline(K_species, color="#333", ls="--", lw=1.0, alpha=0.5)
-    axB.set_xlim(0, K_species + 2)
-    axB.set_xlabel(
-        "Number of SRK allele classes recovered by our seed genotyping\n"
-        "(sampling — M mothers × 15 seeds each; 4 + 2·15 = 34 draws per mother)",
-        fontsize=10,
-    )
-    axB.set_title("B. What our sampling will detect", fontsize=11)
-    axB.spines["top"].set_visible(False)
-    axB.spines["right"].set_visible(False)
 
-    # ---- Panel C: Coverage fraction ----
-    axC = axes[2]
-    xerr_lo = df["predicted_local_coverage_mean"] - df["predicted_local_coverage_lo"]
-    xerr_hi = df["predicted_local_coverage_hi"]   - df["predicted_local_coverage_mean"]
-    for i in range(len(df)):
-        axC.errorbar(
-            df["predicted_local_coverage_mean"].iloc[i], y[i],
-            xerr=[[xerr_lo.iloc[i]], [xerr_hi.iloc[i]]],
-            fmt="none", ecolor=colours[i], alpha=0.4,
-            elinewidth=1.0, capsize=2.0, zorder=1,
-        )
-    axC.scatter(
-        df["predicted_local_coverage_mean"], y,
-        s=50, c=colours, edgecolor="white", linewidth=0.6, zorder=2,
-    )
-    axC.axvline(0.9, color="#333", ls=":", lw=1.0, alpha=0.6)
-    axC.axvline(1.0, color="#333", ls="--", lw=1.0, alpha=0.4)
-    axC.set_xlim(0, 1.05)
-    axC.set_xlabel(
-        "Fraction of local SRK pool recovered\n"
-        "(coverage — Panel B ÷ Panel A; dotted line = 90 % target)",
-        fontsize=10,
-    )
-    axC.set_title("C. How well the sampling recovers the truth", fontsize=11)
-    axC.spines["top"].set_visible(False)
-    axC.spines["right"].set_visible(False)
+    # Column headers (only on the top row)
+    axes[0, 0].set_title("A. What Nature holds at each location",
+                          fontsize=11)
+    axes[0, 1].set_title("B. What our sampling will detect",
+                          fontsize=11)
+    axes[0, 2].set_title("C. How well the sampling recovers the truth",
+                          fontsize=11)
+    # Species-wide ceiling label on the top A/B panels
+    axes[0, 0].text(K_species - 0.3, axes[0, 0].get_ylim()[1] - 0.2,
+                    f"species-wide ceiling = {K_species}",
+                    fontsize=8, color="#333", ha="right", va="top")
 
-    # BL legend on top of the figure
-    handles = [
-        plt.Line2D([0], [0], marker="o", color="w",
-                   markerfacecolor=BL_COLORS[b], markersize=8, label=b)
-        for b in BL_ORDER if b in df["BL"].values
-    ]
-    if "Unassigned" in df["BL"].values:
-        handles.append(plt.Line2D([0], [0], marker="o", color="w",
-                                   markerfacecolor="#8a8a8a", markersize=8,
-                                   label="Unassigned"))
-    fig.legend(handles=handles, loc="upper center",
-               ncol=len(handles), fontsize=9,
-               bbox_to_anchor=(0.5, 1.01), frameon=False)
+    # Column x-labels — short single lines, panel-bounded to avoid overlap.
+    axes[-1, 0].set_xlabel(
+        "SRK allele classes present at the location",
+        fontsize=10)
+    axes[-1, 1].set_xlabel(
+        "SRK allele classes recovered by our sampling",
+        fontsize=10)
+    axes[-1, 2].set_xlabel(
+        "Fraction of local SRK pool recovered",
+        fontsize=10)
 
     fig.suptitle(
-        "Predicted SRK allele diversity per LEPA location — "
-        "unbiased truth (A) vs sampling recovery (B) vs coverage (C)"
+        "Predicted SRK allele diversity per LEPA location"
         f"{_year_suffix(year)}\n"
-        "Under the tetraploid P1 finite-population model, each seed's "
-        "2 paternal alleles sample the local pollen donor pool.",
-        fontsize=11, y=1.05,
+        "A: unbiased truth (N_fert_eff = N_fertile × 50 m connectivity).  "
+        "B: sampling recovery (4·M + 2·total_seeds allele draws from the LEPA DB).  "
+        "C: coverage = B ÷ A (dotted line = 90 % target).\n"
+        "Panelled by Bottleneck Lineage in BL_ORDER. Y-label = "
+        "locationCode (N_fert_eff, M_mothers, seeds/mother).",
+        fontsize=11, y=0.995,
     )
-    fig.tight_layout()
+    fig.tight_layout(rect=[0, 0, 0.96, 0.97])
     fig.savefig(out_png, dpi=200, bbox_inches="tight")
     fig.savefig(out_pdf, bbox_inches="tight")
     plt.close(fig)
@@ -1657,10 +1598,6 @@ def main() -> None:
           f"{bands['struggling_max']:.4f}.")
     print(f"[step30] Wrote {bands_path}")
 
-    plot_prediction_diversity(pred_div, prior,
-        out_png=figures_dir / "step30_A_prediction_diversity.png",
-        out_pdf=figures_dir / "step30_A_prediction_diversity.pdf",
-        year=args.year)
     plot_diversity_unbiased_vs_sampling(pred_div, prior,
         out_png=figures_dir / "step30_A_diversity_unbiased_vs_sampling.png",
         out_pdf=figures_dir / "step30_A_diversity_unbiased_vs_sampling.pdf",
