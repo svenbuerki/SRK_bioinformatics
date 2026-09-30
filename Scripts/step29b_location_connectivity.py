@@ -269,23 +269,16 @@ def main() -> None:
               f"{n_frag}/{len(df)} locations < 50 % connected.")
 
     DEFAULT_FIGURES.mkdir(parents=True, exist_ok=True)
-    # Primary figure at the small-bee 10 m assumption, and sensitivity
-    # figures at 25 m and 50 m for reviewers who want to see how the
-    # picture changes with a longer pollen-flight assumption.
-    for R in RADII_M:
-        R_i = int(round(R))
-        # 50 m is the primary radius (unlabelled), 10 m and 25 m are sensitivity.
-        suffix = "" if R_i == 50 else f"_{R_i}m"
-        plot_connectivity_by_bl(
-            df,
-            out_png=DEFAULT_FIGURES / f"step29_location_connectivity{suffix}.png",
-            out_pdf=DEFAULT_FIGURES / f"step29_location_connectivity{suffix}.pdf",
-            radius_m=R_i,
-        )
-    plot_radius_sensitivity(
+    # Primary connectivity map at the 50 m primary pollinator radius.
+    # The per-radius sensitivity variants (10 m, 25 m, 50 m) and the
+    # radius-sensitivity summary figure were dropped in the 2026-09-30
+    # declutter — step29a_pollinator_radius_sensitivity now carries
+    # the full 10–200 m radius-choice justification in one figure.
+    plot_connectivity_by_bl(
         df,
-        out_png=DEFAULT_FIGURES / "step29_location_connectivity_radius_sensitivity.png",
-        out_pdf=DEFAULT_FIGURES / "step29_location_connectivity_radius_sensitivity.pdf",
+        out_png=DEFAULT_FIGURES / "step29_location_connectivity.png",
+        out_pdf=DEFAULT_FIGURES / "step29_location_connectivity.pdf",
+        radius_m=50,
     )
     print(f"[step29] Figures in {DEFAULT_FIGURES}/")
 

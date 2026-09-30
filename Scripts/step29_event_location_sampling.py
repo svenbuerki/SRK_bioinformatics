@@ -871,26 +871,11 @@ def main() -> None:
     curves_path = tables_dir / "step29_location_coverage_curves.tsv"
     curves.to_csv(curves_path, sep="\t", index=False)
     print(f"[step29] Wrote {curves_path}")
-
-    plot_curves(
-        curves,
-        out_png=figures_dir / "step29_location_coverage_curves.png",
-        out_pdf=figures_dir / "step29_location_coverage_curves.pdf",
-    )
-    if "A_target_90pct_P1" in per_location.columns:
-        prior_f = load_p1_prior(DEFAULT_PRIOR_TSV)
-        plot_curves_empirical(
-            prior_f, per_location,
-            out_png=figures_dir / "step29_location_coverage_curves_P1.png",
-            out_pdf=figures_dir / "step29_location_coverage_curves_P1.pdf",
-            seeds_per_mother=DEFAULT_SEEDS_PER_MOTHER,
-        )
-        plot_recommended_seeds_per_mother(
-            per_location,
-            out_png=figures_dir / "step29_recommended_seeds_per_mother_P1.png",
-            out_pdf=figures_dir / "step29_recommended_seeds_per_mother_P1.pdf",
-        )
-    print(f"[step29] Figures in {figures_dir}/")
+    # The coverage-curve figures and per-mother tier figure were dropped
+    # in the 2026-09-30 declutter — superseded by
+    # step29c_sampling_comparison (target vs already collected) and by
+    # step30_A_diversity_unbiased_vs_sampling (finite-population truth
+    # vs sampling recovery). Coverage curves TSV kept for audit only.
 
 
 if __name__ == "__main__":

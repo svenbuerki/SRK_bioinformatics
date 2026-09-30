@@ -1002,14 +1002,12 @@ finite-population model, not a species-wide random-mating limit.
 Connectivity enters the pipeline as an **effective-N multiplier**
 for the compatibility model and as an **explicit predictor** in the
 Phase B mate-limitation regression. See [**Figure 7**](#fig-7)
-(per-location bars at 50 m) and [**Figure 8**](#fig-8)
-(radius-sensitivity aggregate) below.
+below for the per-location connectivity map at 50 m; the full
+radius sensitivity that justifies 50 m as the primary choice is in
+[Figure 1](#fig-1) (§ A.5).
 
 <a id="fig-7"></a>
-![Figure 7: Within-location pollen connectivity across the 39 LEPA locations at the **50 m primary pollen-flight radius**. One bar per location, panelled by Bottleneck Lineage (BL4 orange, BL5 green, BL3 red, BL1 purple, BL2 blue — Set1 palette shared with the LEPA_EO_spatial_clustering project). Bar length = fraction of the location's adults that sit in a connected component containing more than one event. Vertical guides: 50 % (orange dotted) and 90 % (green dotted) thresholds. Row labels list the location code, number of events, and total adult census. **At 50 m, 18 / 39 locations reach 90 % within-location connectivity; 11 / 39 sit below 50 %.** Sensitivity views at 10 m (conservative small-bee patch) and 25 m (short-flight) are stored alongside as `step29_location_connectivity_10m.png/pdf` and `step29_location_connectivity_25m.png/pdf`. Source: `step29b_location_connectivity.py`. Data: [`step29_location_connectivity.tsv`](tables/Phase5/step29_location_connectivity.tsv).](figures/Phase5/step29_location_connectivity.png)
-
-<a id="fig-8"></a>
-![Figure 8: Radius sensitivity of within-location pollen connectivity across all 39 LEPA locations at the three sampling-recipe-relevant radii (10 / 25 / 50 m). Orange bars = fraction of locations reaching ≥ 50 % adults connected at each radius; green bars = fraction reaching ≥ 90 %. At **10 m** (conservative small-bee patch) **0 / 39** locations are fully connected — the framework would flag every LEPA location as fragmented, an over-strong claim. At **25 m** (short-flight sensitivity) **8 / 39 (21 %)** reach 90 % connectivity. **At 50 m (primary), 18 / 39 (46 %) reach 90 % connectivity and 28 / 39 (72 %) reach 50 %** — the "sweet spot" between over-fragmentation and full saturation, and the choice justified by the § A.5 pollinator-radius sweep ([Figure 1](#fig-1)). Source: `step29b_location_connectivity.py`.](figures/Phase5/step29_location_connectivity_radius_sensitivity.png)
+![Figure 7: Within-location pollen connectivity across the 39 LEPA locations at the **50 m primary pollen-flight radius**. One bar per location, panelled by Bottleneck Lineage (BL4 orange, BL5 green, BL3 red, BL1 purple, BL2 blue — Set1 palette shared with the LEPA_EO_spatial_clustering project). Bar length = fraction of the location's adults that sit in a connected component containing more than one event. Vertical guides: 50 % (orange dotted) and 90 % (green dotted) thresholds. Row labels list the location code, number of events, and total adult census. **At 50 m, 18 / 39 locations reach 90 % within-location connectivity; 11 / 39 sit below 50 %.** Source: `step29b_location_connectivity.py`. Data: [`step29_location_connectivity.tsv`](tables/Phase5/step29_location_connectivity.tsv).](figures/Phase5/step29_location_connectivity.png)
 
 ### B.3 Per-mother seed count — sampling design (Step 28)
 
@@ -1261,9 +1259,6 @@ Field sampling effort is auditable at the per-mother level. The field
 team receives one number per germplasmID
 ([`step29_field_team_sampling_recipe.tsv`](tables/Phase5/step29_field_team_sampling_recipe.tsv)).
 
-<a id="fig-10"></a>
-![Figure 10: Recommended seeds per mother plant for each LEPA location under the P1 empirical prior + tetraploid LEPA (2 paternal alleles per seed). One horizontal bar per location, coloured by achievability tier: **green** (≤ 15 seeds/mother, fits the Step 28 Rule 2 tetraploid floor), **amber** (16–100 seeds/mother, achievable with focused effort), **red** (> 100 seeds/mother, unrealistic — the location's census is too small to characterise). Vertical guides: 15 (Rule 2 tetraploid floor) and 100 (practical ceiling). Bars > 300 are capped for display, with the true value annotated at the right. **19 / 39 locations sit in the green tier; 16 in amber; 4 in red (all single-plant or two-plant slickspots in the EO24 group).** Source: `step29_event_location_sampling.py`.](figures/Phase5/step29_recommended_seeds_per_mother_P1.png)
-
 #### B.4.1 How many mothers per location to observe every predicted SRK allele
 
 **Question.** Panel B of [Figure 9](#fig-9) shows *expected*
@@ -1308,8 +1303,11 @@ mothers across events** so every event contributes ≥ 1.
 private-allele floor binds at 31 / 52 locations** — for the majority
 of LEPA locations the real sampling constraint is not the
 coupon-collector maths, it is the number of events that must each be
-represented. See [Figure 11](#fig-11) and
-[`step28_mothers_for_full_detection_by_location.tsv`](tables/Phase5/step28_mothers_for_full_detection_by_location.tsv).
+represented. Numeric per-location results in
+[`step28_mothers_for_full_detection_by_location.tsv`](tables/Phase5/step28_mothers_for_full_detection_by_location.tsv);
+the visual view has been superseded by [Figure 12](#fig-12) (§ B.4.2)
+which shows the honest fragmentation-aware allocation against what
+the LEPA DB already holds.
 
 **Caveat.** The uniform-frequency assumption is optimistic; when
 allele frequencies are skewed (which is what drift produces), rare
@@ -1317,9 +1315,6 @@ alleles need substantially more mothers than the 90 % bound suggests.
 The private-allele floor is the practical safeguard — it forces at
 least one mother per event so no event's private alleles are missed
 even when frequency skew is severe.
-
-<a id="fig-11"></a>
-![Figure 11: Per-location sampling target to observe every predicted SRK allele at 90 % probability under the uniform coupon-collector model, additionally requiring at least one mother per event (private-allele floor). One row per LEPA location, panelled by Bottleneck Lineage; solid coloured bar = `M_recommended` (the binding floor); open bar with the same colour outline = the uniform coupon-collector bound alone. Row labels give the location code, number of events, adult census and predicted local pool size K. Where the solid bar extends beyond the open bar, the private-allele floor is binding — the location has more events than the coupon-collector maths would ask for, and the extra mothers are needed so no event is skipped. Median `M_recommended = 7`; **31 / 52 locations** have the private-allele floor bind (i.e. `n_events > M_uniform`). Source: `step28_seed_sampling_per_mother.py`. Data: [`step28_mothers_for_full_detection_by_location.tsv`](tables/Phase5/step28_mothers_for_full_detection_by_location.tsv), [`step28_mothers_for_full_detection_by_bin.tsv`](tables/Phase5/step28_mothers_for_full_detection_by_bin.tsv).](figures/Phase5/step28_mothers_for_full_detection.png)
 
 #### B.4.2 Fragmentation-aware sampling — comparison with the current allocation
 
@@ -1931,19 +1926,11 @@ or right-click → *Save link as…* to pull the TSV into your local pipeline.
 
 **Figures** (PNG + PDF):
 
-- [`step28_coverage_curves.pdf`](figures/Phase5/step28_coverage_curves.pdf) / [`.png`](figures/Phase5/step28_coverage_curves.png) — per-mother coverage vs seeds and aggregation across mothers, one curve per event-size bin, with Rule 2 cap.
-- [`step28_per_mother_budget.pdf`](figures/Phase5/step28_per_mother_budget.pdf) / [`.png`](figures/Phase5/step28_per_mother_budget.png) — per-mother seed budget vs recommended n.
-- [`step28_mothers_for_full_detection.pdf`](figures/Phase5/step28_mothers_for_full_detection.pdf) / [`.png`](figures/Phase5/step28_mothers_for_full_detection.png) — per-location M_recommended (90 % chance to see every predicted SRK allele + ≥ 1 mother per event), panelled by BL.
+- [`step28_coverage_curves.pdf`](figures/Phase5/step28_coverage_curves.pdf) / [`.png`](figures/Phase5/step28_coverage_curves.png) — per-mother coverage vs seeds and aggregation across mothers, one curve per event-size bin, with Rule 2 cap. Justifies the tetraploid Rule 2 = 15 seeds/mother allele-detection floor.
 - [`step28d_pcompat_precision.pdf`](figures/Phase5/step28d_pcompat_precision.pdf) / [`.png`](figures/Phase5/step28d_pcompat_precision.png) — Part C justification (§ B.3.1) — per-mother observed P_compat SE vs seed count; precision plateau at ~15 seeds.
 - [`step28d_matelim_power.pdf`](figures/Phase5/step28d_matelim_power.pdf) / [`.png`](figures/Phase5/step28d_matelim_power.png) — Part C justification (§ B.3.1) — § C.1 mate-limitation regression power vs seed count; ≥ 99 % power at n_seeds = 15 for medium/large β₁, marginal at small β₁.
-- [`step29c_sampling_comparison.pdf`](figures/Phase5/step29c_sampling_comparison.pdf) / [`.png`](figures/Phase5/step29c_sampling_comparison.png) — head-to-head M_current vs M_frag_aware per location, BL-panelled, sorted by Δ.
-- [`step29_location_coverage_curves.pdf`](figures/Phase5/step29_location_coverage_curves.pdf) / [`.png`](figures/Phase5/step29_location_coverage_curves.png) — uniform-K location curves.
-- [`step29_location_coverage_curves_P1.pdf`](figures/Phase5/step29_location_coverage_curves_P1.pdf) / [`.png`](figures/Phase5/step29_location_coverage_curves_P1.png) — P1-prior location curves with per-location bars.
-- [`step29_recommended_seeds_per_mother_P1.pdf`](figures/Phase5/step29_recommended_seeds_per_mother_P1.pdf) / [`.png`](figures/Phase5/step29_recommended_seeds_per_mother_P1.png) — per-location seed-genotyping recipe (green/amber/red tiers).
+- [`step29c_sampling_comparison.pdf`](figures/Phase5/step29c_sampling_comparison.pdf) / [`.png`](figures/Phase5/step29c_sampling_comparison.png) — fragmentation-aware sampling target (§ B.4.2) vs mothers already collected in the LEPA DB, BL-panelled.
 - [`step29_location_connectivity.pdf`](figures/Phase5/step29_location_connectivity.pdf) / [`.png`](figures/Phase5/step29_location_connectivity.png) — **primary connectivity map at 50 m**, BL-panelled.
-- [`step29_location_connectivity_10m.pdf`](figures/Phase5/step29_location_connectivity_10m.pdf) / [`.png`](figures/Phase5/step29_location_connectivity_10m.png) — sensitivity: 10 m conservative.
-- [`step29_location_connectivity_50m.pdf`](figures/Phase5/step29_location_connectivity_50m.pdf) / [`.png`](figures/Phase5/step29_location_connectivity_50m.png) — sensitivity: 50 m optimistic.
-- [`step29_location_connectivity_radius_sensitivity.pdf`](figures/Phase5/step29_location_connectivity_radius_sensitivity.pdf) / [`.png`](figures/Phase5/step29_location_connectivity_radius_sensitivity.png) — aggregate across radii (justification for 50 m primary).
 - [`step30_A_diversity_unbiased_vs_sampling.pdf`](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.pdf) / [`.png`](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.png) — three-panel per-location diversity figure: what Nature holds (unbiased, `N_fertile_effective`), what our sampling detects (from actual LEPA DB seed counts), and the coverage fraction. Flags coverage against the 90 % target.
 - [`step30_A_si_model_schematic.pdf`](figures/Phase5/step30_A_si_model_schematic.pdf) / [`.png`](figures/Phase5/step30_A_si_model_schematic.png) — three-panel pedagogical schematic of the sporophytic Class I / II model (§ A.7): dominance within a plant, worked example, compatibility rule by cross type.
 - [`step30_A_prediction_fecundation.pdf`](figures/Phase5/step30_A_prediction_fecundation.pdf) / [`.png`](figures/Phase5/step30_A_prediction_fecundation.png) — BL-panelled compatibility per location, traffic-light bands.

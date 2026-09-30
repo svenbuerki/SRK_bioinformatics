@@ -1068,21 +1068,10 @@ def main() -> None:
           f"Private-allele floor (M_events > M_uniform) binds at "
           f"{event_binds}/{len(fd_loc)} locations.")
 
-    plot_full_detection_by_location(
-        fd_loc,
-        out_png=figures_dir / "step28_mothers_for_full_detection.png",
-        out_pdf=figures_dir / "step28_mothers_for_full_detection.pdf",
-    )
-
     plot_coverage_curves(
         curves, agg,
         out_png=figures_dir / "step28_coverage_curves.png",
         out_pdf=figures_dir / "step28_coverage_curves.pdf",
-    )
-    plot_per_mother_budget(
-        per_mother,
-        out_png=figures_dir / "step28_per_mother_budget.png",
-        out_pdf=figures_dir / "step28_per_mother_budget.pdf",
     )
     print(f"[step28] Figures in {figures_dir}/")
 

@@ -168,7 +168,7 @@ because their census is spread across several slickspots more than
 50 m apart. This connectivity factor is what pulls `N_fertile`
 downstream in the P_compat and fragmentation calculations.
 
-![Figure 2 — Pollinator-radius sensitivity sweep. Four panels showing how connectivity, fragmentation-aware sampling cost, predicted P_compat, and the sustainable-band fraction of locations change across radii from 10 to 200 m. Connectivity plateaus at ≥ 75 m and P_compat is radius-independent under empirical zygosity, justifying 50 m as the primary radius.](figures/Phase5/step29_location_connectivity_radius_sensitivity.png)
+![Figure 2 — Pollinator-radius sensitivity sweep. Four panels showing how connectivity, fragmentation-aware sampling cost, predicted P_compat, and the sustainable-band fraction of locations change across radii from 10 to 200 m. Connectivity plateaus at ≥ 75 m and P_compat is radius-independent under empirical zygosity, justifying 50 m as the primary radius.](figures/Phase5/step30_A_radius_sensitivity.png)
 
 ---
 
@@ -514,7 +514,7 @@ prediction on each end.
 
 **Key figures.**
 
-- [`step29_location_connectivity_radius_sensitivity.png`](figures/Phase5/step29_location_connectivity_radius_sensitivity.png)
+- [`step30_A_radius_sensitivity.png`](figures/Phase5/step30_A_radius_sensitivity.png)
   — why 50 m is the right primary radius.
 - [`step30_A_diversity_unbiased_vs_sampling.png`](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.png)
   — three-panel: what Nature holds (unbiased) vs what our sampling detects vs coverage.
