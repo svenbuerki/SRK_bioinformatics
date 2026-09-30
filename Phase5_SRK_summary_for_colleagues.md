@@ -71,85 +71,27 @@ experimental target.
 
 ---
 
-## Step 28 — How many seeds per mother?
+## The question this doc builds toward
 
-**Question.** How many seeds must we genotype from each mother to
-observe most of the SRK alleles she was actually crossed with, given
-that she can only be pollinated by adults within ~50 m?
+**How many seeds per mother should the lab genotype for Part C
+testing?** That single number is the practical output of the whole
+framework, and it depends on three things — none of which can be
+skipped:
 
-**Approach.** Each seed contributes 2 paternal SRK alleles under
-tetraploid sporophytic inheritance. Under a uniform-pollen coupon
-collector, the probability of missing any one of K local paternal
-Fgs after 2·n seed alleles is `(1 − 1/K)^(2n)`. Setting
-`(1 − 1/K)^(2n) = 0.10` gives the seeds needed for a 90 % chance to
-see every Fg. Rule 2 caps this at **n = 15 seeds/mother** — the point
-where the return per additional seed is negligible.
+- **Fragmentation** — how many adults actually share a pollen
+  environment at each location.
+- **SRK diversity** — how many Fg alleles Nature holds locally under
+  fragmentation-driven drift.
+- **Pollen compatibility (P_compat)** — how much of the local pool
+  a mother is compatible with under sporophytic Class I / II SI.
 
-**Result.**
-
-| Reachable donor plants around a mother | K (local Fgs) | Seeds/mother for 90 % detection | Delivered at Rule 2 (n = 15) |
-|---|---|---|---|
-| 1–2 | ~4 | 3 | 4.0 of 4 (100 %) |
-| 3–5 | ~12 | 9 | 11.1 of 12 (93 %) |
-| 6–10 | ~28 | 18 | 18.6 of 28 (66 %) |
-| 11–20 | ~32 | 20 | 19.7 of 32 (62 %) |
-| > 50 | 32 (species ceiling) | 24 | 19.7 of 32 (62 %) |
-
-A single mother sitting in a large event cannot saturate the local
-32-Fg pool from 15 seeds alone — but the shortfall closes cleanly
-when several mothers' seed lots aggregate at the location scale
-(Step 29).
-
-![Figure 1 — Step 28 coverage curves. Panel A: per-mother detection of the local Fg pool as a function of seeds genotyped, one curve per event-size bin; the vertical red line at 15 marks the tetraploid Rule 2 cap. Panel B: aggregation of coverage across mothers at a location (15 seeds × M). Every event size reaches its local ceiling by 5 mothers.](figures/Phase5/step28_coverage_curves.png)
-
-**Does 15 seeds give enough Part C testing power?** Coupon-collector
-justifies 15 as the *allele detection* floor. Two additional
-simulations check whether it also passes the *regression* thresholds:
-
-- **Per-mother P_compat precision** — observed P_compat has binomial
-  SE `√(p·(1−p) / n_seeds)`. Drops from ~0.28 at 3 seeds to
-  ~0.12 at 15 (visible plateau), only marginal gains beyond.
-- **§ C.1 mate-limitation regression power** — full-pipeline sim of
-  505 mothers × 39 locations. At n_seeds = 15: **99.6 % power** for a
-  medium effect (β₁ = 100 seeds per unit P_compat), **69 % for a
-  small effect (β₁ = 50, below the 80 % target)**. Errors-in-variables
-  attenuation of β̂₁ is ~0.42 — real but doesn't prevent detection at
-  realistic effect sizes.
-
-15 seeds is comfortably enough for medium-to-large mate-limitation
-signals; the marginal power at small effect sizes comes from the same
-40 events / 79-mother shortage the § B.4.3 lab recipe flags.
-
-![Figure 1b — Justifying 15 seeds for Part C testing. Left: per-mother P_compat precision vs seed count for four true P_compat values, with a plateau visible at ~15 seeds. Right: § C.1 mate-limitation regression power vs seed count for four effect sizes; 15 seeds delivers ≥ 99 % power for β₁ ≥ 100.](figures/Phase5/step28d_matelim_power.png)
+The next sections build those three quantities up in order. The
+sampling design — mother count per location, seed count per mother
+— is derived at the end, once the causal chain is on the table.
 
 ---
 
-## Step 29 — How many mothers per location?
-
-**Question.** How many mothers must we sample at each location to
-observe every SRK allele physically present in the location's mating
-pool?
-
-**Approach.** Under tetraploid sampling each adult contributes
-`PLOIDY × N_fertile = 4·N` allele copies to the location's pool. Set
-the coupon-collector target: 90 % chance of observing every Fg in the
-local pool at the total delivered allele draws
-`A_delivered = M × (4 + 2 × 15) = 34·M`. Add a private-allele floor:
-**at least one mother per event** (an isolated slickspot's private
-Fg cannot be recovered from any other event).
-
-**Result.** 39 of 39 locations reach 100 % local coverage under the
-recommended M. Distribution of the field-team recipe:
-
-- **Green tier (≤ 15 seeds/mother):** 19 / 39 locations.
-- **Amber tier (16–100 seeds/mother):** 16 / 39 locations.
-- **Red tier (> 100 seeds/mother, unrealistic):** 4 / 39 locations
-  — all single-plant or two-plant slickspots in the EO24 group,
-  where the census is simply too small to characterise fully.
-
----
-
-## Step 29b — Which adults actually pollinate which?
+## Link 1 — Fragmentation of pollen flow (Step 29b)
 
 **Question.** How do we count the effective mating pool at each
 location, given that a pollinator's flight radius is finite?
@@ -169,74 +111,6 @@ because their census is spread across several slickspots more than
 downstream in the P_compat and fragmentation calculations.
 
 ![Figure 2 — Pollinator-radius sensitivity sweep. Four panels showing how connectivity, fragmentation-aware sampling cost, predicted P_compat, and the sustainable-band fraction of locations change across radii from 10 to 200 m. Connectivity plateaus at ≥ 75 m and P_compat is radius-independent under empirical zygosity, justifying 50 m as the primary radius.](figures/Phase5/step30_A_radius_sensitivity.png)
-
----
-
-## Step 29c — Fragmentation-aware sampling
-
-**Question.** If a location is fragmented into several disconnected
-50 m mating pools, how many mothers do we need per pool?
-
-**Approach.** Decompose each location into its 50 m connected
-components. For each component apply Step 29's coupon-collector,
-plus a maternal floor of ≥ 1 mother per event. Sum the per-component
-requirements to obtain the location's honest mother allocation
-`M_frag`.
-
-**Result.**
-
-- **Design target: 505 mothers across 39 locations.**
-- **Already collected in the LEPA DB: 765 mothers** — 1.5× the target.
-- **33 / 39 locations are fully covered** by the current DB.
-- **6 / 39 locations are short of the target** — 25 mothers total.
-  The six short locations (EO27-1, EO27RT, EO26-2, EO8, EO67, EO8)
-  are the field-team top-up target for the 2026 season.
-
-This is the most consequential design shift: the old pooled
-allocation systematically under-sampled fragmented locations.
-`M_frag` is now the authoritative field-team recipe (see
-[`step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv)).
-
-**Locked field-team recipe.** With the fragmentation-aware allocation
-in place, the design is now frozen for the next field season:
-
-| Quantity | Value |
-|---|---|
-| Primary pollinator radius | **50 m** |
-| Effective mating pool metric | **N_fert_eff** = census × 50 m largest-component share |
-| Seeds per mother (tetraploid Rule 2) | **15 seeds** |
-| Mother allocation per location | Fragmentation-aware `M_frag` |
-| **Total mothers across 39 locations** | **505** |
-| **Total seed genotypes** | **505 × 15 = 7 575 seeds** |
-| Coupon-collector target | 90 % detection per 50 m component |
-
-15 seeds is the minimum defensible per-mother count under tetraploid
-Rule 2 — each mother contributes 4 maternal + 30 paternal = 34 allele
-draws, well above the coupon-collector floor for the largest 50 m
-components. Going below 15 would require adding more mothers, which
-is a worse trade because paternal draws double the allele yield per
-seed.
-
-**Three authoritative files** — one for the field team, one for the
-lab, and one for the event → component mapping:
-
-- **Field-team recipe** (for a new field season):
-  [`step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv) —
-  one row per event, `M_frag` = number of mothers to sample there.
-- **Lab recipe for Part C** (draws specific mothers from the DB):
-  [`step29c_partC_germplasmID_selection.tsv`](tables/Phase5/step29c_partC_germplasmID_selection.tsv) —
-  one row per SELECTED `germplasmID` already in the LEPA DB, with
-  `n_seeds_to_genotype = min(15, seeds_available)`. Selection is
-  **per 50 m component**: mothers within a component share their
-  pollen pool, so coverage travels freely within a component; only
-  the ≥ 1-mother-per-event maternal-genotype floor is a strict
-  per-event rule. Delivers **431 mothers × ≤ 15 seeds = 6 459 seeds**
-  for Part C from the current DB, with **76 mothers short across 35
-  components** flagged for a 2026 field top-up.
-- **Event → component lookup**:
-  [`step29c_event_to_component_50m.tsv`](tables/Phase5/step29c_event_to_component_50m.tsv) —
-  one row per event mapping (locationID, eventID) → 50 m component,
-  the single canonical source for "which events share a pollen pool?".
 
 ---
 
@@ -443,6 +317,120 @@ random-mating compatibility, holding the mothers themselves fixed.
 comparison does not test absolute calibration but robustness to
 per-EO drift. EO-scale is intermediate; the finer per-location test
 will happen in Phase B once seed genotypes are available.
+
+---
+
+## Sampling design — the answer to "how many mothers × how many seeds?"
+
+Now that fragmentation, drift and mate limitation are on the table,
+the sampling design falls out of the causal chain. Every choice below
+is derived from a quantity that has already been established, not
+proposed independently.
+
+### How many mothers per location?
+
+**Question.** How many mothers must we sample at each location to
+observe every SRK allele physically present in the location's mating
+pool?
+
+**Approach.** Under tetraploid sampling each adult contributes
+`PLOIDY × N_fert_eff = 4·N_fert_eff` allele copies to the location's
+pool. Coupon-collector target: 90 % chance of observing every Fg in
+the local pool at the total delivered allele draws
+`A_delivered = M × (4 + 2 × 15) = 34·M`. Plus a private-allele floor:
+**at least one mother per event** (an isolated slickspot's private
+Fg cannot be recovered from any other event).
+
+**Refinement — fragmentation-aware allocation.** If a location is
+fragmented into several disconnected 50 m mating pools, we decompose
+the location into its components and allocate mothers per component,
+plus the ≥ 1-per-event floor. The result is `M_frag` per event.
+
+**Result.**
+
+- **Design target: 505 mothers across 39 locations, 234 events.**
+- **Already collected in the LEPA DB: 765 mothers** — 1.5× the target.
+- **33 / 39 locations are fully covered** by the current DB.
+- **6 / 39 locations are short of the target** — 25 mothers total.
+  The six short locations (EO27-1, EO27RT, EO26-2, EO8, EO67, EO8)
+  are the field-team top-up target for the 2026 season.
+
+`M_frag` per event is the authoritative field-team recipe (see
+[`step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv)).
+
+### How many seeds per mother?
+
+**Question.** How many seeds must we genotype from each mother to
+characterise her local pollen environment well enough to test the
+mate-limitation prediction in § C.1?
+
+**Approach — Rule 2 tetraploid allele-detection floor.** Each seed
+contributes 2 paternal SRK alleles under tetraploid sporophytic
+inheritance. Under a uniform-pollen coupon collector, the probability
+of missing any one of K local paternal Fgs after 2·n seed alleles is
+`(1 − 1/K)^(2n)`. Setting `(1 − 1/K)^(2n) = 0.10` gives the seeds
+needed for a 90 % chance to see every Fg. **Rule 2 caps this at
+n = 15 seeds/mother** — the point where the return per additional
+seed is negligible.
+
+![Figure — Step 28 coverage curves. Panel A: per-mother detection of the local Fg pool as a function of seeds genotyped, one curve per event-size bin; the vertical red line at 15 marks the tetraploid Rule 2 cap. Panel B: aggregation of coverage across mothers at a location (15 seeds × M). Every event size reaches its local ceiling by 5 mothers.](figures/Phase5/step28_coverage_curves.png)
+
+**Does 15 seeds also give enough Part C testing power?**
+Coupon-collector justifies 15 as the allele-detection floor. Two
+additional simulations confirm it also passes the regression
+thresholds:
+
+- **Per-mother P_compat precision** — observed P_compat has binomial
+  SE `√(p·(1−p) / n_seeds)`. Drops from ~0.28 at 3 seeds to
+  ~0.12 at 15 (visible plateau); marginal gains beyond.
+- **§ C.1 mate-limitation regression power** — full-pipeline
+  simulation of 505 mothers × 39 locations. At n_seeds = 15:
+  **99.6 % power** for a medium effect (β₁ = 100 seeds per unit
+  P_compat), **69 % for a small effect (β₁ = 50, below the 80 %
+  target)**. Errors-in-variables attenuation of β̂₁ is ~0.42 — real
+  but doesn't prevent detection at realistic effect sizes.
+
+15 seeds is comfortably enough for medium-to-large mate-limitation
+signals. The marginal power at small effect sizes comes from the same
+25-mother / 6-location shortage the mother-count section flags —
+the 2026 top-up addresses both.
+
+![Figure — Justifying 15 seeds for Part C testing. Left: per-mother P_compat precision vs seed count for four true P_compat values, with a plateau visible at ~15 seeds. Right: § C.1 mate-limitation regression power vs seed count for four effect sizes; 15 seeds delivers ≥ 99 % power for β₁ ≥ 100.](figures/Phase5/step28d_matelim_power.png)
+
+### The locked recipe
+
+With mother count and seed count fixed, the design is frozen for the
+next field season:
+
+| Quantity | Value |
+|---|---|
+| Primary pollinator radius | **50 m** |
+| Effective mating pool metric | **N_fert_eff** = census × 50 m largest-component share |
+| Mother allocation per location | Fragmentation-aware `M_frag` (per 50 m component + ≥ 1 per event) |
+| Seeds per mother (tetraploid Rule 2) | **15 seeds** |
+| **Total mothers across 39 locations** | **505** |
+| **Total seed genotypes** | **505 × 15 = 7 575 seeds** |
+| Coupon-collector target | 90 % detection per 50 m component |
+
+**Three authoritative files:**
+
+- **Field-team recipe** (for a new field season):
+  [`step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv) —
+  one row per event, `M_frag` = number of mothers to sample there.
+- **Lab recipe for Part C** (draws specific mothers from the DB):
+  [`step29c_partC_germplasmID_selection.tsv`](tables/Phase5/step29c_partC_germplasmID_selection.tsv) —
+  one row per SELECTED `germplasmID` already in the LEPA DB, with
+  `n_seeds_to_genotype = min(15, seeds_available)`. Selection is
+  **per 50 m component**: mothers within a component share their
+  pollen pool, so coverage travels freely within a component; only
+  the ≥ 1-mother-per-event maternal-genotype floor is a strict
+  per-event rule. Delivers **431 mothers × ≤ 15 seeds = 6 459 seeds**
+  for Part C from the current DB, with **76 mothers short across 35
+  components** flagged for a 2026 field top-up.
+- **Event → component lookup**:
+  [`step29c_event_to_component_50m.tsv`](tables/Phase5/step29c_event_to_component_50m.tsv) —
+  one row per event mapping (locationID, eventID) → 50 m component,
+  the single canonical source for "which events share a pollen pool?".
 
 ---
 
