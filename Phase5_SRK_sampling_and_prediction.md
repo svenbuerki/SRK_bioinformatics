@@ -10,7 +10,8 @@ predictions, then test the predictions with real seed data:
 - [Scientific goals](#scientific-goals) — the four hypotheses this framework tests
 - **Part A** — [Model and predictions](#part-a--model-and-predictions) · data scope, species-wide P1 prior, finite-population model, and the Phase A predictions of SRK diversity and pollen compatibility per location (Step 30 Phase A outputs, Figures 4–6). *This is what we expect each location to look like — before we ever open a seed lot.*
 - **Part B** — [Sampling protocol derived from the predictions](#part-b--sampling-protocol-derived-from-the-predictions) · within-location pollen connectivity, per-mother seed count (Step 28), per-location mother count with private-allele floor (Step 29), and two-year design. *This is what the field team must do to test the Part A predictions.*
-- **Part C** — [Testing predictions with observed SRK data (Phase B)](#part-c--testing-predictions-with-observed-srk-data-phase-b) · preliminary EO-level validation with Phase 4 adult genotypes (§ C.0), mate-limitation regression, SI-escape rate test, script behaviour, data-generation pipeline, and the BL4 pilot.
+- **Part C** — [Testing predictions with observed SRK data (Phase B)](#part-c--testing-predictions-with-observed-srk-data-phase-b) · preliminary EO-level validation with Phase 4 adult genotypes (§ C.0), mate-limitation regression, script behaviour, data-generation pipeline, and the BL4 pilot.
+- [Appendix — Out of scope / future work](#appendix--out-of-scope--future-work) · SI-escape permutation-test scaffold retained for pipeline-validation purposes only; not part of the Phase 5 scientific analysis.
 - [Output map](#output-map--quick-reference-grouped-by-phase) — filenames organised by phase.
 
 **Naming.** Parts **A / B / C** refer to *sections of this document*.
@@ -24,8 +25,8 @@ and keep their existing `step28_*` / `step29_*` names.
 
 The purpose of this framework is not diversity estimation for its own sake.
 It is a location-level SRK sampling and inference pipeline that lets us test
-four connected hypotheses about the reproductive fate of small, isolated
-LEPA populations:
+connected hypotheses about **mate limitation and fragmentation** in small,
+isolated LEPA populations:
 
 1. **Mate-limitation test.** Do locations with fewer compatible pollen
    donors — driven by small mate pool, skewed Fg frequencies, or both —
@@ -33,11 +34,7 @@ LEPA populations:
    `germplasmQuantityEstimate` decline with predicted per-mother
    pollen compatibility (sporophytic Class I / II tetraploid model,
    see § A.7 for the biology and § A.8 for the maths)?
-2. **SI-escape test.** Under strict SI, no seed can carry a paternal Fg
-   matching either of its mother's Fgs. A location where seeds with
-   maternal-matching paternal Fgs appear above the strict-SI null is a
-   candidate for partial-SI transition (a breakdown of the SI machinery).
-3. **Fragmentation × drift decomposition.** Habitat fragmentation depresses
+2. **Fragmentation × drift decomposition.** Habitat fragmentation depresses
    K (the pollen-donor Fg pool a mother can access); genetic drift skews
    Fg frequencies at small isolated locations. Both reduce pollen
    compatibility but through different channels; the framework
@@ -47,10 +44,20 @@ LEPA populations:
    (§ A.5) — and Phase C's mate-limitation regression (§ C.1) then tests
    both simultaneously as two independent coefficients (β₁ = drift,
    β₂ = fragmentation).
-4. **Phenotype cross-validation (deferred).** SRK-based predictions can be
+3. **Phenotype cross-validation (deferred).** SRK-based predictions can be
    cross-checked against per-site ISI / fruit set in the Genetic-Rescue-DB
    repository. This adds independent lines of evidence but does not shape
    the sampling design and is not modelled here in v1.
+
+**Not addressed by this framework.** Self-incompatibility escape (plants
+in which SI has broken down entirely, producing viable self-seed) is
+*not* an outcome of Phase 5. Such individuals are identified during the
+Canu-amplicon SRK genotyping (Phase 4 Step 22b) and enter Phase 5 as
+prior information via the empirical zygosity distribution (§ A.7.3a),
+not as an experimental target. A DEMO SI-escape permutation-test
+scaffold exists in the Step 30 code for pipeline-validation purposes
+only — it is documented in the "Out of scope / future work" appendix
+at the end of this doc.
 
 The framework has two design consequences: **(1)** the sampling protocol
 must scale with each mother's real mate-availability context (Steps 28–29),
@@ -82,7 +89,7 @@ genotypes are available:
 | Phase | State of data | Uses | Produces |
 |---|---|---|---|
 | **A — Preliminary** (before SRK genotyping) | Field data only (`Germplasm.germplasmQuantityEstimate`, `Events.organismQuantityFertile`, event coordinates), plus the P1 species-wide prior | Steps 28, 29, and Step 30 in `prediction` mode | Per-mother sampling recipe + per-location seed-count recommendations, **plus** predicted SRK diversity, pollen compatibility, fecundation failure |
-| **B — Post-genotyping** (after SRK data are back) | Everything above + observed seed genotypes (from Phase A's sampling) | Step 30 in `comparison` mode + Tests 1 & 2 | Observed vs predicted SRK diversity, mate-limitation regression, SI-escape rate test — all only for the locations that have observed data |
+| **B — Post-genotyping** (after SRK data are back) | Everything above + observed seed genotypes (from Phase A's sampling) | Step 30 in `comparison` mode + Test 1 | Observed vs predicted SRK diversity, mate-limitation regression — all only for the locations that have observed data |
 
 **Filename conventions make the phase — and its data provenance —
 unambiguous.** Every Step 30 output uses one of three prefixes:
@@ -117,8 +124,8 @@ same semantics.**
   - `Occurrences.provenance = 'in situ'  OR  IS NULL` — keeps 2 419 + 552
     records, drops 808 ex-situ and 1 in-vitro.
   This is not a per-run switch — greenhouse plants have no place in a
-  wild-population mate-limitation and SI-escape analysis, so the filter
-  is baked in.
+  wild-population mate-limitation and fragmentation analysis, so the
+  filter is baked in.
 
 - **Mandatory · Coordinates present and inside LEPA's known bounding
   box.** Rows with NULL or free-text `eventDecimalLatitude` /
@@ -406,7 +413,7 @@ and `predicted_local_coverage_mean` columns in
 **Every LEPA location — including the tiny BL5 slickspots — is
 essentially fully characterised at the local level (~95–100 %).** The
 species-wide coverage number remains useful as a cataloguing metric,
-but for Phase B mate-limitation and SI-escape tests the local coverage
+but for the Phase B mate-limitation test the local coverage
 is what matters: we are testing reproductive dynamics on the alleles
 that are physically present, not attempting a species-wide inventory.
 
@@ -1220,9 +1227,9 @@ Two implementation rules keep the two-year design honest:
   geographically identical and would otherwise inflate K_spatial).
 - **Pooling for inference is question-specific.** Standing SRK diversity
   per location is pooled across years (a stationary quantity);
-  mate-limitation and SI-escape tests are *not* pooled but treated as
-  repeated measures per location (with year as a fixed effect and
-  location as a random effect).
+  the mate-limitation test is *not* pooled but treated as repeated
+  measures per location (with year as a fixed effect and location as
+  a random effect).
 
 The `--year YYYY` flag (documented under § A.2) is the single interface
 for running either Step 28 or Step 29 year by year:
@@ -1336,7 +1343,7 @@ being drift-free than the average EO.
   — the two-panel diagnostic described above.
 - Script: `step30c_srk_validation_at_eo_level.py`.
 
-### C.1 Test 1 — Mate-limitation regression (goals 1 + 3)
+### C.1 Test 1 — Mate-limitation regression (goals 1 + 2)
 
 Under strict SI + random mating in a **tetraploid sporophytic** system
 (§ A.3, § A.8), a mother's per-mother compatibility is given by the
@@ -1395,46 +1402,17 @@ cleanly.
 `beta_2_estimate`, 95 % CI, and a per-mother residual
 `obs_minus_pred_seeds`.
 
-### C.2 Test 2 — Self-incompatibility escape rate test (goal 2)
+### C.2 SI-escape rate test (moved to Appendix — out of scope for Phase 5)
 
-Under **strict SI**, the paternal SRK allele in any seed of mother $(a, b)$
-cannot equal $a$ or $b$. The rate of self-matching paternal alleles per
-location is therefore expected to be
+The SI-escape permutation test that lived here in earlier drafts is
+now in the [Appendix](#appendix--out-of-scope--future-work). The DEMO
+scaffold is retained in the Step 30 code for pipeline-validation
+purposes; the SI-escape analysis is not part of the Phase 5
+mate-limitation + fragmentation framework. See the appendix for the
+model, the null hypothesis, the permutation procedure, and the DEMO
+figure.
 
-$$\pi_{\text{self-match}}^{H_0} \;=\; 0$$
-
-Under **partial SI** or SI breakdown, some fraction of seeds carry a
-paternal Fg matching one of the mother's Fgs:
-
-$$\hat{\pi}_{\text{self-match}}(\ell) \;=\; \frac{\bigl|\{\text{seeds at loc.}\;\ell : \text{paternal Fg} \in (a_m, b_m)\}\bigr|}{\bigl|\text{seeds at loc.}\;\ell\bigr|}$$
-
-The **test** is a permutation of the strict-SI null: for each location,
-permute paternal alleles across seeds while preserving the marginal Fg
-frequency vector; the p-value is the fraction of permutations reaching
-$\hat{\pi}_{\text{self-match}}$ at least as extreme as observed.
-
-Locations with $\hat{\pi}_{\text{self-match}} > 0$ significantly are
-**candidate SI-escape sites**. Their status is then a validated hypothesis
-for follow-up phenotyping in Genetic-Rescue-DB (goal 4, deferred).
-
-**Predictable output columns** (per location): `n_seeds_scored`,
-`n_self_matching`, `pi_self_match`, `p_permutation`, `q_bh_fdr`.
-
-### C.3 Why the two tests together tell the story
-
-- Locations that pass Test 1 (mate-limited) but pass Test 2 (strict SI
-  preserved) → classical small-population reproductive failure,
-  compounded by fragmentation and/or drift, but the SI system still works.
-- Locations that pass Test 2 (SI-escape) → those are populations where the
-  reproductive-assurance response has already kicked in: the SI barrier
-  has partially broken down. These are where the ISI phenotypic data in
-  Genetic-Rescue-DB should show elevated fruit set relative to their
-  SRK-predicted $P_{\text{compat}}$.
-- Locations that pass **both** Tests → the highest-priority conservation
-  targets: reproductively failing *and* undergoing a mating-system
-  transition.
-
-### C.4 Step 30 script behaviour (CLI + phase filenames)
+### C.3 Step 30 script behaviour (CLI + phase filenames)
 
 **Script.** [`step30_srk_diversity_prediction_vs_observed.py`](step30_srk_diversity_prediction_vs_observed.py)
 
@@ -1445,17 +1423,15 @@ family. If no such TSV exists but the flag `--demo` is passed, the script
 simulates a plausible seed-genotype dataset from the prior itself — useful
 to verify the comparison pipeline end-to-end before real seed data arrive.
 
-### C.5 The clean payoff
+### C.4 The clean payoff
 
 - **Before seed data are back**: publishable predicted SRK diversity,
   predicted per-mother $P_{\text{compat}}$, and predicted
   fecundation-failure rates per location — with honest credible intervals.
   These can be pre-registered.
-- **When seed data land**: the mate-limitation regression (§ C.1) and
-  the SI-escape rate test (§ C.2) both fire from the same seed-genotype
-  input. Together they classify each location into a 2 × 2 matrix (mate-
-  limited yes/no × SI-escaped yes/no) that is directly interpretable as a
-  conservation prioritisation.
+- **When seed data land**: the mate-limitation regression (§ C.1)
+  fires from the seed-genotype input and directly tests whether
+  predicted per-location pollen compatibility explains observed seed set.
 - **Fragmentation × drift decomposition**: the two coefficients
   $\beta_1$ (pollen-compatibility effect) and $\beta_2$
   (mating-neighbourhood-size effect) from the mate-limitation regression
@@ -1465,12 +1441,11 @@ to verify the comparison pipeline end-to-end before real seed data arrive.
 - **Two-generation efficiency**: every mother's seed lot pays double —
   it certifies her genotype (maternal inventory) and samples her pollen
   environment (paternal inventory) in one experiment.
-- **Phenotype cross-validation is a natural next step**: the two-by-two
-  matrix from § C.1 + § C.2 predicts what ISI / fruit set from
-  Genetic-Rescue-DB should look like at each location, which can be
-  overlaid without changing any of the code paths in this framework.
+- **Phenotype cross-validation is a natural next step**: the per-location
+  predictions can be overlaid with ISI / fruit set from Genetic-Rescue-DB
+  without changing any of the code paths in this framework.
 
-### C.6 How Phase B data are generated and consumed
+### C.5 How Phase B data are generated and consumed
 
 Every Part A prediction becomes testable once we have **seed-DNA
 genotypes** at SRK. The two-generation trick makes each mother's seed
@@ -1526,31 +1501,31 @@ real analysis.
 <a id="fig-13"></a>
 ![Figure 13 (DEMO): Mate-limitation regression preview. One dot per LEPA location, colour = "sustainable" band. X = predicted random-mating pollen compatibility (mean across sampled mothers at that location); Y = mean observed seeds per mother. Traffic-light background bands (failed / struggling / sustainable). Dashed line = weighted OLS fit, slope + p-value printed in the legend. In this DEMO the simulator baked in a direct causal link (seed set ∝ compatibility), so the slope is highly significant. **With real data the same figure will test whether observed seed set actually declines with predicted compatibility — a positive slope with 95 % CI excluding 0 confirms mate limitation at population level.** Source: `step30_srk_diversity_prediction_vs_observed.py --demo`.](figures/Phase5/step30_B_DEMO_mate_limitation.png)
 
-<a id="fig-14"></a>
-![Figure 14 (DEMO): Self-incompatibility escape preview. One horizontal bar per LEPA location, sorted by observed rate. X = observed rate of pollen alleles matching the mother's own SRK alleles (= self-incompatibility escape rate). Red bars = locations that reject the strict-SI null at 5 % false-discovery rate; grey bars = consistent with strict SI. In this DEMO the simulator baked in 8 % SI escape rate, so most locations show detectable escape. **With real data any red bar names a candidate partial-SI population — a location where the SI machinery has broken down enough that self-pollen produces seeds.** Source: `step30_srk_diversity_prediction_vs_observed.py --demo`.](figures/Phase5/step30_B_DEMO_si_escape.png)
+*(A DEMO Figure A1 for the SI-escape rate test exists at
+[`step30_B_DEMO_si_escape.png`](figures/Phase5/step30_B_DEMO_si_escape.png).
+It is described in the [Appendix](#appendix--out-of-scope--future-work);
+the SI-escape analysis is not part of the Phase 5 mate-limitation +
+fragmentation framework.)*
 
 **Two-year extension.** The `--year` flag on Steps 28, 29 and 30
 makes the pipeline year-scoped. When 2026 field data arrives, run
 each step twice (once per year); the pooling rules under § B.5 tell
 Phase B how to combine years for standing-diversity inference vs how
-to keep them separate as repeated measures for mate-limitation and
-SI-escape tests.
+to keep them separate as repeated measures for the mate-limitation test.
 
-**Downstream: cross-validation with phenotype.** The mate-limitation
-and SI-escape results define a 2 × 2 classification per location
-(mate-limited yes/no × SI-escaped yes/no). Phase III of the wider
-project overlays the Genetic-Rescue-DB ISI / fruit-set phenotype
-against these predictions to provide an independent line of evidence.
+**Downstream: cross-validation with phenotype.** Per-location
+mate-limitation results can be overlaid with the Genetic-Rescue-DB
+ISI / fruit-set phenotype to provide an independent line of evidence
+under Phase III of the wider project.
 
-### C.7 BL4 pilot study — one small + one large location
+### C.6 BL4 pilot study — one small + one large location
 
 Before running Phase B across all 39 locations, we recommend a
 **pilot within Bottleneck Lineage 4 (BL4)** using two contrasting
 locations. BL4 is a good choice because it spans the whole range of
-LEPA slickspot sizes and internal connectivity, holds the second-
-biggest species SRK diversity share, and is not the SI-escape hot
-spot (BL3), so any Phase B signal in BL4 is a mate-limitation
-signal by construction.
+LEPA slickspot sizes and internal connectivity and holds the second-
+biggest species SRK diversity share, so any Phase B signal in BL4 is
+a mate-limitation and fragmentation signal by construction.
 
 **The two pilot locations:**
 
@@ -1626,9 +1601,9 @@ python step30_srk_diversity_prediction_vs_observed.py \
     --match-seed-count
 ```
 
-The two-point mate-limitation regression and SI-escape test will fire
-on the two pilot locations; scaling to the full 39-location dataset
-is then just a matter of adding rows to the two TSV inputs.
+The two-point mate-limitation regression will fire on the two pilot
+locations; scaling to the full 39-location dataset is then just a
+matter of adding rows to the two TSV inputs.
 
 ---
 
@@ -1697,16 +1672,72 @@ or right-click → *Save link as…* to pull the TSV into your local pipeline.
 - `tables/Phase5/step30_B_mate_limitation_per_location.tsv` — Test 1 · location-level.
 - `tables/Phase5/step30_B_mate_limitation_per_mother.tsv` — Test 1 · per-mother detail.
 - `tables/Phase5/step30_B_mate_limitation_coefficients.tsv` — Test 1 · β₁, β₂, β₃ estimates with 95 % CI.
-- `tables/Phase5/step30_B_si_escape_permutation.tsv` — Test 2 · per-location Binomial test + FDR.
+- `tables/Phase5/step30_B_si_escape_permutation.tsv` — out-of-scope permutation-test scaffold ([Appendix](#appendix--out-of-scope--future-work)).
 
 **Figures**:
 
 - `figures/Phase5/step30_B_comparison_diversity.pdf/png` — observed vs predicted diversity.
 - `figures/Phase5/step30_B_mate_limitation.pdf/png` — Test 1 · location scatter.
-- `figures/Phase5/step30_B_si_escape.pdf/png` — Test 2 · per-location bars.
+- `figures/Phase5/step30_B_si_escape.pdf/png` — out-of-scope permutation-test scaffold ([Appendix](#appendix--out-of-scope--future-work)).
 
 ### Phase B — DEMO (synthetic pipeline-validation outputs, `--demo` mode)
 
 Same filenames as Phase B above with `_B_` → `_B_DEMO_`. Figures also
 carry a "DEMO — synthetic data" title suffix and a diagonal DEMO
 watermark so a demo file can never be mistaken for a real result.
+
+---
+
+## Appendix — Out of scope / future work
+
+This appendix collects analyses that the Step 30 code can produce
+but that **are not part of the Phase 5 scientific analysis**. They
+are retained as pipeline-validation scaffolding and as a starting
+point for future work under a separate study, not as a claim about
+what the current data can address.
+
+### SI-escape rate test (was § C.2 in earlier drafts)
+
+**Why this is out of scope for Phase 5.** The Phase 5 framework tests
+**mate limitation** (does drift-driven Fg loss reduce per-mother seed
+set?) and **fragmentation** (do disconnected 50 m mating pools
+compound the drift effect?). Detecting locations where the SI
+machinery has broken down — self-compatibility escape — is a
+separate scientific question with different data requirements
+(large per-mother seed lots + genotyped mother tissue + independent
+phenotypic confirmation of self-seed set). Self-compatibility calls
+at the *individual* level are already produced by the Canu-amplicon
+pipeline (Phase 4 Step 22b) and enter Phase 5 as prior information
+via the empirical zygosity distribution (§ A.7.3a), not as an
+experimental target. The permutation-test scaffold below is retained
+so the pipeline can be validated end-to-end under `--demo`; it is
+also a natural starting point should a separate SI-escape study be
+funded.
+
+**Model.** Under **strict SI**, the paternal SRK allele in any seed
+of mother $(a, b)$ cannot equal $a$ or $b$. The rate of self-matching
+paternal alleles per location is therefore expected to be
+
+$$\pi_{\text{self-match}}^{H_0} \;=\; 0$$
+
+Under **partial SI** or SI breakdown, some fraction of seeds carry a
+paternal Fg matching one of the mother's Fgs:
+
+$$\hat{\pi}_{\text{self-match}}(\ell) \;=\; \frac{\bigl|\{\text{seeds at loc.}\;\ell : \text{paternal Fg} \in (a_m, b_m)\}\bigr|}{\bigl|\text{seeds at loc.}\;\ell\bigr|}$$
+
+The **test** is a permutation of the strict-SI null: for each location,
+permute paternal alleles across seeds while preserving the marginal Fg
+frequency vector; the p-value is the fraction of permutations reaching
+$\hat{\pi}_{\text{self-match}}$ at least as extreme as observed.
+
+Locations with $\hat{\pi}_{\text{self-match}} > 0$ significantly would
+be **candidate SI-escape sites** — a validated hypothesis for
+follow-up phenotyping in Genetic-Rescue-DB, under a separate study.
+
+**Output columns** (per location, produced by the DEMO pipeline):
+`n_seeds_scored`, `n_self_matching`, `pi_self_match`,
+`p_permutation`, `q_bh_fdr`.
+
+**DEMO figure.**
+
+![Figure A1 (DEMO): Self-incompatibility escape preview. One horizontal bar per LEPA location, sorted by observed rate. X = observed rate of pollen alleles matching the mother's own SRK alleles (= self-incompatibility escape rate). Red bars = locations that reject the strict-SI null at 5 % false-discovery rate; grey bars = consistent with strict SI. In this DEMO the simulator baked in 8 % SI escape rate, so most locations show detectable escape. **This figure exists only to validate the pipeline end-to-end; the SI-escape analysis is out of scope for Phase 5 (see the § A.1 preamble above).** Source: `step30_srk_diversity_prediction_vs_observed.py --demo`.](figures/Phase5/step30_B_DEMO_si_escape.png)
