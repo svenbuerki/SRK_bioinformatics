@@ -903,8 +903,9 @@ def plot_diversity_unbiased_vs_sampling(pred: pd.DataFrame,
         axA_row.set_xlim(0, K_species + 2)
         axA_row.set_ylim(-0.7, len(sub) - 0.3)
         labels = [
-            f"{code}  (N_fert_eff = {int(n)}, M_mothers = {int(m)}, "
-            f"total_seeds = {int(s)})"
+            f"{code}  (effective mating pool = {int(n)}, "
+            f"mothers sampled = {int(m)}, "
+            f"seeds recorded = {int(s)})"
             for code, n, m, s in zip(
                 sub["locationCode"], sub["N_eff"], sub["M"],
                 sub["total_seeds"],
@@ -974,11 +975,10 @@ def plot_diversity_unbiased_vs_sampling(pred: pd.DataFrame,
     fig.suptitle(
         "Predicted SRK allele diversity per LEPA location"
         f"{_year_suffix(year)}\n"
-        "A: unbiased truth (N_fert_eff = N_fertile × 50 m connectivity).  "
-        "B: sampling recovery (4·M_mothers + 2·total_seeds allele draws from the LEPA DB).  "
+        "A: what Nature holds — driven by the effective mating pool at the location.  "
+        "B: what our sampling detects — from the mothers and seeds already recorded in the LEPA DB.  "
         "C: coverage = B ÷ A (dotted line = 90 % target).\n"
-        "Panelled by Bottleneck Lineage in BL_ORDER. Y-label = "
-        "locationCode (N_fert_eff, M_mothers, total_seeds).",
+        "Panelled by Bottleneck Lineage in BL_ORDER.",
         fontsize=11, y=0.995,
     )
     fig.tight_layout(rect=[0, 0, 0.96, 0.97])
@@ -1062,7 +1062,7 @@ def plot_N_fertile_effective_per_location(locations: pd.DataFrame,
         axA_row.set_xlim(0.8, max(2.0, x_upper_log))
         axA_row.set_ylim(-0.7, len(sub) - 0.3)
         labels = [
-            f"{code}  (raw N = {int(nr)}, N_fert_eff = {int(ne)})"
+            f"{code}  (census = {int(nr)}, effective = {int(ne)})"
             for code, nr, ne in zip(sub["locationCode"], sub["N_raw"], sub["N_eff"])
         ]
         axA_row.set_yticks(y)
@@ -1102,11 +1102,11 @@ def plot_N_fertile_effective_per_location(locations: pd.DataFrame,
             va="center", ha="left",
         )
 
-    axes[0, 0].set_title("A. Raw census (Nature's biological potential)",
+    axes[0, 0].set_title("A. Nature's biological potential (raw census)",
                           fontsize=11)
-    axes[0, 1].set_title("B. N_fertile_effective (drift-relevant pool)",
+    axes[0, 1].set_title("B. Drift-relevant mating pool (N_fert_eff)",
                           fontsize=11)
-    axes[0, 2].set_title("C. Connectivity share (B ÷ A)",
+    axes[0, 2].set_title("C. Fraction of adults sharing a 50 m mating pool",
                           fontsize=11)
     axes[-1, 0].set_xlabel(
         "Fertile plants at the location (log scale)",
@@ -1115,17 +1115,18 @@ def plot_N_fertile_effective_per_location(locations: pd.DataFrame,
         "Adults in the largest 50 m mating pool (log scale)",
         fontsize=10)
     axes[-1, 2].set_xlabel(
-        "Fraction of raw census retained after 50 m fragmentation",
+        "Fraction of adults sharing a 50 m mating pool",
         fontsize=10)
 
     fig.suptitle(
-        f"N_fertile_effective — the drift-relevant population size per LEPA location"
+        "Drift-relevant population size per LEPA location (N_fert_eff)"
         f"{_year_suffix(year)}\n"
-        "A: raw census (total_n_fertile).  "
-        "B: N_fert_eff = total_n_fertile × largest_component_share_50m.  "
-        "C: connectivity share = B ÷ A (dashed line = 100 %, no fragmentation).\n"
-        "Panelled by Bottleneck Lineage in BL_ORDER. Same input drives Figure 3 (diversity), "
-        "Figure 4 (P_compat), and Figure 5 (fecundation).",
+        "A: every fertile plant at the location (raw census).  "
+        "B: adults that actually share a 50 m mating pool (raw × 50 m connectivity).  "
+        "C: fraction of the raw census retained after fragmentation "
+        "(dashed line = fully connected).\n"
+        "Panelled by Bottleneck Lineage in BL_ORDER. Same input drives the "
+        "per-location diversity, compatibility, and fecundation predictions.",
         fontsize=11, y=0.995,
     )
     fig.tight_layout(rect=[0, 0, 0.96, 0.97])
@@ -1203,7 +1204,8 @@ def plot_prediction_fecundation(pcompat_per_loc: pd.DataFrame,
             linewidth=0.6, zorder=2,
         )
         labels = [
-            f"{code}  (N_fert_eff = {int(n)}, M_mothers = {int(m)})"
+            f"{code}  (effective mating pool = {int(n)}, "
+            f"mothers sampled = {int(m)})"
             for code, n, m in zip(
                 sub["locationCode"],
                 sub["N_fertile_effective"],
