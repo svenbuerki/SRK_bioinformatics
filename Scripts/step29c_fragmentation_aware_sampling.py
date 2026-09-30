@@ -234,50 +234,116 @@ def select_germplasm_for_partC(per_event_df: pd.DataFrame,
                                 field_recipe_tsv: Path,
                                 seeds_per_mother_target: int = 15
                                 ) -> pd.DataFrame:
-    """Pick specific germplasmIDs from the LEPA DB to satisfy the M_frag
-    per-event allocation for Part C testing.
+    """Pick specific germplasmIDs from the LEPA DB to satisfy step29c's
+    fragmentation-aware allocation for Part C testing — **at the 50 m
+    component scale**, not per event.
 
-    For each event, take up to `M_frag` germplasmIDs from those already
-    in the LEPA DB, prioritising by seeds_available (descending) so the
-    selected mothers are the ones most likely to yield the full
-    15-seed Rule 2 target. Where the DB has fewer germplasmIDs than
-    M_frag asks for, take all available and flag the shortage.
+    Rationale. Events inside the same 50 m connected component share the
+    same pollen pool (that is the biological definition of connectivity
+    at the primary pollinator radius). A mother sampled at event A
+    therefore samples the same pool as a mother at event B when both
+    belong to the same component. So the coupon-collector coverage
+    guarantee for the component travels freely across its events, and
+    a shortage at one event can be absorbed by picking extra mothers
+    at a connected event in the same component. Only the ≥ 1-mother-
+    per-event *maternal-genotype floor* is a strict per-event
+    requirement, and even that is waived at events that hold no
+    germplasm in the DB at all.
+
+    Algorithm (per 50 m component):
+      1. Collect every germplasmID in the DB across every event of the
+         component.
+      2. Enforce the maternal-genotype floor: at each event that has at
+         least one germplasmID, reserve the top-seeded mother.
+      3. Fill the remaining `component_M_target − (# events with
+         germplasm)` slots from the leftover mothers in the component,
+         sorted by `seeds_available` (descending) then germplasmID
+         (ascending) for a deterministic tie-break.
+      4. If the component's total germplasm is smaller than
+         `component_M_target`, take every available mother and record
+         the shortfall in `component_gap`.
 
     Returns one row per SELECTED germplasmID with columns:
         germplasmID, occurrenceID, eventID, locationID, locationCode,
         seeds_available, n_seeds_to_genotype (= min(15, seeds_available)),
-        event_M_frag, event_n_available_in_DB, event_gap,
-        selection_priority_within_event.
+        component_id_within_loc, component_M_target,
+        component_n_available_in_DB, component_gap,
+        selection_reason ('floor' or 'top_seeds'),
+        selection_priority_within_component,
+        event_M_frag (for reference — the per-event allocation upstream).
     """
     if not field_recipe_tsv.exists():
         raise SystemExit(
             f"Missing {field_recipe_tsv} — run step29 first to build "
             "the per-germplasmID recipe.")
     recipe = pd.read_csv(field_recipe_tsv, sep="\t", encoding="utf-8-sig")
-    per_event = per_event_df[["locationID", "eventID", "M_frag"]].copy()
 
-    # Sort candidates within each event by seeds_available DESC, then by
-    # germplasmID ASC to break ties deterministically.
-    recipe = recipe.sort_values(
-        ["locationID", "eventID", "seeds_available", "germplasmID"],
-        ascending=[True, True, False, True],
-    ).reset_index(drop=True)
-    recipe["rank_within_event"] = (
-        recipe.groupby(["locationID", "eventID"]).cumcount() + 1)
-
-    merged = recipe.merge(per_event, on=["locationID", "eventID"], how="left")
+    # Bring per-event M_frag AND component identity + component target
+    # from step29c's per-event output.
+    event_meta = per_event_df[[
+        "locationID", "eventID", "M_frag",
+        "component_id_within_loc", "component_M_target",
+    ]].copy()
+    merged = recipe.merge(event_meta, on=["locationID", "eventID"], how="left")
     merged["M_frag"] = merged["M_frag"].fillna(0).astype(int)
+    # A germplasmID whose event has no component info (data cleanup
+    # gaps) is assigned its own singleton component.
+    missing = merged["component_id_within_loc"].isna()
+    merged.loc[missing, "component_id_within_loc"] = -1
+    merged.loc[missing, "component_M_target"] = merged.loc[missing, "M_frag"]
+    merged["component_id_within_loc"] = merged["component_id_within_loc"].astype(int)
+    merged["component_M_target"] = merged["component_M_target"].astype(int)
 
-    # Available germplasm count per event (from the DB, not the target).
-    event_avail = (recipe.groupby(["locationID", "eventID"])
-                          .size().rename("event_n_available_in_DB")
-                          .reset_index())
-    merged = merged.merge(event_avail, on=["locationID", "eventID"], how="left")
-    merged["event_gap"] = (merged["M_frag"]
-                            - merged["event_n_available_in_DB"]).clip(lower=0)
+    # Component-level DB availability (all germplasmIDs at all events
+    # in the same component).
+    comp_avail = (merged.groupby(["locationID", "component_id_within_loc"])
+                        .size().rename("component_n_available_in_DB")
+                        .reset_index())
+    merged = merged.merge(
+        comp_avail, on=["locationID", "component_id_within_loc"], how="left")
 
-    # Selection: rank_within_event <= M_frag.
-    selected = merged[merged["rank_within_event"] <= merged["M_frag"]].copy()
+    picked_rows = []
+    # Iterate over components.
+    for (loc_id, comp_id), grp in merged.groupby(
+            ["locationID", "component_id_within_loc"]):
+        target = int(grp["component_M_target"].iloc[0])
+        n_avail = int(len(grp))
+        # Sort component-wide by seeds_available DESC, then germplasmID ASC.
+        grp = grp.sort_values(
+            ["seeds_available", "germplasmID"],
+            ascending=[False, True]).reset_index(drop=True)
+
+        # Step 1 — floor: one top-seeded mother per event with germplasm.
+        floor_ids = (grp.groupby("eventID", sort=False)
+                        .head(1)["germplasmID"].tolist())
+        floor_set = set(floor_ids)
+        floor_picked = grp[grp["germplasmID"].isin(floor_set)].copy()
+        floor_picked["selection_reason"] = "floor"
+
+        # Step 2 — fill remaining coverage slots.
+        remaining_target = max(target - len(floor_picked), 0)
+        leftover = grp[~grp["germplasmID"].isin(floor_set)]
+        extra_picked = leftover.head(remaining_target).copy()
+        extra_picked["selection_reason"] = "top_seeds"
+
+        picked = pd.concat([floor_picked, extra_picked], ignore_index=True)
+        picked["component_gap"] = max(target - n_avail, 0)
+        picked_rows.append(picked)
+
+    if picked_rows:
+        selected = pd.concat(picked_rows, ignore_index=True)
+    else:
+        selected = merged.iloc[0:0].copy()
+        selected["selection_reason"] = pd.Series(dtype="object")
+        selected["component_gap"] = pd.Series(dtype=int)
+
+    # Rank within component by seeds_available desc for the output.
+    selected = selected.sort_values(
+        ["locationID", "component_id_within_loc",
+         "selection_reason", "seeds_available", "germplasmID"],
+        ascending=[True, True, True, False, True]).reset_index(drop=True)
+    selected["selection_priority_within_component"] = (
+        selected.groupby(["locationID", "component_id_within_loc"]).cumcount() + 1)
 
     # Cap seeds at what's available; target is 15 (tetraploid Rule 2).
     selected["n_seeds_to_genotype"] = np.minimum(
@@ -285,18 +351,20 @@ def select_germplasm_for_partC(per_event_df: pd.DataFrame,
         seeds_per_mother_target,
     )
 
-    keep = ["germplasmID", "occurrenceID", "eventID", "locationID",
-            "locationCode", "seeds_available", "n_seeds_to_genotype",
-            "M_frag", "event_n_available_in_DB", "event_gap",
-            "rank_within_event"]
+    keep = [
+        "germplasmID", "occurrenceID", "eventID", "locationID",
+        "locationCode", "seeds_available", "n_seeds_to_genotype",
+        "component_id_within_loc", "component_M_target",
+        "component_n_available_in_DB", "component_gap",
+        "selection_reason", "selection_priority_within_component",
+        "M_frag",
+    ]
     keep = [c for c in keep if c in selected.columns]
     out = (selected[keep]
-           .rename(columns={
-               "M_frag":                    "event_M_frag",
-               "rank_within_event":         "selection_priority_within_event",
-           })
-           .sort_values(["locationCode", "eventID",
-                         "selection_priority_within_event"])
+           .rename(columns={"M_frag": "event_M_frag"})
+           .sort_values(
+               ["locationCode", "component_id_within_loc",
+                "selection_priority_within_component"])
            .reset_index(drop=True))
     return out
 
@@ -415,6 +483,44 @@ def main() -> None:
     ev_out.to_csv(out_ev, sep="\t", index=False)
     print(f"[step29c] Wrote {out_ev}  ({len(ev_out)} events)")
 
+    # ---- Dedicated event → 50 m component lookup ----
+    # A lean TSV joining (locationID, eventID) → component_id_50m so
+    # any downstream query 'which events share a pollen pool?' has a
+    # single canonical source. One row per event.
+    field_recipe_tsv_for_lookup = (
+        DEFAULT_TABLES / "step29_field_team_sampling_recipe.tsv")
+    lookup = ev[[
+        "locationID", "eventID", "component_id_within_loc",
+        "n_fertile", "component_N_fertile", "component_N_events",
+        "component_K", "component_M_target"]].rename(columns={
+            "component_id_within_loc": "component_id_50m",
+            "n_fertile":                "event_n_fertile",
+        }).drop_duplicates(subset=["locationID", "eventID"]).copy()
+    # locationCode attached from the field recipe. Deduplicate to one
+    # (locationID, eventID, locationCode) row before merging so the
+    # lookup doesn't blow up to per-mother rows.
+    if field_recipe_tsv_for_lookup.exists():
+        rec = pd.read_csv(field_recipe_tsv_for_lookup, sep="\t",
+                          encoding="utf-8-sig")
+        loc_key = (rec[["locationID", "locationCode", "eventID"]]
+                     .drop_duplicates(subset=["locationID", "eventID"]))
+        lookup = lookup.merge(loc_key, on=["locationID", "eventID"], how="left")
+    lookup = lookup[[
+        c for c in ["locationID", "locationCode", "eventID",
+                    "component_id_50m", "event_n_fertile",
+                    "component_N_fertile", "component_N_events",
+                    "component_K", "component_M_target"]
+        if c in lookup.columns
+    ]].sort_values(["locationCode", "component_id_50m", "eventID"] \
+                    if "locationCode" in lookup.columns \
+                    else ["locationID", "component_id_50m", "eventID"]
+                    ).reset_index(drop=True)
+    out_lookup = DEFAULT_TABLES / "step29c_event_to_component_50m.tsv"
+    lookup.to_csv(out_lookup, sep="\t", index=False)
+    print(f"[step29c] Wrote {out_lookup}  "
+          f"({len(lookup)} events across "
+          f"{lookup.groupby(['locationID','component_id_50m']).ngroups} components)")
+
     loc = build_per_location(ev)
     tidy_cols = [
         "locationID", "locationCode", "BL",
@@ -443,24 +549,25 @@ def main() -> None:
     print(f"  Total mothers short (2026 top-up)   : {n_short_m}")
 
     # ---- Part C germplasmID selection ----
-    # Pick specific germplasmIDs from the LEPA DB to satisfy the per-event
-    # M_frag allocation. This is the file the wet-lab team uses to know
-    # exactly which mothers' seeds to genotype.
+    # Pick specific germplasmIDs from the LEPA DB to satisfy the
+    # fragmentation-aware allocation at the 50 m COMPONENT scale
+    # (mothers within a component pool their coverage; only the
+    # per-event maternal-genotype floor is a strict per-event rule).
     field_recipe_tsv = DEFAULT_TABLES / "step29_field_team_sampling_recipe.tsv"
     partC = select_germplasm_for_partC(ev, field_recipe_tsv)
     out_partC = DEFAULT_TABLES / "step29c_partC_germplasmID_selection.tsv"
     partC.to_csv(out_partC, sep="\t", index=False)
     n_selected  = len(partC)
     total_seeds = int(partC["n_seeds_to_genotype"].sum())
-    per_event_gap = (partC.groupby(["locationID", "eventID"])["event_gap"]
-                          .first())
-    n_events_short = int((per_event_gap > 0).sum())
-    total_shortage = int(per_event_gap.sum())
+    per_comp_gap = (partC.groupby(["locationID", "component_id_within_loc"])
+                          ["component_gap"].first())
+    n_comps_short  = int((per_comp_gap > 0).sum())
+    total_shortage = int(per_comp_gap.sum())
     m_frag_target  = int(ev["M_frag"].sum())
     print(f"[step29c] Wrote {out_partC}  "
-          f"({n_selected} germplasmIDs selected of {m_frag_target} M_frag "
-          f"target; {total_seeds} seeds to genotype; "
-          f"{n_events_short} events short by {total_shortage} mothers total)")
+          f"({n_selected} germplasmIDs selected of {m_frag_target} "
+          f"M_frag target; {total_seeds} seeds to genotype; "
+          f"{n_comps_short} components short by {total_shortage} mothers total)")
 
     DEFAULT_FIGURES.mkdir(parents=True, exist_ok=True)
     plot_comparison(

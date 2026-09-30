@@ -197,8 +197,8 @@ components. Going below 15 would require adding more mothers, which
 is a worse trade because paternal draws double the allele yield per
 seed.
 
-**Two authoritative files** — the design produces one for the field
-team and one for the lab:
+**Three authoritative files** — one for the field team, one for the
+lab, and one for the event → component mapping:
 
 - **Field-team recipe** (for a new field season):
   [`step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv) —
@@ -206,11 +206,17 @@ team and one for the lab:
 - **Lab recipe for Part C** (draws specific mothers from the DB):
   [`step29c_partC_germplasmID_selection.tsv`](tables/Phase5/step29c_partC_germplasmID_selection.tsv) —
   one row per SELECTED `germplasmID` already in the LEPA DB, with
-  `n_seeds_to_genotype = min(15, seeds_available)`. Selection rule:
-  within each event, prioritise germplasmIDs by `seeds_available`
-  (descending). Delivers **426 mothers × ≤ 15 seeds = 6 384 seeds**
-  for Part C from the current DB, with **79 mothers short across 40
-  events** flagged for a 2026 field top-up.
+  `n_seeds_to_genotype = min(15, seeds_available)`. Selection is
+  **per 50 m component**: mothers within a component share their
+  pollen pool, so coverage travels freely within a component; only
+  the ≥ 1-mother-per-event maternal-genotype floor is a strict
+  per-event rule. Delivers **431 mothers × ≤ 15 seeds = 6 459 seeds**
+  for Part C from the current DB, with **76 mothers short across 35
+  components** flagged for a 2026 field top-up.
+- **Event → component lookup**:
+  [`step29c_event_to_component_50m.tsv`](tables/Phase5/step29c_event_to_component_50m.tsv) —
+  one row per event mapping (locationID, eventID) → 50 m component,
+  the single canonical source for "which events share a pollen pool?".
 
 ---
 

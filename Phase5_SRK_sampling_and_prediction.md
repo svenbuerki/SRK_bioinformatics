@@ -1321,13 +1321,17 @@ in hand at the location scale ([Figure 12](#fig-12)):
   2026 season — every one of the six locations is a candidate for
   focused collection.
 
-**Per-event granularity.** The location totals hide within-location
-concentration effects: a location can have enough mothers in bulk
-but they may cluster at well-covered events, leaving small events
-under-provisioned. At the event scale, **40 / 234 events are short
-by a combined 79 mothers** (see the Part C lab recipe below). The
-event-scale gap is a finer-grained diagnostic; the 25-mother
-location-scale gap is what the field team plans against.
+**Per-component granularity.** The location totals hide within-
+location concentration effects: a location can have enough mothers in
+bulk but they may cluster at well-covered events, leaving parts of
+the location under-provisioned. The Part C selector reallocates
+within 50 m connected components because events inside a component
+share a pollen pool (that is the biological definition of 50 m
+connectivity), so coverage travels freely within a component. At the
+component scale, **35 / 103 components are short by a combined
+76 mothers** (see the Part C lab recipe below). The component-scale
+gap is the finer-grained diagnostic; the 25-mother location-scale
+gap is what the field team plans against.
 
 **Interpretation.** The B.4.1 allocation is **optimistic** because it
 assumes pollen mixes across the whole location. Fragmentation-aware
@@ -1400,7 +1404,8 @@ recipe) puts effort where mate limitation is actually expected —
 the locations whose `N_fert_eff` is a small fraction of their raw
 census.
 
-**Two authoritative files** — one for the field team and one for the lab.
+**Three authoritative files** — one for the field team, one for the
+lab, and one for querying the event → component mapping.
 
 1. [`Tables/Phase5/step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv)
    — the **field-team recipe**. One row per event, column
@@ -1408,25 +1413,37 @@ census.
    field team when planning a new season's collection.
 2. [`Tables/Phase5/step29c_partC_germplasmID_selection.tsv`](tables/Phase5/step29c_partC_germplasmID_selection.tsv)
    — the **lab recipe for Part C**. One row per SELECTED `germplasmID`
-   already in the LEPA DB, drawn from the field-team recipe using
-   the M_frag target at each event. Each selected mother's seed lot
-   gets `n_seeds_to_genotype = min(15, seeds_available)`. Selection
-   rule: within each event, prioritise germplasmIDs by
-   `seeds_available` (descending) so the mothers most likely to
-   deliver the full Rule 2 target are chosen first. Columns:
-   `germplasmID`, `occurrenceID`, `eventID`, `locationID`,
+   already in the LEPA DB, drawn from the field-team recipe using the
+   **50 m component target** (not per-event). Selection rule per
+   component: (i) enforce the ≥ 1-mother-per-event maternal-genotype
+   floor at every event that has germplasm in the DB; (ii) fill the
+   remaining `component_M_target − floor_count` slots from the
+   component's leftover mothers sorted by `seeds_available`
+   descending. Deterministic tie-break by `germplasmID`. Each selected
+   mother's seed lot gets `n_seeds_to_genotype = min(15, seeds_available)`.
+   Columns: `germplasmID`, `occurrenceID`, `eventID`, `locationID`,
    `locationCode`, `seeds_available`, `n_seeds_to_genotype`,
-   `event_M_frag`, `event_n_available_in_DB`, `event_gap`,
-   `selection_priority_within_event`.
+   `component_id_within_loc`, `component_M_target`,
+   `component_n_available_in_DB`, `component_gap`, `selection_reason`
+   (`floor` or `top_seeds`), `selection_priority_within_component`,
+   `event_M_frag`.
+3. [`Tables/Phase5/step29c_event_to_component_50m.tsv`](tables/Phase5/step29c_event_to_component_50m.tsv)
+   — the **event → 50 m component lookup**. One row per event,
+   columns `locationID`, `locationCode`, `eventID`, `component_id_50m`,
+   `event_n_fertile`, `component_N_fertile`, `component_N_events`,
+   `component_K`, `component_M_target`. The single canonical source
+   for the question "which events share a pollen pool?" — used both
+   by the Part C selector and available for any downstream analysis.
 
 **What the lab recipe delivers today.** From the 765 germplasmIDs
-already in the LEPA DB, the selection algorithm picks **426
-mothers × ≤ 15 seeds each = 6 384 seeds** for Part C genotyping.
-Of the 505 M_frag target, the DB is short **79 mothers across 40
-events** (mostly single- or two-plant events where the DB has fewer
-germplasmIDs than the 50 m component target). Those 79 mothers are
-the field-team top-up target for the 2026 season, tracked in the
-`event_gap` column of the lab recipe.
+already in the LEPA DB, the component-aware selection algorithm picks
+**431 mothers × ≤ 15 seeds each = 6 459 seeds** for Part C genotyping.
+Of the 505 M_frag target, the DB is short **76 mothers across 35 of
+the 103 50 m components** — the events in those components either
+lack germplasmIDs entirely or hold fewer than the component's
+coupon-collector target. Those 76 mothers are the field-team top-up
+target for the 2026 season, tracked in the `component_gap` column
+of the lab recipe.
 
 ### B.5 Two-year design
 
