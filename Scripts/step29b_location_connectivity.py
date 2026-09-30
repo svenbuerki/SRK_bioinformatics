@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
-"""Step 28c — Within-location pollen connectivity.
+"""Step 29b — Within-location pollen connectivity.
 
 Reads the event-level spatial frame written by Step 28
 (`step28_events_spatial_neighborhood.tsv`) and computes, for each LEPA
 location, how much of its adult mating pool is actually connected via
-pollen flow at three flight radii (10 m, 25 m, 50 m).
+pollen flow at seven flight radii (10, 25, 50, 75, 100, 150, 200 m).
+The primary radius adopted downstream is **50 m** — see Step 29a
+(`step29a_pollinator_radius_sensitivity.py`) for the biological
+justification.
+
+Dependency order: run **Step 28 → Step 29 → Step 29b**.
 
 Method
 ------

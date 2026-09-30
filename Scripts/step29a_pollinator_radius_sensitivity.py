@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
-"""Sensitivity of Phase 5 predictions + sampling to the pollinator radius.
+"""Step 29a — Pollinator-radius sensitivity analysis.
+
+Biological justification for the 50 m primary pollen-flight radius
+adopted by every downstream Phase 5 script (§ 29b connectivity,
+§ 29c fragmentation-aware sampling, § 30 SRK predictions, § 30b
+fragmentation index).
+
+Dependency order: run **Step 28 → Step 29 → Step 29a**.
+This is a one-time validation — it does not need to be rerun on
+every pipeline iteration once the 50 m primary radius is locked in.
 
 Sweeps the primary pollen-flight radius across 10, 25, 50, 75, 100, 150,
 200 m and reports at each radius:

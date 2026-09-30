@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 """Step 29c — Fragmentation-aware sampling allocation.
 
-Uses the 25 m primary pollen-flight radius to group each location's
-events into connected components, then allocates mothers per
-COMPONENT (not per whole location) using the same coupon-collector
-90 %-probability-of-full-detection rule as § B.4.1. Within each
-component, mothers are distributed proportional to N_fertile, subject
-to a maternal-genotype floor of ≥ 1 mother per event.
+Uses the **50 m primary pollen-flight radius** (see
+`step29a_pollinator_radius_sensitivity.py` for the biological
+justification) to group each location's events into connected
+components, then allocates mothers per COMPONENT (not per whole
+location) using the same coupon-collector 90 %-probability-of-full-
+detection rule as § B.4.1. Within each component, mothers are
+distributed proportional to N_fertile, subject to a maternal-
+genotype floor of ≥ 1 mother per event.
+
+Dependency order: run **Step 28 → Step 29 → Step 29b → Step 29c**.
 
 The component-level total is summed to give the location-level
 M_frag_aware, which is compared head-to-head with the existing
@@ -19,7 +23,7 @@ The current allocation (Step 29 + B.4.1) uses the location's
 *aggregate* N_fertile as a single pool. Two events sitting 300 m apart
 at the same locationID are treated as one mating unit even though no
 pollen crosses. The fragmentation-aware version scopes the coupon-
-collector maths to each 25 m component, so:
+collector maths to each 50 m component, so:
 
   * A location that is one well-connected cluster → unchanged.
   * A location that is many isolated events → n_events mothers
@@ -29,6 +33,11 @@ collector maths to each 25 m component, so:
     collector M (~6), the isolated events each need 1, and the total
     can DROP substantially below the current recommendation while
     still delivering the same 90 %-see-every-allele guarantee.
+
+Coupon-collector maths are scoped to each 50 m component rather than
+the pooled location, so a location that is many isolated events is
+allocated fewer mothers than the pooled Step 29 version would ask for,
+and a location that is one well-connected cluster is unchanged.
 
 Outputs
 -------
@@ -64,8 +73,8 @@ R_PRIMARY = 50.0
 TARGET_PROB = 0.90
 
 
-def connected_components_25m(sub: pd.DataFrame) -> list[list[int]]:
-    """BFS on the 25 m adjacency graph. Returns positional-index lists,
+def connected_components_50m(sub: pd.DataFrame) -> list[list[int]]:
+    """BFS on the 50 m adjacency graph. Returns positional-index lists,
     one per component."""
     n = len(sub)
     if n == 0:
@@ -155,7 +164,7 @@ def build_per_event() -> pd.DataFrame:
     parts = []
     for loc_id, sub in ev.groupby("locationID"):
         sub = sub.reset_index(drop=True)
-        comps = connected_components_25m(sub)
+        comps = connected_components_50m(sub)
         pieces = []
         for cid, idxs in enumerate(comps):
             comp_sub = sub.iloc[idxs].copy()
@@ -176,7 +185,7 @@ def build_per_location(event_df: pd.DataFrame) -> pd.DataFrame:
     per_loc = (event_df.groupby("locationID")
                .agg(n_events=("eventID", "count"),
                     total_N_fertile=("n_fertile", "sum"),
-                    n_components_25m=("component_id_within_loc",
+                    n_components_50m=("component_id_within_loc",
                                        lambda s: int(s.nunique())),
                     M_frag_aware=("M_frag", "sum"))
                .reset_index()
@@ -225,7 +234,7 @@ def plot_comparison(loc_df: pd.DataFrame, out_png: Path, out_pdf: Path):
                 label="M fragmentation-aware (§ B.4.2)")
         labels = [f"{r['locationCode']}  "
                   f"(events = {int(r['n_events'])}, "
-                  f"components = {int(r['n_components_25m'])}, "
+                  f"components = {int(r['n_components_50m'])}, "
                   f"adults = {int(r['total_N_fertile'])})"
                   for _, r in sub.iterrows()]
         for i, r in sub.iterrows():
@@ -267,7 +276,7 @@ def main() -> None:
     ev = build_per_event()
     ev_out = ev[[
         "locationID", "eventID", "component_id_within_loc",
-        "n_fertile", "K_spatial_25m",
+        "n_fertile", "K_spatial_50m",
         "component_N_fertile", "component_N_events",
         "component_K", "component_M_target", "M_paternal_only",
         "M_frag"]].rename(columns={"component_id_within_loc": "component_id"})
@@ -278,7 +287,7 @@ def main() -> None:
     loc = build_per_location(ev)
     tidy = loc[[
         "locationID", "locationCode", "BL",
-        "n_events", "n_components_25m", "total_N_fertile", "K_local",
+        "n_events", "n_components_50m", "total_N_fertile", "K_local",
         "M_current_uniform", "M_current_event_floor", "M_current",
         "sum_M_paternal_only", "M_frag_aware", "delta"]]
     out_loc = DEFAULT_TABLES / "step29c_sampling_comparison_per_location.tsv"
