@@ -205,6 +205,77 @@ def build_per_location(event_df: pd.DataFrame) -> pd.DataFrame:
     return per_loc.sort_values(["BL", "delta"], ascending=[True, True])
 
 
+def select_germplasm_for_partC(per_event_df: pd.DataFrame,
+                                field_recipe_tsv: Path,
+                                seeds_per_mother_target: int = 15
+                                ) -> pd.DataFrame:
+    """Pick specific germplasmIDs from the LEPA DB to satisfy the M_frag
+    per-event allocation for Part C testing.
+
+    For each event, take up to `M_frag` germplasmIDs from those already
+    in the LEPA DB, prioritising by seeds_available (descending) so the
+    selected mothers are the ones most likely to yield the full
+    15-seed Rule 2 target. Where the DB has fewer germplasmIDs than
+    M_frag asks for, take all available and flag the shortage.
+
+    Returns one row per SELECTED germplasmID with columns:
+        germplasmID, occurrenceID, eventID, locationID, locationCode,
+        seeds_available, n_seeds_to_genotype (= min(15, seeds_available)),
+        event_M_frag, event_n_available_in_DB, event_gap,
+        selection_priority_within_event.
+    """
+    if not field_recipe_tsv.exists():
+        raise SystemExit(
+            f"Missing {field_recipe_tsv} — run step29 first to build "
+            "the per-germplasmID recipe.")
+    recipe = pd.read_csv(field_recipe_tsv, sep="\t", encoding="utf-8-sig")
+    per_event = per_event_df[["locationID", "eventID", "M_frag"]].copy()
+
+    # Sort candidates within each event by seeds_available DESC, then by
+    # germplasmID ASC to break ties deterministically.
+    recipe = recipe.sort_values(
+        ["locationID", "eventID", "seeds_available", "germplasmID"],
+        ascending=[True, True, False, True],
+    ).reset_index(drop=True)
+    recipe["rank_within_event"] = (
+        recipe.groupby(["locationID", "eventID"]).cumcount() + 1)
+
+    merged = recipe.merge(per_event, on=["locationID", "eventID"], how="left")
+    merged["M_frag"] = merged["M_frag"].fillna(0).astype(int)
+
+    # Available germplasm count per event (from the DB, not the target).
+    event_avail = (recipe.groupby(["locationID", "eventID"])
+                          .size().rename("event_n_available_in_DB")
+                          .reset_index())
+    merged = merged.merge(event_avail, on=["locationID", "eventID"], how="left")
+    merged["event_gap"] = (merged["M_frag"]
+                            - merged["event_n_available_in_DB"]).clip(lower=0)
+
+    # Selection: rank_within_event <= M_frag.
+    selected = merged[merged["rank_within_event"] <= merged["M_frag"]].copy()
+
+    # Cap seeds at what's available; target is 15 (tetraploid Rule 2).
+    selected["n_seeds_to_genotype"] = np.minimum(
+        selected["seeds_available"].astype(int),
+        seeds_per_mother_target,
+    )
+
+    keep = ["germplasmID", "occurrenceID", "eventID", "locationID",
+            "locationCode", "seeds_available", "n_seeds_to_genotype",
+            "M_frag", "event_n_available_in_DB", "event_gap",
+            "rank_within_event"]
+    keep = [c for c in keep if c in selected.columns]
+    out = (selected[keep]
+           .rename(columns={
+               "M_frag":                    "event_M_frag",
+               "rank_within_event":         "selection_priority_within_event",
+           })
+           .sort_values(["locationCode", "eventID",
+                         "selection_priority_within_event"])
+           .reset_index(drop=True))
+    return out
+
+
 def plot_comparison(loc_df: pd.DataFrame, out_png: Path, out_pdf: Path):
     bls = [b for b in BL_ORDER if b in loc_df["BL"].values]
     if (loc_df["BL"] == "Unassigned").any():
@@ -306,6 +377,26 @@ def main() -> None:
     print(f"  Median Δ per location    : {int(loc['delta'].median())}")
     print(f"  Range Δ per location     : "
           f"{int(loc['delta'].min())} to {int(loc['delta'].max())}")
+
+    # ---- Part C germplasmID selection ----
+    # Pick specific germplasmIDs from the LEPA DB to satisfy the per-event
+    # M_frag allocation. This is the file the wet-lab team uses to know
+    # exactly which mothers' seeds to genotype.
+    field_recipe_tsv = DEFAULT_TABLES / "step29_field_team_sampling_recipe.tsv"
+    partC = select_germplasm_for_partC(ev, field_recipe_tsv)
+    out_partC = DEFAULT_TABLES / "step29c_partC_germplasmID_selection.tsv"
+    partC.to_csv(out_partC, sep="\t", index=False)
+    n_selected  = len(partC)
+    total_seeds = int(partC["n_seeds_to_genotype"].sum())
+    per_event_gap = (partC.groupby(["locationID", "eventID"])["event_gap"]
+                          .first())
+    n_events_short = int((per_event_gap > 0).sum())
+    total_shortage = int(per_event_gap.sum())
+    m_frag_target  = int(ev["M_frag"].sum())
+    print(f"[step29c] Wrote {out_partC}  "
+          f"({n_selected} germplasmIDs selected of {m_frag_target} M_frag "
+          f"target; {total_seeds} seeds to genotype; "
+          f"{n_events_short} events short by {total_shortage} mothers total)")
 
     DEFAULT_FIGURES.mkdir(parents=True, exist_ok=True)
     plot_comparison(

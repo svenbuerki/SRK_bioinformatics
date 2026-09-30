@@ -194,8 +194,22 @@ Rule 2 — each mother contributes 4 maternal + 30 paternal = 34 allele
 draws, well above the coupon-collector floor for the largest 50 m
 components. Going below 15 would require adding more mothers, which
 is a worse trade because paternal draws double the allele yield per
-seed. Authoritative file:
-[`step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv).
+seed.
+
+**Two authoritative files** — the design produces one for the field
+team and one for the lab:
+
+- **Field-team recipe** (for a new field season):
+  [`step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv) —
+  one row per event, `M_frag` = number of mothers to sample there.
+- **Lab recipe for Part C** (draws specific mothers from the DB):
+  [`step29c_partC_germplasmID_selection.tsv`](tables/Phase5/step29c_partC_germplasmID_selection.tsv) —
+  one row per SELECTED `germplasmID` already in the LEPA DB, with
+  `n_seeds_to_genotype = min(15, seeds_available)`. Selection rule:
+  within each event, prioritise germplasmIDs by `seeds_available`
+  (descending). Delivers **426 mothers × ≤ 15 seeds = 6 384 seeds**
+  for Part C from the current DB, with **79 mothers short across 40
+  events** flagged for a 2026 field top-up.
 
 ---
 

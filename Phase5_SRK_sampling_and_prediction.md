@@ -1397,11 +1397,33 @@ recipe) puts effort where mate limitation is actually expected —
 the locations whose `N_fert_eff` is a small fraction of their raw
 census.
 
-**Authoritative file.**
-[`Tables/Phase5/step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv)
-is the definitive field-team recipe. One row per event, column
-`M_frag` = number of mothers to sample at that event. No further
-lookup is needed at collection time.
+**Two authoritative files** — one for the field team and one for the lab.
+
+1. [`Tables/Phase5/step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv)
+   — the **field-team recipe**. One row per event, column
+   `M_frag` = number of mothers to sample at that event. Used by the
+   field team when planning a new season's collection.
+2. [`Tables/Phase5/step29c_partC_germplasmID_selection.tsv`](tables/Phase5/step29c_partC_germplasmID_selection.tsv)
+   — the **lab recipe for Part C**. One row per SELECTED `germplasmID`
+   already in the LEPA DB, drawn from the field-team recipe using
+   the M_frag target at each event. Each selected mother's seed lot
+   gets `n_seeds_to_genotype = min(15, seeds_available)`. Selection
+   rule: within each event, prioritise germplasmIDs by
+   `seeds_available` (descending) so the mothers most likely to
+   deliver the full Rule 2 target are chosen first. Columns:
+   `germplasmID`, `occurrenceID`, `eventID`, `locationID`,
+   `locationCode`, `seeds_available`, `n_seeds_to_genotype`,
+   `event_M_frag`, `event_n_available_in_DB`, `event_gap`,
+   `selection_priority_within_event`.
+
+**What the lab recipe delivers today.** From the 765 germplasmIDs
+already in the LEPA DB, the selection algorithm picks **426
+mothers × ≤ 15 seeds each = 6 384 seeds** for Part C genotyping.
+Of the 505 M_frag target, the DB is short **79 mothers across 40
+events** (mostly single- or two-plant events where the DB has fewer
+germplasmIDs than the 50 m component target). Those 79 mothers are
+the field-team top-up target for the 2026 season, tracked in the
+`event_gap` column of the lab recipe.
 
 ### B.5 Two-year design
 
