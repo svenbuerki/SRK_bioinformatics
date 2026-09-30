@@ -1305,26 +1305,29 @@ than per whole location:
    per event** so every event gets visited.
 3. **Location total**: M_frag_aware = Σ_c mothers allocated to c.
 
-**Result — the locked recipe.** All 39 LEPA locations were
-re-allocated; the head-to-head comparison against § B.4.1 is in
-[Figure 12](#fig-12):
+**Result — how does the current LEPA DB match the target?**
+Under the fragmentation-aware allocation, the design asks for
+**505 mothers across the 39 LEPA locations**. The LEPA DB already
+holds **765 collected mothers**. Comparing target to what's already
+in hand at the location scale ([Figure 12](#fig-12)):
 
-- **22 / 39 locations need MORE mothers under fragmentation-aware
-  allocation** (Δ from +1 to +28 per location).
-- **17 / 39 unchanged (Δ = 0)** — single 50 m component or single-
-  event locations, where per-component and per-location coupon-
-  collector maths agree.
-- **0 / 39 need fewer** — under the honest allocation, no location
-  can reduce effort.
-- **Total effort: 267 → 505 mothers** (a 1.9× increase in the 90 %
-  guarantee's cost across the 2025 field).
+- **33 / 39 locations are fully covered by the LEPA DB** — the
+  mothers already collected meet or exceed the § B.4.2 target.
+- **6 / 39 locations are short of the target** — the DB does not
+  hold enough mothers to satisfy `M_frag_aware`. Those six are
+  EO27-1 (short by 10), EO27RT (5), EO26-2 (4), EO8 (3), EO67 (2),
+  and EO8 (1). Total shortage: **25 mothers**.
+- The 25-mother shortage is the field-team top-up target for the
+  2026 season — every one of the six locations is a candidate for
+  focused collection.
 
-**Where the extra mothers come from.** For the top-Δ locations, most
-of the increase is the paternal (coupon-collector) side, not the
-maternal-genotype floor. EO27-1 (Δ = +28), EO27-1 duplicate (Δ = +23),
-EO27RT (Δ = +20), EO76 (Δ = +20), EO32 (Δ = +19), and EO8 (Δ = +18)
-are the biggest single deltas — all locations where a large connected
-cluster coexists with several spatially isolated singleton events.
+**Per-event granularity.** The location totals hide within-location
+concentration effects: a location can have enough mothers in bulk
+but they may cluster at well-covered events, leaving small events
+under-provisioned. At the event scale, **40 / 234 events are short
+by a combined 79 mothers** (see the Part C lab recipe below). The
+event-scale gap is a finer-grained diagnostic; the 25-mother
+location-scale gap is what the field team plans against.
 
 **Interpretation.** The B.4.1 allocation is **optimistic** because it
 assumes pollen mixes across the whole location. Fragmentation-aware
@@ -1362,7 +1365,7 @@ mothers exactly at the locations where within-location K^(50m)
 variance is highest, which is where β₂ has the most identifiability.
 
 <a id="fig-12"></a>
-![Figure 12: Head-to-head sampling recommendation — current § B.4.1 (light bar) vs fragmentation-aware § B.4.2 (solid bar) per LEPA location under tetraploid LEPA, panelled by Bottleneck Lineage. Rows sorted within each BL by Δ = fragmentation-aware − current, ascending. Row labels give locationCode, number of events, number of 50 m components, and total adult census; Δ printed to the right of each row-pair. **22 / 39 locations need more mothers under fragmentation-aware allocation (Δ from +1 to +28); 17 / 39 unchanged (Δ = 0, single-component locations); 0 / 39 need fewer.** Total effort: current 267 mothers → fragmentation-aware 505 mothers (1.9×). Source: `step29c_fragmentation_aware_sampling.py`. Data: [`step29c_sampling_comparison_per_location.tsv`](tables/Phase5/step29c_sampling_comparison_per_location.tsv), [`step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv).](figures/Phase5/step29c_sampling_comparison.png)
+![Figure 12 — Do we have the mothers the fragmentation-aware design asks for? Per LEPA location, panelled by Bottleneck Lineage in BL_ORDER. **Solid bar** = mothers needed under the § B.4.2 target (`M_frag_aware`). **Light bar** = mothers already collected and stored in the LEPA DB. Green "covered" annotation = DB has ≥ target; red "short by N" = DB has fewer than the target and would need a field top-up. Row labels give locationCode, number of events, number of 50 m components, census, and effective mating pool. **33 / 39 locations are fully covered by the current DB. 6 / 39 locations are short (25 mothers total — the 2026 field top-up).** The six short locations are EO27-1 (short by 10), EO27RT (5), EO26-2 (4), EO8 (3), EO67 (2), and EO8 (1). Source: `step29c_fragmentation_aware_sampling.py`. Data: [`step29c_sampling_comparison_per_location.tsv`](tables/Phase5/step29c_sampling_comparison_per_location.tsv), [`step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv).](figures/Phase5/step29c_sampling_comparison.png)
 
 #### B.4.3 The locked field-team recipe
 

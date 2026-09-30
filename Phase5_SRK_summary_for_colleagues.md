@@ -165,11 +165,12 @@ requirements to obtain the location's honest mother allocation
 
 **Result.**
 
-- **22 / 39 locations require MORE mothers** under fragmentation-aware
-  allocation than under the pooled Step-29 recommendation.
-- **17 / 39 locations unchanged** — single 50 m component already
-  covered.
-- **Total effort scales from 267 → 505 mothers** (1.9× increase).
+- **Design target: 505 mothers across 39 locations.**
+- **Already collected in the LEPA DB: 765 mothers** — 1.5× the target.
+- **33 / 39 locations are fully covered** by the current DB.
+- **6 / 39 locations are short of the target** — 25 mothers total.
+  The six short locations (EO27-1, EO27RT, EO26-2, EO8, EO67, EO8)
+  are the field-team top-up target for the 2026 season.
 
 This is the most consequential design shift: the old pooled
 allocation systematically under-sampled fragmented locations.

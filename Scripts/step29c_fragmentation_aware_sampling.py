@@ -206,10 +206,28 @@ def build_per_location(event_df: pd.DataFrame) -> pd.DataFrame:
         conn = pd.read_csv(conn_tsv, sep="\t", encoding="utf-8-sig")
         conn_slim = conn[["locationID", "largest_component_share_50m"]]
         per_loc = per_loc.merge(conn_slim, on="locationID", how="left")
-    per_loc["delta"] = per_loc["M_frag_aware"] - per_loc["M_current"]
+    # Count mothers already collected in the LEPA DB per location, so the
+    # figure can show 'mothers available' vs 'mothers needed by design'
+    # side-by-side. Shortage = target − available, floored at 0.
+    field_recipe_tsv = DEFAULT_TABLES / "step29_field_team_sampling_recipe.tsv"
+    if field_recipe_tsv.exists():
+        rec = pd.read_csv(field_recipe_tsv, sep="\t", encoding="utf-8-sig")
+        avail = (rec.groupby("locationID")
+                    .size()
+                    .rename("n_mothers_available_in_DB")
+                    .reset_index())
+        per_loc = per_loc.merge(avail, on="locationID", how="left")
+        per_loc["n_mothers_available_in_DB"] = (
+            per_loc["n_mothers_available_in_DB"].fillna(0).astype(int))
+    else:
+        per_loc["n_mothers_available_in_DB"] = 0
+    per_loc["shortage"] = (per_loc["M_frag_aware"]
+                            - per_loc["n_mothers_available_in_DB"]).clip(lower=0)
     per_loc["BL"] = locationCode_to_bl(per_loc["locationCode"]).values
     per_loc["BL"] = per_loc["BL"].fillna("Unassigned")
-    return per_loc.sort_values(["BL", "delta"], ascending=[True, True])
+    # Sort within each BL by M_frag_aware ascending (small → large) so
+    # every panel reads consistently top-to-bottom.
+    return per_loc.sort_values(["BL", "M_frag_aware"], ascending=[True, True])
 
 
 def select_germplasm_for_partC(per_event_df: pd.DataFrame,
@@ -299,21 +317,20 @@ def plot_comparison(loc_df: pd.DataFrame, out_png: Path, out_pdf: Path):
         axes = [axes]
     for ax, bl in zip(axes, bls):
         sub = (loc_df[loc_df["BL"] == bl]
-               .sort_values("delta", ascending=True)
+               .sort_values("M_frag_aware", ascending=True)
                .reset_index(drop=True))
         y = np.arange(len(sub))
         colour = palette[bl]
         h = 0.36
-        ax.barh(y - h/2, sub["M_current"],   h, color=colour, alpha=0.35,
+        # Solid bar — fragmentation-aware design target (M_frag).
+        ax.barh(y - h/2, sub["M_frag_aware"], h, color=colour, alpha=0.9,
                 edgecolor=colour, linewidth=1.0,
-                label="M current (§ B.4.1)")
-        ax.barh(y + h/2, sub["M_frag_aware"], h, color=colour, alpha=0.9,
-                edgecolor=colour, linewidth=1.0,
-                label="M fragmentation-aware (§ B.4.2)")
-        # Compute N_fert_eff = census × largest_component_share_50m so
-        # the label carries the same 'effective mating pool' value that
-        # Figures 2b, 3, 4, 5 use. Falls back to census when the share
-        # column is missing.
+                label="Mothers needed (§ B.4.2 target)")
+        # Light bar — mothers already collected and stored in the LEPA DB.
+        ax.barh(y + h/2, sub["n_mothers_available_in_DB"], h,
+                color=colour, alpha=0.35, edgecolor=colour, linewidth=1.0,
+                label="Mothers available in the LEPA DB")
+        # Row label: locationCode + spatial context matching Figure 2b.
         share = sub.get("largest_component_share_50m",
                         pd.Series([1.0] * len(sub))).fillna(1.0)
         eff = (sub["total_N_fertile"].astype(float) * share).round().astype(int)
@@ -323,12 +340,21 @@ def plot_comparison(loc_df: pd.DataFrame, out_png: Path, out_pdf: Path):
                   f"census = {int(r['total_N_fertile'])}, "
                   f"effective = {int(e)})"
                   for (_, r), e in zip(sub.iterrows(), eff)]
+        # Status annotation to the right of each row:
+        #   short by N  → red, DB lacks mothers to hit the target
+        #   covered     → grey, DB has enough (or more) already
         for i, r in sub.iterrows():
-            delta = int(r["delta"])
-            sign = "+" if delta > 0 else ""
-            ax.text(max(r["M_current"], r["M_frag_aware"]) + 0.7, i,
-                    f"Δ = {sign}{delta}", fontsize=8,
-                    color=colour, va="center", ha="left")
+            short = int(r["shortage"])
+            end_x = max(int(r["M_frag_aware"]),
+                        int(r["n_mothers_available_in_DB"]))
+            if short > 0:
+                ax.text(end_x + 0.7, i, f"short by {short}",
+                        fontsize=8, color="#c94b4b",
+                        va="center", ha="left", fontweight="bold")
+            else:
+                ax.text(end_x + 0.7, i, "covered",
+                        fontsize=8, color="#3c8f4c",
+                        va="center", ha="left")
         ax.set_yticks(y)
         ax.set_yticklabels(labels, fontsize=8)
         ax.set_ylim(-0.7, len(sub) - 0.3)
@@ -339,18 +365,24 @@ def plot_comparison(loc_df: pd.DataFrame, out_png: Path, out_pdf: Path):
             ax.legend(loc="lower right", fontsize=9, frameon=True)
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
-    xmax = float(max(loc_df["M_current"].max(),
-                     loc_df["M_frag_aware"].max()))
-    axes[-1].set_xlim(0, xmax + 12)
+    xmax = float(max(loc_df["M_frag_aware"].max(),
+                     loc_df["n_mothers_available_in_DB"].max()))
+    axes[-1].set_xlim(0, xmax + 18)
     axes[-1].set_xlabel(
-        f"Number of mothers recommended per location "
-        f"({n_for_miss_probability()} seeds each; tetraploid Rule 2)",
+        "Mothers per location  —  target (§ B.4.2) vs already collected "
+        "in the LEPA DB",
         fontsize=11)
+    n_short_loc  = int((loc_df["shortage"] > 0).sum())
+    total_short  = int(loc_df["shortage"].sum())
+    total_target = int(loc_df["M_frag_aware"].sum())
+    total_avail  = int(loc_df["n_mothers_available_in_DB"].sum())
     fig.suptitle(
-        "Sampling recommendation — current (§ B.4.1) vs fragmentation-aware "
-        "(§ B.4.2)",
-        fontsize=13, y=0.995)
-    fig.tight_layout(rect=[0, 0, 0.94, 0.97])
+        f"Mothers per LEPA location — do we have what the design asks for?\n"
+        f"Target: {total_target}. In LEPA DB: {total_avail}. "
+        f"Short: {n_short_loc} locations ({total_short} mothers, "
+        f"2026 top-up).",
+        fontsize=11, y=0.998)
+    fig.tight_layout(rect=[0, 0, 0.94, 0.96])
     fig.savefig(out_png, dpi=200); fig.savefig(out_pdf); plt.close(fig)
 
 
@@ -377,25 +409,25 @@ def main() -> None:
         "largest_component_share_50m",
         "K_local",
         "M_current_uniform", "M_current_event_floor", "M_current",
-        "sum_M_paternal_only", "M_frag_aware", "delta",
+        "sum_M_paternal_only", "M_frag_aware",
+        "n_mothers_available_in_DB", "shortage",
     ]
     tidy = loc[[c for c in tidy_cols if c in loc.columns]]
     out_loc = DEFAULT_TABLES / "step29c_sampling_comparison_per_location.tsv"
     tidy.to_csv(out_loc, sep="\t", index=False)
     print(f"[step29c] Wrote {out_loc}  ({len(tidy)} locations)")
 
-    gained = int((loc["delta"] > 0).sum())
-    saved  = int((loc["delta"] < 0).sum())
-    same   = int((loc["delta"] == 0).sum())
-    print(f"[step29c] Delta summary (fragmentation-aware − current):")
-    print(f"  Locations MORE sampling  (Δ > 0): {gained}")
-    print(f"  Locations LESS sampling  (Δ < 0): {saved}")
-    print(f"  Locations unchanged      (Δ = 0): {same}")
-    print(f"  Total mothers, current    : {int(loc['M_current'].sum())}")
-    print(f"  Total mothers, frag-aware : {int(loc['M_frag_aware'].sum())}")
-    print(f"  Median Δ per location    : {int(loc['delta'].median())}")
-    print(f"  Range Δ per location     : "
-          f"{int(loc['delta'].min())} to {int(loc['delta'].max())}")
+    n_target  = int(loc["M_frag_aware"].sum())
+    n_avail   = int(loc["n_mothers_available_in_DB"].sum())
+    n_short_loc = int((loc["shortage"] > 0).sum())
+    n_covered   = int((loc["shortage"] == 0).sum())
+    n_short_m   = int(loc["shortage"].sum())
+    print(f"[step29c] Fragmentation-aware sampling summary:")
+    print(f"  Target (M_frag_aware)               : {n_target} mothers")
+    print(f"  Already in LEPA DB (n_available)    : {n_avail} mothers")
+    print(f"  Locations fully covered by DB       : {n_covered} / {len(loc)}")
+    print(f"  Locations short of target           : {n_short_loc} / {len(loc)}")
+    print(f"  Total mothers short (2026 top-up)   : {n_short_m}")
 
     # ---- Part C germplasmID selection ----
     # Pick specific germplasmIDs from the LEPA DB to satisfy the per-event
