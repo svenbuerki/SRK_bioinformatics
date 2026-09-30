@@ -10,7 +10,7 @@ predictions, then test the predictions with real seed data:
 - [Scientific goals](#scientific-goals) — the four hypotheses this framework tests
 - **Part A** — [Model and predictions](#part-a--model-and-predictions) · data scope, species-wide P1 prior, finite-population model, and the Phase A predictions of SRK diversity and pollen compatibility per location (Step 30 Phase A outputs, Figures 4–6). *This is what we expect each location to look like — before we ever open a seed lot.*
 - **Part B** — [Sampling protocol derived from the predictions](#part-b--sampling-protocol-derived-from-the-predictions) · within-location pollen connectivity, per-mother seed count (Step 28), per-location mother count with private-allele floor (Step 29), and two-year design. *This is what the field team must do to test the Part A predictions.*
-- **Part C** — [Testing predictions with observed SRK data (Phase B)](#part-c--testing-predictions-with-observed-srk-data-phase-b) · mate-limitation regression, SI-escape rate test, script behaviour, data-generation pipeline, and the BL4 pilot.
+- **Part C** — [Testing predictions with observed SRK data (Phase B)](#part-c--testing-predictions-with-observed-srk-data-phase-b) · preliminary EO-level validation with Phase 4 adult genotypes (§ C.0), mate-limitation regression, SI-escape rate test, script behaviour, data-generation pipeline, and the BL4 pilot.
 - [Output map](#output-map--quick-reference-grouped-by-phase) — filenames organised by phase.
 
 **Naming.** Parts **A / B / C** refer to *sections of this document*.
@@ -369,12 +369,13 @@ sampled (55 at EO61, 62 at EO76, down to 1–4 at the smallest
 slickspots). Predictions are panelled by Bottleneck Lineage
 (BL4 → BL5 → BL3 → BL1 → BL2).
 
-**Result.** Large, well-buffered slickspots in BL3 (EO76) and BL1
-(EO61) are predicted to recover 21–22 distinct alleles out of the
-species-wide 32. BL5 is highly bimodal: the well-sampled locations
-(EO32, EO18-7 group) reach 15–19 alleles, while the BL5 tail
-(EO24, EO24-1, EO24-2, EO24-7) can recover only 2–5 alleles from
-their tiny local populations.
+**Result.** Under tetraploid sampling (PLOIDY × M = 4M allele draws per
+location — see § A.3 and § B.3), large, well-buffered slickspots in BL3
+(EO76) and BL1 (EO61) are predicted to recover 24–25 distinct alleles
+out of the species-wide 32. BL5 is highly bimodal: the well-sampled
+locations (EO32, EO18-7 group) reach 20–22 alleles, while the BL5 tail
+(EO24, EO24-1, EO24-2, EO24-7) can recover only 3–8 alleles from their
+tiny local populations.
 
 **Take-home for reviewers.** The predicted-diversity gradient across
 BLs is the biological signal of habitat fragmentation and drift
@@ -396,21 +397,21 @@ and `predicted_local_coverage_mean` columns in
 
 | Location | Effective N (50 m) | Local pool (alleles present) | Local coverage at 15 seeds × M (tetraploid Rule 2) | Species coverage (of 32) |
 |---|---|---|---|---|
-| EO24-2 (1 plant) | 1 | ~2 | **~100 %** | ~6 % |
-| EO67 (small pilot) | 6 | ~6 | **~100 %** | ~18 % |
-| EO27-1 (large pilot) | 116 | ~22 | **~100 %** | ~55 % |
-| EO32 (well-sampled BL5) | 224 | ~26 | ~98 % | ~58 % |
-| EO76 (largest BL3) | 416 | ~30 | ~98 % | ~67 % |
+| EO24-2 (1 plant) | 1 | ~3 | **~100 %** | ~11 % |
+| EO67 (small pilot) | 6 | ~8 | **~100 %** | ~28 % |
+| EO27-1 (large pilot) | 116 | ~27 | **~98 %** | ~68 % |
+| EO32 (well-sampled BL5) | 327 | ~31 | ~95 % | ~70 % |
+| EO76 (largest BL3) | 416 | ~32 | ~98 % | ~77 % |
 
 **Every LEPA location — including the tiny BL5 slickspots — is
-essentially fully characterised at the local level (~98–100 %).** The
+essentially fully characterised at the local level (~95–100 %).** The
 species-wide coverage number remains useful as a cataloguing metric,
 but for Phase B mate-limitation and SI-escape tests the local coverage
 is what matters: we are testing reproductive dynamics on the alleles
 that are physically present, not attempting a species-wide inventory.
 
 <a id="fig-3"></a>
-![Figure 3: Predicted number of distinct SRK alleles detected per LEPA location under the P1 species-wide prior (32 Fgs from the Canu-amplicon preliminary study). Horizontal layout, one dot per location, panelled by Bottleneck Lineage in the standard BL_ORDER (BL4, BL5, BL3, BL1, BL2). Dot size ∝ √M (permit-realistic count of mothers with seed records in the LEPA DB); error bars = 95 % credible interval from Dirichlet posterior draws. Y-tick labels give `locationCode (n = mothers sampled)`. Vertical dashed line marks the species-wide SRK allele ceiling of 32. **BL3 (EO76, EO38) and BL1 (EO61) predict ~21 distinct alleles; the BL5 tail (EO24 group) predicts 2–5.** Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_prediction_diversity.png)
+![Figure 3: Predicted number of distinct SRK alleles detected per LEPA location under the P1 species-wide prior (32 Fgs from the Canu-amplicon preliminary study). Horizontal layout, one dot per location, panelled by Bottleneck Lineage in the standard BL_ORDER (BL4, BL5, BL3, BL1, BL2). Dot size ∝ √M (permit-realistic count of mothers with seed records in the LEPA DB); error bars = 95 % credible interval from Dirichlet posterior draws. Y-tick labels give `locationCode (n = mothers sampled)`. Vertical dashed line marks the species-wide SRK allele ceiling of 32. **BL3 (EO76, EO38) and BL1 (EO61) predict ~24–25 distinct alleles under tetraploid sampling (PLOIDY · M = 4M allele draws per location); the BL5 tail (EO24 group) predicts 3–8.** Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_prediction_diversity.png)
 
 ### A.7 Sporophytic self-incompatibility with Class I / Class II dominance
 
@@ -1245,6 +1246,96 @@ artefact is filename-prefixed `step30_B_*` (real data) or
 carrying a diagonal DEMO watermark). This part closes the loop on the
 four scientific goals of the framework.
 
+Section § C.0 provides a **preliminary empirical validation** of the
+Part A sporophytic model using adult SRK genotypes that are already in
+hand from the Canu-amplicon Phase 4 pipeline — well before any Phase B
+seed data are available. It is not one of the two goal-linked tests
+(those need seed genotypes), but a sanity check that the model reproduces
+the data it was built on and does not fall over at any single EO.
+
+### C.0 Preliminary empirical validation at EO scale (Phase 4 adults)
+
+**Question.** Before we invest in seed genotyping, does the sporophytic
+Class I / Class II + empirical-zygosity P_compat model (§ A.7)
+reproduce what we already observe in the adult population from the
+Canu-amplicon pipeline?
+
+**Data.** Per-individual SRK genotypes from `Tables/Phase4/step23_individual_allele_genotypes_with_nulls.tsv`
+— 368 tetraploid individuals across 23 Elemental Occurrences (EOs).
+Each individual carries 4 SRK copies (functional alleles plus null
+copies where SI has decayed). The allele → Fg mapping is the same one
+that P1 was built from (`Tables/Phase5/step26i_L1_carrier_inventory.tsv`).
+Six EOs meet the inclusion threshold of n ≥ 10 individuals with at
+least one functional copy: **EO76 (n = 76), EO70 (n = 74), EO27 (n = 61),
+EO25 (n = 51), EO18 (n = 39), EO67 (n = 37)** — 338 individuals in total.
+
+**Design.** For each of the six EOs, two per-mother pollen
+compatibilities are computed by Step 30 Part C over the same set of
+observed mothers, changing only the father-drawing distribution:
+
+- **Observed P_compat** — real mothers × simulated fathers drawn from
+  the **observed local Fg frequency vector at that EO**.
+- **Predicted P_compat** — real mothers × simulated fathers drawn from
+  the **species-wide P1 prior** (ignoring per-EO drift).
+
+Both use the identical Class I / II dominance rules from § A.7.3 and
+the empirical LEPA zygosity distribution from § A.7.3a. The comparison
+therefore isolates the effect of **local Fg frequency drift** on
+random-mating compatibility, holding the mothers themselves fixed.
+Per-EO 95 % confidence intervals come from a mother-resampling
+bootstrap with the father pool re-drawn each replicate.
+
+**Result — the model reproduces four of six EOs and cleanly flags a
+biological outlier.** Species-mean P_compat under the empirical
+zygosity model is 0.68, matching § A.7. Four EOs — EO76, EO27, EO25,
+EO67 — sit on the 1:1 diagonal within their 95 % intervals (Fig. C.0,
+panel A), confirming that local frequency drift at those EOs is mild
+enough not to shift random-mating compatibility away from the
+species-wide expectation.
+
+**EO70 is a striking outlier**: observed P_compat = 0.41 (struggling
+band) versus predicted 0.60 (sustainable band). This is not a model
+failure but a biological signal — at EO70 the local Fg pool is skewed
+enough that real mothers overlap far more with their neighbours'
+expressed alleles than P1 would predict. **EO18 and EO67** show a
+milder drift in the same direction (observed 0.58 versus predicted
+0.66). All three are candidates for future intervention: they are
+places where the sporophytic model correctly diagnoses reduced
+compatibility from drift alone, without needing any seed data.
+
+**Panel B — zygosity distributions per EO.** The distinct-identity
+distribution at each EO tracks the species-wide 66 / 32 / 2 %
+observation from Step 23 fairly well, with one exception: EO25 shows
+substantially more heterozygous individuals (49 % carry two distinct
+identities, versus 32 % species-wide), which is consistent with EO25
+sitting exactly on the diagonal in panel A — its Fg pool is closer to
+being drift-free than the average EO.
+
+**Interpretation and caveats.**
+
+- P1 was built from these same individuals, so the species mean is
+  guaranteed to line up on average — this comparison does not test the
+  model's absolute calibration, but its **robustness to per-EO drift**.
+- The scatter and the pattern of deviations (three EOs lower than
+  predicted, none higher; magnitudes ordered by the intuitive severity
+  of drift) is consistent with the model behaving correctly under
+  realistic local skew.
+- EO ≠ location. Locations sit at a finer spatial scale. Once seed
+  genotypes are in hand (Phase B), § C.1 rerun at the *location* scale
+  will supersede this preliminary check.
+- No formal statistical test with n = 6 EOs — this is a **visual +
+  quantitative validation** that the model is fit to run against seed
+  data.
+
+**Outputs.**
+
+- Table: `tables/Phase5/step30_C_pcompat_validation_at_eo.tsv` — one
+  row per EO with observed + predicted P_compat mean and 95 % CI,
+  observed Class I mass, and observed distinct-identity distribution.
+- Figure: `figures/Phase5/step30_C_pcompat_observed_vs_predicted.png`
+  — the two-panel diagnostic described above.
+- Script: `step30c_srk_validation_at_eo_level.py`.
+
 ### C.1 Test 1 — Mate-limitation regression (goals 1 + 3)
 
 Under strict SI + random mating in a **tetraploid sporophytic** system
@@ -1471,9 +1562,9 @@ signal by construction.
 | Mothers with seed records in DB | **4** | **33** |
 | Seeds / mother (tetraploid Rule 2 cap) | 15 (budget-limited if lower) | 15 |
 | Total allele draws at this location | 4 × 4 + 4 × 30 = 136 draws | 33 × 4 + 33 × 30 = 1 122 draws |
-| **Predicted local pool size** (SRK alleles at this location) | ~6 alleles | ~22 alleles |
+| **Predicted local pool size** (SRK alleles at this location) | ~8 alleles | ~27 alleles |
 | **Predicted local coverage** (of the alleles at this location) | **~100 %** ✓ | **~100 %** ✓ |
-| Predicted species-wide coverage (of 32 P1 alleles — biased against drifted-out alleles) | ~18 % | ~55 % |
+| Predicted species-wide coverage (of 32 P1 alleles — biased against drifted-out alleles) | ~28 % | ~68 % |
 | Predicted random-mating compatibility (sporophytic Class I / II + empirical zygosity, § A.7-A.7) | mean **0.67**, 95 % CI [0.42, 0.87] — *"sustainable"* band at the mean, CI stays sustainable throughout | mean **0.69**, tight CI [0.59, 0.77] — solidly *"sustainable"* |
 
 **Reading the two coverage numbers.**
@@ -1591,6 +1682,11 @@ or right-click → *Save link as…* to pull the TSV into your local pipeline.
 - [`step30_A_prediction_fecundation.pdf`](figures/Phase5/step30_A_prediction_fecundation.pdf) / [`.png`](figures/Phase5/step30_A_prediction_fecundation.png) — BL-panelled compatibility per location, traffic-light bands.
 - [`step30_A_diversity_vs_pcompat.pdf`](figures/Phase5/step30_A_diversity_vs_pcompat.pdf) / [`.png`](figures/Phase5/step30_A_diversity_vs_pcompat.png) — cross-plot: SRK diversity × pollen compatibility.
 - [`step30_A_fragmentation_index.pdf`](figures/Phase5/step30_A_fragmentation_index.pdf) / [`.png`](figures/Phase5/step30_A_fragmentation_index.png) — event-scale × location-scale fragmentation scatter, BL-coloured (pure spatial, no drift).
+
+**Phase A validation (adult SRK genotypes from Phase 4 — Part C § C.0):**
+
+- [`step30_C_pcompat_validation_at_eo.tsv`](tables/Phase5/step30_C_pcompat_validation_at_eo.tsv) — per-EO observed vs predicted pollen compatibility (n ≥ 10 individuals), observed Class I mass, and observed distinct-identity distribution.
+- [`step30_C_pcompat_observed_vs_predicted.pdf`](figures/Phase5/step30_C_pcompat_observed_vs_predicted.pdf) / [`.png`](figures/Phase5/step30_C_pcompat_observed_vs_predicted.png) — two-panel EO-scale diagnostic (observed vs predicted P_compat + observed zygosity distribution per EO).
 
 ### Phase B — Post-genotyping (requires observed seed genotypes)
 

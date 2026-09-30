@@ -95,20 +95,28 @@ def draw_frequencies(prior: pd.DataFrame, n_draws: int,
 def predicted_diversity_per_location(locations: pd.DataFrame,
                                      prior: pd.DataFrame,
                                      rng: np.random.Generator,
-                                     seeds_per_mother: int = 29,
+                                     seeds_per_mother: int = 15,
                                      n_local_replicates: int = 1000,
                                      ) -> pd.DataFrame:
-    """For each location, compute two coverage predictions:
+    """For each location, compute two coverage predictions.
 
-      1. **Species-wide coverage.** E[distinct Fgs observed | 2M alleles
-         drawn from the P1 species-wide prior] — asks how much of the
-         32-Fg species pool the sampling recovers.
+    Tetraploid accounting throughout — each adult contributes PLOIDY = 4
+    SRK allele copies to the local pool, and each seed contributes
+    PLOIDY // 2 + PATERNAL_ALLELES_PER_SEED = 2 + 2 = 4 allele draws
+    (2 maternal + 2 paternal). Legacy diploid counts (2·M, 2·N,
+    2 + seeds/mother) are replaced with the PLOIDY-scaled forms.
+
+      1. **Species-wide coverage.** E[distinct Fgs observed | PLOIDY · M
+         adult allele draws from the P1 species-wide prior] — asks how
+         much of the 32-Fg species pool the sampling recovers.
 
       2. **Location-local coverage.** Under the finite-population model,
-         first simulate the local pool by drawing 2 × N_fertile alleles
-         from P1, then compute the expected fraction of the location's
-         *own* SRK alleles detected at A_delivered = M × (2 + seeds/mother)
-         draws from that local pool. This is the biologically honest
+         first simulate the local pool by drawing PLOIDY × N_fertile
+         alleles from P1, then compute the expected fraction of the
+         location's *own* SRK alleles detected at
+         A_delivered = M × (PLOIDY + PATERNAL_ALLELES_PER_SEED · seeds/mother)
+         draws (mother's tetraploid genotype + 2 paternal alleles per
+         seed) from that local pool. This is the biologically honest
          per-location target — 90 % local coverage says we've seen 90 %
          of what is actually at the location, ignoring the species alleles
          that drift already removed.
@@ -119,6 +127,7 @@ def predicted_diversity_per_location(locations: pd.DataFrame,
     Step 29b connectivity output has been merged in; otherwise falls
     back to the raw census `total_n_fertile`.
     """
+    from step28_seed_sampling_per_mother import PLOIDY, PATERNAL_ALLELES_PER_SEED
     freqs = draw_frequencies(prior, N_POSTERIOR_DRAWS, rng)   # (draws, K_fg)
     f_mean = prior["f_mean"].values
     K_fg = freqs.shape[1]
@@ -141,20 +150,23 @@ def predicted_diversity_per_location(locations: pd.DataFrame,
         except (TypeError, ValueError):
             N_fertile = 0
         N_fertile = max(N_fertile, max(M_used, 1))
-        A_delivered = M_used * (2 + seeds_per_mother)
+        # Per-mother allele draws under tetraploid sporophytic sampling:
+        # PLOIDY alleles from her leaf-tissue genotype +
+        # PATERNAL_ALLELES_PER_SEED paternal alleles per seed.
+        A_delivered = M_used * (PLOIDY + PATERNAL_ALLELES_PER_SEED * seeds_per_mother)
 
-        # --- 1. Species-wide coverage (existing) ---
-        alleles_drawn = 2 * M_used
+        # --- 1. Species-wide coverage (tetraploid: PLOIDY · M draws) ---
+        alleles_drawn = PLOIDY * M_used
         exp_distinct = (1.0 - (1.0 - freqs) ** alleles_drawn).sum(axis=1)
 
-        # --- 2. Location-local coverage (new) ---
-        # For each of n_local_replicates: simulate the local pool by
-        # drawing 2 * N_fertile alleles from P1, then evaluate expected
-        # fraction of local alleles detected at A_delivered draws.
+        # --- 2. Location-local coverage ---
+        # For each replicate: simulate the local pool by drawing
+        # PLOIDY × N_fertile alleles from P1 (tetraploid), then evaluate
+        # the expected fraction of local alleles detected at A_delivered draws.
         local_pool_sizes = np.empty(n_local_replicates)
         local_coverages  = np.empty(n_local_replicates)
         for k in range(n_local_replicates):
-            local = rng.choice(K_fg, size=2 * N_fertile, p=f_mean)
+            local = rng.choice(K_fg, size=PLOIDY * N_fertile, p=f_mean)
             _, counts = np.unique(local, return_counts=True)
             f_local = counts / counts.sum()
             local_pool_sizes[k] = len(counts)
@@ -166,7 +178,7 @@ def predicted_diversity_per_location(locations: pd.DataFrame,
             "M_mothers_in_db":               M_used,
             "M_achievable_ceiling":          M_ceiling,
             "N_fertile_effective":           N_fertile,
-            "A_delivered_at_29seeds":        A_delivered,
+            "A_delivered_at_15seeds":        A_delivered,
             # Species-wide (of the 32 P1 alleles):
             "predicted_distinct_Fgs":        float(np.mean(exp_distinct)),
             "predicted_distinct_Fgs_lo":     float(np.quantile(exp_distinct, 0.025)),
@@ -188,14 +200,18 @@ def predicted_diversity_matched_to_seeds(seeds: pd.DataFrame,
                                          prior: pd.DataFrame,
                                          rng: np.random.Generator) -> pd.DataFrame:
     """Per-location prediction whose sample size matches the actual number of
-    allele observations in the seed data (2 alleles per seed = maternal +
-    paternal). Use this in comparisons so the y-axis (observed) and x-axis
-    (predicted) are on the same detection scale.
+    allele observations in the seed data. Under tetraploid sporophytic each
+    seed contributes PLOIDY // 2 + PATERNAL_ALLELES_PER_SEED = 2 + 2 = 4
+    alleles (2 maternal from the mother's gamete + 2 paternal from the
+    pollen donor's gamete). Use this in comparisons so the y-axis
+    (observed) and x-axis (predicted) are on the same detection scale.
     """
+    from step28_seed_sampling_per_mother import PLOIDY, PATERNAL_ALLELES_PER_SEED
+    alleles_per_seed = PLOIDY // 2 + PATERNAL_ALLELES_PER_SEED    # 2 + 2 = 4
     freqs = draw_frequencies(prior, N_POSTERIOR_DRAWS, rng)
     rows = []
     for loc_id, sub in seeds.groupby("locationID"):
-        n_alleles = 2 * len(sub)     # maternal + paternal per seed
+        n_alleles = alleles_per_seed * len(sub)   # tetraploid: 4 per seed
         exp_distinct = (1.0 - (1.0 - freqs) ** n_alleles).sum(axis=1)
         rows.append({
             "locationID":                        loc_id,
