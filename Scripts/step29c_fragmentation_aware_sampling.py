@@ -323,13 +323,14 @@ def plot_comparison(loc_df: pd.DataFrame, out_png: Path, out_pdf: Path):
         colour = palette[bl]
         h = 0.36
         # Solid bar — fragmentation-aware design target (M_frag).
+        # Visually appears BELOW the light bar because barh with y - h/2
+        # sits on the lower half of each row.
         ax.barh(y - h/2, sub["M_frag_aware"], h, color=colour, alpha=0.9,
-                edgecolor=colour, linewidth=1.0,
-                label="Mothers needed (§ B.4.2 target)")
+                edgecolor=colour, linewidth=1.0)
         # Light bar — mothers already collected and stored in the LEPA DB.
+        # Appears ABOVE the solid bar in each row.
         ax.barh(y + h/2, sub["n_mothers_available_in_DB"], h,
-                color=colour, alpha=0.35, edgecolor=colour, linewidth=1.0,
-                label="Mothers available in the LEPA DB")
+                color=colour, alpha=0.35, edgecolor=colour, linewidth=1.0)
         # Row label: locationCode + spatial context matching Figure 2b.
         share = sub.get("largest_component_share_50m",
                         pd.Series([1.0] * len(sub))).fillna(1.0)
@@ -361,10 +362,19 @@ def plot_comparison(loc_df: pd.DataFrame, out_png: Path, out_pdf: Path):
         ax.text(1.01, 0.5, bl, transform=ax.transAxes,
                 fontsize=13, fontweight="bold", color=colour,
                 va="center", ha="left")
-        if bl == bls[0]:
-            ax.legend(loc="lower right", fontsize=9, frameon=True)
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
+
+    # Figure-level legend with neutral grey handles so it doesn't look
+    # BL-specific. Order matches the visual top-to-bottom layout in
+    # each row: light 'available' bar on top, solid 'needed' bar below.
+    from matplotlib.patches import Patch
+    legend_handles = [
+        Patch(facecolor="#555555", alpha=0.35, edgecolor="#333",
+              label="Mothers already in the LEPA DB (light bar, on top)"),
+        Patch(facecolor="#555555", alpha=0.9, edgecolor="#333",
+              label="Mothers needed by § B.4.2 target (solid bar, below)"),
+    ]
     xmax = float(max(loc_df["M_frag_aware"].max(),
                      loc_df["n_mothers_available_in_DB"].max()))
     axes[-1].set_xlim(0, xmax + 18)
@@ -382,7 +392,10 @@ def plot_comparison(loc_df: pd.DataFrame, out_png: Path, out_pdf: Path):
         f"Short: {n_short_loc} locations ({total_short} mothers, "
         f"2026 top-up).",
         fontsize=11, y=0.998)
-    fig.tight_layout(rect=[0, 0, 0.94, 0.96])
+    fig.legend(handles=legend_handles, loc="upper center",
+                bbox_to_anchor=(0.5, 0.94), ncol=2,
+                fontsize=10, frameon=True)
+    fig.tight_layout(rect=[0, 0, 0.94, 0.92])
     fig.savefig(out_png, dpi=200); fig.savefig(out_pdf); plt.close(fig)
 
 
