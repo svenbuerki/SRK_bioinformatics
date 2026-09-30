@@ -231,8 +231,8 @@ N_fert_eff = total_n_fertile × largest_component_share_50m
 - **Well-connected locations (connectivity share ≈ 1).** EO29,
   EO70, EO118, EO26-3 (small), EO67, EO24 group — every fertile
   plant sits in the same 50 m mating pool. Raw census = `N_fert_eff`.
-- **Partially fragmented (share 0.5 – 0.9).** EO76 (536 → 416),
-  EO61 (543 → 315), EO32 (471 → 327), EO18-7 (242 → 158) — a large
+- **Partially fragmented (share 0.5 – 0.9).** EO76 (517 → 401),
+  EO61 (543 → 315), EO32 (466 → 324), EO18-7 (242 → 158) — a large
   census loses 10 – 40 % of adults to fragmentation.
 - **Heavily fragmented (share < 0.5).** EO27-1 (395 → 147, 37 %),
   EO27-1 (371 → 116, 31 %), EO18-8 (123 → 52, 42 %), EO26-2
@@ -301,9 +301,9 @@ the unbiased local Fg diversity and its 95 % credible interval;
 | EO24 (BL5 tail) | BL5 | 2 | 1 | 5 | ~4.5 | ~4.1 | **91 %** |
 | EO67 (small BL4 pilot) | BL4 | 6 | 4 | 71 | ~8 | ~8 | ~100 % |
 | EO27-1 (large BL4 pilot) | BL4 | 116 | 33 | 2465 | ~27 | ~27 | ~100 % |
-| EO32 (well-sampled BL5) | BL5 | 327 | 38 | 6028 | ~31 | ~31 | ~100 % |
+| EO32 (well-sampled BL5) | BL5 | 324 | 38 | 6028 | ~31 | ~31 | ~100 % |
 | EO29 | BL1 | 417 | 22 | 5419 | ~32 | ~31.5 | ~100 % |
-| EO76 (largest BL3) | BL3 | 416 | 62 | 11723 | ~32 | ~31.5 | ~100 % |
+| EO76 (largest BL3) | BL3 | 401 | 62 | 11723 | ~32 | ~31.5 | ~100 % |
 
 **Every location clears the 90 % target and almost all reach ≥ 99 %
 coverage.** The two locations noticeably below full recovery

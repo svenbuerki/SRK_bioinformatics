@@ -550,10 +550,10 @@ against each location's true local pool:
 | EO27 (BL4) | BL4 | 173 | 15 | 1251 | ~29 | ~29 | ~100 % |
 | EO30-1 (BL4) | BL4 | 420 | 23 | 2249 | ~32 | ~31.5 | ~100 % |
 | EO27-1 (large BL4 pilot) | BL4 | 116 | 33 | 2465 | ~27 | ~27 | ~100 % |
-| EO32 (well-sampled BL5) | BL5 | 327 | 38 | 6028 | ~31 | ~31 | ~100 % |
+| EO32 (well-sampled BL5) | BL5 | 324 | 38 | 6028 | ~31 | ~31 | ~100 % |
 | EO29 (BL1) | BL1 | 417 | 22 | 5419 | ~32 | ~31.5 | ~100 % |
 | EO61 | BL1 | 315 | 55 | 9820 | ~31 | ~31 | ~100 % |
-| EO76 (largest BL3) | BL3 | 416 | 62 | 11723 | ~32 | ~31.5 | ~100 % |
+| EO76 (largest BL3) | BL3 | 401 | 62 | 11723 | ~32 | ~31.5 | ~100 % |
 
 **Every LEPA location clears the 90 % target and almost all reach
 ≥ 99 % coverage.** The only two locations noticeably below full

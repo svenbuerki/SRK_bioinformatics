@@ -1676,14 +1676,22 @@ def main() -> None:
         })
         locations = locations.merge(conn, on="locationID", how="left")
         # Effective mating N = adults in the largest connected component
-        # at the 10 m primary radius.
+        # at the 50 m primary pollen-flight radius. Use step29b's OWN
+        # census (conn_total_n_fertile) as the base — the connectivity
+        # share was computed against that number, not step29's SQL
+        # census, so multiplying by step29's number produces a subtly
+        # wrong N_fert_eff. Also overwrite total_n_fertile so every
+        # downstream consumer sees the spatially-analysable census
+        # (some events may be dropped by the coord filter — those are
+        # the ~2-4 % discrepancy between step29 and step29b totals).
+        locations["total_n_fertile"] = locations["conn_total_n_fertile"].astype(int)
         locations["N_fertile_effective_50m"] = (
-            locations["total_n_fertile"].astype(float)
+            locations["conn_total_n_fertile"].astype(float)
             * locations["largest_component_share_50m"].fillna(1.0)
         ).round().astype(int)
         print(f"[step30] Woven in within-location connectivity from "
               f"{DEFAULT_CONNECTIVITY_TSV.name} "
-              f"(mean largest-component share at 10 m = "
+              f"(mean largest-component share at 50 m = "
               f"{locations['largest_component_share_50m'].mean():.2f}).")
     else:
         print(f"[step30] {DEFAULT_CONNECTIVITY_TSV} not found — "

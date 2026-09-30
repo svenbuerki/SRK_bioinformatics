@@ -199,6 +199,13 @@ def build_per_location(event_df: pd.DataFrame) -> pd.DataFrame:
         "M_event_coverage":         "M_current_event_floor",
     })
     per_loc = per_loc.merge(cur_slim, on="locationID", how="left")
+    # Merge step29b connectivity so the figure label can show N_fert_eff
+    # (drift-relevant mating pool) alongside the raw census.
+    conn_tsv = DEFAULT_TABLES / "step29_location_connectivity.tsv"
+    if conn_tsv.exists():
+        conn = pd.read_csv(conn_tsv, sep="\t", encoding="utf-8-sig")
+        conn_slim = conn[["locationID", "largest_component_share_50m"]]
+        per_loc = per_loc.merge(conn_slim, on="locationID", how="left")
     per_loc["delta"] = per_loc["M_frag_aware"] - per_loc["M_current"]
     per_loc["BL"] = locationCode_to_bl(per_loc["locationCode"]).values
     per_loc["BL"] = per_loc["BL"].fillna("Unassigned")
@@ -303,11 +310,19 @@ def plot_comparison(loc_df: pd.DataFrame, out_png: Path, out_pdf: Path):
         ax.barh(y + h/2, sub["M_frag_aware"], h, color=colour, alpha=0.9,
                 edgecolor=colour, linewidth=1.0,
                 label="M fragmentation-aware (§ B.4.2)")
+        # Compute N_fert_eff = census × largest_component_share_50m so
+        # the label carries the same 'effective mating pool' value that
+        # Figures 2b, 3, 4, 5 use. Falls back to census when the share
+        # column is missing.
+        share = sub.get("largest_component_share_50m",
+                        pd.Series([1.0] * len(sub))).fillna(1.0)
+        eff = (sub["total_N_fertile"].astype(float) * share).round().astype(int)
         labels = [f"{r['locationCode']}  "
                   f"(events = {int(r['n_events'])}, "
-                  f"components = {int(r['n_components_50m'])}, "
-                  f"adults = {int(r['total_N_fertile'])})"
-                  for _, r in sub.iterrows()]
+                  f"50 m components = {int(r['n_components_50m'])}, "
+                  f"census = {int(r['total_N_fertile'])}, "
+                  f"effective = {int(e)})"
+                  for (_, r), e in zip(sub.iterrows(), eff)]
         for i, r in sub.iterrows():
             delta = int(r["delta"])
             sign = "+" if delta > 0 else ""
@@ -356,11 +371,15 @@ def main() -> None:
     print(f"[step29c] Wrote {out_ev}  ({len(ev_out)} events)")
 
     loc = build_per_location(ev)
-    tidy = loc[[
+    tidy_cols = [
         "locationID", "locationCode", "BL",
-        "n_events", "n_components_50m", "total_N_fertile", "K_local",
+        "n_events", "n_components_50m", "total_N_fertile",
+        "largest_component_share_50m",
+        "K_local",
         "M_current_uniform", "M_current_event_floor", "M_current",
-        "sum_M_paternal_only", "M_frag_aware", "delta"]]
+        "sum_M_paternal_only", "M_frag_aware", "delta",
+    ]
+    tidy = loc[[c for c in tidy_cols if c in loc.columns]]
     out_loc = DEFAULT_TABLES / "step29c_sampling_comparison_per_location.tsv"
     tidy.to_csv(out_loc, sep="\t", index=False)
     print(f"[step29c] Wrote {out_loc}  ({len(tidy)} locations)")
