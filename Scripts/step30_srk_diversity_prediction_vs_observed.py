@@ -404,7 +404,7 @@ def predicted_pcompat_per_location(locations: pd.DataFrame,
         rows.append({
             "locationID":              row["locationID"],
             "locationCode":            row["locationCode"],
-            "total_n_fertile":         N_fertile,
+            "N_fertile_effective":     N_fertile,
             "M_mothers_in_db":         M,
             "predicted_P_compat_mean": float(loc_means.mean()),
             "predicted_P_compat_lo":   float(np.quantile(loc_means, 0.025)),
@@ -1055,9 +1055,14 @@ def plot_prediction_fecundation(pcompat_per_loc: pd.DataFrame,
             s=sizes, c=colour, edgecolor="white",
             linewidth=0.6, zorder=2,
         )
-        labels = [f"{code}   (n = {int(m)})"
-                  for code, m in zip(sub["locationCode"],
-                                     sub["M_mothers_in_db"])]
+        labels = [
+            f"{code}  (N_fert_eff = {int(n)}, M_mothers = {int(m)})"
+            for code, n, m in zip(
+                sub["locationCode"],
+                sub["N_fertile_effective"],
+                sub["M_mothers_in_db"],
+            )
+        ]
         ax.set_yticks(y)
         ax.set_yticklabels(labels, fontsize=8)
         ax.set_xlim(0.0, x_upper)

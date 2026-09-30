@@ -237,11 +237,12 @@ model, what fraction of pollen would a mother at each location be
 compatible with under random mating?
 
 **Approach.** For each location, on each simulation replicate:
-(1) draw local Fg pool from P1; (2) simulate mothers from that pool
-under the empirical zygosity distribution; (3) apply the sporophytic
+(1) draw local Fg pool from P1 using `N_fert_eff` (same input as
+Figure 3, Panel A); (2) simulate `M_mothers` from that pool under
+the empirical zygosity distribution; (3) apply the sporophytic
 Case-A / Case-B analytical formulas per mother; (4) average across
 mothers. Report the posterior mean and 95 % credible interval across
-replicates.
+replicates. Seed counts do not enter this prediction.
 
 **Result.**
 
@@ -254,7 +255,14 @@ replicates.
 - All other BLs sit in the sustainable band at the mean; the tightest
   credible intervals belong to the largest locations (EO76, EO61).
 
-![Figure 4 — Predicted per-location pollen compatibility under sporophytic Class I / II + empirical LEPA zygosity. One dot per location, error bars = 95 % credible interval, panelled by Bottleneck Lineage. Traffic-light bands: red = failed (< 0.23), amber = struggling (0.23–0.45), green = sustainable (≥ 0.45). Species mean = 0.68. BL5 tail slips into the struggling band; all other locations sit in the sustainable band at the mean.](figures/Phase5/step30_A_prediction_fecundation.png)
+**Connection to Figure 3.** Uses the same `N_fert_eff` and
+`M_mothers` inputs as the diversity figure. Figure 3 shows that the
+existing LEPA seed data recovers the true local Fg pool at every
+location — that validation transfers directly to Figure 4, meaning
+the location-mean P_compat computed from the M sampled mothers is a
+faithful estimator of the population-mean P_compat.
+
+![Figure 4 — Predicted per-location pollen compatibility under sporophytic Class I / II + empirical LEPA zygosity. Y-axis labels give `locationCode (N_fert_eff, M_mothers)` — the same convention as Figure 3, without total_seeds because seed counts do not enter this prediction. One dot per location, error bars = 95 % credible interval, panelled by Bottleneck Lineage. Traffic-light bands: red = failed (< 0.23), amber = struggling (0.23–0.45), green = sustainable (≥ 0.45). Species mean = 0.68. BL5 tail slips into the struggling band; all other locations sit in the sustainable band at the mean.](figures/Phase5/step30_A_prediction_fecundation.png)
 
 ### 30.3 Fragmentation index
 

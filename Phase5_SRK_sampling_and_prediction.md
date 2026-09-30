@@ -758,6 +758,19 @@ gross "compatibility floor" the diploid model implied.
 so that any downstream analysis can join against them and reproduce
 the categorical labels.
 
+**Connection to Figure 3.** The per-location pollen compatibility
+prediction is driven by the same two inputs the diversity figure
+uses: `N_fert_eff` sizes the drift-simulated local pool (Link 1 →
+Link 2), and `M_mothers` sets the sample size the location mean is
+averaged over. Seed counts do **not** enter the pollen compatibility
+prediction. Figure 3 demonstrates that the existing LEPA dataset
+recovers Nature's local Fg pool at every location (coverage ≥ 90 %
+everywhere; ≥ 99 % at all but the two BL5 singletons). That
+validation transfers directly here: because the sampling recovers
+the local Fg pool composition, the location-mean pollen compatibility
+computed from the M sampled mothers is a faithful estimator of the
+population-mean pollen compatibility at each location.
+
 <a id="fig-5"></a>
 ![Figure 5: Predicted per-mother pollen compatibility under the sporophytic tetraploid Class I / Class II model with **empirical LEPA zygosity** (§ A.8.3a). One dot per LEPA location, panelled by Bottleneck Lineage. Traffic-light background bands mark **failed** (pollen compatibility < 0.231, red), **struggling** (0.231–0.462, orange) and **sustainable** (≥ 0.462, green) — recalibrated against the sporophytic + empirical-zygosity species-mean of **0.693** (green dotted line). Dot position = mean predicted pollen compatibility from a Monte-Carlo finite-population simulation: 4 × N_fertile local alleles drawn from P1 (N_fertile scaled by within-50 m connectivity), M mothers drawn from that pool with the empirical LEPA zygosity distribution (66 % single-identity homozygotes, 32 % 2-distinct, 2 % 3-distinct — see [`srk_zygosity_empirical.tsv`](tables/Phase5/srk_zygosity_empirical.tsv)), and each mother's pollen compatibility computed against 300 candidate fathers drawn the same way. Error bars = 95 % credible interval across simulation replicates; dot size ∝ √M (mothers with seed records in DB). **Every LEPA location's mean sits close to the species mean because 66 % of mothers express only one SRK identity, which minimises their p(M) footprint under the § A.8.4 recognition rule; BL5 tiny slickspots retain wide CI reflecting founder-effect variance in class + zygosity composition.** Source: `step30_srk_diversity_prediction_vs_observed.py`. Class assignments: [`srk_fg_class.tsv`](tables/Phase5/srk_fg_class.tsv). Empirical zygosity: [`srk_zygosity_empirical.tsv`](tables/Phase5/srk_zygosity_empirical.tsv). Bands: [`step30_A_traffic_light_bands.tsv`](tables/Phase5/step30_A_traffic_light_bands.tsv).](figures/Phase5/step30_A_prediction_fecundation.png)
 
