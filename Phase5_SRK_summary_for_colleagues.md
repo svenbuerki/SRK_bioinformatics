@@ -93,6 +93,17 @@ Reading from the biggest unit down to the individual plant:
   `dwc:locationID`); `locationCode` = the EO code of the sampling
   site ("Report the unique EO # where the sampling is conducted
   (e.g., EO38)"). May span several slick spots.
+  - **Within-EO location split (Phase 5 refinement).** When events
+    inside the same EO sit **≥ 500 m apart with no bridging events
+    in between**, Phase 5 tracks the disjoint pieces as separate
+    `locationCode`s (e.g. EO24 → `EO24`, `EO24-1`, `EO24-2`,
+    `EO24-7`; EO27 → `EO27`, `EO27-1`, `EO27-3`, `EO27RT`), each
+    with its own `locationID`. In the current data **5 EOs are
+    split this way** (EO18, EO24, EO25, EO26, EO27 → 16 Phase 5
+    locationCodes). 500 m is 10× LEPA's primary pollinator radius
+    (50 m), so these sub-locations cannot share pollen under any
+    plausible flight distance and must be modelled as independent
+    drift units.
   - **Event** (`eventID` / `occurrenceID`) — DB `Events` table:
     "**an 'Event' refers to an occupied slick spot within a
     Location**" (Darwin Core `dwc:eventID`). Each event has its own

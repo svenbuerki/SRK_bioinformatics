@@ -135,6 +135,21 @@ analysis. Reading from the biggest unit down to the individual plant:
   sampling site ("Report the unique EO # where the sampling is
   conducted (e.g., EO38)"). Locations may span several slick spots
   across a landscape.
+  - **Within-EO location split (Phase 5 refinement).** Several EOs
+    contain events that sit **≥ 500 m apart with no bridging events
+    in between**. Those spatially disjoint pieces of a single EO are
+    tracked as **separate `locationCode`s** suffixed with a dash
+    (e.g. EO24 → `EO24`, `EO24-1`, `EO24-2`, `EO24-7`; EO27 →
+    `EO27`, `EO27-1`, `EO27-3`, `EO27RT`), each with its own
+    `locationID`. In the current data **5 EOs are split this way**
+    (EO18, EO24, EO25, EO26, EO27 → 16 Phase 5 locationCodes among
+    them). The rationale: 500 m exceeds LEPA's primary pollinator
+    radius (50 m) by an order of magnitude, so these sub-locations
+    cannot share pollen under any plausible flight distance and must
+    be modelled as independent drift units. This refinement is
+    layered **on top of** the DB's canonical Location — it does not
+    rewrite it, and the DB's `locationID` barcode is preserved for
+    every sub-location.
   - **Event** (`eventID` / `occurrenceID`) — the DB's `Events` table
     defines an event as "**an 'Event' refers to an occupied slick
     spot within a Location**" (Darwin Core `dwc:eventID` — "A unique
