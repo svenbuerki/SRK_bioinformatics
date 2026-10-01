@@ -120,6 +120,49 @@ needed to test them; Part C runs the test.
 
 ---
 
+## Key concepts and terminology
+
+Every per-location quantity in this doc is derived from a nested
+spatial hierarchy. Reading from the biggest unit down to the
+individual plant:
+
+- **Location** (`locationID` / `locationCode`) — an administrative
+  LEPA site such as EO76. May span several slickspots across a
+  landscape.
+  - **Event** (`eventID` / `occurrenceID`) — a single slickspot
+    within a location. Each event has its own census of fertile
+    plants and its own coordinates in the LEPA DB.
+    - **50 m connected component** (`component_id_50m`) — a group
+      of events whose plants sit within 50 m pollinator-flight range
+      of each other. **Plants in the same component share a pollen
+      pool; plants in different components — even at the same
+      location — do not.**
+      - **Mother plant** (`germplasmID`) — an individual plant
+        already collected and stored in the LEPA DB, sitting at one
+        specific event.
+
+Everything else in the pipeline is a count or a derived number
+sitting on top of this hierarchy:
+
+| Concept (full English name) | Code identifier | Rooted at | Definition |
+|---|---|---|---|
+| Fertile plant census | `total_n_fertile` | location | All fertile plants at a location, summed across every event. The biological potential, with no spatial filtering. |
+| **Effective mating pool size** (also called **N_fertile_effective**) | `N_fert_eff` | location, built from components | Plants in the **largest 50 m connected component** at the location. **The number that actually drives drift on local SRK diversity and random-mating pollen compatibility.** Equal to the raw census when the whole location is one component; smaller when fragmentation splits the location into several components. |
+| Connectivity share | `largest_component_share_50m` | location, built from components | `N_fert_eff ÷ total_n_fertile`. 1.0 = fully connected (no fragmentation); 0.3 = 70 % of the raw census is drift-irrelevant. |
+| Fragmentation-aware mother target | `M_frag` | event, derived from components | For each event, the number of mothers to sample so that each 50 m connected component reaches 90 % allele-detection coverage, with a ≥ 1-per-event maternal-genotype floor. Sums across events to the location-level `M_frag_aware`. |
+| Rule 2 tetraploid seed cap | 15 seeds/mother | mother plant | Each seed contributes 2 paternal allele draws from the local pollen pool. 15 seeds/mother is the coupon-collector floor for a mother to see every allele in her component's pollen pool with 90 % probability. See § B.3. |
+| Species prior | `P1` | species-wide | The 32-Fg (functional-group) frequency vector built from the Canu-amplicon preliminary study. Used as the base rate for every per-location prediction under drift. |
+
+**Why components matter in one sentence.** Every per-location
+prediction in this doc — SRK diversity, pollen compatibility, mother
+allocation — is built on the **effective mating pool size
+(`N_fertile_effective`) at the largest 50 m connected component**,
+not on the raw location census. A location with 500 fertile plants
+spread across 20 isolated slickspots behaves like a location of 25,
+because only one connected mating pool actually trades pollen.
+
+---
+
 ## Part A — Model and predictions
 
 Part A builds the model and publishes the location-level predictions
@@ -423,7 +466,9 @@ K^(50m)) are useful diagnostics, but they are all downstream of a
 single derived population number that carries the causal chain into
 Link 2 and Link 3:
 
-$$N\_fert\_eff = total\_n\_fertile \times largest\_component\_share\_50m$$
+```
+N_fert_eff = total_n_fertile × largest_component_share_50m
+```
 
 **What it means.** `N_fertile_effective` is the number of adults that
 actually share a pollen environment at each location, given the 50 m
