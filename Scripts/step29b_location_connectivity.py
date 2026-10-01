@@ -269,18 +269,13 @@ def main() -> None:
               f"{n_frag}/{len(df)} locations < 50 % connected.")
 
     DEFAULT_FIGURES.mkdir(parents=True, exist_ok=True)
-    # Primary connectivity map at the 50 m primary pollinator radius.
-    # The per-radius sensitivity variants (10 m, 25 m, 50 m) and the
-    # radius-sensitivity summary figure were dropped in the 2026-09-30
-    # declutter — step29a_pollinator_radius_sensitivity now carries
-    # the full 10–200 m radius-choice justification in one figure.
-    plot_connectivity_by_bl(
-        df,
-        out_png=DEFAULT_FIGURES / "step29_location_connectivity.png",
-        out_pdf=DEFAULT_FIGURES / "step29_location_connectivity.pdf",
-        radius_m=50,
-    )
-    print(f"[step29] Figures in {DEFAULT_FIGURES}/")
+    # No figures from step29b after the 2026-09-30 declutter:
+    # - Radius-choice justification: step29a_pollinator_radius_sensitivity
+    # - Per-location connectivity share: Panel C of
+    #   step30_A_N_fertile_effective (produced by step30)
+    # - Fragmentation reinforcement: step30_A_fragmentation_index
+    # step29b now writes only the connectivity TSV; downstream scripts
+    # consume it and render the figures that need it.
 
 
 if __name__ == "__main__":

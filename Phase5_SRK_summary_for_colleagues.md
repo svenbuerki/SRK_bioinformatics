@@ -332,37 +332,6 @@ the sampling design falls out of the causal chain. Every choice below
 is derived from a quantity that has already been established, not
 proposed independently.
 
-### How many mothers per location?
-
-**Question.** How many mothers must we sample at each location to
-observe every SRK allele physically present in the location's mating
-pool?
-
-**Approach.** Under tetraploid sampling each adult contributes
-`PLOIDY × N_fert_eff = 4·N_fert_eff` allele copies to the location's
-pool. Coupon-collector target: 90 % chance of observing every Fg in
-the local pool at the total delivered allele draws
-`A_delivered = M × (4 + 2 × 15) = 34·M`. Plus a private-allele floor:
-**at least one mother per event** (an isolated slickspot's private
-Fg cannot be recovered from any other event).
-
-**Refinement — fragmentation-aware allocation.** If a location is
-fragmented into several disconnected 50 m mating pools, we decompose
-the location into its components and allocate mothers per component,
-plus the ≥ 1-per-event floor. The result is `M_frag` per event.
-
-**Result.**
-
-- **Design target: 505 mothers across 39 locations, 234 events.**
-- **Already collected in the LEPA DB: 765 mothers** — 1.5× the target.
-- **33 / 39 locations are fully covered** by the current DB.
-- **6 / 39 locations are short of the target** — 25 mothers total.
-  The six short locations (EO27-1, EO27RT, EO26-2, EO8, EO67, EO8)
-  are the field-team top-up target for the 2026 season.
-
-`M_frag` per event is the authoritative field-team recipe (see
-[`step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv)).
-
 ### How many seeds per mother?
 
 **Question.** How many seeds must we genotype from each mother to
@@ -401,6 +370,37 @@ signals. The marginal power at small effect sizes comes from the same
 the 2026 top-up addresses both.
 
 ![Figure — Justifying 15 seeds for Part C testing. Left: per-mother P_compat precision vs seed count for four true P_compat values, with a plateau visible at ~15 seeds. Right: § C.1 mate-limitation regression power vs seed count for four effect sizes; 15 seeds delivers ≥ 99 % power for β₁ ≥ 100.](figures/Phase5/step28d_matelim_power.png)
+
+### How many mothers per location?
+
+**Question.** How many mothers must we sample at each location to
+observe every SRK allele physically present in the location's mating
+pool?
+
+**Approach.** Under tetraploid sampling each adult contributes
+`PLOIDY × N_fert_eff = 4·N_fert_eff` allele copies to the location's
+pool. Coupon-collector target: 90 % chance of observing every Fg in
+the local pool at the total delivered allele draws
+`A_delivered = M × (4 + 2 × 15) = 34·M`. Plus a private-allele floor:
+**at least one mother per event** (an isolated slickspot's private
+Fg cannot be recovered from any other event).
+
+**Refinement — fragmentation-aware allocation.** If a location is
+fragmented into several disconnected 50 m mating pools, we decompose
+the location into its components and allocate mothers per component,
+plus the ≥ 1-per-event floor. The result is `M_frag` per event.
+
+**Result.**
+
+- **Design target: 505 mothers across 39 locations, 234 events.**
+- **Already collected in the LEPA DB: 765 mothers** — 1.5× the target.
+- **33 / 39 locations are fully covered** by the current DB.
+- **6 / 39 locations are short of the target** — 25 mothers total.
+  The six short locations (EO27-1, EO27RT, EO26-2, EO8, EO67, EO8)
+  are the field-team top-up target for the 2026 season.
+
+`M_frag` per event is the authoritative field-team recipe (see
+[`step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv)).
 
 ### The locked recipe
 
