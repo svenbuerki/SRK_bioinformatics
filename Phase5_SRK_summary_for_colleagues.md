@@ -66,8 +66,12 @@ experimental target.
   with seed records.**
 - **Species-wide SRK prior (P1).** 32 functional groups (Fgs) built
   from the Canu-amplicon L1 carrier inventory (49 alleles collapsed
-  into 32 Fgs). Dominant Fg = FG001 (41 %); Class I = 6 Fgs (~65 %),
-  Class II = 26 Fgs (~35 %).
+  into 32 Fgs). Dominant Fg = FG001 (41 %). **Class I = 26 Fgs
+  (~35 % of P1 mass), Class II = 6 Fgs (~65 %)** — this inverts the
+  "common = Class I" Brassica frequency pattern, which assumes
+  neutrality. In LEPA genetic drift elevates FG001-006 regardless of
+  class. See § A.7.2 of the long doc for the drift note; a
+  phylogenetic reassignment is tracked as future work.
 
 ---
 
@@ -234,9 +238,9 @@ replicates. Seed counts do not enter this prediction.
 
 **Result.**
 
-- **Species-mean P_compat = 0.68** (sustainable band by construction).
+- **Species-mean P_compat = 0.78** (sustainable band by construction).
 - **Traffic-light bands** (1/3 and 2/3 of species mean): failed
-  < 0.23, struggling 0.23–0.45, sustainable ≥ 0.45.
+  < 0.23, struggling 0.26–0.52, sustainable ≥ 0.52.
 - **BL5 tail (EO24 group)** is the primary conservation concern —
   predicted P_compat 0.42–0.51 with wide credible intervals
   entering the struggling band.
@@ -250,7 +254,7 @@ location — that validation transfers directly to Figure 4, meaning
 the location-mean P_compat computed from the M sampled mothers is a
 faithful estimator of the population-mean P_compat.
 
-![Figure 4 — Predicted per-location pollen compatibility under sporophytic Class I / II + empirical LEPA zygosity. Y-axis labels give `locationCode (N_fert_eff, M_mothers)` — the same convention as Figure 3, without total_seeds because seed counts do not enter this prediction. One dot per location, error bars = 95 % credible interval, panelled by Bottleneck Lineage. Traffic-light bands: red = failed (< 0.23), amber = struggling (0.23–0.45), green = sustainable (≥ 0.45). Species mean = 0.68. BL5 tail slips into the struggling band; all other locations sit in the sustainable band at the mean.](figures/Phase5/step30_A_prediction_fecundation.png)
+![Figure 4 — Predicted per-location pollen compatibility under sporophytic Class I / II + empirical LEPA zygosity. Y-axis labels give `locationCode (N_fert_eff, M_mothers)` — the same convention as Figure 3, without total_seeds because seed counts do not enter this prediction. One dot per location, error bars = 95 % credible interval, panelled by Bottleneck Lineage. Traffic-light bands: red = failed (< 0.26), amber = struggling (0.26–0.52), green = sustainable (≥ 0.52). Species mean = 0.78. BL5 tail slips into the struggling band; all other locations sit in the sustainable band at the mean.](figures/Phase5/step30_A_prediction_fecundation.png)
 
 ### 30.3 Fragmentation index
 
@@ -299,19 +303,20 @@ random-mating compatibility, holding the mothers themselves fixed.
 - **4 of 6 EOs sit on the 1:1 diagonal within their 95 % CI** —
   the model reproduces the data at those EOs, confirming local
   frequency drift is not moving them off species-wide expectation.
-- **EO70 is a striking outlier**: observed 0.41 (struggling band) vs
-  predicted 0.60 (sustainable). This is a genuine biological signal —
-  local Fg pool skew makes mothers overlap far more with neighbouring
-  fathers than P1 would predict. Not a model failure.
+- **EO70 is a striking outlier**: observed 0.53 vs predicted 0.70 —
+  a 0.17-unit shortfall, right at the struggling/sustainable boundary
+  (0.52 threshold). This is a genuine biological signal — local Fg
+  pool skew makes mothers overlap far more with neighbouring fathers
+  than P1 would predict. Not a model failure.
 - **EO18 and EO67** show milder deviations in the same direction
-  (observed ~ 0.58 vs predicted ~ 0.66). Both are candidates for
-  future conservation intervention.
+  (observed ~0.69–0.70 vs predicted ~0.75–0.76). Both are candidates
+  for future conservation intervention.
 - **Observed zygosity distributions per EO** track the species-wide
   66 / 32 / 2 % well, except EO25 (49 % 2-distinct vs 32 %
   species-wide) — consistent with its perfect-match position on
   the diagonal.
 
-![Figure 6 — EO-level empirical validation of the sporophytic P_compat model. Panel A: observed vs predicted mean pollen compatibility per EO (n ≥ 10 individuals), with 1:1 diagonal and traffic-light bands. 4/6 EOs sit on the diagonal within their 95 % CI; EO70 is a striking outlier (observed 0.41 in the struggling band vs predicted 0.60 sustainable) — genuine local Fg pool skew, not model failure. Panel B: distinct-identity distribution per EO vs the species-wide reference (66 / 32 / 2 %).](figures/Phase5/step30_C_pcompat_observed_vs_predicted.png)
+![Figure 6 — EO-level empirical validation of the sporophytic P_compat model. Panel A: observed vs predicted mean pollen compatibility per EO (n ≥ 10 individuals), with 1:1 diagonal and traffic-light bands (failed < 0.26, struggling < 0.52, sustainable ≥ 0.52). 4/6 EOs sit on the diagonal within their 95 % CI; EO70 is the clearest outlier (observed 0.53 vs predicted 0.70, right at the struggling/sustainable boundary) — genuine local Fg pool skew, not model failure. Panel B: distinct-identity distribution per EO vs the species-wide reference (66 / 32 / 2 %).](figures/Phase5/step30_C_pcompat_observed_vs_predicted.png)
 
 **Caveat.** P1 was built from these same individuals, so this
 comparison does not test absolute calibration but robustness to
@@ -475,11 +480,11 @@ within-BL contrast free of between-BL confounds.
 **What the pilot tests.**
 
 - **EO67** (drift-limited regime) — sporophytic + empirical-zygosity
-  P_compat mean 0.67, 95 % CI [0.42, 0.87]. Any Phase B observation
+  P_compat mean 0.73, 95 % CI [0.56, 0.88]. Any Phase B observation
   dropping EO67 out of sustainable = decisive evidence of drift-driven
   mate limitation.
-- **EO27-1** (aggregation regime) — P_compat 0.69, tight CI [0.59,
-  0.77]. Solid anchor point in the sustainable band; if EO27-1 comes
+- **EO27-1** (aggregation regime) — P_compat 0.78, tight CI [0.72,
+  0.84]. Solid anchor point in the sustainable band; if EO27-1 comes
   in below prediction, something bigger than drift is going on.
 
 **Pilot cost.** ≤ 555 seed genotypes (< 5 % of the full 2025 recipe
