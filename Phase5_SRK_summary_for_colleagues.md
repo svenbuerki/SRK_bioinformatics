@@ -268,16 +268,57 @@ location?") is answered in Steps 28 – 29.
    the local pollen donor pool** — the seed genotyping is a
    pollen-pool characterisation experiment.
 
-**Approach.** The simulation is **per 50 m component**, aggregated to
-location level by **set union**: (i) for each component c, draw
-`4 × component_N_fertile_c` alleles from P1 — this gives the
-component's drift-collapsed Fg pool. Location pool size = |union
-of component pools|. (ii) Distribute the location's mothers and
-seeds across components proportional to component size (largest-
-remainder); for each component take `A_delivered_c = 4·M_c + 2·seeds_c`
-draws from its own frequency vector and record the Fgs it hits.
-Location detected count = |union of per-component detected sets|,
-coverage = detected / pool.
+**Approach — how the simulation works, step by step.**
+
+Think of the species prior P1 as a bag with 32 kinds of coloured
+balls (the 32 Fgs), where the share of each colour reflects how
+common that Fg is across the 263 preliminary-study individuals. Each
+LEPA location only gets a limited handful of draws from that bag,
+so small locations are missing some colours by chance — that is
+drift. The prediction turns this intuition into numbers in five
+steps, run for every 50 m component inside every location:
+
+1. **Build the component's local pool (drift step).** For a
+   component with `component_N_fertile_c` fertile plants, draw
+   `4 × component_N_fertile_c` balls from P1 (because every plant is
+   tetraploid and carries 4 SRK alleles). The unique colours drawn
+   are the Fgs **present at that component**; the proportions in the
+   draw are the component's local Fg frequency vector `f_local_c`.
+   Small `N_c` → few draws → missing some rarer Fgs.
+
+2. **Sum components to the location (union step).** The location
+   holds a Fg if *any* of its components holds it, so the location's
+   pool size on this replicate = |union of per-component present
+   sets|. That is why diversity is unioned (set operation), not
+   averaged (continuous-rate operation).
+
+3. **Simulate the sampling (what we will actually see).** Distribute
+   the location's `M_mothers` and `total_seeds` across components
+   proportional to component size (largest-remainder: the component
+   with the most plants gets the most sampling effort). Per
+   component this gives `M_c` mothers and `seeds_c` seeds, so
+   `A_delivered_c = 4·M_c + 2·seeds_c` allele draws (4 maternal
+   alleles per mother + 2 paternal alleles per seed). Draw
+   `A_delivered_c` balls from the component's own `f_local_c` and
+   record which colours were hit — these are the Fgs **detected at
+   that component**.
+
+4. **Union detected across components, divide by union present.**
+   Location detected = |union of per-component detected sets|.
+   Location coverage = detected / pool size, on this replicate.
+
+5. **Repeat 1 000 times, report mean and 95 % credible interval.**
+   Each replicate uses an independent random draw from P1 at step 1
+   and an independent sampling draw at step 3; the 2.5 % and 97.5 %
+   percentiles across replicates give the credible interval seen as
+   error bars in Figure 3.
+
+Why the per-component view matters: a drift-collapsed small
+component (say 2 plants, holding 4 Fgs) left with 0 mothers under
+step 3 contributes its Fgs to the location's "present" count at
+step 2 but nothing to the "detected" count at step 4 — that is the
+sampling blind spot that pulls EO26-3 and EO27RT down to 97 %
+coverage below.
 
 **Result.**
 
@@ -310,22 +351,61 @@ every location. Total seed counts in the DB span 1 (EO24-2) →
 model, what fraction of pollen would a mother at each location be
 compatible with under random mating?
 
-**Approach.** The simulation is **per 50 m component**, not per
-location: effective mating pool size is a property of the component
-(plants inside share pollen; plants in another component at the
-same location do not). For each component *c* with
-`component_N_fertile` *N_c*, on each simulation replicate:
-(1) draw local Fg pool from P1 as `4 × N_c` allele draws;
-(2) simulate mothers from that pool under the empirical zygosity
-distribution; (3) apply the sporophytic Case-A / Case-B analytical
-formulas per mother; (4) average across mothers → component
-P_compat. **Location P_compat on replicate k =** size-weighted mean,
-Σ_c (P_compat_{c,k} · N_c) / Σ_c N_c. Posterior mean and 95 %
-credible interval across replicates. Both tables are emitted:
-`step30_A_prediction_location_pcompat.tsv` (headline per location)
-+ `step30_A_prediction_component_pcompat.tsv` (one row per component,
-so struggling sub-components inside a sustainable-mean location
-remain visible). Seed counts do not enter this prediction.
+**Approach — how the simulation works, step by step.**
+
+Same per-component logic as § 30.1, but the recognition rule changes
+from "did we observe this Fg at least once?" to "if this mother's
+expressed Fgs are {a, b}, what fraction of pollen in her component
+would she accept?" Five steps per replicate:
+
+1. **Build the component's local pool (same as § 30.1 step 1).**
+   Draw `4 × component_N_fertile_c` alleles from P1 → local Fg
+   frequencies `f_local_c`. This is the drift-collapsed pollen pool
+   the component's mothers see.
+
+2. **Sample mother genotypes under the empirical LEPA zygosity.**
+   Each mother gets 4 SRK alleles drawn from `f_local_c`, but
+   combined into tetraploid genotypes that match the observed LEPA
+   mix: 66 % of mothers end up with 1 distinct Fg (homozygotes),
+   32 % with 2 distinct, 2 % with 3 distinct (from
+   `srk_zygosity_empirical.tsv` — see Part C § C.0 for how this was
+   measured from the 367 Canu-amplicon adults).
+
+3. **Compute per-mother pollen compatibility under sporophytic Class
+   I / II SI.** A pollen parent expresses only Class I alleles if it
+   carries any, else all its Class II alleles co-dominantly. A cross
+   is rejected if parents share any expressed allele. For a mother
+   expressing Fg set *M*:
+   - Mother has ≥ 1 Class I allele: `P_compat = (1 − p(M))⁴` where
+     p(M) is the local frequency sum of her expressed Fgs.
+   - Mother is pure Class II: `P_compat = 1 − (1 − p_I)⁴ +
+     (1 − p_I − p(M))⁴`.
+
+   Average across the mothers sampled at this component → component
+   P_compat on this replicate.
+
+4. **Aggregate components to the location (weighted mean, not
+   union).** P_compat is a continuous rate, so a location's number
+   is the component sizes weighted mean:
+   P_compat_location = Σ_c (P_compat_c · component_N_fertile_c) /
+   Σ_c component_N_fertile_c. Big components dominate; small
+   components still count — that is where drift pulls the location
+   mean down.
+
+5. **Repeat 400 times, report mean and 95 % credible interval.**
+
+Why no sampling term enters P_compat: § 30.2 asks "what fraction of
+pollen is compatible with a random mother at this component?" — a
+biological property of the pollen pool, not a function of how many
+seeds we sequence. Seed counts enter § 30.1 (sampling detection) and
+Phase B (the regression against observed seed set), not here.
+
+Both tables are emitted:
+[`step30_A_prediction_location_pcompat.tsv`](tables/Phase5/step30_A_prediction_location_pcompat.tsv)
+(headline per location) +
+[`step30_A_prediction_component_pcompat.tsv`](tables/Phase5/step30_A_prediction_component_pcompat.tsv)
+(one row per component, so struggling sub-components inside a
+sustainable-mean location remain visible).
 
 **Result.**
 
