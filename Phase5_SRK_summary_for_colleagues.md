@@ -102,19 +102,20 @@ sitting on top of this hierarchy:
 | Concept (full English name) | Code identifier | Rooted at | Definition |
 |---|---|---|---|
 | Fertile plant census | `total_n_fertile` | location | All fertile plants at a location, summed across every event. The biological potential, with no spatial filtering. |
-| **Effective mating pool size** (also called **N_fertile_effective**) | `N_fert_eff` | location, built from components | Plants in the **largest 50 m connected component** at the location. **The number that actually drives drift on local SRK diversity and random-mating pollen compatibility.** Equal to the raw census when the whole location is one component; smaller when fragmentation splits the location into several components. |
-| Connectivity share | `largest_component_share_50m` | location, built from components | `N_fert_eff ÷ total_n_fertile`. 1.0 = fully connected (no fragmentation); 0.3 = 70 % of the raw census is drift-irrelevant. |
+| **Effective mating pool size** (also called **N_fertile_effective**) | `N_fert_eff` | **component (primary); location (diagnostic)** | **Per component:** `component_N_fertile`, the fertile plants that share a single 50 m pollen pool — this is the drift unit for both diversity and pollen-compatibility prediction. **Per location:** `total_n_fertile × largest_component_share_50m`, a one-number *fragmentation diagnostic* used in the N_fertile_effective figure. The two agree when the whole location is one component. |
+| Connectivity share | `largest_component_share_50m` | location, built from components | `N_fert_eff (location) ÷ total_n_fertile`. 1.0 = fully connected (no fragmentation); 0.3 = 70 % of the raw census is drift-irrelevant. Fragmentation diagnostic only — the Phase A prediction loops over every component. |
 | Fragmentation-aware mother target | `M_frag` | event, derived from components | For each event, the number of mothers to sample so that each 50 m connected component reaches 90 % allele-detection coverage, with a ≥ 1-per-event maternal-genotype floor. Sums across events to the location-level `M_frag_aware`. |
 | Rule 2 tetraploid seed cap | 15 seeds/mother | mother plant | Each seed contributes 2 paternal allele draws from the local pollen pool. 15 seeds/mother is the coupon-collector floor for a mother to see every allele in her component's pollen pool with 90 % probability. |
 | Species prior | `P1` | species-wide | The 32-Fg (functional-group) frequency vector built from the Canu-amplicon preliminary study. Used as the base rate for every per-location prediction under drift. |
 
 **Why components matter in one sentence.** Every per-location
 prediction in this doc — SRK diversity, pollen compatibility, mother
-allocation — is built on the **effective mating pool size
-(N_fertile_effective) at the largest 50 m connected component**, not
-on the raw location census. A location with 500 fertile plants spread
-across 20 isolated slickspots behaves like a location of 25, because
-only one connected mating pool actually trades pollen.
+allocation — is built **component-by-component**, because a 50 m
+connected component is what trades pollen. Each component gets its
+own `component_N_fertile`; the location-level number is the
+size-weighted mean across its components. A location with 500
+fertile plants spread across 20 isolated slickspots behaves like 20
+small drift-prone pools, not one pool of 500.
 
 ---
 
@@ -271,13 +272,22 @@ every location. Total seed counts in the DB span 1 (EO24-2) →
 model, what fraction of pollen would a mother at each location be
 compatible with under random mating?
 
-**Approach.** For each location, on each simulation replicate:
-(1) draw local Fg pool from P1 using `N_fert_eff` (same input as
-Figure 3, Panel A); (2) simulate `M_mothers` from that pool under
-the empirical zygosity distribution; (3) apply the sporophytic
-Case-A / Case-B analytical formulas per mother; (4) average across
-mothers. Report the posterior mean and 95 % credible interval across
-replicates. Seed counts do not enter this prediction.
+**Approach.** The simulation is **per 50 m component**, not per
+location: effective mating pool size is a property of the component
+(plants inside share pollen; plants in another component at the
+same location do not). For each component *c* with
+`component_N_fertile` *N_c*, on each simulation replicate:
+(1) draw local Fg pool from P1 as `4 × N_c` allele draws;
+(2) simulate mothers from that pool under the empirical zygosity
+distribution; (3) apply the sporophytic Case-A / Case-B analytical
+formulas per mother; (4) average across mothers → component
+P_compat. **Location P_compat on replicate k =** size-weighted mean,
+Σ_c (P_compat_{c,k} · N_c) / Σ_c N_c. Posterior mean and 95 %
+credible interval across replicates. Both tables are emitted:
+`step30_A_prediction_location_pcompat.tsv` (headline per location)
++ `step30_A_prediction_component_pcompat.tsv` (one row per component,
+so struggling sub-components inside a sustainable-mean location
+remain visible). Seed counts do not enter this prediction.
 
 **Result.**
 
@@ -290,12 +300,15 @@ replicates. Seed counts do not enter this prediction.
 - All other BLs sit in the sustainable band at the mean; the tightest
   credible intervals belong to the largest locations (EO76, EO61).
 
-**Connection to Figure 3.** Uses the same `N_fert_eff` and
-`M_mothers` inputs as the diversity figure. Figure 3 shows that the
-existing LEPA seed data recovers the true local Fg pool at every
-location — that validation transfers directly to Figure 4, meaning
-the location-mean P_compat computed from the M sampled mothers is a
-faithful estimator of the population-mean P_compat.
+**Connection to Figure 3.** Uses the same drift mechanism as the
+diversity figure, except drift is now modelled **per component**
+(one pool per 50 m connected component sized by
+`4 × component_N_fertile`) rather than through a single
+"largest-component" proxy. Figure 3 shows that the existing LEPA
+seed data recovers the true local Fg pool at every location — that
+validation transfers directly to Figure 4, meaning the location-
+mean P_compat from the per-component simulation is a faithful
+estimator of the population-mean P_compat.
 
 ![Figure 4 — Predicted per-location pollen compatibility under sporophytic Class I / II + empirical LEPA zygosity. Y-axis labels give `locationCode (N_fert_eff, M_mothers)` — the same convention as Figure 3, without total_seeds because seed counts do not enter this prediction. One dot per location, error bars = 95 % credible interval, panelled by Bottleneck Lineage. Traffic-light bands: red = failed (< 0.26), amber = struggling (0.26–0.52), green = sustainable (≥ 0.52). Species mean = 0.78. BL5 tail slips into the struggling band; all other locations sit in the sustainable band at the mean.](figures/Phase5/step30_A_prediction_fecundation.png)
 

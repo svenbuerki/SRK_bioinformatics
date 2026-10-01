@@ -55,6 +55,7 @@ DEFAULT_FIGURES = Path("figures/Phase5")
 DEFAULT_PRIOR_TSV       = DEFAULT_TABLES / "step26i_L1_carrier_inventory.tsv"
 DEFAULT_LOCATIONS_TSV   = DEFAULT_TABLES / "step29_sampling_per_location.tsv"
 DEFAULT_CONNECTIVITY_TSV = DEFAULT_TABLES / "step29_location_connectivity.tsv"
+DEFAULT_EVENT_COMPONENT_TSV = DEFAULT_TABLES / "step29c_event_to_component_50m.tsv"
 
 PRIOR_ESS = 20.0        # effective sample size of the P1 prior; small so real
                         # seed data can shift it after modest sampling.
@@ -303,34 +304,58 @@ def predicted_pcompat_distribution(prior: pd.DataFrame,
     })
 
 
-def predicted_pcompat_per_location(locations: pd.DataFrame,
-                                    prior: pd.DataFrame,
-                                    rng: np.random.Generator,
-                                    n_draws: int = 400) -> pd.DataFrame:
-    """Phase-A per-location prediction of random-mating P_compat under
-    the **sporophytic tetraploid** SI model with Class I / Class II
-    dominance (see `srk_si_model.py` and § A.6 of the Phase 5 doc).
+def predicted_pcompat_per_location(
+        locations: pd.DataFrame,
+        prior: pd.DataFrame,
+        rng: np.random.Generator,
+        n_draws: int = 400,
+        n_sim_mothers: int = 200,
+        event_component_tsv: Path | None = None,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Phase-A **per-component** prediction of random-mating P_compat
+    under the sporophytic tetraploid SI model with Class I / Class II
+    dominance (see `srk_si_model.py` and § A.6 of the Phase 5 doc), then
+    aggregated to the location level by component-size weighting.
 
-    For each location, on each of `n_draws` simulation replicates:
+    Rationale (per-component, not location-wide proxy)
+    --------------------------------------------------
+    Effective mating pool size is a property of each 50 m connected
+    component inside a location, not of the location as a whole: plants
+    inside a component share pollen; plants in a different component
+    (same location but no pollen link) do not. Earlier revisions used
+    `largest_component_share_50m` as a single "effective-N" proxy — this
+    hid intra-location fragmentation. The current implementation
+    simulates each component's local Fg pool independently and reports
+    the location-level P_compat as the size-weighted mean across its
+    components, matching the mating biology.
 
-      1. Simulate the local pool: draw PLOIDY · N_fertile = 4 · N_fertile
-         SRK alleles i.i.d. from the species-wide P1 prior. Small
-         slickspots drift from P1 by ~1/√(4 N_fertile).
+    Per component c, on each of `n_draws` simulation replicates:
+
+      1. Simulate the component pool: draw PLOIDY · N_c = 4 · N_c SRK
+         alleles i.i.d. from the species-wide P1 prior. Small components
+         drift from P1 by ~1/√(4 N_c).
       2. Compute local Fg frequencies from that pool.
-      3. Sample M mother genotypes by picking M of the N_fertile
-         tetraploid plants (each carries 4 adjacent alleles in the pool).
-      4. Per mother, compute sporophytic P_compat using the analytical
-         formulas in `srk_si_model.p_compat_sporophytic_batch()` — Class
-         I dominant over Class II within-plant, between-class crosses
-         always compatible.
-      5. Location mean = mean over the M sampled mothers.
-      6. Report the posterior mean and 95 % credible interval across
-         the n_draws replicates.
+      3. Sample `n_sim_mothers` mothers under EMPIRICAL LEPA zygosity
+         (66 % single-identity, 32 % 2-distinct, 2 % 3-distinct — see
+         § A.6.3a) drawing identities from the local Fg frequencies.
+      4. Per mother, compute sporophytic P_compat against
+         empirically-zygotic candidate fathers drawn from the same
+         local pool, under Class I / II dominance.
+      5. Component mean = mean over `n_sim_mothers` sampled mothers.
+      6. Component-level posterior CI across the `n_draws` replicates.
+      7. Location mean on replicate k =
+            Σ_c  P_compat_{c,k} · N_c / Σ_c N_c
+         Posterior CI across the resulting n_draws location means.
 
-    Species-mean P_compat under this model is roughly 0.16 (vs 0.63
-    under the diploid gametophytic Part-1 approximation). Traffic-light
-    band boundaries are recalibrated to preserve the semantic labels
-    against the new scale.
+    Returns
+    -------
+    (location_df, component_df)
+        location_df : one row per location — the headline Phase-A
+            prediction with the component-weighted mean and 95 % CI.
+        component_df : one row per (locationID, component_id_50m) —
+            exposes the finer-grained within-location variability so
+            readers can see which components inside a fragmented
+            location are predicted to struggle.
     """
     from step28_seed_sampling_per_mother import PLOIDY
     from srk_si_model import (
@@ -349,68 +374,107 @@ def predicted_pcompat_per_location(locations: pd.DataFrame,
     class_i_mask = build_class_i_mask(fg_labels, class_map)
     zygosity_probs = load_zygosity_dist()
 
-    rows = []
+    # ------------------------------------------------------------------
+    # Load the event → 50 m component lookup written by step29c; derive
+    # a per-location component inventory (one row per unique
+    # (locationID, component_id_50m) with component_N_fertile).
+    # ------------------------------------------------------------------
+    if event_component_tsv is None:
+        event_component_tsv = DEFAULT_EVENT_COMPONENT_TSV
+    comp_by_loc: dict[int, list[tuple[int, int]]] = {}
+    if Path(event_component_tsv).exists():
+        comp_df = pd.read_csv(event_component_tsv, sep="\t",
+                              encoding="utf-8-sig")
+        comp_unique = (
+            comp_df.drop_duplicates(["locationID", "component_id_50m"])
+                   [["locationID", "component_id_50m", "component_N_fertile"]]
+        )
+        for _, r in comp_unique.iterrows():
+            comp_by_loc.setdefault(int(r["locationID"]), []).append(
+                (int(r["component_id_50m"]), int(r["component_N_fertile"]))
+            )
+    else:
+        print(f"[step30] {event_component_tsv} not found — falling back to "
+              "location-level N_fertile_effective_50m proxy.")
+
+    loc_rows: list[dict] = []
+    comp_rows: list[dict] = []
+
     for _, row in locations.iterrows():
-        # Effective mating N — adults in the largest within-location
-        # connected component at the primary pollen-flight radius (50 m,
-        # from Step 29b). Falls back to the raw census total when the
-        # connectivity column is absent.
-        n_fert_raw = row.get("N_fertile_effective_50m",
-                              row.get("total_n_fertile"))
-        try:
-            N_fertile = int(n_fert_raw) if pd.notna(n_fert_raw) else 0
-        except (TypeError, ValueError):
-            N_fertile = 0
-        # Mothers actually in DB — permit-realistic sample.
+        loc_id = int(row["locationID"])
+        loc_code = row["locationCode"]
+        # Mothers actually in DB — permit-realistic sample (only used
+        # for the location-level M label; prediction itself uses a
+        # fixed n_sim_mothers so the prediction's precision does not
+        # vary with observed sample size).
         raw = (row.get("M_actual_in_step28")
                or row.get("M_mothers_in_db")
                or row.get("M_achievable_location", 0))
         try:
-            M = int(raw) if pd.notna(raw) else 0
+            M_db = int(raw) if pd.notna(raw) else 0
         except (TypeError, ValueError):
-            M = 0
-        M = max(M, 1)
-        # Guard: if census is missing, fall back to the species-wide prior
-        # (i.e. essentially infinite pool). Otherwise M cannot exceed the
-        # number of adults present at the location.
-        finite_pool = N_fertile >= max(M, 1)
-        if not finite_pool:
-            N_fertile = max(N_fertile, M)
+            M_db = 0
 
-        loc_means = np.empty(n_draws)
-        pool_size = PLOIDY * N_fertile
-        for k in range(n_draws):
-            # (1) Local pool: PLOIDY · N_fertile alleles from P1.
-            local_alleles = rng.choice(K_fg, size=pool_size, p=f_mean)
-            # (2) Local Fg frequencies.
-            local_f = np.bincount(local_alleles, minlength=K_fg) / pool_size
-            if not (local_f > 0).any():
-                loc_means[k] = 0.0
-                continue
-            # (3) Sample M mothers under EMPIRICAL LEPA zygosity
-            # (66 % single-identity homozygotes, 32 % 2-distinct,
-            # 2 % 3-distinct, 0 % 4-distinct — see § A.6.3a and
-            # srk_zygosity_empirical.tsv), drawing their identities
-            # from the local Fg frequency vector.
-            mother_genotypes = sample_genotypes_empirical(
-                M, local_f, zygosity_probs, rng)
-            # (4) Monte-Carlo P_compat: for each mother, evaluate
-            # against 500 empirically-zygotic candidate fathers drawn
-            # from the same local pool, under Class I / II dominance.
-            pc = p_compat_sporophytic_empirical(
-                mother_genotypes, local_f, class_i_mask,
-                zygosity_probs, n_fathers=300, rng=rng)
-            loc_means[k] = pc.mean()
-        rows.append({
-            "locationID":              row["locationID"],
-            "locationCode":            row["locationCode"],
-            "N_fertile_effective":     N_fertile,
-            "M_mothers_in_db":         M,
-            "predicted_P_compat_mean": float(loc_means.mean()),
-            "predicted_P_compat_lo":   float(np.quantile(loc_means, 0.025)),
-            "predicted_P_compat_hi":   float(np.quantile(loc_means, 0.975)),
+        # Component inventory — fall back to a single component equal
+        # to the whole location if the lookup is missing.
+        comps = comp_by_loc.get(loc_id)
+        if not comps:
+            fallback_N = row.get("N_fertile_effective_50m",
+                                  row.get("total_n_fertile", 1))
+            try:
+                fallback_N = int(fallback_N) if pd.notna(fallback_N) else 1
+            except (TypeError, ValueError):
+                fallback_N = 1
+            comps = [(0, max(fallback_N, 1))]
+
+        # Simulate each component independently.
+        comp_sizes = np.array([max(N, 1) for _, N in comps], dtype=float)
+        comp_weights = comp_sizes / comp_sizes.sum()
+        # (n_components × n_draws)
+        comp_mean_mat = np.zeros((len(comps), n_draws), dtype=float)
+        for c_idx, (comp_id, N_c) in enumerate(comps):
+            pool_size = PLOIDY * max(N_c, 1)
+            for k in range(n_draws):
+                local_alleles = rng.choice(K_fg, size=pool_size, p=f_mean)
+                local_f = (np.bincount(local_alleles, minlength=K_fg)
+                           / pool_size)
+                if not (local_f > 0).any():
+                    comp_mean_mat[c_idx, k] = 0.0
+                    continue
+                mother_genotypes = sample_genotypes_empirical(
+                    n_sim_mothers, local_f, zygosity_probs, rng)
+                pc = p_compat_sporophytic_empirical(
+                    mother_genotypes, local_f, class_i_mask,
+                    zygosity_probs, n_fathers=300, rng=rng)
+                comp_mean_mat[c_idx, k] = pc.mean()
+
+            arr = comp_mean_mat[c_idx]
+            comp_rows.append({
+                "locationID":                 loc_id,
+                "locationCode":               loc_code,
+                "component_id_50m":           int(comp_id),
+                "component_N_fertile":        int(N_c),
+                "component_weight":           float(comp_weights[c_idx]),
+                "component_P_compat_mean":    float(arr.mean()),
+                "component_P_compat_lo":      float(np.quantile(arr, 0.025)),
+                "component_P_compat_hi":      float(np.quantile(arr, 0.975)),
+            })
+
+        # Size-weighted location mean per replicate.
+        loc_means_per_draw = (comp_weights[:, None] * comp_mean_mat).sum(axis=0)
+        N_fert_eff = int(comp_sizes.sum())
+        loc_rows.append({
+            "locationID":              loc_id,
+            "locationCode":            loc_code,
+            "N_fertile_effective":     N_fert_eff,
+            "n_components_50m":        len(comps),
+            "M_mothers_in_db":         M_db,
+            "predicted_P_compat_mean": float(loc_means_per_draw.mean()),
+            "predicted_P_compat_lo":   float(np.quantile(loc_means_per_draw, 0.025)),
+            "predicted_P_compat_hi":   float(np.quantile(loc_means_per_draw, 0.975)),
         })
-    return pd.DataFrame(rows)
+
+    return pd.DataFrame(loc_rows), pd.DataFrame(comp_rows)
 
 
 # ---------------------------------------------------------------------------
@@ -1712,12 +1776,23 @@ def main() -> None:
     print(f"[step30] Wrote {pcompat_ref_path} "
           f"(species-wide mean P_compat = {pcompat_ref['P_compat'].mean():.3f})")
 
-    # Per-location Phase-A prediction — this is the figure with the
-    # location connection the reader expects.
-    pcompat_loc = predicted_pcompat_per_location(locations, prior, rng)
+    # Per-location Phase-A prediction, built from per-component
+    # P_compat simulations aggregated by component-size weighting.
+    # Each 50 m connected component inside a location gets its own
+    # pool, mothers, P_compat; the location-level number is the
+    # size-weighted mean. The finer-grained per-component table is
+    # saved alongside so readers can spot fragmented locations whose
+    # headline mean hides a struggling sub-component.
+    pcompat_loc, pcompat_comp = predicted_pcompat_per_location(
+        locations, prior, rng)
     pcompat_loc_path = tables_dir / "step30_A_prediction_location_pcompat.tsv"
     pcompat_loc.to_csv(pcompat_loc_path, sep="\t", index=False)
     print(f"[step30] Wrote {pcompat_loc_path}")
+    pcompat_comp_path = tables_dir / "step30_A_prediction_component_pcompat.tsv"
+    pcompat_comp.to_csv(pcompat_comp_path, sep="\t", index=False)
+    print(f"[step30] Wrote {pcompat_comp_path} "
+          f"({len(pcompat_comp)} rows across "
+          f"{pcompat_comp['locationID'].nunique()} locations).")
 
     # --- Recalibrate traffic-light bands against the sporophytic
     # + empirical-zygosity species mean (see § A.7)
