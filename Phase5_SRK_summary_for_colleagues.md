@@ -535,6 +535,67 @@ comparison does not test absolute calibration but robustness to
 per-EO drift. EO-scale is intermediate; the finer per-location test
 will happen in Phase B once seed genotypes are available.
 
+### C.0.a — Part C anchor at Phase 5 location scale (clean-overlap EOs)
+
+**Question.** Three of the six § C.0 EOs are **1:1 with a Phase 5
+locationCode** — no 500 m within-EO split — so their adult SRK
+genotypes can be used **directly** as a Part C validation anchor at
+the Phase 5 location scale, no event-level remap required. Does the
+Phase 5 **per-location** prediction reproduce what we see at the
+location scale?
+
+**The clean overlap set.** EO67 (37 adults), EO70 (74), EO76 (76) =
+**187 adults**. The other three § C.0 EOs (EO18, EO25, EO27) are
+split under the 500 m rule and need an `Individual → germplasmID →
+eventID → locationCode` join before their 151 adults can be used
+here; that is scheduled as future work.
+
+**Approach.** For each clean-overlap location, run `step30d_partC_clean_overlap.py`:
+1. Observed per-mother P_compat under sporophytic Class I / II +
+   empirical zygosity, with fathers drawn from **observed local Fg
+   frequencies** (not P1).
+2. Observed distinct Fgs = size of the Fg set recovered from the
+   adult genotypes.
+3. **No-drift upper bound on distinct Fgs** at the adult sample size:
+   `E[distinct Fgs | 4·n_adults draws from P1]`. If this upper bound
+   is near the species ceiling (which it is for all three locations:
+   19.2 at n=37, 24.0 at n=74, 24.0 at n=76), any large gap down to
+   the observed count isolates **drift**, not sampling.
+4. Compare observed to the Phase 5 per-location prediction
+   (`step30_A_prediction_location_pcompat.tsv` for P_compat,
+   `step30_A_prediction_location_diversity.tsv` for the component-
+   unioned pool size).
+
+**Result.**
+
+| Location | Adults | Observed P_compat (95 % CI) | Phase 5 pred P_compat (95 % CI) | Observed Fgs | No-drift upper bound | Phase 5 pred Fgs (95 % CI) |
+|---|---:|---|---|---:|---:|---|
+| **EO67** | 37 | 0.697 (0.660–0.737) | 0.724 (0.632–0.803) | **7** of 32 | 19.2 | 10.8 (7.0–15.0) |
+| **EO70** | 74 | **0.532** (0.510–0.559) | **0.776** (0.740–0.806) | **6** of 32 | 23.8 | 28.3 (25.0–31.0) |
+| **EO76** | 76 | 0.722 (0.694–0.753) | 0.775 (0.749–0.797) | **9** of 32 | 24.0 | 31.8 (31.0–32.0) |
+
+- **EO67** — observed and Phase 5 predicted CIs overlap on P_compat;
+  observed Fg count sits inside the Phase 5 CI → **model passes** at
+  this small BL4 location.
+- **EO70** — observed P_compat 0.24 units BELOW Phase 5 prediction
+  (CIs do not overlap); observed Fg diversity 6/32 vs predicted
+  28/32 vs no-drift upper bound 24. **Massive drift collapse at a
+  large location** — a genuine biological signal, confirming the
+  § C.0 EO-scale finding at the Phase 5 location scale.
+- **EO76** — observed P_compat marginally below prediction; observed
+  Fg diversity 9/32 vs predicted 32/32 vs no-drift upper bound 24.
+  **Severe diversity collapse at the single largest LEPA site** —
+  the P_compat model still holds up because Class II (6 Fgs,
+  including FG001 at 41 %) dominates and makes most mothers
+  compatible even with limited diversity.
+
+**Outputs.**
+- [`step30_B_partC_clean_overlap_per_location.tsv`](tables/Phase5/step30_B_partC_clean_overlap_per_location.tsv) — one row per clean location: observed vs predicted P_compat and SRK diversity.
+- [`step30_B_partC_clean_overlap_fg_frequencies.tsv`](tables/Phase5/step30_B_partC_clean_overlap_fg_frequencies.tsv) — long form, one row per (location, Fg) with observed f and P1 f.
+- [`step30_B_partC_clean_overlap.png`](figures/Phase5/step30_B_partC_clean_overlap.png) — three-panel figure (P_compat scatter, Fg count comparison, Fg frequency spectrum).
+
+![Figure 7 — Phase 5 Part C anchor at the three clean-overlap EOs (EO67, EO70, EO76; 1:1 with a Phase 5 locationCode). **Panel A** — observed vs Phase 5 predicted pollen compatibility per location, with traffic-light bands and the 1:1 diagonal. EO67 and EO76 near the diagonal; EO70 is the drift outlier (observed 0.53 vs predicted 0.78). **Panel B** — distinct Fg count per location: **filled square = observed**, **open blue circle = no-drift upper bound at the adult sample size** (`E[distinct Fgs | 4·n_adults draws from P1]`). The large gap between open circle and filled square at EO70 and EO76 isolates drift from sampling. **Panel C** — observed Fg frequency spectrum per location vs the species-wide P1 reference (grey). FG001 dominates everywhere, consistent with drift elevating the common Fg at small-population tails. Source: `step30d_partC_clean_overlap.py`.](figures/Phase5/step30_B_partC_clean_overlap.png)
+
 ---
 
 ## Sampling design — the answer to "how many mothers × how many seeds?"
@@ -720,6 +781,7 @@ prediction on each end.
 | Field-team recipe (new field season) | [`tables/Phase5/step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv) | `M_frag` per event, authoritative |
 | **Lab recipe for Part C — germplasmIDs to sample** | [`tables/Phase5/step29c_partC_germplasmID_selection.tsv`](tables/Phase5/step29c_partC_germplasmID_selection.tsv) | **One row per selected germplasmID already in the LEPA DB; per-50 m-component allocation + `n_seeds_to_genotype`. Drives Part C.** |
 | Empirical validation (§ C.0) | [`tables/Phase5/step30_C_pcompat_validation_at_eo.tsv`](tables/Phase5/step30_C_pcompat_validation_at_eo.tsv) | 6 EOs, observed vs predicted |
+| **Part C anchor at Phase 5 location scale (§ C.0.a)** | [`tables/Phase5/step30_B_partC_clean_overlap_per_location.tsv`](tables/Phase5/step30_B_partC_clean_overlap_per_location.tsv) + [`_fg_frequencies.tsv`](tables/Phase5/step30_B_partC_clean_overlap_fg_frequencies.tsv) | **Clean-overlap EOs (EO67, EO70, EO76) — 187 adults ready to feed Part C now; observed vs Phase 5 pred P_compat + Fg diversity + no-drift upper bound** |
 
 **Key figures.**
 
