@@ -240,13 +240,16 @@ same semantics.**
   seasons cleanly separated once 2026 field data arrive.
 
 The framework has three steps, each with a distinct role and a distinct
-output family:
+output family. The table below is **ordered by the causal flow**, not by
+historical script numbering — prediction first, then the sampling
+design derived from it:
 
 | Step | Question | Kind of output |
 |---|---|---|
-| **Step 28** | How many seeds per mother? | Sampling design (per-mother) |
-| **Step 29** | How many mothers per event, how many events per location? | Sampling design (per-event / per-location) |
-| **Step 30** | Given the species-wide prior, what SRK diversity and pollen compatibility should we predict per location — and how do observed seed genotypes compare? | Prediction + comparison |
+| **Step 30 (Phase A)** | Given the species-wide prior and the per-component effective mating pool size, what SRK diversity and pollen compatibility do we predict per 50 m component and per location? | Prediction (per-component + per-location) |
+| **Step 29** | How many events per location, and how many mothers per event, are needed so that each 50 m connected component reaches the coupon-collector 90 % allele-detection target under those predictions? | Sampling design (per-event / per-location) |
+| **Step 28** | Given the per-mother allele exposure already set by Steps 30 and 29, how many seeds per mother must the lab genotype to recover the within-mother pollen pool at 90 % probability? | Sampling design (per-mother) |
+| **Step 30 (Phase B)** | Once observed seed genotypes exist, how do they compare to the Phase A prediction, and does per-mother seed set decline with predicted pollen compatibility? | Comparison + mate-limitation regression |
 
 ### A.3 The two-generation trick and species-wide prior
 
