@@ -1899,10 +1899,28 @@ and keeps most mothers compatible even with limited local diversity.
   — long form (locationCode × Fg) with observed f, species-wide P1 f,
   and present/absent flag.
 - Figure: `figures/Phase5/step30_B_partC_clean_overlap.png` — three
-  panels: observed-vs-predicted P_compat, observed-vs-predicted Fg
-  count (with no-drift upper bound), observed Fg frequency spectrum
-  vs P1.
+  panels ordered to follow the causal chain: **Panel A** diversity
+  (observed Fg count with the no-drift upper bound overlay), **Panel
+  B** pollen compatibility (observed vs Phase 5 predicted with
+  traffic-light bands), **Panel C** observed Fg frequency spectrum
+  per location vs the species-wide P1 reference — the direct visual
+  evidence that habitat-loss-driven drift has pushed local pools
+  past the already-skewed empirical P1.
 - Script: `step30d_partC_clean_overlap.py`.
+
+**Why P1 is empirical, not uniform.** A uniform-frequency P1
+(Dirichlet(α = 1) over the 32 Fgs, equivalent to the P0 "uninformative"
+prior kept as a reference baseline in § A.3) would represent a
+*neutral null with no drift history*. That is not LEPA: decades of
+habitat loss have already pushed the species through drift, so
+**empirical P1 is the realistic starting point** against which per-
+location further drift is measured. Panel C of Figure 7 makes this
+concrete — EO70's local Fg pool has moved further toward FG001
+dominance (0.61) than P1 itself (0.41), so even the already-skewed
+empirical prior underestimates the local pool's collapse. A uniform
+P1 would start from a flat distribution and declare every observed
+location "drifted", losing both the species-wide signal and the
+calibration readers need to interpret per-location deviation.
 
 ### C.1 Test 1 — Mate-limitation regression (goals 1 + 2)
 

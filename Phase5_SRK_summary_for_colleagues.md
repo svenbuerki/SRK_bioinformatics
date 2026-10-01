@@ -594,7 +594,22 @@ here; that is scheduled as future work.
 - [`step30_B_partC_clean_overlap_fg_frequencies.tsv`](tables/Phase5/step30_B_partC_clean_overlap_fg_frequencies.tsv) — long form, one row per (location, Fg) with observed f and P1 f.
 - [`step30_B_partC_clean_overlap.png`](figures/Phase5/step30_B_partC_clean_overlap.png) — three-panel figure (P_compat scatter, Fg count comparison, Fg frequency spectrum).
 
-![Figure 7 — Phase 5 Part C anchor at the three clean-overlap EOs (EO67, EO70, EO76; 1:1 with a Phase 5 locationCode). **Panel A** — observed vs Phase 5 predicted pollen compatibility per location, with traffic-light bands and the 1:1 diagonal. EO67 and EO76 near the diagonal; EO70 is the drift outlier (observed 0.53 vs predicted 0.78). **Panel B** — distinct Fg count per location: **filled square = observed**, **open blue circle = no-drift upper bound at the adult sample size** (`E[distinct Fgs | 4·n_adults draws from P1]`). The large gap between open circle and filled square at EO70 and EO76 isolates drift from sampling. **Panel C** — observed Fg frequency spectrum per location vs the species-wide P1 reference (grey). FG001 dominates everywhere, consistent with drift elevating the common Fg at small-population tails. Source: `step30d_partC_clean_overlap.py`.](figures/Phase5/step30_B_partC_clean_overlap.png)
+![Figure 7 — Phase 5 Part C anchor at the three clean-overlap EOs (EO67, EO70, EO76; 1:1 with a Phase 5 locationCode). Panel order follows the causal chain: diversity first (what drift has done to the local Fg set), then pollen compatibility (its downstream effect on mating). **Panel A — SRK diversity per location.** Filled square = observed count in adult genotypes; **open blue circle = no-drift upper bound at the adult sample size** (`E[distinct Fgs | 4·n_adults draws from P1]`). The large gap between circle and square at EO70 and EO76 isolates **drift** from **sampling**. **Panel B — pollen compatibility per location**, with traffic-light bands and the 1:1 diagonal. EO67 and EO76 near the diagonal; EO70 is the drift outlier (observed 0.53 vs predicted 0.78). **Panel C — observed Fg frequency spectrum vs the species-wide P1 reference** (grey). FG001 dominates everywhere; EO70 goes even further than P1 toward FG001 (red bar at 0.61 vs P1 grey at 0.41) — direct evidence that habitat-loss-driven drift has pushed the local pool past the already-skewed P1. Source: `step30d_partC_clean_overlap.py`.](figures/Phase5/step30_B_partC_clean_overlap.png)
+
+**Note — why P1 is empirical, not uniform.** A uniform-frequency P1
+(Dirichlet(α = 1) over 32 Fgs, equivalent to the P0 "uninformative"
+prior kept as a reference baseline) would represent a **neutral null
+with no drift history**. That is not LEPA: decades of habitat loss
+have already pushed the species through drift, so empirical P1 — the
+observed Fg frequencies in the Canu-amplicon 263-individual inventory
+— is the realistic *starting point* against which per-location
+further drift is measured. Panel C makes this concrete: EO70's local
+pool has moved *past* P1 toward FG001 dominance, so even the already-
+skewed empirical prior underestimates how collapsed the local pool
+is. A uniform P1 would start from a flat distribution and declare
+every observed location "drifted", which is both less informative
+(the species-wide signal is real) and less actionable (the baseline
+would not reflect how LEPA actually enters the modelling frame).
 
 ---
 

@@ -245,23 +245,71 @@ def draw_figure(stats: pd.DataFrame,
     axB = fig.add_subplot(gs[0, 1])
     axC = fig.add_subplot(gs[0, 2])
 
-    # Panel A — observed vs Phase 5 predicted P_compat
-    hi = max(0.05,
+    # ------------------------------------------------------------------
+    # Panel A — SRK diversity (first, matches the fragmentation →
+    # drift → mate-limitation causal flow)
+    # ------------------------------------------------------------------
+    hiA = 1.05 * max(stats["obs_distinct_Fgs"].max(),
+                     stats["pred_phase5_distinct_Fgs_hi"].max(),
+                     n_fg)
+    axA.plot([0, hiA], [0, hiA], color="#888888", lw=1.0, ls="--",
+             alpha=0.6, zorder=1)
+    axA.axvline(n_fg, color="#aaaaaa", ls=":", lw=0.8, alpha=0.5)
+    axA.axhline(n_fg, color="#aaaaaa", ls=":", lw=0.8, alpha=0.5)
+    for _, r in stats.iterrows():
+        axA.scatter(r["pred_phase5_distinct_Fgs"],
+                    r["exp_distinct_adult_sample_from_P1_upper"],
+                    s=55, facecolors="none", edgecolors=COLOUR_PRED,
+                    linewidths=1.2, zorder=3)
+        axA.errorbar(r["pred_phase5_distinct_Fgs"], r["obs_distinct_Fgs"],
+                     xerr=[[r["pred_phase5_distinct_Fgs"]
+                            - r["pred_phase5_distinct_Fgs_lo"]],
+                           [r["pred_phase5_distinct_Fgs_hi"]
+                            - r["pred_phase5_distinct_Fgs"]]],
+                     fmt="s", color=COLOUR_OBS, ecolor="#999999",
+                     elinewidth=1.0, capsize=3, markersize=7, zorder=2)
+        axA.annotate(f"  {r['locationCode']} (n={int(r['n_functional_carriers'])})",
+                     xy=(r["pred_phase5_distinct_Fgs"], r["obs_distinct_Fgs"]),
+                     fontsize=9, va="center", ha="left")
+    axA.set_xlim(0, hiA); axA.set_ylim(0, hiA)
+    axA.set_xlabel("Predicted (Phase 5 union across components)",
+                   fontsize=10)
+    axA.set_ylabel("Fgs detected in adults", fontsize=10)
+    axA.set_title(f"A — SRK diversity per location (ceiling = {n_fg})",
+                   fontsize=11, loc="left")
+    from matplotlib.lines import Line2D
+    legend_A = [
+        Line2D([0], [0], marker="s", color="w", markerfacecolor=COLOUR_OBS,
+                markersize=8, label="Observed count"),
+        Line2D([0], [0], marker="o", color="w",
+                markerfacecolor="none", markeredgecolor=COLOUR_PRED,
+                markeredgewidth=1.3, markersize=9,
+                label="No-drift upper bound at n adults (from P1)"),
+    ]
+    axA.legend(handles=legend_A, loc="upper left", fontsize=8,
+               frameon=True)
+    axA.spines["top"].set_visible(False)
+    axA.spines["right"].set_visible(False)
+
+    # ------------------------------------------------------------------
+    # Panel B — Pollen compatibility (second, downstream of diversity)
+    # ------------------------------------------------------------------
+    hiB = max(0.05,
              1.05 * max(stats["obs_pcompat_hi95"].max(),
                         stats["pred_phase5_pcompat_hi95"].max(),
                         bands["species_mean"]))
-    axA.add_patch(Rectangle((0, 0), hi, bands["failed_max"],
+    axB.add_patch(Rectangle((0, 0), hiB, bands["failed_max"],
                              color=COLOUR_FAILED, alpha=0.10, zorder=0))
-    axA.add_patch(Rectangle((0, bands["failed_max"]), hi,
+    axB.add_patch(Rectangle((0, bands["failed_max"]), hiB,
                              bands["struggling_max"] - bands["failed_max"],
                              color=COLOUR_STRUGGLING, alpha=0.10, zorder=0))
-    axA.add_patch(Rectangle((0, bands["struggling_max"]), hi,
-                             hi - bands["struggling_max"],
+    axB.add_patch(Rectangle((0, bands["struggling_max"]), hiB,
+                             hiB - bands["struggling_max"],
                              color=COLOUR_SUSTAIN, alpha=0.10, zorder=0))
-    axA.plot([0, hi], [0, hi], color="#888888", lw=1.0, ls="--",
+    axB.plot([0, hiB], [0, hiB], color="#888888", lw=1.0, ls="--",
              alpha=0.6, zorder=1)
     for _, r in stats.iterrows():
-        axA.errorbar(r["pred_phase5_pcompat_mean"], r["obs_pcompat_mean"],
+        axB.errorbar(r["pred_phase5_pcompat_mean"], r["obs_pcompat_mean"],
                      xerr=[[r["pred_phase5_pcompat_mean"]
                             - r["pred_phase5_pcompat_lo95"]],
                            [r["pred_phase5_pcompat_hi95"]
@@ -270,63 +318,15 @@ def draw_figure(stats: pd.DataFrame,
                            [r["obs_pcompat_hi95"] - r["obs_pcompat_mean"]]],
                      fmt="o", color=COLOUR_OBS, ecolor="#999999",
                      elinewidth=1.0, capsize=3, markersize=7, zorder=2)
-        axA.annotate(
-            f"  {r['locationCode']}\n  (n={int(r['n_functional_carriers'])}, "
-            f"{int(r['obs_distinct_Fgs'])} Fgs)",
-            xy=(r["pred_phase5_pcompat_mean"], r["obs_pcompat_mean"]),
-            fontsize=8, va="center", ha="left")
-    axA.set_xlim(0, hi); axA.set_ylim(0, hi)
-    axA.set_xlabel("Predicted (Phase 5, component-based)", fontsize=10)
-    axA.set_ylabel("Observed (adult genotypes)", fontsize=10)
-    axA.set_title("A — Pollen compatibility per location",
-                   fontsize=11, loc="left")
-    axA.spines["top"].set_visible(False)
-    axA.spines["right"].set_visible(False)
-
-    # Panel B — observed vs Phase 5 predicted distinct Fg count
-    hiB = 1.05 * max(stats["obs_distinct_Fgs"].max(),
-                     stats["pred_phase5_distinct_Fgs_hi"].max(),
-                     n_fg)
-    axB.plot([0, hiB], [0, hiB], color="#888888", lw=1.0, ls="--",
-             alpha=0.6, zorder=1)
-    axB.axvline(n_fg, color="#aaaaaa", ls=":", lw=0.8, alpha=0.5)
-    axB.axhline(n_fg, color="#aaaaaa", ls=":", lw=0.8, alpha=0.5)
-    for _, r in stats.iterrows():
-        # Grey open square = sample-size-adjusted no-drift upper bound
-        # at the adult sample size. If this sits near the ceiling, any
-        # large gap to the observed count is DRIFT, not sampling.
-        axB.scatter(r["pred_phase5_distinct_Fgs"],
-                    r["exp_distinct_adult_sample_from_P1_upper"],
-                    s=55, facecolors="none", edgecolors="#2b6cb0",
-                    linewidths=1.2, zorder=3)
-        axB.errorbar(r["pred_phase5_distinct_Fgs"], r["obs_distinct_Fgs"],
-                     xerr=[[r["pred_phase5_distinct_Fgs"]
-                            - r["pred_phase5_distinct_Fgs_lo"]],
-                           [r["pred_phase5_distinct_Fgs_hi"]
-                            - r["pred_phase5_distinct_Fgs"]]],
-                     fmt="s", color=COLOUR_OBS, ecolor="#999999",
-                     elinewidth=1.0, capsize=3, markersize=7, zorder=2)
         axB.annotate(f"  {r['locationCode']}",
-                     xy=(r["pred_phase5_distinct_Fgs"], r["obs_distinct_Fgs"]),
+                     xy=(r["pred_phase5_pcompat_mean"],
+                         r["obs_pcompat_mean"]),
                      fontsize=9, va="center", ha="left")
     axB.set_xlim(0, hiB); axB.set_ylim(0, hiB)
-    axB.set_xlabel("Predicted (Phase 5 union across components)",
-                   fontsize=10)
-    axB.set_ylabel("Fgs detected in adults", fontsize=10)
-    axB.set_title(f"B — Distinct Fgs per location (ceiling = {n_fg})",
+    axB.set_xlabel("Predicted (Phase 5, component-based)", fontsize=10)
+    axB.set_ylabel("Observed (adult genotypes)", fontsize=10)
+    axB.set_title("B — Pollen compatibility per location",
                    fontsize=11, loc="left")
-    # Legend for the two kinds of markers in Panel B
-    from matplotlib.lines import Line2D
-    legend_B = [
-        Line2D([0], [0], marker="s", color="w", markerfacecolor=COLOUR_OBS,
-                markersize=8, label="Observed count"),
-        Line2D([0], [0], marker="o", color="w",
-                markerfacecolor="none", markeredgecolor=COLOUR_PRED,
-                markeredgewidth=1.3, markersize=9,
-                label="No-drift upper bound at n adults (from P1)"),
-    ]
-    axB.legend(handles=legend_B, loc="upper left", fontsize=8,
-               frameon=True)
     axB.spines["top"].set_visible(False)
     axB.spines["right"].set_visible(False)
 
