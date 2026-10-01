@@ -438,24 +438,38 @@ estimator of the population-mean P_compat.
 
 ![Figure 4 — Predicted per-location pollen compatibility under sporophytic Class I / II + empirical LEPA zygosity. Y-axis labels give `locationCode (N_fert_eff, M_mothers)` — the same convention as Figure 3, without total_seeds because seed counts do not enter this prediction. One dot per location, error bars = 95 % credible interval, panelled by Bottleneck Lineage. Traffic-light bands: red = failed (< 0.26), amber = struggling (0.26–0.52), green = sustainable (≥ 0.52). Species mean = 0.78. BL5 tail slips into the struggling band; all other locations sit in the sustainable band at the mean.](figures/Phase5/step30_A_prediction_fecundation.png)
 
-### 30.3 Fragmentation index
+### 30.3 Per-location mating neighbourhood size
 
-**Question.** Independent of drift on allele frequencies, how
-spatially fragmented is each location's mating environment?
+**Question.** Independent of drift on allele frequencies, how big is
+each location's event-scale mating neighbourhood — and how uniform
+is it across the location's events?
 
-**Approach.** Two purely spatial indices, no allele frequencies:
-`F_event = 1 − K_spatial_50m / 32` at the event scale (per slickspot),
-and `F_location = 1 − within-location connectivity at 50 m` at the
-location scale. Both range 0 (no fragmentation) → 1 (fully isolated).
+**Approach — purely spatial, no allele frequencies.** For every
+event, count `N_reachable_50m = Σ N_fertile in other events within
+50 m`: the number of pollen-donor plants a flower on that event
+could reach at the 50 m pollinator range. Then **one box plot per
+location** summarises its events' `N_reachable_50m` distribution,
+with locations stacked vertically by Bottleneck Lineage.
 
-**Result.** F_event and F_location are strongly correlated at BL2 /
-BL5 (uniformly small, isolated events → high fragmentation on both
-axes). BL3 and BL1 show the widest spread — some locations have
-tight event-scale connectivity but many disconnected components at
-the location scale, so their mating environment is layered rather
-than uniformly fragmented.
+**How to read it.**
+- **Where a box sits on the x-axis** → typical event-scale neighbourhood size.
+- **How wide the box is / how long the whiskers are** → how uniform the location's events are. A narrow box = events have similar neighbourhoods; a wide box = some events are well-connected while others sit alone.
+- **The red dotted line (N = 1)** = the single-plant SI floor: a flower on this event has nobody to mate with.
+- **The grey dashed line (N = 8 plants = 32 tetraploid allele copies)** = the coupon-collector floor for the 32-Fg species pool. Events to the left of it have fewer reachable allele copies than the species-wide ceiling and are therefore drift-limited at the event scale, no matter the location mean.
 
-![Figure 5 — Event-scale × location-scale fragmentation scatter, one dot per location, coloured by Bottleneck Lineage. Pure spatial indices — no allele frequencies enter. Diagonal locations have matched fragmentation at both scales; off-diagonal locations reveal layered structure (e.g. tight event-scale connectivity but multiple disconnected components at the location scale).](figures/Phase5/step30_A_fragmentation_index.png)
+**Result.** BL5 tail and the smallest BL1 locations (EO26-3 and some
+EO8 sub-locations) sit near or at the N = 1 floor — their events
+cannot reach the coupon-collector floor on their own. BL4, BL3's
+EO76, BL1's EO61 / EO29, and BL2's EO70 sit at or above the 32-copy
+line across all their events — well-connected everywhere. The
+widest boxes (EO18-7, EO8) are the layered locations: some events
+are richly connected, others are isolated.
+
+**Prefer the N_fertile_effective figure (Panel C) for a single
+per-location fragmentation score.** This figure is the complementary
+*event-level* texture.
+
+![Figure 5 — Per-location box plots of `N_reachable_50m` (pollen-donor plants reachable within 50 m per event). One row per location, grouped by Bottleneck Lineage; row labels give `(events, adults)`. Each box summarises the location's events' reachable-neighbour counts (log x-axis). **Red dotted line: N = 1** = the single-plant SI floor (nobody to mate with on that event). **Grey dashed line: N = 8 plants = 32 tetraploid allele copies** = the coupon-collector floor for the 32-Fg species pool. Narrow boxes = uniform event neighbourhoods; wide boxes = layered location (some events well-connected, others isolated). Purely spatial — no allele frequencies enter. Source: `step30b_fragmentation_index.py`.](figures/Phase5/step30_A_fragmentation_index.png)
 
 ---
 
