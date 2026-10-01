@@ -251,7 +251,7 @@ design derived from it:
 | **Step 28** | Given the per-mother allele exposure already set by Steps 30 and 29, how many seeds per mother must the lab genotype to recover the within-mother pollen pool at 90 % probability? | Sampling design (per-mother) |
 | **Step 30 (Phase B)** | Once observed seed genotypes exist, how do they compare to the Phase A prediction, and does per-mother seed set decline with predicted pollen compatibility? | Comparison + mate-limitation regression |
 
-### A.3 The two-generation trick and species-wide prior
+### A.3 Species-wide prior P1 and ploidy
 
 > **Ploidy note — LEPA is TETRAPLOID (2n = 4x).** Every somatic plant
 > carries **4 SRK allele copies**; meiotic reduction produces **2x
@@ -265,32 +265,15 @@ design derived from it:
 > + [`tables/Phase5/srk_fg_class.tsv`](tables/Phase5/srk_fg_class.tsv))
 > and Phase C's β₁ interpretation follows the new sporophytic scale.
 
-Once Part B's sampling protocol is executed, we will have a batch
-of seed DNA per mother. Each seed is **tetraploid** like its parents —
-2 maternal + 2 paternal SRK alleles at each SRK locus — so one seed
-lot per mother recovers, in a single extraction batch, two independent
-samples:
-
-| Generation | What we recover | How |
-|---|---|---|
-| **Parental (G0)** | The mother's 4 SRK allele copies (her full genotype) | Invariant / 50 %-frequency alleles across her sibs |
-| **Filial (G1) — as read through paternity** | The pollen SRK allele pool she was exposed to, 2 draws per seed | Variable alleles across her sibs |
-
-Aggregating across mothers of a location gives us **two independent
-estimates of the location-level SRK allele frequency spectrum**: the
-*maternal* one (who is standing there) and the *paternal* one (who is
-actually contributing pollen). Under random mating with panmictic pollen
-dispersal, the two spectra are indistinguishable. Departures flag biased
-contribution, cryptic SI filtering, or immigrant pollen — themselves useful
-signal.
-
-But we do not want to wait until the seed data are in to know what we
-expect. The Canu-amplicon preliminary study already characterised **32
-functional SRK allele groups (Fgs) in 263 individuals** — a strong empirical
-**prior**. We can use that prior *now* to publish predicted diversity and
-predicted fecundation failure per location, with credible intervals. When the
-seed data land, prediction and observation are compared side by side, and
-the locations where they disagree are the actionable ones.
+Every Phase A prediction below is built on a **species-wide empirical
+prior** over the 32 functional SRK allele groups (Fgs) rather than a
+flat / uninformative prior. The Canu-amplicon preliminary study
+already characterised **32 Fgs in 263 individuals**, which gives Phase A
+enough information to publish predicted diversity and predicted
+fecundation failure per location, with credible intervals, *before* any
+seed data land. When the seed data arrive (Part B → Part C), prediction
+and observation are compared side by side and the locations where they
+disagree are the actionable ones.
 
 We build three nested Dirichlet priors over the 32 Fgs:
 
@@ -1017,6 +1000,27 @@ the mother allocation downstream:
   mothers per 50 m connected component plus a ≥ 1-per-event floor
   (fragmentation-aware allocation § B.4.2, locked recipe § B.4.3).
 - § B.5 covers the two-year pooling rules.
+
+### B.0 What one seed lot yields — the two-generation trick
+
+Each sampled seed is **tetraploid** like its parents — 2 maternal + 2
+paternal SRK alleles at each SRK locus — so one seed lot per mother
+recovers, in a single extraction batch, two independent samples:
+
+| Generation | What we recover | How |
+|---|---|---|
+| **Parental (G0)** | The mother's 4 SRK allele copies (her full genotype) | Invariant / 50 %-frequency alleles across her sibs |
+| **Filial (G1) — as read through paternity** | The pollen SRK allele pool she was exposed to, 2 draws per seed | Variable alleles across her sibs |
+
+Aggregating across the mothers of a location gives us **two independent
+estimates of the location-level SRK allele frequency spectrum**: the
+*maternal* one (who is standing there) and the *paternal* one (who is
+actually contributing pollen). Under random mating with panmictic pollen
+dispersal, the two spectra are indistinguishable. Departures flag biased
+contribution, cryptic SI filtering, or immigrant pollen — themselves
+useful signal. Every per-mother and per-location sampling target below is
+engineered against this two-generation yield, so that one seed lot
+delivers both halves at once.
 
 ### B.1 Census N_fertile vs permit-realistic M sampled
 
