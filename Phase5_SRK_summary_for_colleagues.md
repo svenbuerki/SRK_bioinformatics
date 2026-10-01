@@ -83,20 +83,25 @@ experimental target.
 ## Key concepts and terminology
 
 Every per-location quantity in this doc is derived from a nested
-spatial hierarchy. Reading from the biggest unit down to the
-individual plant:
+spatial hierarchy. The two top levels are **quoted verbatim from the
+LEPA DB `Terms` table** (the canonical glossary that ships with
+`LEPA_SQL.db`) so the vocabulary matches every other LEPA analysis.
+Reading from the biggest unit down to the individual plant:
 
-- **Location** (`locationID` / `locationCode`) — an administrative
-  LEPA site such as EO76. May span several slickspots across a
-  landscape.
-  - **Event** (`eventID` / `occurrenceID`) — a single slickspot
-    within a location. Each event has its own census of fertile
-    plants and its own coordinates in the LEPA DB.
+- **Location** (`locationID` / `locationCode`) — DB `Locations`
+  table: `locationID` = "Location Unique Barcode #" (Darwin Core
+  `dwc:locationID`); `locationCode` = the EO code of the sampling
+  site ("Report the unique EO # where the sampling is conducted
+  (e.g., EO38)"). May span several slick spots.
+  - **Event** (`eventID` / `occurrenceID`) — DB `Events` table:
+    "**an 'Event' refers to an occupied slick spot within a
+    Location**" (Darwin Core `dwc:eventID`). Each event has its own
+    census of fertile plants and its own coordinates.
     - **50 m connected component** (`component_id_50m`) — a group
       of events whose plants sit within 50 m pollinator-flight range
       of each other. **Plants in the same component share a pollen
       pool; plants in different components — even at the same
-      location — do not.**
+      location — do not.** Phase 5 derived concept, not a DB term.
       - **Mother plant** (`germplasmID`) — an individual plant
         already collected and stored in the LEPA DB, sitting at one
         specific event.
