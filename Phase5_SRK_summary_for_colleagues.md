@@ -64,14 +64,19 @@ experimental target.
   filtered to records with coordinates inside LEPA's Idaho range.
   **39 locations, 3 140 events (individual slickspots), 765 mothers
   with seed records.**
-- **Species-wide SRK prior (P1).** 32 functional groups (Fgs) built
-  from the Canu-amplicon L1 carrier inventory (49 alleles collapsed
-  into 32 Fgs). Dominant Fg = FG001 (41 %). **Class I = 26 Fgs
-  (~35 % of P1 mass), Class II = 6 Fgs (~65 %)** — this inverts the
-  "common = Class I" Brassica frequency pattern, which assumes
-  neutrality. In LEPA genetic drift elevates FG001-006 regardless of
-  class. See § A.7.2 of the long doc for the drift note; a
-  phylogenetic reassignment is tracked as future work.
+- **Species-wide SRK prior (P1).** The **32 functional SRK allele
+  groups (Fgs)** identified across LEPA, together with their
+  species-wide empirical frequencies — a 32-slot probability
+  distribution built from the Canu-amplicon L1 carrier inventory
+  (49 sequence alleles collapsed into 32 Fgs across 263 individuals).
+  "Draw an allele from P1" means pick one of the 32 identities with
+  probability equal to its share of the inventory. Dominant Fg =
+  FG001 (**41 %** of P1 mass). **Class I = 26 Fgs (~35 % of P1
+  mass), Class II = 6 Fgs (~65 %)** — this inverts the "common =
+  Class I" Brassica frequency pattern, which assumes neutrality. In
+  LEPA genetic drift elevates FG001-006 regardless of class. See
+  § A.7.2 of the long doc for the drift note; a phylogenetic
+  reassignment is tracked as future work.
 
 ---
 
@@ -106,7 +111,7 @@ sitting on top of this hierarchy:
 | Connectivity share | `largest_component_share_50m` | location, built from components | `N_fert_eff (location) ÷ total_n_fertile`. 1.0 = fully connected (no fragmentation); 0.3 = 70 % of the raw census is drift-irrelevant. Fragmentation diagnostic only — the Phase A prediction loops over every component. |
 | Fragmentation-aware mother target | `M_frag` | event, derived from components | For each event, the number of mothers to sample so that each 50 m connected component reaches 90 % allele-detection coverage, with a ≥ 1-per-event maternal-genotype floor. Sums across events to the location-level `M_frag_aware`. |
 | Rule 2 tetraploid seed cap | 15 seeds/mother | mother plant | Each seed contributes 2 paternal allele draws from the local pollen pool. 15 seeds/mother is the coupon-collector floor for a mother to see every allele in her component's pollen pool with 90 % probability. |
-| Species prior | `P1` | species-wide | The 32-Fg (functional-group) frequency vector built from the Canu-amplicon preliminary study. Used as the base rate for every per-location prediction under drift. |
+| Species prior | `P1` | species-wide | The **32 Fgs identified across LEPA plus their empirical species-wide frequencies** — a 32-slot probability vector that sums to 1, built from the Canu-amplicon L1 carrier inventory. Common Fgs (e.g. FG001 at 41 %) have a large slot; rare ones have a small slot. Every per-location prediction draws alleles from P1, so small locations lose the rare Fgs to drift by chance. |
 
 **Why components matter in one sentence.** Every per-location
 prediction in this doc — SRK diversity, pollen compatibility, mother
@@ -271,11 +276,14 @@ location?") is answered in Steps 28 – 29.
 **Approach — how the simulation works, step by step.**
 
 Think of the species prior P1 as a bag with 32 kinds of coloured
-balls (the 32 Fgs), where the share of each colour reflects how
-common that Fg is across the 263 preliminary-study individuals. Each
-LEPA location only gets a limited handful of draws from that bag,
-so small locations are missing some colours by chance — that is
-drift. The prediction turns this intuition into numbers in five
+balls — one colour per Fg. The bag is **not evenly filled**: FG001
+occupies 41 % of it, the next five Fgs together another ~25 %, and
+the 20+ rare Fgs each fill under 2 %. Those shares are the
+*species-wide empirical frequencies* measured from the Canu-amplicon
+263-individual inventory. Each LEPA location only gets a limited
+handful of draws from that bag, so small locations are almost
+guaranteed to miss the rare colours by chance — that is **genetic
+drift**. The prediction turns this intuition into numbers in five
 steps, run for every 50 m component inside every location:
 
 1. **Build the component's local pool (drift step).** For a
