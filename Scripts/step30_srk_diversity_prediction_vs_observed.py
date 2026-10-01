@@ -93,150 +93,252 @@ def draw_frequencies(prior: pd.DataFrame, n_draws: int,
     return rng.dirichlet(prior["alpha"].values, size=n_draws)
 
 
-def predicted_diversity_per_location(locations: pd.DataFrame,
-                                     prior: pd.DataFrame,
-                                     rng: np.random.Generator,
-                                     seeds_per_mother: int = 15,
-                                     n_local_replicates: int = 1000,
-                                     ) -> pd.DataFrame:
-    """For each location, compute two coverage predictions.
+def _largest_remainder(float_counts: np.ndarray, total: int) -> np.ndarray:
+    """Distribute `total` integer units across bins proportional to
+    `float_counts`, using the largest-remainder method so Σ = total
+    exactly (unlike `np.round`, which can drift)."""
+    if total <= 0 or float_counts.sum() <= 0:
+        return np.zeros(len(float_counts), dtype=int)
+    weights = float_counts / float_counts.sum()
+    exact = weights * total
+    base = np.floor(exact).astype(int)
+    remainder = total - base.sum()
+    if remainder > 0:
+        order = np.argsort(-(exact - base))
+        base[order[:remainder]] += 1
+    return base
 
-    Tetraploid accounting throughout — each adult contributes PLOIDY = 4
-    SRK allele copies to the local pool, and each seed contributes
-    PLOIDY // 2 + PATERNAL_ALLELES_PER_SEED = 2 + 2 = 4 allele draws
-    (2 maternal + 2 paternal). Legacy diploid counts (2·M, 2·N,
-    2 + seeds/mother) are replaced with the PLOIDY-scaled forms.
 
-      1. **Species-wide coverage.** E[distinct Fgs observed | PLOIDY · M
-         adult allele draws from the P1 species-wide prior] — asks how
-         much of the 32-Fg species pool the sampling recovers.
+def predicted_diversity_per_location(
+        locations: pd.DataFrame,
+        prior: pd.DataFrame,
+        rng: np.random.Generator,
+        seeds_per_mother: int = 15,
+        n_local_replicates: int = 1000,
+        event_component_tsv: Path | None = None,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Per-50 m-component SRK diversity prediction aggregated to the
+    location level by **set union** (Fgs are a set, not a continuous
+    quantity, so simple size-weighted means do not apply).
 
-      2. **Location-local coverage.** Under the finite-population model,
-         first simulate the local pool by drawing PLOIDY × N_fertile
-         alleles from P1, then compute the expected fraction of the
-         location's *own* SRK alleles detected at
-         A_delivered = M × (PLOIDY + PATERNAL_ALLELES_PER_SEED · seeds/mother)
-         draws (mother's tetraploid genotype + 2 paternal alleles per
-         seed) from that local pool. This is the biologically honest
-         per-location target — 90 % local coverage says we've seen 90 %
-         of what is actually at the location, ignoring the species alleles
-         that drift already removed.
+    Rationale (symmetry with per-component P_compat)
+    ------------------------------------------------
+    The drift unit is a 50 m connected component inside a location,
+    not the whole location: plants in different components do not share
+    pollen, so their drift histories are independent. Phase A therefore
+    simulates each component's SRK pool independently and derives the
+    location-level numbers by **union** across components (what Fgs are
+    present *somewhere* in the location vs. what the sampling actually
+    recovers *somewhere* in the location).
 
-    M = number of mothers actually recorded in the seed bank
-    (`M_actual_in_step28`). `N_fertile` uses `N_fertile_effective_50m`
-    (census × largest-connected-component share at 50 m) when the
-    Step 29b connectivity output has been merged in; otherwise falls
-    back to the raw census `total_n_fertile`.
+    Three deliverables per replicate `k`:
+
+      1. **Species-wide coverage** (unchanged — not drift-dependent).
+         E[distinct Fgs observed | PLOIDY · M adult allele draws from
+         the P1 species-wide prior].
+
+      2. **Location-local pool size** (per-component, unioned).
+         For each component *c*: draw `4 × component_N_fertile_c`
+         alleles from P1, record its set of present Fgs. Location pool
+         size = |union of component Fg sets|.
+
+      3. **Location-local coverage** (per-component sampling, unioned).
+         Distribute the location's mothers and seeds across components
+         proportional to `component_N_fertile_c` (largest-remainder
+         integer allocation). For each component: `A_delivered_c =
+         PLOIDY · M_c + PATERNAL_ALLELES_PER_SEED · seeds_c` allele
+         draws, record which Fgs this stochastic sample hits. Location
+         detected = |union of component detected sets|; coverage =
+         detected / pool_size.
+
+    Returns
+    -------
+    (location_df, component_df)
+        location_df : one row per location — species-wide coverage,
+            union-based local pool size and coverage.
+        component_df : one row per (locationID, component_id_50m) —
+            per-component pool size, coverage, and the share of
+            mothers/seeds the proportional allocation gave it.
     """
     from step28_seed_sampling_per_mother import PLOIDY, PATERNAL_ALLELES_PER_SEED
+
     freqs = draw_frequencies(prior, N_POSTERIOR_DRAWS, rng)   # (draws, K_fg)
     f_mean = prior["f_mean"].values
     K_fg = freqs.shape[1]
-    rows = []
+
+    # Load component inventory from step29c (same source P_compat uses).
+    if event_component_tsv is None:
+        event_component_tsv = DEFAULT_EVENT_COMPONENT_TSV
+    comp_by_loc: dict[int, list[tuple[int, int]]] = {}
+    if Path(event_component_tsv).exists():
+        comp_df = pd.read_csv(event_component_tsv, sep="\t",
+                              encoding="utf-8-sig")
+        comp_unique = (
+            comp_df.drop_duplicates(["locationID", "component_id_50m"])
+                   [["locationID", "component_id_50m", "component_N_fertile"]]
+        )
+        for _, r in comp_unique.iterrows():
+            comp_by_loc.setdefault(int(r["locationID"]), []).append(
+                (int(r["component_id_50m"]), int(r["component_N_fertile"]))
+            )
+
+    loc_rows: list[dict] = []
+    comp_rows: list[dict] = []
     has_actual = "M_actual_in_step28" in locations.columns
+
     for _, row in locations.iterrows():
+        loc_id = int(row["locationID"])
+        loc_code = row["locationCode"]
         M_ceiling = int(row["M_achievable_location"]) \
             if "M_achievable_location" in row else 0
         if has_actual and pd.notna(row.get("M_actual_in_step28")):
             M_used = int(row["M_actual_in_step28"])
         else:
             M_used = M_ceiling
-        # Effective N_fertile drives the LOCAL pool (uses 50 m
-        # connectivity when available).
-        n_fert_raw = (row.get("N_fertile_effective_50m")
-                      if pd.notna(row.get("N_fertile_effective_50m"))
-                      else row.get("total_n_fertile"))
-        try:
-            N_fertile = int(n_fert_raw) if pd.notna(n_fert_raw) else 0
-        except (TypeError, ValueError):
-            N_fertile = 0
-        N_fertile = max(N_fertile, max(M_used, 1))
-        # Per-mother allele draws — TWO scenarios, both computed:
-        #   A_delivered_actual   = what the actual LEPA DB seed counts
-        #                          per mother deliver at this location.
-        #                          Used for the whole-dataset diversity
-        #                          prediction in § A.6 (answers: what
-        #                          will our real data show?).
-        #   A_delivered_design   = M × (PLOIDY + PATERNAL_ALLELES_PER_SEED
-        #                          × seeds_per_mother) = M × 34 under
-        #                          tetraploid Rule 2 (design target).
-        #                          Used for § B.3/B.4 design questions
-        #                          (answers: how many mothers × seeds
-        #                          are NEEDED to hit the predictions?).
-        # Separating the two prevents the sampling-design → prediction
-        # circularity (using the design to validate the design).
-        A_delivered_design = M_used * (PLOIDY + PATERNAL_ALLELES_PER_SEED * seeds_per_mother)
+        M_used = max(M_used, 0)
+
         realised_seeds = row.get("total_n_seeds_realised_exp")
-        if pd.notna(realised_seeds) and realised_seeds > 0:
-            # Actual per-mother maternal-genotype contribution + paternal
-            # allele draws from the observed seed counts:
-            # A = PLOIDY × M_used + PATERNAL_ALLELES_PER_SEED × Σ seeds.
-            A_delivered_actual = int(
-                PLOIDY * M_used
-                + PATERNAL_ALLELES_PER_SEED * int(realised_seeds))
-        else:
-            A_delivered_actual = A_delivered_design
-        # The figure uses the ACTUAL A_delivered because § A.6 is about
-        # the whole dataset. § B.3/B.4 keeps the design number.
-        A_delivered = A_delivered_actual
+        total_seeds = (int(realised_seeds)
+                       if pd.notna(realised_seeds) and realised_seeds > 0
+                       else 0)
+
+        # Component inventory — fall back to a single component equal
+        # to the whole location if the lookup is missing.
+        comps = comp_by_loc.get(loc_id)
+        if not comps:
+            fallback_N = row.get("N_fertile_effective_50m",
+                                  row.get("total_n_fertile", 1))
+            try:
+                fallback_N = int(fallback_N) if pd.notna(fallback_N) else 1
+            except (TypeError, ValueError):
+                fallback_N = 1
+            comps = [(0, max(fallback_N, max(M_used, 1)))]
+
+        comp_sizes = np.array([max(N, 1) for _, N in comps], dtype=float)
+        N_fert_eff = int(comp_sizes.sum())
+
+        # Allocate mothers and realised seeds across components
+        # proportional to component_N_fertile (largest remainder keeps
+        # the per-component integer total consistent with the whole-
+        # location M_used and total_seeds).
+        M_c_each = _largest_remainder(comp_sizes, M_used)
+        seeds_c_each = _largest_remainder(comp_sizes, total_seeds)
+
+        # Design A_delivered per component (unused in the prediction,
+        # kept as a per-component column for reference).
+        A_design_each = M_c_each * (PLOIDY
+                                     + PATERNAL_ALLELES_PER_SEED * seeds_per_mother)
+        A_actual_each = M_c_each * PLOIDY + PATERNAL_ALLELES_PER_SEED * seeds_c_each
 
         # --- 1. Species-wide coverage (tetraploid: PLOIDY · M draws) ---
-        alleles_drawn = PLOIDY * M_used
+        alleles_drawn = PLOIDY * max(M_used, 1)
         exp_distinct = (1.0 - (1.0 - freqs) ** alleles_drawn).sum(axis=1)
 
-        # --- 2. Location-local coverage ---
-        # For each replicate: simulate the local pool by drawing
-        # PLOIDY × N_fertile alleles from P1 (tetraploid), then evaluate
-        # the expected fraction of local alleles detected at A_delivered draws.
-        # `local_pool_sizes` is the UNBIASED local Fg diversity — the
-        # number of distinct Fgs physically present at the location
-        # under drift. Depends on N_fertile only, NOT on sampling.
-        # `local_coverages` is the fraction of that local pool detected
-        # by the sampling design (M × 15 seeds under tetraploid Rule 2).
-        # `local_Fgs_detected` = pool_size × coverage is what the seed
-        # data are expected to actually recover per location.
-        local_pool_sizes    = np.empty(n_local_replicates)
-        local_coverages     = np.empty(n_local_replicates)
-        local_Fgs_detected  = np.empty(n_local_replicates)
-        for k in range(n_local_replicates):
-            local = rng.choice(K_fg, size=PLOIDY * N_fertile, p=f_mean)
-            _, counts = np.unique(local, return_counts=True)
-            f_local = counts / counts.sum()
-            pool_k = len(counts)
-            cov_k  = float(np.mean(1.0 - (1.0 - f_local) ** A_delivered))
-            local_pool_sizes[k]   = pool_k
-            local_coverages[k]    = cov_k
-            local_Fgs_detected[k] = pool_k * cov_k
+        # --- 2 + 3. Per-component drift + sampling, union at location ---
+        n_comps = len(comps)
+        comp_pool_mat = np.zeros((n_comps, n_local_replicates))
+        comp_detected_mat = np.zeros((n_comps, n_local_replicates))
+        comp_coverage_mat = np.zeros((n_comps, n_local_replicates))
 
-        rows.append({
-            "locationID":                    row["locationID"],
-            "locationCode":                  row["locationCode"],
+        loc_pool_sizes = np.empty(n_local_replicates)
+        loc_detected = np.empty(n_local_replicates)
+        loc_coverages = np.empty(n_local_replicates)
+
+        for k in range(n_local_replicates):
+            present_at_loc = np.zeros(K_fg, dtype=bool)
+            detected_at_loc = np.zeros(K_fg, dtype=bool)
+            for c_idx, (comp_id, N_c) in enumerate(comps):
+                pool_size_alleles = PLOIDY * max(int(N_c), 1)
+                local = rng.choice(K_fg, size=pool_size_alleles, p=f_mean)
+                counts = np.bincount(local, minlength=K_fg)
+                present_c = counts > 0
+                pool_size_c = int(present_c.sum())
+                A_c = int(A_actual_each[c_idx])
+                if A_c > 0 and counts.sum() > 0:
+                    f_local = counts / counts.sum()
+                    sampled = rng.choice(K_fg, size=A_c, p=f_local)
+                    detected_c = np.zeros(K_fg, dtype=bool)
+                    detected_c[np.unique(sampled)] = True
+                    # (sampled Fgs are necessarily in present_c)
+                else:
+                    detected_c = np.zeros(K_fg, dtype=bool)
+
+                present_at_loc |= present_c
+                detected_at_loc |= detected_c
+
+                comp_pool_mat[c_idx, k] = pool_size_c
+                comp_detected_mat[c_idx, k] = int(detected_c.sum())
+                comp_coverage_mat[c_idx, k] = (
+                    detected_c.sum() / pool_size_c if pool_size_c > 0 else 0.0
+                )
+
+            loc_pool_sizes[k] = int(present_at_loc.sum())
+            loc_detected[k] = int(detected_at_loc.sum())
+            loc_coverages[k] = (
+                detected_at_loc.sum() / present_at_loc.sum()
+                if present_at_loc.any() else 0.0
+            )
+
+        # Emit per-component rows
+        for c_idx, (comp_id, N_c) in enumerate(comps):
+            pool_arr = comp_pool_mat[c_idx]
+            cov_arr = comp_coverage_mat[c_idx]
+            det_arr = comp_detected_mat[c_idx]
+            comp_rows.append({
+                "locationID":                 loc_id,
+                "locationCode":               loc_code,
+                "component_id_50m":           int(comp_id),
+                "component_N_fertile":        int(N_c),
+                "component_M_allocated":      int(M_c_each[c_idx]),
+                "component_seeds_allocated":  int(seeds_c_each[c_idx]),
+                "component_A_delivered_actual": int(A_actual_each[c_idx]),
+                "component_A_delivered_design_at_15seeds":
+                                              int(A_design_each[c_idx]),
+                "component_pool_size_mean":   float(pool_arr.mean()),
+                "component_pool_size_lo":     float(np.quantile(pool_arr, 0.025)),
+                "component_pool_size_hi":     float(np.quantile(pool_arr, 0.975)),
+                "component_Fgs_detected_mean": float(det_arr.mean()),
+                "component_Fgs_detected_lo":   float(np.quantile(det_arr, 0.025)),
+                "component_Fgs_detected_hi":   float(np.quantile(det_arr, 0.975)),
+                "component_coverage_mean":    float(cov_arr.mean()),
+                "component_coverage_lo":      float(np.quantile(cov_arr, 0.025)),
+                "component_coverage_hi":      float(np.quantile(cov_arr, 0.975)),
+            })
+
+        A_delivered_design = M_used * (PLOIDY
+                                        + PATERNAL_ALLELES_PER_SEED * seeds_per_mother)
+        A_delivered_actual = PLOIDY * M_used + PATERNAL_ALLELES_PER_SEED * total_seeds
+
+        loc_rows.append({
+            "locationID":                    loc_id,
+            "locationCode":                  loc_code,
             "M_mothers_in_db":               M_used,
             "M_achievable_ceiling":          M_ceiling,
-            "N_fertile_effective":           N_fertile,
+            "N_fertile_effective":           N_fert_eff,
+            "n_components_50m":              n_comps,
             "A_delivered_actual":            A_delivered_actual,
             "A_delivered_design_at_15seeds": A_delivered_design,
-            "total_n_seeds_realised_exp":    int(realised_seeds) if pd.notna(realised_seeds) else 0,
+            "total_n_seeds_realised_exp":    total_seeds,
             # Species-wide (of the 32 P1 alleles):
             "predicted_distinct_Fgs":        float(np.mean(exp_distinct)),
             "predicted_distinct_Fgs_lo":     float(np.quantile(exp_distinct, 0.025)),
             "predicted_distinct_Fgs_hi":     float(np.quantile(exp_distinct, 0.975)),
             "predicted_species_coverage_mean": float(np.mean(exp_distinct) / K_fg),
             "n_fg_species_wide":             K_fg,
-            # Location-local — UNBIASED (N_fertile only, no sampling):
-            "predicted_local_pool_size_mean": float(local_pool_sizes.mean()),
-            "predicted_local_pool_size_lo":   float(np.quantile(local_pool_sizes, 0.025)),
-            "predicted_local_pool_size_hi":   float(np.quantile(local_pool_sizes, 0.975)),
-            # Location-local — SAMPLING (M × 15 seeds against the true local pool):
-            "predicted_local_Fgs_detected_from_sampling_mean": float(local_Fgs_detected.mean()),
-            "predicted_local_Fgs_detected_from_sampling_lo":   float(np.quantile(local_Fgs_detected, 0.025)),
-            "predicted_local_Fgs_detected_from_sampling_hi":   float(np.quantile(local_Fgs_detected, 0.975)),
-            # Location-local — COVERAGE (sampling / unbiased):
-            "predicted_local_coverage_mean": float(local_coverages.mean()),
-            "predicted_local_coverage_lo":   float(np.quantile(local_coverages, 0.025)),
-            "predicted_local_coverage_hi":   float(np.quantile(local_coverages, 0.975)),
+            # Location-local — UNBIASED (union across components):
+            "predicted_local_pool_size_mean": float(loc_pool_sizes.mean()),
+            "predicted_local_pool_size_lo":   float(np.quantile(loc_pool_sizes, 0.025)),
+            "predicted_local_pool_size_hi":   float(np.quantile(loc_pool_sizes, 0.975)),
+            # Location-local — SAMPLING (union across components):
+            "predicted_local_Fgs_detected_from_sampling_mean": float(loc_detected.mean()),
+            "predicted_local_Fgs_detected_from_sampling_lo":   float(np.quantile(loc_detected, 0.025)),
+            "predicted_local_Fgs_detected_from_sampling_hi":   float(np.quantile(loc_detected, 0.975)),
+            # Location-local — COVERAGE (detected union / present union):
+            "predicted_local_coverage_mean": float(loc_coverages.mean()),
+            "predicted_local_coverage_lo":   float(np.quantile(loc_coverages, 0.025)),
+            "predicted_local_coverage_hi":   float(np.quantile(loc_coverages, 0.975)),
         })
-    return pd.DataFrame(rows)
+    return pd.DataFrame(loc_rows), pd.DataFrame(comp_rows)
 
 
 def predicted_diversity_matched_to_seeds(seeds: pd.DataFrame,
@@ -936,8 +1038,12 @@ def plot_diversity_unbiased_vs_sampling(pred: pd.DataFrame,
         axes = np.array([axes])
 
     def _plot_metric(ax, sub, y, mean_col, lo_col, hi_col, colour):
-        xerr_lo = sub[mean_col] - sub[lo_col]
-        xerr_hi = sub[hi_col]   - sub[mean_col]
+        # Clip to non-negative — when the empirical distribution is
+        # nearly constant (e.g. coverage = 1.0 for every replicate),
+        # floating-point noise can push the quantile a hair above
+        # the mean, which matplotlib otherwise rejects.
+        xerr_lo = (sub[mean_col] - sub[lo_col]).clip(lower=0.0)
+        xerr_hi = (sub[hi_col]   - sub[mean_col]).clip(lower=0.0)
         for i in range(len(sub)):
             ax.errorbar(
                 sub[mean_col].iloc[i], y[i],
@@ -1764,10 +1870,18 @@ def main() -> None:
         locations["N_fertile_effective_50m"] = locations["total_n_fertile"]
 
     # ---- Prediction outputs ----
-    pred_div = predicted_diversity_per_location(locations, prior, rng)
+    # Per-50 m-component drift + sampling simulation; location-level
+    # pool size and coverage derived by set-union across components.
+    pred_div, pred_div_comp = predicted_diversity_per_location(
+        locations, prior, rng)
     pred_div_path = tables_dir / "step30_A_prediction_location_diversity.tsv"
     pred_div.to_csv(pred_div_path, sep="\t", index=False)
     print(f"[step30] Wrote {pred_div_path}")
+    pred_div_comp_path = tables_dir / "step30_A_prediction_component_diversity.tsv"
+    pred_div_comp.to_csv(pred_div_comp_path, sep="\t", index=False)
+    print(f"[step30] Wrote {pred_div_comp_path} "
+          f"({len(pred_div_comp)} rows across "
+          f"{pred_div_comp['locationID'].nunique()} locations).")
 
     # Per-mother reference distribution (kept for downstream reference).
     pcompat_ref = predicted_pcompat_distribution(prior, args.n_mothers_pcompat, rng)

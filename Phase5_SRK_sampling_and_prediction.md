@@ -290,36 +290,48 @@ is the workhorse** used by every prediction below.
 
 ### A.4 Finite-population model and prediction methodology
 
-Every Part A prediction (A.5–A.8) comes from the same **finite-population
-simulation model**, applied per location, with the **50 m connectivity
-radius** as the biological scope of pollen movement. Four steps:
+Every Part A prediction (A.5–A.8) comes from the same **per-50 m-
+component finite-population simulation**, aggregated to the location
+level in the way the quantity biologically supports. The 50 m
+connected component is the drift unit — plants in different components
+of the same location do not share pollen, so they do not share a drift
+history.
 
-1. **Simulate the local SRK pool (drift signature).**
-   Each location's mating population has `N_fertile × 50 m-connectivity`
-   plants; those contribute `2 × N_fertile` allele copies. We **draw
-   those alleles from the Canu-amplicon species-wide prior (P1)** —
-   the empirical frequency distribution of the 32 SRK allele groups
-   across the 263 preliminary genotyped individuals. Small locations
-   lose rare alleles to drift; large locations approach the species-wide
-   32.
+1. **Simulate each component's local SRK pool (drift signature).**
+   For each 50 m connected component *c* with `component_N_fertile`
+   adults, draw `4 × component_N_fertile` alleles i.i.d. from the
+   Canu-amplicon species-wide prior P1. Small components lose rare
+   alleles to drift; large components approach the species-wide 32.
 
-2. **Predicted SRK diversity per location** = expected number of
-   *distinct* alleles in that local pool.
+2. **Predicted SRK diversity.**
+   - **Per component:** number of *distinct* Fgs in that component's
+     simulated pool.
+   - **Per location:** |union of per-component Fg sets| — a Fg
+     present in *any* component is present at the location.
+   - **Sampling coverage** (per component): mothers and realised seeds
+     are distributed across components proportional to
+     `component_N_fertile` (largest-remainder integer allocation);
+     each component's `A_delivered_c = 4·M_c + 2·seeds_c` draws are
+     taken against its own frequency vector and the detected Fgs
+     recorded. Location coverage = |union detected| / |union present|.
 
-3. **Predicted pollen compatibility per location.** Within each
-   replicate we simulate *M* sampled mother genotypes (drawn from the
-   local pool, not from P1) and compute each mother's random-mating
-   compatibility as **1 − f_a − f_b** using her two alleles' *local*
-   frequencies. Under strict self-incompatibility, this is the
-   expected fraction of her ovules that meet compatible pollen.
-   Averaged over the M mothers, then over replicates.
+3. **Predicted pollen compatibility.**
+   - **Per component:** simulate mother genotypes from the
+     component's local Fg frequencies under the empirical LEPA
+     zygosity distribution, compute each mother's sporophytic Class
+     I / II P_compat against candidate fathers drawn from the same
+     component pool (see § A.7–A.8).
+   - **Per location:** size-weighted mean of per-component P_compat,
+     Σ_c (P_compat_c · component_N_fertile_c) / Σ_c
+     component_N_fertile_c. (Weighted mean, not union — P_compat is
+     a continuous quantity rather than a set.)
 
-4. **Uncertainty.** Both quantities are recomputed on 1 000 – 4 000
-   independent replicates of the local pool. Reported means and 95 %
-   credible intervals are the mean and 2.5 % / 97.5 % percentiles
-   across replicates. Small locations have wide intervals (founder-
-   effect uncertainty is large); large locations have tight intervals
-   (local pool converges to P1).
+4. **Uncertainty.** Both diversity and P_compat are recomputed on
+   400 – 1 000 independent per-component replicates. Reported means
+   and 95 % credible intervals are the mean and 2.5 % / 97.5 %
+   percentiles across those replicates. Small components have wide
+   intervals (founder-effect uncertainty is large); large components
+   have tight intervals (local pool converges to P1).
 
 **Sampling effort — what the numbers assume we will see.** *M* mothers
 × 15 seeds each (tetraploid Rule 2) = **A = M × 34 allele draws** from
@@ -329,14 +341,20 @@ report coverage in two flavours:
 
 - **Species-wide coverage** — fraction of the 32 P1 alleles detected.
   Biased low for small locations (drift already removed most).
-- **Local coverage** — fraction of the alleles *actually at the
-  location* that we detect. The biologically honest metric; ~100 % at
-  every location under the current design (see A.5 table).
+- **Local coverage** — fraction of the Fgs *actually at the location*
+  (union across its components) that we detect under the per-component
+  sampling allocation. The biologically honest metric; drops below
+  99 % when drift-collapsed small components receive 0 mothers under
+  proportional allocation and still contribute Fgs the larger
+  components do not carry (see § A.6).
 
-**One-line take-home:** SRK diversity is what drift has left, pollen
-compatibility is how well a random mother matches the neighbours she
-can reach at 50 m, and both are simulated per location under the
-same finite-population draw from the species-wide prior.
+**One-line take-home:** diversity is what drift has left and the
+sampling has detected, pollen compatibility is how well a random
+mother matches the neighbours she can reach at 50 m, and both are
+simulated **per component** against the same P1 prior; location-level
+numbers are the union (diversity, a set) or the size-weighted mean
+(pollen compatibility, a continuous rate) of the component-level
+results.
 
 **Prediction outputs.** Kept in `tables/Phase5/` prefixed
 `step30_A_prediction_*` and figures under `figures/Phase5/step30_A_*`.
@@ -618,7 +636,7 @@ The BL5 tail's low diversity in Panel A is not an artefact of
 sampling — it is what drift has already done to those slickspots.
 
 <a id="fig-3"></a>
-![Figure 3 — Predicted SRK allele diversity per LEPA location under the tetraploid P1 finite-population model. Panelled by Bottleneck Lineage in canonical BL_ORDER (BL4 → BL5 → BL3 → BL1 → BL2, top-to-bottom); within each BL row, locations sorted by unbiased pool size (small → large). Y-axis labels give `locationCode (N_fert_eff, M_mothers, total_seeds)` where `N_fert_eff` = fertile plants × 50 m largest-connected-component share, `M_mothers` = mothers in the LEPA DB, `total_seeds` = total seeds recorded at the location across all mothers (raw count, not a mean — per-mother seed counts can vary widely at the same location). **Panel A** — What Nature actually holds. Number of distinct SRK Fgs physically present at each location, driven by `N_fert_eff` alone. Not conditioned on sampling. Feeds Link 2 → Link 3 of the causal chain. **Panel B** — What our sampling will detect. Expected number of Fgs recovered by the seed data already in the LEPA DB (`A_delivered = 4·M_mothers + 2·total_seeds`; each seed's 2 paternal alleles are direct samples of the local pollen donor pool). **Panel C** — Coverage fraction = Panel B ÷ Panel A. Dotted line = 90 % target. Error bars = 95 % credible interval from Dirichlet posterior draws. Two single-plant BL5 slickspots (EO24-2, EO24) sit at ~88–91 % coverage — capped by seed lot size, not by mother count; every other location clears ≥ 99 %. Vertical dashed line in Panels A/B = species-wide ceiling of 32 Fgs. Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.png)
+![Figure 3 — Predicted SRK allele diversity per LEPA location under the tetraploid P1 finite-population model, **built per 50 m component and aggregated to the location by set union** (same drift unit as Figure 5). Panelled by Bottleneck Lineage in canonical BL_ORDER (BL4 → BL5 → BL3 → BL1 → BL2, top-to-bottom); within each BL row, locations sorted by unbiased pool size (small → large). Y-axis labels give `locationCode (N_fert_eff, M_mothers, total_seeds)` where `N_fert_eff` = sum of component_N_fertile across the location's 50 m components, `M_mothers` = mothers in the LEPA DB, `total_seeds` = total seeds recorded at the location across all mothers (raw count, not a mean — per-mother seed counts can vary widely at the same location). **Panel A** — What Nature actually holds. For each 50 m component, draw 4 × component_N_fertile alleles from P1 and record its present Fgs; location pool size = |union across components|. Not conditioned on sampling. Feeds Link 2 → Link 3 of the causal chain. **Panel B** — What our sampling will detect. Mothers and seeds are distributed across components proportional to component_N_fertile (largest-remainder); per-component sampling draws `A_delivered_c = 4·M_c + 2·seeds_c` alleles against the component's own frequency vector, and the location detected count = |union of per-component detected Fgs|. **Panel C** — Coverage fraction = Panel B ÷ Panel A. Dotted line = 90 % target. Error bars = 95 % credible interval across simulation replicates. Two single-plant BL5 slickspots (EO24-2, EO24) sit at ~87–91 % coverage — now joined by small-component locations where drift and proportional allocation leave 1–5-plant components with zero sampled mothers (6/39 locations <99 % coverage). Vertical dashed line in Panels A/B = species-wide ceiling of 32 Fgs. Per-component rows: [`step30_A_prediction_component_diversity.tsv`](tables/Phase5/step30_A_prediction_component_diversity.tsv). Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.png)
 
 
 ### A.7 Sporophytic self-incompatibility with Class I / Class II dominance
@@ -2044,8 +2062,10 @@ or right-click → *Save link as…* to pull the TSV into your local pipeline.
 - [`step29_field_team_sampling_recipe.tsv`](tables/Phase5/step29_field_team_sampling_recipe.tsv) — **FIELD TEAM per-germplasmID recipe** (one row per mother with the actionable seed count).
 - [`step29_location_connectivity.tsv`](tables/Phase5/step29_location_connectivity.tsv) — within-location pollen connectivity at 10 / **25 (primary)** / 50 m.
 - [`step30_A_prediction_prior_frequencies.tsv`](tables/Phase5/step30_A_prediction_prior_frequencies.tsv) — the P1 species-wide Fg prior.
-- [`step30_A_prediction_location_diversity.tsv`](tables/Phase5/step30_A_prediction_location_diversity.tsv) — predicted SRK allele diversity per location.
-- [`step30_A_prediction_location_pcompat.tsv`](tables/Phase5/step30_A_prediction_location_pcompat.tsv) — predicted random-mating pollen compatibility per location (finite-population model at 50 m).
+- [`step30_A_prediction_location_diversity.tsv`](tables/Phase5/step30_A_prediction_location_diversity.tsv) — predicted SRK allele diversity per location (union across its 50 m components).
+- [`step30_A_prediction_component_diversity.tsv`](tables/Phase5/step30_A_prediction_component_diversity.tsv) — per 50 m component diversity: pool size, allocated mothers + seeds, A_delivered, Fgs detected, and coverage.
+- [`step30_A_prediction_location_pcompat.tsv`](tables/Phase5/step30_A_prediction_location_pcompat.tsv) — predicted random-mating pollen compatibility per location (size-weighted mean across its 50 m components).
+- [`step30_A_prediction_component_pcompat.tsv`](tables/Phase5/step30_A_prediction_component_pcompat.tsv) — per 50 m component pollen compatibility — exposes struggling sub-components hidden inside a sustainable-mean location.
 - [`step30_A_prediction_per_mother_fecundation.tsv`](tables/Phase5/step30_A_prediction_per_mother_fecundation.tsv) — species-wide compatibility reference distribution under the sporophytic tetraploid model.
 - [`srk_fg_class.tsv`](tables/Phase5/srk_fg_class.tsv) — Fg → dominance class (I / II) mapping used by the sporophytic pollen compatibility model in § A.8. Provisional data-driven default; editable by hand as biology is refined.
 - [`srk_zygosity_empirical.tsv`](tables/Phase5/srk_zygosity_empirical.tsv) — empirical LEPA distribution of distinct functional SRK identities per plant, from Canu-amplicon Step 23 (n = 367). Used to draw mother and father genotypes under the sporophytic finite-population model (§ A.8.3a, § A.8).

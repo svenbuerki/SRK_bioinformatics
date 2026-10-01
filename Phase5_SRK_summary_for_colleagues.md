@@ -236,35 +236,41 @@ location?") is answered in Steps 28 – 29.
    the local pollen donor pool** — the seed genotyping is a
    pollen-pool characterisation experiment.
 
-**Approach.** For each location: (i) simulate the true local pool by
-drawing `PLOIDY × N_fertile_effective` alleles from P1 — this gives
-the unbiased local Fg diversity and its 95 % credible interval;
-(ii) evaluate the coupon-collector expected detection at
-`A_delivered` from that local pool.
+**Approach.** The simulation is **per 50 m component**, aggregated to
+location level by **set union**: (i) for each component c, draw
+`4 × component_N_fertile_c` alleles from P1 — this gives the
+component's drift-collapsed Fg pool. Location pool size = |union
+of component pools|. (ii) Distribute the location's mothers and
+seeds across components proportional to component size (largest-
+remainder); for each component take `A_delivered_c = 4·M_c + 2·seeds_c`
+draws from its own frequency vector and record the Fgs it hits.
+Location detected count = |union of per-component detected sets|,
+coverage = detected / pool.
 
 **Result.**
 
-| Location | BL | N_fert_eff (50 m) | M_mothers | total_seeds | Nature holds | Sampling detects | Coverage |
-|---|---|---|---|---|---|---|---|
-| EO24-2 (1 plant, BL5 tail) | BL5 | 1 | 1 | 1 | ~3 | ~2.6 | **88 %** |
-| EO24 (BL5 tail) | BL5 | 2 | 1 | 5 | ~4.5 | ~4.1 | **91 %** |
-| EO67 (small BL4 pilot) | BL4 | 6 | 4 | 71 | ~8 | ~8 | ~100 % |
-| EO27-1 (large BL4 pilot) | BL4 | 116 | 33 | 2465 | ~27 | ~27 | ~100 % |
-| EO32 (well-sampled BL5) | BL5 | 324 | 38 | 6028 | ~31 | ~31 | ~100 % |
-| EO29 | BL1 | 417 | 22 | 5419 | ~32 | ~31.5 | ~100 % |
-| EO76 (largest BL3) | BL3 | 401 | 62 | 11723 | ~32 | ~31.5 | ~100 % |
+| Location | BL | N_fert_eff (50 m) | n components | M_mothers | total_seeds | Nature holds | Sampling detects | Coverage |
+|---|---|---|---|---|---|---|---|---|
+| EO24-2 (1 plant, BL5 tail) | BL5 | 1 | 1 | 1 | 1 | ~3 | ~2.6 | **87 %** |
+| EO24 (BL5 tail) | BL5 | 2 | 1 | 1 | 5 | ~4.5 | ~4.1 | **91 %** |
+| EO26-3 (fragmented BL1) | BL1 | 5 | 2 | 4 | ~70 | ~7.6 | ~7.4 | **97 %** |
+| EO27RT (fragmented BL4) | BL4 | 177 | 6 | 22 | ~1700 | ~29 | ~28.1 | **97 %** |
+| EO67 (small BL4 pilot) | BL4 | 10 | 2 | 4 | 71 | ~11 | ~10.7 | 99 % |
+| EO27-1 (large BL4 pilot) | BL4 | 116 | 2 | 33 | 2465 | ~27 | ~27 | ~100 % |
+| EO76 (largest BL3) | BL3 | 517 | 6 | 62 | 11723 | ~32 | ~32 | ~100 % |
 
-**Every location clears the 90 % target and almost all reach ≥ 99 %
-coverage.** The two locations noticeably below full recovery
-(EO24-2, EO24) are single-plant slickspots in the BL5 tail; their
-coverage is capped by seed lot size, not by mother sampling
-(EO24-2 has only one plant, so no more mothers exist to add).
+**Every location clears the 90 % target; 6/39 now sit below 99 %
+coverage** (vs 2 under the previous single-pool model). The newly
+visible gap is the **sampling blind spot** in fragmented locations:
+when drift-collapsed small components (1–5 plants) receive 0 mothers
+under proportional allocation but still carry Fgs the larger
+components do not — EO26-3 and EO27RT are the clearest examples.
 
 The existing LEPA dataset therefore characterises Nature's truth at
 every location. Total seed counts in the DB span 1 (EO24-2) →
 11 723 (EO76), so most locations are well provisioned.
 
-![Figure 3 — Predicted SRK allele diversity per LEPA location under the tetraploid P1 finite-population model. Panelled by Bottleneck Lineage in canonical BL_ORDER (BL4 → BL5 → BL3 → BL1 → BL2). Y-axis labels give `locationCode (N_fert_eff, M_mothers, total_seeds)` where `total_seeds` is the raw count of seeds recorded at the location across all mothers (not a mean — per-mother counts vary widely at the same location). **Panel A** — What Nature actually holds (unbiased truth, driven by `N_fertile_effective` alone; feeds the P_compat prediction). **Panel B** — What our sampling detects (from the actual LEPA DB seed counts; each seed's 2 paternal alleles sample the local pollen donor pool). **Panel C** — Coverage = Panel B ÷ Panel A; dotted line = 90 % target. Two single-plant BL5 slickspots (EO24-2, EO24) sit at ~88–91 % coverage — capped by seed lot size; every other location clears ≥ 99 %.](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.png)
+![Figure 3 — Predicted SRK allele diversity per LEPA location, **built per 50 m component and unioned at the location level**. Panelled by Bottleneck Lineage in canonical BL_ORDER. Y-axis labels give `locationCode (N_fert_eff, M_mothers, total_seeds)` where `N_fert_eff` is the sum of component sizes across the location. **Panel A** — Fgs present somewhere in the location (union across its components, drift-only; feeds the P_compat prediction). **Panel B** — Fgs detected by the actual LEPA DB sampling, with mothers and seeds allocated across components proportional to component size; each component's sampling is simulated against its own frequency vector and the location-level detected count is the union across components. **Panel C** — Coverage = Panel B / Panel A, with the 90 % target line. Six locations now sit below 99 % coverage (vs 2 under the previous single-pool model) — the small components left with 0 mothers under proportional allocation are now visible as a coverage gap.](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.png)
 
 ### 30.2 Predicted pollen compatibility per location
 
