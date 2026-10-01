@@ -157,11 +157,69 @@ sitting on top of this hierarchy:
 prediction in this doc — SRK diversity, pollen compatibility, mother
 allocation — is built **component-by-component**, because a 50 m
 connected component is what trades pollen. Each component is
-simulated with its own `component_N_fertile`, and location-level
-numbers are the size-weighted mean across its components. A
-location with 500 fertile plants spread across 20 isolated
-slickspots behaves like 20 small drift-prone pools, not one pool
-of 500.
+simulated with its own `component_N_fertile`; location-level numbers
+are the **set union** across components for diversity (Fgs are a
+set — present *somewhere* in the location), and the **size-weighted
+mean** across components for pollen compatibility (a continuous
+rate — Σ_c P_compat_c · N_c / Σ_c N_c). A location with 500 fertile
+plants spread across 20 isolated slickspots behaves like 20 small
+drift-prone pools, not one pool of 500.
+
+### How the five quantities chain together
+
+Every number in Part A is derived in the same five-step order,
+starting from the spatial hierarchy above:
+
+1. **Location → events.** A location's raw census
+   `total_n_fertile` is the sum of per-event `n_fertile` counts
+   across all its 50 m-resolved events ([`step28_events_spatial_neighborhood.tsv`](tables/Phase5/step28_events_spatial_neighborhood.tsv)).
+
+2. **Events → 50 m components.** For each location, build a graph on
+   its events: two events are connected if their fertile plants sit
+   within ≤ 50 m. Connected components of that graph are the 50 m
+   components `component_id_50m` ([`step29c_event_to_component_50m.tsv`](tables/Phase5/step29c_event_to_component_50m.tsv),
+   written by Step 29c; the same connectivity logic is reported at
+   location scale in Step 29b).
+
+3. **Components → effective mating pool size.** For each component *c*,
+   `component_N_fertile_c` = Σ_{e ∈ c} n_fertile_e. These are the
+   plants that actually share one 50 m pollen pool. The location-level
+   diagnostic `N_fertile_effective_50m = total_n_fertile ×
+   largest_component_share_50m` is Figure 2 only; the predictions
+   never collapse to it.
+
+4. **Effective mating pool → SRK diversity prediction (per component).**
+   Draw 4 × component_N_fertile_c SRK alleles i.i.d. from the species-
+   wide prior P1 → the component's drift-collapsed Fg set.
+   **Location SRK diversity = |union of per-component Fg sets|**
+   (a set operation — a Fg present in *any* component is present at
+   the location). Sampling coverage is built the same way: mothers
+   and seeds are allocated across components proportional to
+   `component_N_fertile_c`; per-component sampling is simulated
+   against each component's own frequency vector; the location
+   detected count is the union across components. Outputs:
+   [`step30_A_prediction_location_diversity.tsv`](tables/Phase5/step30_A_prediction_location_diversity.tsv)
+   + [`step30_A_prediction_component_diversity.tsv`](tables/Phase5/step30_A_prediction_component_diversity.tsv).
+
+5. **Effective mating pool → pollen compatibility prediction (per
+   component).** From each component's local Fg frequency vector,
+   simulate mother genotypes under the empirical LEPA zygosity (66 %
+   single-identity, 32 % 2-distinct, 2 % 3-distinct) and compute
+   each mother's sporophytic Class I / II P_compat against candidate
+   fathers drawn from the same component pool.
+   **Location P_compat = size-weighted mean of per-component
+   P_compat**, Σ_c P_compat_c · component_N_fertile_c / Σ_c
+   component_N_fertile_c (a continuous rate, so size-weighted mean,
+   not union). Outputs:
+   [`step30_A_prediction_location_pcompat.tsv`](tables/Phase5/step30_A_prediction_location_pcompat.tsv)
+   + [`step30_A_prediction_component_pcompat.tsv`](tables/Phase5/step30_A_prediction_component_pcompat.tsv).
+
+The whole causal chain of this framework — fragmentation → genetic
+drift → mate limitation — enters the predictions through step 3
+(effective mating pool size per component) and comes out at steps 4
+and 5. A fragmented location at step 2 produces small pools at
+step 3, which drives drift-collapsed Fg sets at step 4 and lower
+pollen compatibility at step 5.
 
 ---
 

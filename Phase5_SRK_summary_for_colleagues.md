@@ -112,10 +112,42 @@ sitting on top of this hierarchy:
 prediction in this doc — SRK diversity, pollen compatibility, mother
 allocation — is built **component-by-component**, because a 50 m
 connected component is what trades pollen. Each component gets its
-own `component_N_fertile`; the location-level number is the
-size-weighted mean across its components. A location with 500
-fertile plants spread across 20 isolated slickspots behaves like 20
-small drift-prone pools, not one pool of 500.
+own `component_N_fertile`; location-level numbers are the **set
+union** across components for diversity (Fgs are a set) and the
+**size-weighted mean** across components for pollen compatibility
+(a continuous rate). A location with 500 fertile plants spread
+across 20 isolated slickspots behaves like 20 small drift-prone
+pools, not one pool of 500.
+
+### How the five quantities chain together
+
+1. **Location → events.** Raw census `total_n_fertile` = Σ event
+   `n_fertile` across the location's 50 m-resolved events
+   (step28_events_spatial_neighborhood.tsv).
+2. **Events → 50 m components.** Within each location, connect
+   events whose fertile plants sit within ≤ 50 m; the connected
+   components are the `component_id_50m` units
+   (step29c_event_to_component_50m.tsv).
+3. **Components → effective mating pool.**
+   `component_N_fertile_c` = Σ_{events ∈ c} `n_fertile_e` — the
+   plants that actually share one 50 m pollen pool and the drift
+   unit for both predictions.
+4. **Effective mating pool → SRK diversity.** For each component,
+   draw `4 × component_N_fertile_c` alleles from P1 → the component's
+   present Fgs. Location pool size = |union of component Fg sets|.
+   Sampling is simulated per component too (mothers and seeds
+   distributed proportional to component size).
+5. **Effective mating pool → pollen compatibility.** For each
+   component, sample mothers from its local frequencies under the
+   empirical LEPA zygosity and compute sporophytic Class I / II
+   P_compat per mother. Location P_compat = size-weighted mean of
+   per-component P_compat.
+
+The whole causal chain **fragmentation → drift → mate limitation**
+enters at step 3 and comes out at steps 4 and 5: fragmented
+locations have small components → small drift-prone pools → fewer
+Fgs and lower pollen compatibility than a one-pool location of the
+same raw census would predict.
 
 ---
 
