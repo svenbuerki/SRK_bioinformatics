@@ -324,7 +324,7 @@ def draw_figure(stats: pd.DataFrame,
                      elinewidth=1.0, capsize=3, markersize=8, zorder=2)
         # Flip label to the left of the dot when the dot sits in the
         # right third of the axis, otherwise it clips.
-        label = f"{r['locationCode']}  (obs {r['obs_pcompat_mean']:.2f})"
+        label = r["locationCode"]
         if r["pred_phase5_pcompat_mean"] > 0.65 * hiB:
             axB.annotate(
                 label + "  ",
