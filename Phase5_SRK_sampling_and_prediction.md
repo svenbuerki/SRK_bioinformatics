@@ -17,7 +17,7 @@ predictions, then test the predictions with real seed data:
 - [Scientific goals](#scientific-goals) — the central hypothesis (a causal chain: fragmentation → drift → mate limitation) and how the framework tests it
 - **Part A** — [Model and predictions](#part-a--model-and-predictions) · data scope, species-wide P1 prior, finite-population model, and the Phase A predictions of SRK diversity and pollen compatibility per location (Step 30 Phase A outputs, Figures 4–6). *This is what we expect each location to look like — before we ever open a seed lot.*
 - **Part B** — [Sampling protocol derived from the predictions](#part-b--sampling-protocol-derived-from-the-predictions) · within-location pollen connectivity, per-mother seed count (Step 28), per-location mother count with private-allele floor (Step 29), and two-year design. *This is what the field team must do to test the Part A predictions.*
-- **Part C** — [Testing predictions with observed SRK data (Phase B)](#part-c--testing-predictions-with-observed-srk-data-phase-b) · preliminary EO-level validation with Phase 4 adult genotypes (§ C.0), mate-limitation regression, script behaviour, data-generation pipeline, and the BL4 pilot.
+- **Part C** — [Testing predictions with observed SRK data (Phase B)](#part-c--testing-predictions-with-observed-srk-data-phase-b) · preliminary EO-level validation with Phase 4 adult genotypes (§ C.0), mate-limitation regression, script behaviour, data-generation pipeline, and the BL5 pilot (§ C.6).
 - [Appendix — Out of scope / future work](#appendix--out-of-scope--future-work) · SI-escape permutation-test scaffold retained for pipeline-validation purposes only; not part of the Phase 5 scientific analysis.
 - [Output map](#output-map--quick-reference-grouped-by-phase) — filenames organised by phase.
 
@@ -175,7 +175,7 @@ sitting on top of this hierarchy:
 | **Effective mating pool size** (also called **N_fertile_effective**) | `N_fert_eff` | **component (primary); location (as a diagnostic)** | **Per component:** `component_N_fertile`, the fertile plants that share a single 50 m pollen pool — **this is the drift unit that drives per-component SRK diversity and per-component pollen compatibility.** **Per location:** `total_n_fertile × largest_component_share_50m`, a one-number *fragmentation diagnostic* used in Figure 2 to flag locations whose raw census is split across multiple components. The two numbers agree when the whole location is one component. |
 | Connectivity share | `largest_component_share_50m` | location, built from components | `N_fert_eff (location) ÷ total_n_fertile`. 1.0 = fully connected (no fragmentation); 0.3 = 70 % of the raw census is drift-irrelevant. **Fragmentation diagnostic only — the actual Phase A prediction loops over every component.** |
 | Fragmentation-aware mother target | `M_frag` | event, derived from components | For each event, the number of mothers to sample so that each 50 m connected component reaches 90 % allele-detection coverage, with a ≥ 1-per-event maternal-genotype floor. Sums across events to the location-level `M_frag_aware`. |
-| Rule 2 tetraploid seed cap | 15 seeds/mother | mother plant | Each seed contributes 2 paternal allele draws from the local pollen pool. 15 seeds/mother is the coupon-collector floor for a mother to see every allele in her component's pollen pool with 90 % probability. See § B.3. |
+| Rule 2 tetraploid seedling floor | 15 seedlings/mother | mother plant | Each genotyped seedling contributes 2 paternal allele draws from the local pollen pool. 15 seedlings/mother is the coupon-collector floor for a mother to see every allele in her mating pool with 90 % probability. At the project's 60 % greenhouse germination rate (§ B.3.2) the field collection target is `ceil(15 ÷ 0.60) = 25` seeds per mother. See § B.3. |
 | Species prior | `P1` | species-wide | The **32 Fgs identified across LEPA plus their empirical species-wide frequencies** — a 32-slot probability vector summing to 1, built from the Canu-amplicon L1 carrier inventory. FG001 fills 41 % of the vector, the next five Fgs ~25 % together, and the 20+ rare Fgs each < 2 %. "Draw an allele from P1" means pick a Fg with probability equal to its slot in this vector. Every per-location prediction draws from P1, so small locations lose the rare Fgs to drift by chance. |
 
 **Why components matter in one sentence.** Every per-location
@@ -615,6 +615,51 @@ adjusted number that every Phase A prediction relies on:
 biological input, it means `N_fertile_effective`. The raw census is
 Nature's biological potential; the effective count is what actually
 matters for reproduction under 50 m pollinator flight.
+
+#### Mating pool structure per location — the drift unit (Step 29c)
+
+The 50 m choice above is the knob that controls every downstream
+fragmentation metric. Before summarising the per-location structure
+as the single number `N_fertile_effective` (Figure 2), it is worth
+seeing the raw structure that `N_fert_eff` collapses: within each
+location, how many pollen pools does a plant belong to, and how big
+is each one?
+
+**Definition.** A **50 m connected component** is the Phase 5
+**mating pool**: the set of adult plants whose events are reachable
+from each other at the primary pollinator radius. Plants in the same
+mating pool share pollen; plants in different mating pools at the
+same location do not. The mating pool is the **drift unit** on which
+every Phase A prediction is built.
+
+**Build.** For each location, construct an event-level graph in
+which two events are connected if any pair of their plants sits
+within ≤ 50 m. Connected components of that graph are the location's
+mating pools. For each mating pool *c*, `component_N_fertile_c` is
+the sum of `n_fertile_e` across its events — the adult count that
+drives the per-component drift simulations in § A.6 and § A.8.
+`step29c_fragmentation_aware_sampling.py` writes the event →
+mating-pool lookup (`step29c_event_to_component_50m.tsv`);
+`step29d_mating_pool_structure.py` builds the display below.
+
+**Dataset-wide result.** 39 locations hold **101 distinct 50 m
+mating pools** (mean 2.6 pools per location, median 2, max 6).
+Mating-pool sizes span **1 adult (SI floor) → 420 adults**, median
+23 adults. **31 of 101 mating pools (31 %)** sit below the N = 8
+coupon-collector floor and **6 of 101 (6 %)** sit at the N = 1
+single-plant SI floor. BL5 tail (EO24 group) concentrates the small
+mating pools; BL1 holds the widest *within-location* spread
+(EO8, EO26-3 fragmented across many small pools).
+
+**Downstream dependence.** Every per-location prediction below is
+derived from this structure: Figure 2 collapses it to one number
+per location (`N_fert_eff`), Figure 2b shows an event-scale
+companion of the same spatial data, and Figures 3 and 5 run per-
+component simulations whose aggregation back to the location depends
+on this mating-pool decomposition.
+
+<a id="fig-1b"></a>
+![Figure 1b — Mating-pool structure per LEPA location. One row per locationID (not per locationCode; some locationCodes map to several distinct physical sites and carry an `[id N]` suffix). Rows stacked vertically and grouped by Bottleneck Lineage in canonical BL_ORDER (BL4 → BL5 → BL3 → BL1 → BL2). Each dot = one 50 m connected component (= one mating pool), placed at its `component_N_fertile` adult count on the log₂ x-axis; dot size scales with pool size. Row labels: `locationCode [id N] (K pools, X total adults)`. **Red dotted line: N = 1** = single-plant SI floor; **grey dashed line: N = 8 plants = 32 tetraploid allele copies** = coupon-collector floor for recovering the 32-allele species pool. Source: `step29d_mating_pool_structure.py`. Data: [`step29d_mating_pool_summary.tsv`](tables/Phase5/step29d_mating_pool_summary.tsv).](figures/Phase5/step29d_mating_pool_structure.png)
 
 <a id="fig-2"></a>
 ![Figure 2 — `N_fertile_effective` per LEPA location, panelled by Bottleneck Lineage in canonical BL_ORDER. Within each BL, locations sorted by `N_fert_eff` ascending. Y-axis labels give `locationCode (raw N, N_fert_eff)`. **Panel A** — raw census `total_n_fertile`, log scale. Nature's biological potential at each location. **Panel B** — `N_fert_eff = total_n_fertile × largest_component_share_50m`, log scale. Number of adults that actually share a 50 m mating pool. **Panel C** — connectivity share = Panel B ÷ Panel A, linear 0–1. Dashed line at 1.0 = fully connected (no fragmentation). Locations far to the left of 1.0 lose a substantial fraction of their raw census to spatial fragmentation. This is the single input that drives Figure 3 (diversity), Figure 4 (per-mother P_compat), and Figure 5 (fecundation). Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_N_fertile_effective.png)
@@ -1417,6 +1462,33 @@ locations under-sampled by the fragmentation-aware allocation (the 25
 mothers short at 6 locations in § B.4.3) are the most likely place
 that shortfall shows up. The 2026 top-up sampling addresses both.
 
+#### B.3.2 Field → lab correction — 60 % germination rate
+
+Part C genotypes **seedlings**, not seeds (design confirmed
+2026-10-03). LEPA seeds germinate at **≈ 60 %** under greenhouse
+conditions, so the Rule 2 target of 15 genotyped **seedlings** per
+mother translates to a field collection target of
+`ceil(15 ÷ 0.60) = 25` seeds per mother. The coupon-collector
+allele-detection floor in Figure 9 is a floor on the number of
+seedling genotypes delivered to the lab, not on the number of seeds
+extracted in the field.
+
+Totals under the fragmentation-aware allocation (§ B.4.2):
+
+- **Collect / germinate:** 505 mothers × 25 seeds = **12 625 seeds**.
+- **Expected after germination (at 60 %):** ~15 seedlings/mother × 505
+  = **~7 575 seedlings**.
+- **Genotype:** up to 15 seedlings per mother → **~7 575 seedling genotypes**.
+
+The germination rate is held in a single constant
+`GERMINATION_RATE = 0.60` in
+`step29c_fragmentation_aware_sampling.py`. The per-mother sampling
+TSV `step29c_partC_germplasmID_selection.tsv` now carries both
+`n_seeds_to_germinate = min(25, seeds_available)` and
+`n_seedlings_to_genotype = min(15, round(n_seeds_to_germinate · 0.60))`
+so the field protocol and the lab target are both auditable from one
+file.
+
 ### B.4 Per-location mother count — sampling design (Step 29)
 
 > **Note.** § B.4 and § B.4.1 below are the *reference / audit* view
@@ -1646,12 +1718,15 @@ variance is highest, which is where β₂ has the most identifiability.
 | Quantity | Value | Source |
 |---|---|---|
 | Primary pollinator radius | **50 m** | § A.5, [Figure 1](#fig-1), step29a sensitivity sweep |
-| Effective mating pool metric | **N_fert_eff** = census × 50 m largest-component share | § A.5.1, [Figure 2](#fig-2) |
-| Seeds per mother (tetraploid Rule 2) | **15 seeds** | § B.3, step28 |
-| Mother allocation per location | Fragmentation-aware `M_frag` (per 50 m component + ≥ 1 per event) | § B.4.2, step29c |
+| Drift unit | **50 m mating pool** = 50 m connected component of events; `component_N_fertile` adults per pool | § A.5, [Figure 1b](#fig-1b), step29c + step29d |
+| Rule 2 seedling-genotype floor | **15 seedlings/mother** | § B.3, step28 |
+| Field-side germination assumption | **60 %** | § B.3.2, step29c `GERMINATION_RATE` |
+| Seeds to germinate per mother | **25** (= ceil(15 ÷ 0.60)) | § B.3.2 |
+| Mother allocation per location | Fragmentation-aware `M_frag` (per 50 m mating pool + ≥ 1 per event) | § B.4.2, step29c |
 | **Total mothers across 39 locations** | **505** | step29c |
-| **Total seed genotypes** | **505 × 15 = 7 575 seeds** | Locked |
-| Coupon-collector target | 90 % probability of detecting every allele in each 50 m component | step28, step29c |
+| **Total seeds to germinate** | **505 × 25 = 12 625 seeds** | Locked |
+| **Total seedlings to genotype** | **~505 × 15 = ~7 575 seedlings** | Locked |
+| Coupon-collector target | 90 % probability of detecting every allele in each 50 m mating pool | step28, step29c |
 
 **Rationale — why these are the minimum.** Under tetraploid Rule 2
 (15 seeds/mother), each mother delivers 4 maternal + 30 paternal =
@@ -1680,21 +1755,28 @@ lab, and one for querying the event → component mapping.
    `M_frag` = number of mothers to sample at that event. Used by the
    field team when planning a new season's collection.
 2. [`Tables/Phase5/step29c_partC_germplasmID_selection.tsv`](tables/Phase5/step29c_partC_germplasmID_selection.tsv)
-   — the **lab recipe for Part C**. One row per SELECTED `germplasmID`
+   — the **lab recipe for Part C**. One row per selected `germplasmID`
    already in the LEPA DB, drawn from the field-team recipe using the
-   **50 m component target** (not per-event). Selection rule per
-   component: (i) enforce the ≥ 1-mother-per-event maternal-genotype
-   floor at every event that has germplasm in the DB; (ii) fill the
-   remaining `component_M_target − floor_count` slots from the
-   component's leftover mothers sorted by `seeds_available`
-   descending. Deterministic tie-break by `germplasmID`. Each selected
-   mother's seed lot gets `n_seeds_to_genotype = min(15, seeds_available)`.
-   Columns: `germplasmID`, `occurrenceID`, `eventID`, `locationID`,
-   `locationCode`, `seeds_available`, `n_seeds_to_genotype`,
-   `component_id_within_loc`, `component_M_target`,
-   `component_n_available_in_DB`, `component_gap`, `selection_reason`
-   (`floor` or `top_seeds`), `selection_priority_within_component`,
-   `event_M_frag`.
+   **50 m mating-pool target** (not per-event). Sorted
+   `EOID → locationID → component_id_within_loc → germplasmID`
+   (adopted 2026-10-03). Selection rule per mating pool: (i) enforce
+   the ≥ 1-mother-per-event maternal-genotype floor at every event
+   that has germplasm in the DB; (ii) fill the remaining
+   `component_M_target − floor_count` slots from the mating pool's
+   leftover mothers sorted by `seeds_available` descending.
+   Deterministic tie-break by `germplasmID`.
+   **Seedling-not-seed targets** — each row carries both
+   `n_seeds_to_germinate = min(25, seeds_available)` and
+   `n_seedlings_to_genotype = min(15, round(n_seeds_to_germinate · 0.60))`,
+   so the field protocol and the lab target are one join away.
+   Columns: `EOID`, `locationCode`, `locationID`,
+   `component_id_within_loc`, `germplasmID`, `occurrenceID`,
+   `eventID`, `seeds_available`, `seedlings_target`,
+   `n_seeds_to_germinate`, `n_seedlings_expected`,
+   `n_seedlings_to_genotype`, `n_seeds_to_genotype` (deprecated alias),
+   `component_M_target`, `component_n_available_in_DB`,
+   `component_gap`, `selection_reason` (`floor` or `top_seeds`),
+   `selection_priority_within_component`, `event_M_frag`.
 3. [`Tables/Phase5/step29c_event_to_component_50m.tsv`](tables/Phase5/step29c_event_to_component_50m.tsv)
    — the **event → 50 m component lookup**. One row per event,
    columns `locationID`, `locationCode`, `eventID`, `component_id_50m`,
@@ -2134,68 +2216,87 @@ mate-limitation results can be overlaid with the Genetic-Rescue-DB
 ISI / fruit-set phenotype to provide an independent line of evidence
 under Phase III of the wider project.
 
-### C.6 BL4 pilot study — one small + one large location
+### C.6 BL5 pilot study — EO48_7 (connected) + EO18-7_19 (fragmented)
 
 Before running Phase B across all 39 locations, we recommend a
-**pilot within Bottleneck Lineage 4 (BL4)** using two contrasting
-locations. BL4 is a good choice because it spans the whole range of
-LEPA slickspot sizes and internal connectivity and holds the second-
-biggest species SRK diversity share, so any Phase B signal in BL4 is
-a mate-limitation and fragmentation signal by construction.
+**two-location pilot within Bottleneck Lineage 5 (BL5)**: one
+**fully-connected** location (**EO48_7**, 98 adults in a single
+50 m mating pool, 9 mothers in the LEPA DB) paired with one
+**fragmented** location (**EO18-7_19**, 34 adults distributed across
+3 mating pools, 11 mothers in the DB). User-selected 2026-10-03
+(option A2 in
+[`Tables/Phase5/step29c_partC_BL5_pilot_candidates.tsv`](tables/Phase5/step29c_partC_BL5_pilot_candidates.tsv)).
 
-**The two pilot locations:**
+**Why BL5.** It is the LEPA Bottleneck Lineage with the **widest
+within-BL variation** in both census size and mating-pool structure
+(see § A.5 Figure 1b): BL5 holds the drift-collapsed tail (EO24
+group, 1 – 3 adult singletons) *and* the largest, most-connected
+locations (EO32_6 at 466 adults; EO48_7 at 98 adults in a single
+mating pool). A within-BL5 contrast therefore rules out between-BL
+noise while testing the full span of the fragmentation × drift axis
+the model predicts matters.
 
-| Attribute | **EO67** (pilot — small) | **EO27-1** (pilot — large) |
+**The two pilot locations.**
+
+| Attribute | **EO48_7** (connected) | **EO18-7_19** (fragmented) |
 |---|---|---|
-| Number of events (slickspots at this location) | 2 | 8 |
-| Total fertile adults (census) | 10 | 395 |
-| Effective N under 50 m connectivity | 6 | 116 |
-| Mothers with seed records in DB | **4** | **33** |
-| Seeds / mother (tetraploid Rule 2 cap) | 15 (budget-limited if lower) | 15 |
-| Total allele draws at this location | 4 × 4 + 4 × 30 = 136 draws | 33 × 4 + 33 × 30 = 1 122 draws |
-| **Predicted local pool size** (SRK alleles at this location) | ~8 alleles | ~27 alleles |
-| **Predicted local coverage** (of the alleles at this location) | **~100 %** ✓ | **~100 %** ✓ |
-| Predicted species-wide coverage (of 32 P1 alleles — biased against drifted-out alleles) | ~28 % | ~68 % |
-| Predicted random-mating compatibility (sporophytic Class I / II + empirical zygosity, § A.7-A.7) | mean **0.73**, 95 % CI [0.56, 0.88] — *"sustainable"* band at the mean, CI stays sustainable throughout | mean **0.78**, tight CI [0.72, 0.84] — solidly *"sustainable"* |
+| 50 m mating pools (`n_components_50m`) | **1** | **3** |
+| Total fertile adults | 98 | 34 |
+| Largest-pool `component_N_fertile` | 98 | 20 |
+| Mothers with seed records in DB | **9** | **11** |
+| Seedling-genotype target (Rule 2, § B.3.2) | 15 seedlings/mother | 15 seedlings/mother |
+| Seeds to germinate per mother (60 % germination) | 25 seeds | 25 seeds |
+| Predicted per-location pollen compatibility (sporophytic + empirical zygosity, § A.8) | **sustainable** — single-pool model's cleanest test case | **sustainable mean, wider CI** — three independent small-pool drift experiments averaged by `component_N_fertile` weight |
 
-**Reading the two coverage numbers.**
-The **local coverage** (~100 % at both pilot locations) is the biologically
-honest number: our seed genotyping will characterise essentially every
-SRK allele that is *physically at* EO67 and EO27-1. The **species-wide
-coverage** is systematically lower at small locations not because we
-are under-sampling but because drift has already removed most species
-alleles from those locations. For a mate-limitation pilot, the local
-coverage number is the relevant one — we are testing reproductive
-dynamics on the alleles that are present, not attempting to inventory
-the species pool.
+**What this specific pair tests.**
 
-**Why this pair is well-chosen for a pilot.** EO67 tests the
-**budget-limited / founder-effect regime** — small population, few
-mothers; the mean sporophytic + empirical-zygosity pollen
-compatibility sits near the species mean (0.78), and the 95 % CI
-[0.42, 0.87] stays inside the "sustainable" band. Any Phase C
-observation dropping this location out of sustainable would be
-decisive evidence of drift-driven mate limitation. EO27-1 tests the
-**aggregation regime** (many mothers, permit-realistic 33 mothers ×
-34 tetraploid draws per mother = 1 122 allele draws, easily crossing
-the A_target = 704 species threshold; the sporophytic + empirical-
-zygosity CI [0.59, 0.77] anchors the "sustainable" prediction).
-Both locations
-sit in the same BL, so their pilot outputs are directly comparable —
-a *within-BL* contrast that avoids between-BL confounds. The
-two-location pilot uses ≤ 555 seed genotypes total (< 5 % of the full
-2025 recipe of ~11 500 under § B.4.1, or ≤ 1 200 seeds and < 5 % of
-the ~25 000 total under the § B.4.2 fragmentation-aware allocation).
+- **EO48_7 — fully-connected regime** (single mating pool,
+  component_N_fertile = 98). Phase 5 predicts a sustainable location
+  because the location is unfragmented; the mating-pool-based
+  simulation reduces to a single pool. This location is the cleanest
+  test of the model's "no fragmentation → species mean" prediction.
+- **EO18-7_19 — fragmented regime** at a similar order of magnitude
+  for total adults (34) but split across 3 mating pools (20, 12, 2
+  adults — two pools above the N = 8 coupon-collector floor, one
+  below). The per-component simulation treats each as an independent
+  drift experiment; the comparison with EO48_7 isolates the pure
+  fragmentation effect from the raw-size effect.
+
+**Caveat on retrospective adult SRK data.** The two BL5 EOs that
+*do* have adult SRK genotypes from Phase 4 at n ≥ 10 (EO25 and EO18)
+are both split under the 500 m rule and sit in § C.0 only — they
+cannot yet be used at the Phase 5 location scale. So this pilot is a
+**seed-genotyping (Phase B) pilot**, not a retrospective-on-adults
+pilot like § C.0.a. The 2026 pilot can run as soon as seeds from
+EO48 and EO18-7 are collected and germinated.
+
+**Pilot cost.** 20 mothers × 25 seeds = **500 seeds to germinate**
+→ ~15 seedlings/mother × 20 = **~300 seedlings to genotype**
+at 60 % germination (§ B.3.2). That is **< 4 % of the full 2026
+genotyping budget** (12 625 seeds / ~7 575 seedlings) for a
+within-BL contrast with a clear a priori hypothesis.
+
+**Three options kept on file** (full table in
+[`Tables/Phase5/step29c_partC_BL5_pilot_candidates.tsv`](tables/Phase5/step29c_partC_BL5_pilot_candidates.tsv),
+generator `build_bl5_pilot_candidates.py`):
+
+| Option | Connected candidate | Fragmented / drift-sensitive candidate | Mothers in DB | Design note |
+|---|---|---|---:|---|
+| A1 | EO32_6 (5 pools, 466 adults) | EO25-B_21 (2 pools, 10 adults) | 38 + 7 | Maximum size contrast; drift-sensitive is small but not tiny. |
+| **A2 ★** | **EO48_7 (1 pool, 98 adults)** | **EO18-7_19 (3 pools, 34 adults)** | **9 + 11** | **User-recommended.** Isolates fragmentation × drift at matched order-of-magnitude total adults. |
+| A3 | EO18-7_17 (5 pools, 242 adults) | EO24-7_25 (1 pool, 3 adults) | 33 + 3 | Maximum biological contrast but drift-sensitive has only 3 adults — low genotyping statistical power. |
 
 **Field-team recipe for the pilot.** Under the § B.4.2 default, the
 authoritative per-event allocation is `M_frag` in
 [`step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv);
-filter to the pilot `locationID`s to isolate the two locations. The
-older
+filter to the pilot `locationID`s (EO48_7 → locationID 7, EO18-7_19
+→ locationID 19) to isolate the two locations. The lab recipe is
+[`step29c_partC_germplasmID_selection.tsv`](tables/Phase5/step29c_partC_germplasmID_selection.tsv),
+sorted `EOID → locationID → component → germplasmID`; the per-mother
+columns `n_seeds_to_germinate` (= 25) and `n_seedlings_to_genotype`
+(= 15 at 60 % germination) are already baked in. The older
 [`step29_field_team_sampling_recipe.tsv`](tables/Phase5/step29_field_team_sampling_recipe.tsv)
-is kept for reference / audit but no longer drives field effort — it
-needs to be regenerated against `M_frag` before the next field
-season.
+is kept for reference / audit but no longer drives field effort.
 
 **Companion tables for pilot review:**
 
@@ -2239,6 +2340,8 @@ or right-click → *Save link as…* to pull the TSV into your local pipeline.
 - [`step28_mothers_for_full_detection_by_bin.tsv`](tables/Phase5/step28_mothers_for_full_detection_by_bin.tsv) — uniform-model M for a 90 % chance of observing every one of K_local alleles, one row per event-size bin.
 - [`step28_mothers_for_full_detection_by_location.tsv`](tables/Phase5/step28_mothers_for_full_detection_by_location.tsv) — per-location `M_recommended` combining the coupon-collector bound with the private-allele floor (≥ 1 mother per event).
 - [`step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv) — per-event fragmentation-aware allocation under the 50 m connected-component decomposition; columns include `component_id`, `component_K`, `component_M_target`, `M_paternal_only`, `M_frag`.
+- [`step29c_partC_BL5_pilot_candidates.tsv`](tables/Phase5/step29c_partC_BL5_pilot_candidates.tsv) — § C.6 BL5 pilot candidate pairs (A1, A2 ★, A3) with per-location mating-pool structure, mother counts in the LEPA DB, and design rationale. One row per candidate.
+- [`step29d_mating_pool_summary.tsv`](tables/Phase5/step29d_mating_pool_summary.tsv) — § A.5 per-location mating-pool structure summary (n_mating_pools, largest/smallest/median pool size, pools below SI / coupon-collector floors). Feeds Figure 1b and the BL5 pilot candidate file.
 - [`step29c_sampling_comparison_per_location.tsv`](tables/Phase5/step29c_sampling_comparison_per_location.tsv) — per-location head-to-head of current (§ B.4.1) vs fragmentation-aware (§ B.4.2) M_recommended, with `n_components_50m`, `sum_M_paternal_only`, and `delta`.
 - [`step29_sampling_per_event.tsv`](tables/Phase5/step29_sampling_per_event.tsv) — per-event allocation.
 - [`step29_sampling_per_location.tsv`](tables/Phase5/step29_sampling_per_location.tsv) — per-location design table with connectivity-informed columns.

@@ -1000,7 +1000,7 @@ def plot_diversity_unbiased_vs_sampling(pred: pd.DataFrame,
               line at 0.90. Answers: how well does our sampling
               recover the truth?
     """
-    from srk_bl_constants import BL_COLORS, BL_ORDER, locationCode_to_bl
+    from srk_bl_constants import BL_COLORS, BL_ORDER, locationCode_to_bl, location_label_series
 
     K_species = len(prior)
     df = pred.copy()
@@ -1010,6 +1010,10 @@ def plot_diversity_unbiased_vs_sampling(pred: pd.DataFrame,
         else "M_achievable_location"
     df["M"] = df[m_col].astype(float)
     df["N_eff"] = df["N_fertile_effective"].astype(float)
+    # Number of 50 m mating pools at the location — the explicit
+    # link to Figure 2's per-location mating-pool structure.
+    df["n_pools"] = df.get("n_components_50m",
+                             pd.Series(1, index=df.index)).astype(int)
     # Total seeds recorded at each location in the LEPA DB — the raw
     # per-location input that drives Panel B (A_delivered = 4·M +
     # 2·total_seeds). Showing the total, not a per-mother mean, keeps
@@ -1072,13 +1076,15 @@ def plot_diversity_unbiased_vs_sampling(pred: pd.DataFrame,
         axA_row.axvline(K_species, color="#333", ls="--", lw=1.0, alpha=0.4)
         axA_row.set_xlim(0, K_species + 2)
         axA_row.set_ylim(-0.7, len(sub) - 0.3)
+        site_labels = location_label_series(sub)
         labels = [
-            f"{code}  (effective mating pool = {int(n)}, "
+            f"{label}  ({int(k)} mating pool{'s' if int(k) != 1 else ''}, "
+            f"{int(n)} adults, "
             f"mothers sampled = {int(m)}, "
             f"seeds recorded = {int(s)})"
-            for code, n, m, s in zip(
-                sub["locationCode"], sub["N_eff"], sub["M"],
-                sub["total_seeds"],
+            for label, k, n, m, s in zip(
+                site_labels, sub["n_pools"], sub["N_eff"],
+                sub["M"], sub["total_seeds"],
             )
         ]
         axA_row.set_yticks(y)
@@ -1181,7 +1187,7 @@ def plot_N_fertile_effective_per_location(locations: pd.DataFrame,
               lost ~80 % of their drift-relevant N to spatial
               fragmentation.
     """
-    from srk_bl_constants import BL_COLORS, BL_ORDER, locationCode_to_bl
+    from srk_bl_constants import BL_COLORS, BL_ORDER, locationCode_to_bl, location_label_series
 
     df = locations.copy()
     if "locationCode" not in df.columns:
@@ -1314,7 +1320,7 @@ def plot_prediction_fecundation(pcompat_per_loc: pd.DataFrame,
     grouped by BL, with the failed / struggling / sustainable traffic-light
     bands recalibrated against the sporophytic species mean.
     """
-    from srk_bl_constants import BL_COLORS, BL_ORDER, locationCode_to_bl
+    from srk_bl_constants import BL_COLORS, BL_ORDER, locationCode_to_bl, location_label_series
 
     df = pcompat_per_loc.copy()
     df["BL"] = locationCode_to_bl(df["locationCode"]).values
@@ -1373,11 +1379,17 @@ def plot_prediction_fecundation(pcompat_per_loc: pd.DataFrame,
             s=sizes, c=colour, edgecolor="white",
             linewidth=0.6, zorder=2,
         )
+        n_pools_col = sub.get(
+            "n_components_50m",
+            pd.Series(1, index=sub.index)).astype(int)
+        site_labels = location_label_series(sub)
         labels = [
-            f"{code}  (effective mating pool = {int(n)}, "
+            f"{label}  ({int(k)} mating pool{'s' if int(k) != 1 else ''}, "
+            f"{int(n)} adults, "
             f"mothers sampled = {int(m)})"
-            for code, n, m in zip(
-                sub["locationCode"],
+            for label, k, n, m in zip(
+                site_labels,
+                n_pools_col,
                 sub["N_fertile_effective"],
                 sub["M_mothers_in_db"],
             )
@@ -1443,7 +1455,7 @@ def plot_diversity_vs_pcompat(pred_div: pd.DataFrame,
     locations sit on or near this curve depending on how uneven their
     Fg-frequency distribution is.
     """
-    from srk_bl_constants import BL_COLORS, BL_ORDER, locationCode_to_bl
+    from srk_bl_constants import BL_COLORS, BL_ORDER, locationCode_to_bl, location_label_series
 
     m = pred_div.merge(
         pred_pc[["locationID", "predicted_P_compat_mean",
@@ -1946,10 +1958,10 @@ def main() -> None:
           f"{bands['struggling_max']:.4f}.")
     print(f"[step30] Wrote {bands_path}")
 
-    plot_N_fertile_effective_per_location(locations,
-        out_png=figures_dir / "step30_A_N_fertile_effective.png",
-        out_pdf=figures_dir / "step30_A_N_fertile_effective.pdf",
-        year=args.year)
+    # Legacy N_fertile_effective figure dropped (2026-10-03) — the
+    # per-location mating pool structure is now shown directly in
+    # step29d_mating_pool_structure.py, and the per-component drift
+    # simulations (Figures 3 and 4) are the authoritative display.
     plot_diversity_unbiased_vs_sampling(pred_div, prior,
         out_png=figures_dir / "step30_A_diversity_unbiased_vs_sampling.png",
         out_pdf=figures_dir / "step30_A_diversity_unbiased_vs_sampling.pdf",

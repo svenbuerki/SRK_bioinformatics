@@ -13,6 +13,15 @@ BL_ORDER                list of BLn strings, area-then-connectivity DESC.
 load_eo_to_bl(...)      map {EOcode: BL} from EO_group_BL_summary.csv
 locationCode_to_bl(...) map {locationCode: BL} — locationCode → base EO → BL
                         (locationCodes like "EO18-7" map to "EO18" → its BL).
+make_location_label(...) str — `{locationCode}_{locationID}` single-site
+                        display label. Project-wide convention adopted
+                        2026-10-03: every per-location row across every
+                        figure uses this label so sites are never
+                        confused when a locationCode is shared between
+                        multiple locationIDs (e.g. EO8 → EO8_27 /
+                        EO8_28 / EO8_29).
+location_label_series(...) pd.Series — vectorised form of the above for
+                        DataFrames.
 """
 from __future__ import annotations
 
@@ -108,3 +117,33 @@ def locationCode_to_bl(location_codes,
     codes = pd.Series(location_codes, dtype=str).reset_index(drop=True)
     bases = codes.map(base_eo)
     return bases.map(eo_to_bl)
+
+
+def make_location_label(location_code: str, location_id: int | str) -> str:
+    """Project-wide display label for a single Phase 5 location.
+
+    Returns `{location_code}_{location_id}`.
+
+    Rationale (adopted 2026-10-03). The DB has multiple distinct
+    physical sites that share one `locationCode` (EO8 covers four
+    locationIDs; EO18-7, EO26-3, EO27-1 each cover four; EO27 covers
+    three; EO26 covers two). Those sites are > 500 m apart and the
+    Phase 5 pipeline treats each `locationID` as a separate location
+    (correct), but the raw `locationCode` is ambiguous for display.
+    Joining code + locationID with `_` gives every row across every
+    figure (step29d, step30 Figures 3 / 4, step30b, step30c, step30d,
+    step30e) a unique, biologically interpretable label.
+    """
+    return f"{location_code}_{int(location_id)}"
+
+
+def location_label_series(df: pd.DataFrame,
+                           code_col: str = "locationCode",
+                           id_col:   str = "locationID") -> pd.Series:
+    """Vectorised `make_location_label` for a DataFrame.
+
+    Returns a Series of `{code}_{id}` strings aligned with `df`'s index.
+    """
+    return (df[code_col].astype(str).str.strip()
+            + "_"
+            + df[id_col].astype(int).astype(str))

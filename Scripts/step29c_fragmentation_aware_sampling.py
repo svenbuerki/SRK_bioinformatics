@@ -61,7 +61,15 @@ from step28_seed_sampling_per_mother import (
     K_pool,
     PLOIDY,
 )
-from srk_bl_constants import BL_COLORS, BL_ORDER, locationCode_to_bl
+from srk_bl_constants import (
+    BL_COLORS, BL_ORDER, locationCode_to_bl, base_eo,
+)
+
+# Field → lab yield assumption used for Part C sampling design.
+# Approximate LEPA germination rate under greenhouse conditions.
+# Updating this constant propagates through n_seeds_to_germinate /
+# n_seedlings_expected in step29c_partC_germplasmID_selection.tsv.
+GERMINATION_RATE = 0.60
 
 DEFAULT_TABLES = Path("Tables/Phase5")
 DEFAULT_FIGURES = Path("figures/Phase5")
@@ -345,26 +353,55 @@ def select_germplasm_for_partC(per_event_df: pd.DataFrame,
     selected["selection_priority_within_component"] = (
         selected.groupby(["locationID", "component_id_within_loc"]).cumcount() + 1)
 
-    # Cap seeds at what's available; target is 15 (tetraploid Rule 2).
-    selected["n_seeds_to_genotype"] = np.minimum(
+    # Part C genotyping is on SEEDLINGS, not seeds (user-confirmed
+    # 2026-10-03). The tetraploid Rule 2 coupon-collector floor remains
+    # 15 **seedlings** per mother; given a ~60 % germination rate we
+    # need to germinate ~ceil(15 / 0.60) = 25 seeds per mother to hit
+    # that seedling target in expectation. Columns:
+    #   seedlings_target          — Rule 2 target (15 seedlings)
+    #   n_seeds_to_germinate      — min(25, seeds_available)
+    #   n_seedlings_expected      — round(n_seeds_to_germinate * 0.60)
+    #   n_seedlings_to_genotype   — min(15, n_seedlings_expected)
+    seeds_to_germinate_target = int(np.ceil(
+        seeds_per_mother_target / GERMINATION_RATE))  # 25
+    selected["seedlings_target"] = seeds_per_mother_target
+    selected["n_seeds_to_germinate"] = np.minimum(
         selected["seeds_available"].astype(int),
+        seeds_to_germinate_target,
+    )
+    selected["n_seedlings_expected"] = np.rint(
+        selected["n_seeds_to_germinate"] * GERMINATION_RATE
+    ).astype(int)
+    selected["n_seedlings_to_genotype"] = np.minimum(
+        selected["n_seedlings_expected"],
         seeds_per_mother_target,
     )
+    # Backward-compat column (deprecated — kept for one release).
+    selected["n_seeds_to_genotype"] = selected["n_seedlings_to_genotype"]
+
+    # Project-wide EOID = base EO code (strips Phase 5 dash suffixes:
+    # EO18-7 → EO18, EO27RT → EO27, EO27-3 → EO27). The TSV's primary
+    # sort key is EOID; locationID disambiguates within-EO splits.
+    selected["EOID"] = selected["locationCode"].astype(str).map(base_eo)
 
     keep = [
-        "germplasmID", "occurrenceID", "eventID", "locationID",
-        "locationCode", "seeds_available", "n_seeds_to_genotype",
-        "component_id_within_loc", "component_M_target",
-        "component_n_available_in_DB", "component_gap",
-        "selection_reason", "selection_priority_within_component",
+        "EOID", "locationCode", "locationID",
+        "component_id_within_loc", "germplasmID", "occurrenceID",
+        "eventID", "seeds_available",
+        "seedlings_target", "n_seeds_to_germinate",
+        "n_seedlings_expected", "n_seedlings_to_genotype",
+        "n_seeds_to_genotype",
+        "component_M_target", "component_n_available_in_DB",
+        "component_gap", "selection_reason",
+        "selection_priority_within_component",
         "M_frag",
     ]
     keep = [c for c in keep if c in selected.columns]
     out = (selected[keep]
            .rename(columns={"M_frag": "event_M_frag"})
            .sort_values(
-               ["locationCode", "component_id_within_loc",
-                "selection_priority_within_component"])
+               ["EOID", "locationID", "component_id_within_loc",
+                "germplasmID"])
            .reset_index(drop=True))
     return out
 
@@ -557,8 +594,9 @@ def main() -> None:
     partC = select_germplasm_for_partC(ev, field_recipe_tsv)
     out_partC = DEFAULT_TABLES / "step29c_partC_germplasmID_selection.tsv"
     partC.to_csv(out_partC, sep="\t", index=False)
-    n_selected  = len(partC)
-    total_seeds = int(partC["n_seeds_to_genotype"].sum())
+    n_selected   = len(partC)
+    total_seeds  = int(partC["n_seeds_to_germinate"].sum())
+    total_slings = int(partC["n_seedlings_to_genotype"].sum())
     per_comp_gap = (partC.groupby(["locationID", "component_id_within_loc"])
                           ["component_gap"].first())
     n_comps_short  = int((per_comp_gap > 0).sum())
@@ -566,7 +604,9 @@ def main() -> None:
     m_frag_target  = int(ev["M_frag"].sum())
     print(f"[step29c] Wrote {out_partC}  "
           f"({n_selected} germplasmIDs selected of {m_frag_target} "
-          f"M_frag target; {total_seeds} seeds to genotype; "
+          f"M_frag target; {total_seeds} seeds to germinate at "
+          f"{GERMINATION_RATE:.0%} germination → "
+          f"{total_slings} seedlings to genotype; "
           f"{n_comps_short} components short by {total_shortage} mothers total)")
 
     DEFAULT_FIGURES.mkdir(parents=True, exist_ok=True)

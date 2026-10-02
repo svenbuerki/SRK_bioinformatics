@@ -54,7 +54,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from srk_bl_constants import BL_COLORS, BL_ORDER, locationCode_to_bl
+from srk_bl_constants import (
+    BL_COLORS, BL_ORDER, locationCode_to_bl, make_location_label,
+)
 from step28_seed_sampling_per_mother import (
     PLOIDY, K_SPECIES_FG, K_pool,
 )
@@ -191,9 +193,12 @@ def plot_event_K_by_location(ev_df: pd.DataFrame, loc_df: pd.DataFrame,
                 ax.scatter(vals, np.full(len(vals), i) + jitter,
                            s=12, color=colour, edgecolor="white",
                            linewidth=0.4, alpha=0.75, zorder=3)
-        labels = [f"{r['locationCode']}   (events = {int(r['n_events'])}, "
-                  f"adults = {int(r['total_n_fertile'])})"
-                  for _, r in sub_locs.iterrows()]
+        labels = [
+            f"{make_location_label(r['locationCode'], r['locationID'])}"
+            f"   (events = {int(r['n_events'])}, "
+            f"adults = {int(r['total_n_fertile'])})"
+            for _, r in sub_locs.iterrows()
+        ]
         ax.set_yticks(range(len(sub_locs)))
         ax.set_yticklabels(labels, fontsize=8)
         ax.set_ylim(-0.7, len(sub_locs) - 0.3)
