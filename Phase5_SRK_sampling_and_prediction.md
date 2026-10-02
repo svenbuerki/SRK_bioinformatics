@@ -1765,88 +1765,50 @@ seed data are available. It is not one of the two goal-linked tests
 (those need seed genotypes), but a sanity check that the model reproduces
 the data it was built on and does not fall over at any single EO.
 
-### C.0 Preliminary empirical validation at EO scale (Phase 4 adults)
+### C.0 EO-scale pre-check — background numbers for the split EOs
 
-**Question.** Before we invest in seed genotyping, does the sporophytic
-Class I / Class II + empirical-zygosity P_compat model (§ A.7)
-reproduce what we already observe in the adult population from the
-Canu-amplicon pipeline?
+The primary Part C validation runs at **Phase 5 location scale** on
+the three clean-overlap EOs (§ C.0.a / § C.0.b below). The other
+three Phase 4 EOs with n ≥ 10 functional-carrier adults — **EO18,
+EO25, EO27** — are **split under the 500 m rule** (see § A.2 /
+"Within-EO location split") and cannot yet be remapped to Phase 5
+locationCodes without an `Individual → germplasmID → eventID`
+join. Until that remap lands, their observed-vs-predicted pollen
+compatibility is reported here at EO scale as a background
+diagnostic, not a figure.
 
-**Data.** Per-individual SRK genotypes from `Tables/Phase4/step23_individual_allele_genotypes_with_nulls.tsv`
-— 368 tetraploid individuals across 23 Elemental Occurrences (EOs).
-Each individual carries 4 SRK copies (functional alleles plus null
-copies where SI has decayed). The allele → Fg mapping is the same one
-that P1 was built from (`Tables/Phase5/step26i_L1_carrier_inventory.tsv`).
-Six EOs meet the inclusion threshold of n ≥ 10 individuals with at
-least one functional copy: **EO76 (n = 76), EO70 (n = 74), EO27 (n = 61),
-EO25 (n = 51), EO18 (n = 39), EO67 (n = 37)** — 338 individuals in total.
+**Setup.** Per-individual SRK genotypes from
+`Tables/Phase4/step23_individual_allele_genotypes_with_nulls.tsv`.
+For each EO, observed per-mother pollen compatibility uses fathers
+drawn from the **observed local Fg frequency vector**; predicted uses
+the species-wide P1 prior. Mothers are held fixed between the two.
+Both use the sporophytic Class I / II dominance rules from § A.7.3
+and the empirical LEPA zygosity distribution from § A.7.3a.
+Confidence intervals come from a mother-resampling bootstrap.
 
-**Design.** For each of the six EOs, two per-mother pollen
-compatibilities are computed by Step 30 Part C over the same set of
-observed mothers, changing only the father-drawing distribution:
+**Current numbers for the three split EOs** (from `step30c_srk_validation_at_eo_level.py`):
 
-- **Observed P_compat** — real mothers × simulated fathers drawn from
-  the **observed local Fg frequency vector at that EO**.
-- **Predicted P_compat** — real mothers × simulated fathers drawn from
-  the **species-wide P1 prior** (ignoring per-EO drift).
+| EO | adults | Observed P_compat (95 % CI) | Predicted P_compat (95 % CI) | Interpretation |
+|---|---:|---|---|---|
+| EO27 | 61 | 0.77 (0.73–0.80) | 0.80 (0.77–0.84) | CIs overlap — model passes at EO scale |
+| EO25 | 51 | 0.77 (0.74–0.80) | 0.80 (0.77–0.84) | CIs overlap — model passes at EO scale |
+| EO18 | 39 | 0.69 (0.64–0.74) | 0.75 (0.71–0.79) | Mild drift signal, CIs touch |
 
-Both use the identical Class I / II dominance rules from § A.7.3 and
-the empirical LEPA zygosity distribution from § A.7.3a. The comparison
-therefore isolates the effect of **local Fg frequency drift** on
-random-mating compatibility, holding the mothers themselves fixed.
-Per-EO 95 % confidence intervals come from a mother-resampling
-bootstrap with the father pool re-drawn each replicate.
+The three clean-overlap EOs (EO67, EO70, EO76) are **not** reported
+here — they are promoted to § C.0.a at Phase 5 location scale and
+decomposed in § C.0.b.
 
-**Result — the model reproduces four of six EOs and cleanly flags a
-biological outlier.** Species-mean P_compat under the empirical
-zygosity model is 0.78, matching § A.7. Four EOs — EO76, EO27, EO25,
-EO67 — sit on the 1:1 diagonal within their 95 % intervals (Fig. C.0,
-panel A), confirming that local frequency drift at those EOs is mild
-enough not to shift random-mating compatibility away from the
-species-wide expectation.
-
-**EO70 is still the clearest outlier**: observed P_compat = 0.53 vs
-predicted 0.70 — a 0.17-unit shortfall, right at the boundary between
-the struggling and sustainable bands under the new 0.52 threshold.
-Not a model failure — at EO70 the local Fg pool is skewed enough that
-real mothers overlap far more with their neighbours' expressed alleles
-than P1 would predict. **EO18 and EO67** show milder drift in the same
-direction (observed ~0.69-0.70 vs predicted ~0.75-0.76). All three
-are candidates for future intervention: they are places where the
-sporophytic model correctly diagnoses reduced compatibility from drift
-alone, without needing any seed data.
-
-**Panel B — zygosity distributions per EO.** The distinct-identity
-distribution at each EO tracks the species-wide 66 / 32 / 2 %
-observation from Step 23 fairly well, with one exception: EO25 shows
-substantially more heterozygous individuals (49 % carry two distinct
-identities, versus 32 % species-wide), which is consistent with EO25
-sitting exactly on the diagonal in panel A — its Fg pool is closer to
-being drift-free than the average EO.
-
-**Interpretation and caveats.**
-
-- P1 was built from these same individuals, so the species mean is
-  guaranteed to line up on average — this comparison does not test the
-  model's absolute calibration, but its **robustness to per-EO drift**.
-- The scatter and the pattern of deviations (three EOs lower than
-  predicted, none higher; magnitudes ordered by the intuitive severity
-  of drift) is consistent with the model behaving correctly under
-  realistic local skew.
-- EO ≠ location. Locations sit at a finer spatial scale. Once seed
-  genotypes are in hand (Phase B), § C.1 rerun at the *location* scale
-  will supersede this preliminary check.
-- No formal statistical test with n = 6 EOs — this is a **visual +
-  quantitative validation** that the model is fit to run against seed
-  data.
+**Caveat.** P1 was built from these same individuals, so species-mean
+alignment is guaranteed; what this comparison tests is **robustness
+to per-EO drift**, not absolute calibration. Once the split EOs can
+be remapped to Phase 5 locationCodes, they will join § C.0.a / § C.0.b
+and this background section will fold into the output map.
 
 **Outputs.**
 
 - Table: `tables/Phase5/step30_C_pcompat_validation_at_eo.tsv` — one
-  row per EO with observed + predicted P_compat mean and 95 % CI,
+  row per EO, with observed + predicted P_compat mean and 95 % CI,
   observed Class I mass, and observed distinct-identity distribution.
-- Figure: `figures/Phase5/step30_C_pcompat_observed_vs_predicted.png`
-  — the two-panel diagnostic described above.
 - Script: `step30c_srk_validation_at_eo_level.py`.
 
 ### C.0.a Part C anchor at Phase 5 location scale (clean-overlap EOs)
@@ -1893,24 +1855,16 @@ and keeps most mothers compatible even with limited local diversity.
 
 - Table: `tables/Phase5/step30_B_partC_clean_overlap_per_location.tsv`
   — one row per clean location with observed vs Phase 5 predicted
-  P_compat, observed vs Phase 5 predicted Fg count, and the no-drift
-  upper bound at the adult sample size.
+  pollen compatibility, observed vs Phase 5 predicted distinct allele
+  count, and the no-drift upper bound at the adult sample size.
 - Table: `tables/Phase5/step30_B_partC_clean_overlap_fg_frequencies.tsv`
-  — long form (locationCode × Fg) with observed f, species-wide P1 f,
-  and present/absent flag.
-- Figure: `figures/Phase5/step30_B_partC_clean_overlap.png` — three
-  panels ordered to follow the causal chain. **Panel A** — SRK
-  diversity predicted vs observed, 1:1 diagonal, ceiling at 32 Fgs.
-  **Panel B** — pollen compatibility predicted vs observed with
-  traffic-light bands. **Panel C** — **per-Fg drift residual**
-  `f_observed − f_P1` per location, one row each, Fgs sorted
-  species-wide-common → rarest; green bars = enriched (drift
-  favoured), red bars = depleted, × markers = absent (lost
-  entirely). This is the per-location drift fingerprint: EO70 shows
-  classical FG001 enrichment (+21 %) with 26/32 Fgs absent; EO67
-  shows a founder-effect-like signature with normally-rare FG018 /
-  FG023 elevated instead of the common Fgs.
+  — long form (locationCode × allele) with observed f, species-wide
+  P1 f, and present/absent flag.
+- Figure 10: `figures/Phase5/step30_B_partC_clean_overlap.png` — see
+  below.
 - Script: `step30d_partC_clean_overlap.py`.
+
+![Figure 10 — Phase 5 Part C anchor at the three clean-overlap EOs (EO67, EO70, EO76; 1:1 with a Phase 5 locationCode). Panel order follows the biological flow: SRK diversity → pollen compatibility → per-allele drift residual. **Panel A** — predicted vs observed number of distinct SRK alleles per location (ceiling = 32), 1:1 diagonal; EO67 sits on the diagonal, EO70 and EO76 fall far below (6/32 and 9/32 observed). **Panel B** — predicted vs observed pollen compatibility under random mating, with the traffic-light background bands (red = failed < 0.26, amber = struggling < 0.52, green = sustainable ≥ 0.52). EO67 and EO76 near the diagonal; EO70 is the clear outlier (observed 0.53 vs predicted 0.78). **Panel C** — allele frequency residual per allele per location (one row each), alleles sorted by species-wide frequency most-common → rarest; **green = positive residual (observed > species-wide)**, **red = negative (depleted)**, **× = absent at this location**. The residual exposes the drift signature that the raw-frequency plot blurred — EO70 shows classical FG001 (+21 %) and FG024 (+18 %) enrichment with 26/32 alleles absent; EO76 has milder enrichment of FG012 / FG010; EO67 elevates the normally-rare FG018 and FG023 instead of the common alleles — a founder-effect signature. Source: `step30d_partC_clean_overlap.py`.](figures/Phase5/step30_B_partC_clean_overlap.png)
 
 **Why P1 is empirical, not uniform.** A uniform-frequency P1
 (Dirichlet(α = 1) over the 32 Fgs, equivalent to the P0 "uninformative"
@@ -1990,9 +1944,11 @@ mechanistic structure.
   — per-location diversity trigger + three single-swap pollen
   compatibility counterfactuals with bootstrap 95 % CIs + driver
   fractions.
-- Figure: `figures/Phase5/step30_B_partC_hypothesis_decomposition.png`
-  — grouped bar chart per location.
+- Figure 11: `figures/Phase5/step30_B_partC_hypothesis_decomposition.png`
+  — see below.
 - Script: `step30e_pcompat_hypothesis_decomposition.py`.
+
+![Figure 11 — Competing-hypothesis decomposition of per-location pollen compatibility, triggered by the SRK diversity discrepancy in Figure 10 Panel A. For each clean-overlap location (EO67, EO70, EO76) five pollen-compatibility values are shown from the same simulation (sporophytic Class I / II + empirical zygosity, 800 candidate fathers per mother, observed mother genotypes held fixed), differing only in which part of the father-drawing distribution is swapped to the species-wide reference. **Green — Predicted (species-wide):** fathers from P1 + species-wide zygosity. **Black — Observed:** fathers from observed local allele frequencies and observed local zygosity. **Blue — Swap within-class spread:** keep observed Class I and Class II total masses, reshape the within-class spread to P1 (isolates drift concentration). **Red — Swap Class I / II balance:** keep within-class shape observed, rescale class totals to species-wide (isolates between-class rescue). **Yellow — Swap zygosity:** keep observed allele frequencies, swap father zygosity to species-wide 66/32/2 % (isolates the per-mother expressed-set channel). Error bars = bootstrap 95 % CI. Traffic-light bands shaded in the background; dashed grey line = species-wide pollen compatibility 0.78. **Gold star** marks the dominant single-factor explanation of the Predicted → Observed gap at each location. Reading rules: a blue/red/yellow bar jumping toward green = that factor caused the gap; staying next to black = not involved; dropping below black = **buffering** (observed state better than species-wide). **EO70** — classical within-class drift collapse (FG024 absorbs 35 % of pool). **EO67** — small deficit explained by within-class spread; zygosity slightly buffering. **EO76** — small deficit despite 23/32 alleles lost; **zygosity actively buffers** (yellow drops below black), and within-class spread overshoots because the specific alleles present at EO76 are better-spread than drift-only P1 would deliver. Source: `step30e_pcompat_hypothesis_decomposition.py`.](figures/Phase5/step30_B_partC_hypothesis_decomposition.png)
 
 ### C.1 Test 1 — Mate-limitation regression (goals 1 + 2)
 
@@ -2316,13 +2272,17 @@ or right-click → *Save link as…* to pull the TSV into your local pipeline.
 
 **Phase A validation (adult SRK genotypes from Phase 4 — Part C § C.0):**
 
-- [`step30_C_pcompat_validation_at_eo.tsv`](tables/Phase5/step30_C_pcompat_validation_at_eo.tsv) — per-EO observed vs predicted pollen compatibility (n ≥ 10 individuals), observed Class I mass, and observed distinct-identity distribution.
-- [`step30_C_pcompat_observed_vs_predicted.pdf`](figures/Phase5/step30_C_pcompat_observed_vs_predicted.pdf) / [`.png`](figures/Phase5/step30_C_pcompat_observed_vs_predicted.png) — two-panel EO-scale diagnostic (observed vs predicted P_compat + observed zygosity distribution per EO).
-- [`step30_B_partC_clean_overlap_per_location.tsv`](tables/Phase5/step30_B_partC_clean_overlap_per_location.tsv) — § C.0.a Part C anchor at Phase 5 location scale for the three clean-overlap EOs (EO67, EO70, EO76 — 187 adults). Observed vs Phase 5 predicted P_compat, observed vs Phase 5 predicted Fg count, and the no-drift upper bound at the adult sample size.
-- [`step30_B_partC_clean_overlap_fg_frequencies.tsv`](tables/Phase5/step30_B_partC_clean_overlap_fg_frequencies.tsv) — long form, one row per (clean locationCode × Fg) with observed f, species-wide P1 f, and present/absent flag.
-- [`step30_B_partC_clean_overlap.pdf`](figures/Phase5/step30_B_partC_clean_overlap.pdf) / [`.png`](figures/Phase5/step30_B_partC_clean_overlap.png) — three-panel figure: observed vs Phase 5 predicted P_compat per location, observed vs predicted Fg count with the no-drift upper bound overlay, and observed Fg frequency spectrum vs P1.
-- [`step30_B_partC_hypothesis_decomposition.tsv`](tables/Phase5/step30_B_partC_hypothesis_decomposition.tsv) — § C.0.b per-location decomposition: diversity trigger (observed vs Phase 5 predicted allele counts), observed + three single-swap counterfactual pollen compatibility estimates, driver fractions for within-class spread, Class I/II balance, zygosity.
-- [`step30_B_partC_hypothesis_decomposition.pdf`](figures/Phase5/step30_B_partC_hypothesis_decomposition.pdf) / [`.png`](figures/Phase5/step30_B_partC_hypothesis_decomposition.png) — § C.0.b grouped bar chart.
+**Primary Phase A validation — § C.0.a + § C.0.b** (clean-overlap EOs at Phase 5 location scale):
+
+- [`step30_B_partC_clean_overlap_per_location.tsv`](tables/Phase5/step30_B_partC_clean_overlap_per_location.tsv) — § C.0.a one row per clean location (EO67, EO70, EO76 — 187 adults). Observed vs Phase 5 predicted pollen compatibility, observed vs Phase 5 predicted distinct allele count, no-drift upper bound at the adult sample size.
+- [`step30_B_partC_clean_overlap_fg_frequencies.tsv`](tables/Phase5/step30_B_partC_clean_overlap_fg_frequencies.tsv) — long form, one row per (clean locationCode × allele) with observed f, species-wide P1 f, and present/absent flag.
+- [`step30_B_partC_clean_overlap.pdf`](figures/Phase5/step30_B_partC_clean_overlap.pdf) / [`.png`](figures/Phase5/step30_B_partC_clean_overlap.png) — Figure 10: three-panel per-location figure (SRK diversity + pollen compatibility + per-allele drift residual).
+- [`step30_B_partC_hypothesis_decomposition.tsv`](tables/Phase5/step30_B_partC_hypothesis_decomposition.tsv) — § C.0.b decomposition: diversity trigger (observed vs Phase 5 predicted allele counts), observed + three single-swap counterfactual pollen compatibility estimates, driver fractions for within-class spread, Class I/II balance, zygosity.
+- [`step30_B_partC_hypothesis_decomposition.pdf`](figures/Phase5/step30_B_partC_hypothesis_decomposition.pdf) / [`.png`](figures/Phase5/step30_B_partC_hypothesis_decomposition.png) — Figure 11: grouped bar chart with gold-star markers on the dominant explanation per location.
+
+**Background diagnostic for split EOs — § C.0** (EO-scale pending Phase 5 remap):
+
+- [`step30_C_pcompat_validation_at_eo.tsv`](tables/Phase5/step30_C_pcompat_validation_at_eo.tsv) — per-EO observed vs predicted pollen compatibility for EO18, EO25, EO27 (clean-overlap EOs are now in the two files above instead). Observed Class I mass + distinct-identity distribution per EO. No companion figure; see § C.0 for the three-row result table.
 
 ### Phase B — Post-genotyping (requires observed seed genotypes)
 
