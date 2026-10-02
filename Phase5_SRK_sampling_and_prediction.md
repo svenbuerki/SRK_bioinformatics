@@ -30,7 +30,7 @@ alleles per tetraploid plant × 8 plants = 32 copies;
 simulate genetic drift, aggregate SRK diversity by set union
 across pools ([Figure 3](#fig-3)), and compute pollen compatibility
 as a size-weighted mean under the **sporophytic Class I / Class II
-+ empirical zygosity** model ([Figure 4](#fig-4),
+model with empirical zygosity** ([Figure 4](#fig-4),
 [Figure 5](#fig-5)).
 
 <span style="color:#777"><strong>Result + interpretation.</strong></span> Comparing predictions
