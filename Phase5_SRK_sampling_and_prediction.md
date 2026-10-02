@@ -19,9 +19,10 @@ flight — and quantifies within-location **fragmentation**. These two
 spatial descriptors drive the predictions of **SRK allele diversity**
 and **random-mating pollen compatibility** — the two metrics that
 jointly determine whether mate limitation operates at a location.
-Locations hold 1–6 mating pools each; **31 of 101 pools sit below
-the 8-plant coupon-collector floor** for the 32-allele species pool
-([Figure 1b](#fig-1b)).
+Locations hold 1–6 mating pools each; **31 of 101 pools hold fewer
+than the 8 plants required to physically carry the species-wide
+pool of 32 SRK alleles** (4 alleles per tetraploid plant × 8 plants
+= 32 copies; [Figure 1b](#fig-1b)).
 
 **Methodology.** For each mating pool we simulate drift from the
 species-wide 32-allele empirical prior P1, aggregate SRK diversity
