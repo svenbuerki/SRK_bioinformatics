@@ -274,8 +274,7 @@ def draw_figure(stats: pd.DataFrame,
                             - r["pred_phase5_distinct_Fgs"]]],
                      fmt="s", color=COLOUR_OBS, ecolor="#999999",
                      elinewidth=1.0, capsize=3, markersize=8, zorder=2)
-        label = (f"{r['locationCode']}  (n={int(r['n_functional_carriers'])}, "
-                 f"obs {int(r['obs_distinct_Fgs'])}/{n_fg})")
+        label = r["locationCode"]
         if r["pred_phase5_distinct_Fgs"] > 0.65 * hiA:
             axA.annotate(
                 label + "  ",
@@ -287,11 +286,13 @@ def draw_figure(stats: pd.DataFrame,
                 xy=(r["pred_phase5_distinct_Fgs"], r["obs_distinct_Fgs"]),
                 fontsize=9, va="center", ha="left")
     axA.set_xlim(0, hiA); axA.set_ylim(0, hiA)
-    axA.set_xlabel("Phase 5 predicted (union across 50 m components)",
+    axA.set_xlabel("Predicted number of distinct SRK alleles",
                    fontsize=10)
-    axA.set_ylabel("Observed in adults (distinct Fgs)", fontsize=10)
-    axA.set_title(f"A  SRK diversity per location (ceiling = {n_fg} Fgs)",
-                   fontsize=11, loc="left")
+    axA.set_ylabel("Observed number of distinct SRK alleles",
+                   fontsize=10)
+    axA.set_title(
+        f"A  SRK allele diversity per location (ceiling = {n_fg} alleles)",
+        fontsize=11, loc="left")
     axA.spines["top"].set_visible(False)
     axA.spines["right"].set_visible(False)
 
@@ -336,10 +337,13 @@ def draw_figure(stats: pd.DataFrame,
                 xy=(r["pred_phase5_pcompat_mean"], r["obs_pcompat_mean"]),
                 fontsize=9, va="center", ha="left")
     axB.set_xlim(0, hiB); axB.set_ylim(0, hiB)
-    axB.set_xlabel("Phase 5 predicted (component-weighted mean)",
-                   fontsize=10)
-    axB.set_ylabel("Observed in adults", fontsize=10)
-    axB.set_title("B  Pollen compatibility per location",
+    axB.set_xlabel(
+        "Predicted pollen compatibility under random mating",
+        fontsize=10)
+    axB.set_ylabel(
+        "Observed pollen compatibility",
+        fontsize=10)
+    axB.set_title("B  Pollen compatibility under random mating",
                    fontsize=11, loc="left")
     axB.spines["top"].set_visible(False)
     axB.spines["right"].set_visible(False)
@@ -382,8 +386,9 @@ def draw_figure(stats: pd.DataFrame,
         if ax_i is axC_rows[-1]:
             ax_i.set_xticklabels(prior_order, rotation=90, fontsize=7)
             ax_i.set_xlabel(
-                "32 Fgs, sorted by species-wide (P1) frequency, "
-                "most-common → rarest. × marker = Fg absent at this location.",
+                "32 SRK alleles, sorted by species-wide frequency "
+                "(most-common → rarest).  × marker = allele absent at "
+                "this location.",
                 fontsize=9)
         else:
             ax_i.set_xticklabels([])
@@ -392,10 +397,16 @@ def draw_figure(stats: pd.DataFrame,
         obs_fgs = int(stats.set_index("locationCode").loc[loc,
                                                            "obs_distinct_Fgs"])
         ax_i.text(0.995, 0.90,
-                   f"{loc}  (n={n_fun} adults, {obs_fgs}/{n_fg} Fgs present)",
+                   f"{loc}  (n={n_fun} adults, {obs_fgs}/{n_fg} alleles present)",
                    transform=ax_i.transAxes,
                    fontsize=10, ha="right", va="top", fontweight="bold")
-        ax_i.set_ylabel("f_obs − f_P1", fontsize=9)
+        # Shared y-axis label — attach it to the middle row only so
+        # the three stacked rows read as one axis (fontsize 10 since
+        # it is the single label for all three).
+        if ax_i is axC_rows[len(axC_rows) // 2]:
+            ax_i.set_ylabel(
+                "Allele frequency residual (observed − species-wide)",
+                fontsize=10)
         ax_i.spines["top"].set_visible(False)
         ax_i.spines["right"].set_visible(False)
 
@@ -406,8 +417,8 @@ def draw_figure(stats: pd.DataFrame,
         ax_i.set_ylim(-y_lim, y_lim)
 
     axC_rows[0].set_title(
-        "C  Drift residual per Fg per location  "
-        "(green = observed > P1; red = observed < P1; × = absent)",
+        "C  Allele frequency residuals per location — drift signature  "
+        "(green = enriched vs species-wide, red = depleted)",
         fontsize=11, loc="left")
 
     fig.suptitle(
@@ -416,7 +427,7 @@ def draw_figure(stats: pd.DataFrame,
         f"{bands['species_mean']:.3f}",
         fontsize=12, y=0.995,
     )
-    fig.subplots_adjust(left=0.07, right=0.98, top=0.94, bottom=0.08)
+    fig.subplots_adjust(left=0.09, right=0.98, top=0.94, bottom=0.08)
     fig.savefig(out_png, dpi=200)
     fig.savefig(out_pdf)
     plt.close(fig)

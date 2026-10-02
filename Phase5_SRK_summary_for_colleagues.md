@@ -201,7 +201,7 @@ location, given that a pollinator's flight radius is finite?
 connected if they are within `R_primary = 50 m` of each other; extract
 the largest connected component; define
 `N_fertile_effective_50m = N_census × (largest-component share)`. The
-50 m primary radius is validated in the sensitivity sweep (Figure 2):
+50 m primary radius is validated in the sensitivity sweep (Figure 1):
 connectivity plateaus at ≥ 75 m; sampling cost stabilises at 75–100 m;
 predicted P_compat is radius-independent under empirical zygosity.
 
@@ -211,7 +211,7 @@ because their census is spread across several slickspots more than
 50 m apart. This connectivity factor is what pulls `N_fertile`
 downstream in the P_compat and fragmentation calculations.
 
-![Figure 2 — Pollinator-radius sensitivity sweep. Four panels showing how connectivity, fragmentation-aware sampling cost, predicted P_compat, and the sustainable-band fraction of locations change across radii from 10 to 200 m. Connectivity plateaus at ≥ 75 m and P_compat is radius-independent under empirical zygosity, justifying 50 m as the primary radius.](figures/Phase5/step30_A_radius_sensitivity.png)
+![Figure 1 — Pollinator-radius sensitivity sweep. Four panels showing how connectivity, fragmentation-aware sampling cost, predicted P_compat, and the sustainable-band fraction of locations change across radii from 10 to 200 m. Connectivity plateaus at ≥ 75 m and P_compat is radius-independent under empirical zygosity, justifying 50 m as the primary radius.](figures/Phase5/step30_A_radius_sensitivity.png)
 
 ---
 
@@ -251,9 +251,8 @@ number that every Phase A per-location prediction is built on:
   simulated on a local Fg pool sized by `4 × N_fert_eff`. Small
   `N_fert_eff` → skewed local frequencies → mothers overlap more
   with candidate fathers.
-- **Figure 5 (§ 30.3)** — event-scale and location-scale
-  fragmentation indices decompose into the same shrinkage factor
-  used to compute `N_fert_eff`.
+- **Figure 2b** — event-scale box plot of pollen-donor reachability
+  per event decomposes the same spatial data at a finer scale.
 - **§ B.4.2 fragmentation-aware sampling** — the reason
   22 / 39 locations need MORE mothers under the honest allocation
   is the same 50 m connectivity shrinkage exposed here.
@@ -263,7 +262,39 @@ it means `N_fert_eff`. The raw census is Nature's biological
 potential; the effective count is what actually matters for
 reproduction under 50 m pollinator flight.
 
-![Figure — `N_fertile_effective` per LEPA location, panelled by Bottleneck Lineage in BL_ORDER. Y-axis labels give `locationCode (raw N, N_fert_eff)`. **Panel A** — raw census, log scale. Nature's biological potential. **Panel B** — `N_fert_eff = raw N × largest_component_share_50m`, log scale. Adults that actually share a 50 m mating pool. **Panel C** — connectivity share = Panel B ÷ Panel A. Dashed line at 1.0 = no fragmentation. This is the single input that drives Figures 3, 4, and 5.](figures/Phase5/step30_A_N_fertile_effective.png)
+![Figure 2 — `N_fertile_effective` per LEPA location, panelled by Bottleneck Lineage in BL_ORDER. Y-axis labels give `locationCode (raw N, N_fert_eff)`. **Panel A** — raw census, log scale. Nature's biological potential. **Panel B** — `N_fert_eff = raw N × largest_component_share_50m`, log scale. Adults that actually share a 50 m mating pool. **Panel C** — connectivity share = Panel B ÷ Panel A. Dashed line at 1.0 = no fragmentation. This is the single input that drives the Phase A predictions.](figures/Phase5/step30_A_N_fertile_effective.png)
+
+### Event-scale companion — pollen-donor reachability per event
+
+Figure 2 reduces each location to one connectivity number. The
+same spatial data also carries event-scale texture: within a given
+location, how uniform is each event's reachable neighbourhood?
+
+**Approach — purely spatial, no allele frequencies.** For every
+event, count `N_reachable_50m = Σ N_fertile in other events within
+50 m`: the number of pollen-donor plants a flower on that event
+could reach at the 50 m pollinator range. **One box plot per
+location** summarises its events' `N_reachable_50m` distribution,
+with locations stacked vertically by Bottleneck Lineage.
+
+**How to read it.**
+- **Where a box sits on the x-axis** → typical event-scale neighbourhood size.
+- **How wide the box is / how long the whiskers are** → how uniform the location's events are. A narrow box = events have similar neighbourhoods; a wide box = some events are well-connected while others sit alone.
+- **The red dotted line (N = 1)** = the single-plant SI floor: a flower on this event has nobody to mate with.
+- **The grey dashed line (N = 8 plants = 32 tetraploid allele copies)** = the coupon-collector floor for the 32-Fg species pool. Events to the left of it have fewer reachable allele copies than the species-wide ceiling and are therefore drift-limited at the event scale, no matter the location mean.
+
+**Result.** BL5 tail and the smallest BL1 locations (EO26-3 and some
+EO8 sub-locations) sit near or at the N = 1 floor — their events
+cannot reach the coupon-collector floor on their own. BL4, BL3's
+EO76, BL1's EO61 / EO29, and BL2's EO70 sit at or above the 32-copy
+line across all their events — well-connected everywhere. The
+widest boxes (EO18-7, EO8) are the layered locations: some events
+are richly connected, others are isolated.
+
+**Prefer Figure 2 Panel C for a single per-location fragmentation
+score.** Figure 2b below is the complementary *event-level* texture.
+
+![Figure 2b — Per-location box plots of `N_reachable_50m` (pollen-donor plants reachable within 50 m per event). One row per location, grouped by Bottleneck Lineage; row labels give `(events, adults)`. Each box summarises the location's events' reachable-neighbour counts (log x-axis). **Red dotted line: N = 1** = the single-plant SI floor (nobody to mate with on that event). **Grey dashed line: N = 8 plants = 32 tetraploid allele copies** = the coupon-collector floor for the 32-Fg species pool. Narrow boxes = uniform event neighbourhoods; wide boxes = layered location (some events well-connected, others isolated). Purely spatial — no allele frequencies enter. Source: `step30b_fragmentation_index.py`.](figures/Phase5/step30_A_fragmentation_index.png)
 
 ---
 
@@ -454,39 +485,6 @@ estimator of the population-mean P_compat.
 
 ![Figure 4 — Predicted per-location pollen compatibility under sporophytic Class I / II + empirical LEPA zygosity. Y-axis labels give `locationCode (N_fert_eff, M_mothers)` — the same convention as Figure 3, without total_seeds because seed counts do not enter this prediction. One dot per location, error bars = 95 % credible interval, panelled by Bottleneck Lineage. Traffic-light bands: red = failed (< 0.26), amber = struggling (0.26–0.52), green = sustainable (≥ 0.52). Species mean = 0.78. BL5 tail slips into the struggling band; all other locations sit in the sustainable band at the mean.](figures/Phase5/step30_A_prediction_fecundation.png)
 
-### 30.3 Per-location mating neighbourhood size
-
-**Question.** Independent of drift on allele frequencies, how big is
-each location's event-scale mating neighbourhood — and how uniform
-is it across the location's events?
-
-**Approach — purely spatial, no allele frequencies.** For every
-event, count `N_reachable_50m = Σ N_fertile in other events within
-50 m`: the number of pollen-donor plants a flower on that event
-could reach at the 50 m pollinator range. Then **one box plot per
-location** summarises its events' `N_reachable_50m` distribution,
-with locations stacked vertically by Bottleneck Lineage.
-
-**How to read it.**
-- **Where a box sits on the x-axis** → typical event-scale neighbourhood size.
-- **How wide the box is / how long the whiskers are** → how uniform the location's events are. A narrow box = events have similar neighbourhoods; a wide box = some events are well-connected while others sit alone.
-- **The red dotted line (N = 1)** = the single-plant SI floor: a flower on this event has nobody to mate with.
-- **The grey dashed line (N = 8 plants = 32 tetraploid allele copies)** = the coupon-collector floor for the 32-Fg species pool. Events to the left of it have fewer reachable allele copies than the species-wide ceiling and are therefore drift-limited at the event scale, no matter the location mean.
-
-**Result.** BL5 tail and the smallest BL1 locations (EO26-3 and some
-EO8 sub-locations) sit near or at the N = 1 floor — their events
-cannot reach the coupon-collector floor on their own. BL4, BL3's
-EO76, BL1's EO61 / EO29, and BL2's EO70 sit at or above the 32-copy
-line across all their events — well-connected everywhere. The
-widest boxes (EO18-7, EO8) are the layered locations: some events
-are richly connected, others are isolated.
-
-**Prefer the N_fertile_effective figure (Panel C) for a single
-per-location fragmentation score.** This figure is the complementary
-*event-level* texture.
-
-![Figure 5 — Per-location box plots of `N_reachable_50m` (pollen-donor plants reachable within 50 m per event). One row per location, grouped by Bottleneck Lineage; row labels give `(events, adults)`. Each box summarises the location's events' reachable-neighbour counts (log x-axis). **Red dotted line: N = 1** = the single-plant SI floor (nobody to mate with on that event). **Grey dashed line: N = 8 plants = 32 tetraploid allele copies** = the coupon-collector floor for the 32-Fg species pool. Narrow boxes = uniform event neighbourhoods; wide boxes = layered location (some events well-connected, others isolated). Purely spatial — no allele frequencies enter. Source: `step30b_fragmentation_index.py`.](figures/Phase5/step30_A_fragmentation_index.png)
-
 ---
 
 ## Step 30 Part C § C.0 — Empirical validation of the P_compat model
@@ -528,7 +526,7 @@ random-mating compatibility, holding the mothers themselves fixed.
   species-wide) — consistent with its perfect-match position on
   the diagonal.
 
-![Figure 6 — EO-level empirical validation of the sporophytic P_compat model. Panel A: observed vs predicted mean pollen compatibility per EO (n ≥ 10 individuals), with 1:1 diagonal and traffic-light bands (failed < 0.26, struggling < 0.52, sustainable ≥ 0.52). 4/6 EOs sit on the diagonal within their 95 % CI; EO70 is the clearest outlier (observed 0.53 vs predicted 0.70, right at the struggling/sustainable boundary) — genuine local Fg pool skew, not model failure. Panel B: distinct-identity distribution per EO vs the species-wide reference (66 / 32 / 2 %).](figures/Phase5/step30_C_pcompat_observed_vs_predicted.png)
+![Figure 5 — EO-level empirical validation of the sporophytic P_compat model. Panel A: observed vs predicted mean pollen compatibility per EO (n ≥ 10 individuals), with 1:1 diagonal and traffic-light bands (failed < 0.26, struggling < 0.52, sustainable ≥ 0.52). 4/6 EOs sit on the diagonal within their 95 % CI; EO70 is the clearest outlier (observed 0.53 vs predicted 0.70, right at the struggling/sustainable boundary) — genuine local Fg pool skew, not model failure. Panel B: distinct-identity distribution per EO vs the species-wide reference (66 / 32 / 2 %).](figures/Phase5/step30_C_pcompat_observed_vs_predicted.png)
 
 **Caveat.** P1 was built from these same individuals, so this
 comparison does not test absolute calibration but robustness to
@@ -594,7 +592,154 @@ here; that is scheduled as future work.
 - [`step30_B_partC_clean_overlap_fg_frequencies.tsv`](tables/Phase5/step30_B_partC_clean_overlap_fg_frequencies.tsv) — long form, one row per (location, Fg) with observed f and P1 f.
 - [`step30_B_partC_clean_overlap.png`](figures/Phase5/step30_B_partC_clean_overlap.png) — three-panel figure (P_compat scatter, Fg count comparison, Fg frequency spectrum).
 
-![Figure 7 — Phase 5 Part C anchor at the three clean-overlap EOs (EO67, EO70, EO76; 1:1 with a Phase 5 locationCode). Panel order follows the causal chain: diversity → pollen compatibility → per-Fg drift fingerprint. **Panel A — SRK diversity.** Phase 5 predicted (x) vs observed in adults (y), one square per location with 95 % CI horizontal error bars. 1:1 diagonal + ceiling at 32 Fgs. EO67 sits on the diagonal (model passes); EO70 (6/32) and EO76 (9/32) sit far below (large drift gap). **Panel B — pollen compatibility.** Phase 5 predicted vs observed, with the traffic-light background (red = failed, amber = struggling, green = sustainable) and 1:1 diagonal. EO67 and EO76 close to the diagonal; EO70 is the clear outlier (observed 0.53 vs predicted 0.78). **Panel C — per-Fg drift residual** `f_observed − f_P1` per location (one row each, Fgs sorted left-to-right by species-wide P1 frequency, most-common → rarest). **Green bars = Fg enriched vs P1** (drift favoured it); **red bars = Fg depleted vs P1**; **× markers = Fg absent at the location** (lost entirely). The residual pops out the drift fingerprint that the raw-frequency plot blurred — EO70 shows classic FG001 drift (+21 %) + FG024 (+18 %) with 26/32 Fgs absent; EO76 shows milder enrichment of FG012 / FG010; EO67's small-population signature elevates the normally-rare FG018 and FG023 instead of the common Fgs — a founder-effect signature rather than classical drift. Source: `step30d_partC_clean_overlap.py`.](figures/Phase5/step30_B_partC_clean_overlap.png)
+![Figure 6 — Phase 5 Part C anchor at the three clean-overlap EOs (EO67, EO70, EO76; 1:1 with a Phase 5 locationCode). Panel order follows the causal chain: diversity → pollen compatibility → per-Fg drift fingerprint. **Panel A — SRK diversity.** Phase 5 predicted (x) vs observed in adults (y), one square per location with 95 % CI horizontal error bars. 1:1 diagonal + ceiling at 32 Fgs. EO67 sits on the diagonal (model passes); EO70 (6/32) and EO76 (9/32) sit far below (large drift gap). **Panel B — pollen compatibility.** Phase 5 predicted vs observed, with the traffic-light background (red = failed, amber = struggling, green = sustainable) and 1:1 diagonal. EO67 and EO76 close to the diagonal; EO70 is the clear outlier (observed 0.53 vs predicted 0.78). **Panel C — per-Fg drift residual** `f_observed − f_P1` per location (one row each, Fgs sorted left-to-right by species-wide P1 frequency, most-common → rarest). **Green bars = Fg enriched vs P1** (drift favoured it); **red bars = Fg depleted vs P1**; **× markers = Fg absent at the location** (lost entirely). The residual pops out the drift fingerprint that the raw-frequency plot blurred — EO70 shows classic FG001 drift (+21 %) + FG024 (+18 %) with 26/32 Fgs absent; EO76 shows milder enrichment of FG012 / FG010; EO67's small-population signature elevates the normally-rare FG018 and FG023 instead of the common Fgs — a founder-effect signature rather than classical drift. Source: `step30d_partC_clean_overlap.py`.](figures/Phase5/step30_B_partC_clean_overlap.png)
+
+### C.0.b Diversity collapse → pollen compatibility: hypothesis decomposition
+
+**Why this analysis exists.** Panel A of § C.0.a (SRK diversity
+predicted vs observed) exposed a disconnect that pollen
+compatibility alone would have hidden: EO70 and EO76 both lose
+~23 of their predicted alleles, but observed pollen compatibility
+drops by 0.24 at EO70 and barely 0.03 at EO76. EO67, with just 7
+alleles against a predicted 10.8, lands at 0.70 — in the
+sustainable band. **Without the diversity trigger from § C.0.a we
+would not have known there was a mechanism question to ask.**
+
+**Three competing hypotheses can produce different pollen-
+compatibility responses to the same diversity loss.**
+
+1. **Within-class allele spread.** Class I and Class II total
+   masses can be identical, but all of Class I's mass may be
+   locked in a single allele (drift monoculture), killing
+   within-class compatibility (a Class I × Class I cross is
+   rejected whenever parents share an allele).
+2. **Class I / Class II mass balance.** Raising / lowering the
+   Class I share changes how much "between-class rescue" is
+   available to Class II mothers (between-class crosses are
+   always compatible under the sporophytic model).
+3. **Zygosity composition.** The fraction of mothers that carry
+   1 / 2 / 3 distinct SRK identities. Multi-identity mothers
+   express a bigger set and face more compatible fathers for
+   Class II; the effect is more complex for Class I.
+
+#### How the decomposition is built
+
+The same simulation that produced Figure 4 (pollen compatibility
+per location) is run **five
+times per location**, keeping the observed mother genotypes fixed
+and swapping ONE part of the father-drawing distribution at a time
+against the species-wide reference. For each scenario, 800
+candidate fathers are drawn, sporophytic Class I / II compatibility
+is evaluated per mother, averaged over her trials, and then over
+all her location's mothers. Bootstrap over 400 resamples of
+mothers gives a 95 % CI.
+
+The **only** thing that differs between the five bars for a given
+location is the father-drawing distribution:
+
+| Scenario (bar colour)                              | Father allele frequencies            | Father zygosity composition |
+|---                                                 |---                                   |---                          |
+| **Observed** (black)                               | Observed local                       | Observed local              |
+| **Swap within-class spread** (blue)                | **P1 shape within each class, scaled to the observed Class I and Class II totals** | Observed local |
+| **Swap Class I / II balance** (red)                | **Within-class shape kept observed, class totals rescaled to the species-wide values** | Observed local |
+| **Swap zygosity** (yellow)                         | Observed local                       | **Species-wide 66 / 32 / 2 % of 1-/2-/3-distinct** |
+| **Phase 5 prediction** (green)                     | Species-wide P1                      | Species-wide                |
+
+For each single-swap bar, the **driver fraction** = (counterfactual
+mean − observed mean) / (species-wide prediction mean − observed
+mean). A value near **+100 %** says that one factor alone closes
+the entire observed → species-wide gap. A value near **0 %** says
+the factor was not involved. A **negative value** means swapping
+away from the observed state moves pollen compatibility *away*
+from the species-wide prediction — the observed state on that axis
+is **buffering** the location.
+
+#### How to read the figure
+
+- **Observed black bar below green**: the location has lost
+  pollen compatibility relative to the species-wide prediction.
+- **A single-swap bar jumps up toward green**: that factor
+  explains most of the gap.
+- **A single-swap bar stays next to black**: that factor is not
+  involved.
+- **A single-swap bar drops below black**: that factor is
+  buffering the location — observed state on that axis is more
+  favourable than species-wide.
+
+#### Walk-through — the three clean-overlap locations
+
+| Location | Alleles obs / pred | Pollen compatibility obs → species-wide pred | Within-class spread | Class I / II balance | Zygosity composition |
+|---|---|---|---:|---:|---:|
+| **EO67** | 7 / 10.8 (-3.8) | 0.70 → 0.76 | **+100 %** | −7 % | −13 % |
+| **EO70** | 6 / 28.3 (-22.3) | 0.54 → 0.70 | **+88 %** | −3 % | −6 % |
+| **EO76** | 9 / 31.8 (-22.8) | 0.75 → 0.77 | **+206 %** | +1 % | **−115 %** |
+
+- **EO70 — classical drift collapse.** FG024 absorbs 35 % of the
+  pool, FG001 another 62 %; four other alleles sit under 1 %.
+  A FG024-homozygous Class I mother sees `(1 − 0.35)⁴ ≈ 0.17`
+  compatibility, vs ≈ 0.43 at EO67 where Class I is split four
+  ways. The blue bar jumps up to 0.68 (closing most of the gap);
+  red and yellow stay next to black. **Within-class concentration
+  explains the deficit; class balance and zygosity are not
+  involved.**
+- **EO67 — looks bad on paper, pollen compatibility survives.**
+  Only 7 of 32 alleles present, but those 7 split as **4 Class I
+  alleles (FG024 / FG018 / FG023 / FG016, well spread) and 3
+  Class II alleles**. Each Class I mother expresses a smaller
+  share of Class I mass than at EO70, so Class I × Class I
+  compatibility stays reasonable. Observed zygosity (32 %
+  multi-identity) is slightly higher than species-wide — the
+  yellow bar sits just below black, meaning observed zygosity is
+  mildly buffering. **Mate limitation at EO67 is not as bad as
+  the headline 7/32 count suggests.**
+- **EO76 — predicted near-perfect, observed severely collapsed,
+  pollen compatibility still fine.** 9/32 alleles — a collapse
+  comparable to EO70 — but pollen compatibility drops only 0.03.
+  Decomposition exposes the mechanism: **zygosity is actively
+  buffering EO76** (yellow sits at 0.72, below the black 0.75,
+  a −115 % move relative to the gap). The location is 76 %
+  homozygous (vs species-wide 66 %), and because its dominant
+  Class II allele (FG001 at 46 %) is less dominant than EO70's
+  FG001 (62 %), those homozygous Class II mothers express a
+  small, non-dominant set and face many compatible fathers. Blue
+  overshoots the species-wide prediction (within-class diversity
+  at EO76 is actually better-spread than drift-only P1 would
+  deliver).
+
+#### Methodological take-home
+
+A location's SRK diversity gap tells us drift has happened; the
+pollen-compatibility response is **not** a monotonic function of
+how many alleles were lost. It depends on **which** alleles were
+lost, **how dominant** the remaining alleles are, and **how multi-
+identity** the mothers are. Capturing this requires an accurate
+sporophytic Class I / II model plus empirical zygosity (§ A.7–A.8)
+— a simpler diploid gametophytic approximation would collapse all
+three channels into a single "effective diversity" number and
+mis-predict EO76 outright. The hypothesis decomposition therefore
+doubles as validation of the model's mechanistic structure: it
+successfully resolves cases where the three channels pull in
+different directions.
+
+**Workflow placement.** This analysis is a follow-through on § C.0.a's
+diversity trigger, not a stand-alone pollen-compatibility test.
+When a location's observed allele diversity sits noticeably below
+the Phase 5 prediction, run `step30e_pcompat_hypothesis_decomposition.py`
+to see which of the three channels is driving the downstream
+pollen-compatibility response.
+
+**Outputs.**
+
+- [`step30_B_partC_hypothesis_decomposition.tsv`](tables/Phase5/step30_B_partC_hypothesis_decomposition.tsv)
+  — one row per clean-overlap location with the diversity trigger
+  (observed vs Phase 5 predicted distinct allele counts), observed +
+  three single-swap counterfactual pollen compatibility estimates
+  with bootstrap 95 % CIs, observed Class I mass, observed zygosity
+  distribution, and the three "driver fraction" columns.
+- [`step30_B_partC_hypothesis_decomposition.png`](figures/Phase5/step30_B_partC_hypothesis_decomposition.png)
+  — grouped bar chart per location (see caption below).
+
+![Figure 7 — Competing-hypothesis decomposition of per-location pollen compatibility. Triggered by the SRK diversity discrepancies in § C.0.a. For each clean-overlap location (EO67, EO70, EO76) the figure shows five pollen-compatibility values from the same simulation (sporophytic Class I / II + empirical zygosity, 800 candidate fathers per mother, observed mother genotypes held fixed), each differing in which part of the father-drawing distribution is swapped to the species-wide reference. **Black — Observed:** fathers drawn from observed local allele frequencies and observed local zygosity. **Blue — Swap within-class spread:** keep observed Class I and Class II total masses, but reshape the within-class spread to match the P1 pattern (isolates the "drift monoculture" channel). **Red — Swap Class I / II balance:** keep within-class shape observed, rescale the two class totals to the species-wide values (isolates between-class rescue). **Yellow — Swap zygosity:** keep observed allele frequencies, swap father zygosity to species-wide 66/32/2 % (isolates the per-mother expressed-set channel). **Green — Phase 5 prediction:** everything swapped to species-wide. Error bars = bootstrap 95 % CI (400 mother resamples). Traffic-light bands shaded in the background; dashed grey line = species-wide pollen compatibility 0.78. **Reading rules:** a blue/red/yellow bar jumping toward green means that factor caused the gap; staying next to black means it was not involved; dropping below black means it is **buffering** the location (observed state on that axis is better than species-wide). **EO70** — blue dominates (within-class drift monoculture, FG024 at 35 % of pool); red and yellow neutral. **EO67** — small deficit, blue explains it; zygosity slightly buffering. **EO76** — small deficit despite collapsing from 32 to 9 alleles; yellow drops below black, meaning zygosity (76 % homozygous mothers) is actively buffering the location, and blue overshoots green because the specific within-class spread at EO76 is better than drift-only P1 would deliver. Source: `step30e_pcompat_hypothesis_decomposition.py`.](figures/Phase5/step30_B_partC_hypothesis_decomposition.png)
 
 **Note — why P1 is empirical, not uniform.** A uniform-frequency P1
 (Dirichlet(α = 1) over 32 Fgs, equivalent to the P0 "uninformative"
@@ -796,22 +941,19 @@ prediction on each end.
 | Field-team recipe (new field season) | [`tables/Phase5/step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv) | `M_frag` per event, authoritative |
 | **Lab recipe for Part C — germplasmIDs to sample** | [`tables/Phase5/step29c_partC_germplasmID_selection.tsv`](tables/Phase5/step29c_partC_germplasmID_selection.tsv) | **One row per selected germplasmID already in the LEPA DB; per-50 m-component allocation + `n_seeds_to_genotype`. Drives Part C.** |
 | Empirical validation (§ C.0) | [`tables/Phase5/step30_C_pcompat_validation_at_eo.tsv`](tables/Phase5/step30_C_pcompat_validation_at_eo.tsv) | 6 EOs, observed vs predicted |
-| **Part C anchor at Phase 5 location scale (§ C.0.a)** | [`tables/Phase5/step30_B_partC_clean_overlap_per_location.tsv`](tables/Phase5/step30_B_partC_clean_overlap_per_location.tsv) + [`_fg_frequencies.tsv`](tables/Phase5/step30_B_partC_clean_overlap_fg_frequencies.tsv) | **Clean-overlap EOs (EO67, EO70, EO76) — 187 adults ready to feed Part C now; observed vs Phase 5 pred P_compat + Fg diversity + no-drift upper bound** |
+| **Part C anchor at Phase 5 location scale (§ C.0.a)** | [`tables/Phase5/step30_B_partC_clean_overlap_per_location.tsv`](tables/Phase5/step30_B_partC_clean_overlap_per_location.tsv) + [`_fg_frequencies.tsv`](tables/Phase5/step30_B_partC_clean_overlap_fg_frequencies.tsv) | **Clean-overlap EOs (EO67, EO70, EO76) — 187 adults ready to feed Part C now; observed vs Phase 5 pred P_compat + SRK diversity + no-drift upper bound** |
+| **Hypothesis decomposition (§ C.0.b)** | [`tables/Phase5/step30_B_partC_hypothesis_decomposition.tsv`](tables/Phase5/step30_B_partC_hypothesis_decomposition.tsv) | **Decomposes the pollen-compatibility deviation at each clean-overlap location into within-class spread / Class I-II balance / zygosity contributions; triggered by the SRK diversity gap** |
 
-**Key figures.**
+**Key figures** (ordered by appearance in this doc).
 
-- [`step30_A_radius_sensitivity.png`](figures/Phase5/step30_A_radius_sensitivity.png)
-  — why 50 m is the right primary radius.
-- [`step30_A_diversity_unbiased_vs_sampling.png`](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.png)
-  — three-panel: what Nature holds (unbiased) vs what our sampling detects vs coverage.
-- [`step30_A_prediction_fecundation.png`](figures/Phase5/step30_A_prediction_fecundation.png)
-  — predicted P_compat per location, traffic-light bands.
-- [`step30_A_N_fertile_effective.png`](figures/Phase5/step30_A_N_fertile_effective.png)
-  — raw census vs `N_fert_eff` vs connectivity share per location. The pivotal metric.
-- [`step30_A_fragmentation_index.png`](figures/Phase5/step30_A_fragmentation_index.png)
-  — event-scale × location-scale fragmentation scatter.
-- [`step30_C_pcompat_observed_vs_predicted.png`](figures/Phase5/step30_C_pcompat_observed_vs_predicted.png)
-  — the § C.0 empirical validation.
+- **Figure 1** — [`step30_A_radius_sensitivity.png`](figures/Phase5/step30_A_radius_sensitivity.png) — why 50 m is the right primary pollinator radius.
+- **Figure 2** — [`step30_A_N_fertile_effective.png`](figures/Phase5/step30_A_N_fertile_effective.png) — raw census vs `N_fert_eff` vs connectivity share per location. The pivotal metric.
+- **Figure 2b** — [`step30_A_fragmentation_index.png`](figures/Phase5/step30_A_fragmentation_index.png) — per-location box plots of per-event pollen-donor reachability (event-scale companion to Figure 2).
+- **Figure 3** — [`step30_A_diversity_unbiased_vs_sampling.png`](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.png) — three-panel: what Nature holds (unbiased) vs what our sampling detects vs coverage.
+- **Figure 4** — [`step30_A_prediction_fecundation.png`](figures/Phase5/step30_A_prediction_fecundation.png) — predicted pollen compatibility per location, traffic-light bands.
+- **Figure 5** — [`step30_C_pcompat_observed_vs_predicted.png`](figures/Phase5/step30_C_pcompat_observed_vs_predicted.png) — the § C.0 EO-scale empirical validation.
+- **Figure 6** — [`step30_B_partC_clean_overlap.png`](figures/Phase5/step30_B_partC_clean_overlap.png) — § C.0.a Part C anchor at Phase 5 location scale (SRK diversity + pollen compatibility + per-allele drift residual).
+- **Figure 7** — [`step30_B_partC_hypothesis_decomposition.png`](figures/Phase5/step30_B_partC_hypothesis_decomposition.png) — § C.0.b competing-hypothesis decomposition.
 
 ---
 

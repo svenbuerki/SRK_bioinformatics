@@ -1926,6 +1926,74 @@ P1 would start from a flat distribution and declare every observed
 location "drifted", losing both the species-wide signal and the
 calibration readers need to interpret per-location deviation.
 
+### C.0.b Hypothesis decomposition — diversity collapse → pollen compatibility
+
+The § C.0.a Part C anchor exposed a disconnect that pollen
+compatibility alone would have hidden: EO70 and EO76 both lose
+~23 of their predicted alleles, but observed pollen compatibility
+drops by 0.25 at EO70 and barely 0.02 at EO76. EO67, with just 7
+alleles against a predicted 10.8, lands at 0.70 — in the
+sustainable band. The script `step30e_pcompat_hypothesis_decomposition.py`
+decomposes each location's observed → species-wide gap into three
+competing mechanisms by swapping ONE factor at a time to the
+species-wide reference while keeping observed mother genotypes
+fixed:
+
+1. **Within-class allele spread.** Same class totals, but P1-shaped
+   within each class. Isolates drift concentration (e.g. FG024 at
+   EO70 absorbing nearly all of Class I's mass).
+2. **Class I / II mass balance.** Same within-class shape, but
+   class totals rescaled to the species-wide values. Isolates
+   between-class-rescue capacity.
+3. **Zygosity composition.** Same local allele frequencies, but
+   father zygosity drawn from the species-wide distribution.
+   Isolates the per-mother expressed-set-size channel.
+
+The driver fraction = (counterfactual − observed) / (prediction −
+observed): a value near +100 % says the swapped factor by itself
+explains the whole gap; a negative value says the factor is
+**buffering** the location.
+
+**Headline numbers (from the current run).**
+
+- **EO70 — classical within-class drift collapse.** Within-class
+  spread explains **+88 %** of the pollen compatibility deficit;
+  class balance and zygosity contribute within noise. Mechanistic
+  story: FG024 at 35 % of the pool makes a FG024-homozygous Class
+  I mother see `(1 − 0.35)⁴ ≈ 0.17` compatibility vs ~0.43 at
+  EO67 where Class I is split four ways.
+- **EO67 — looks bad on paper, pollen compatibility survives.** 7
+  of 32 alleles present, but 4 of them are Class I (FG024 / FG018
+  / FG023 / FG016, well spread) and 3 are Class II. Within-class
+  spread explains +100 % of the small observed → prediction gap;
+  zygosity (slightly higher multi-identity than species-wide) is
+  mildly buffering.
+- **EO76 — predicted near-perfect, observed severely collapsed,
+  pollen compatibility still fine.** 9 of 32 alleles. **Zygosity
+  explains −115 % of the gap** (actively buffering): the location
+  is 76 % homozygous and its dominant Class II allele FG001 sits
+  at 46 % (vs EO70's 62 %), so FG001-homozygous mothers face many
+  compatible fathers. Swapping to the species-wide zygosity would
+  *lower* pollen compatibility at EO76 by 0.03.
+
+**Why the sporophytic Class I / II + empirical-zygosity model
+matters.** The decomposition is only meaningful because the model
+can resolve the three channels separately. A simpler diploid
+gametophytic approximation would collapse all three into a single
+"effective diversity" number and mis-predict the EO76 outcome.
+The hypothesis test therefore doubles as validation of the model's
+mechanistic structure.
+
+**Outputs.**
+
+- Table: `tables/Phase5/step30_B_partC_hypothesis_decomposition.tsv`
+  — per-location diversity trigger + three single-swap pollen
+  compatibility counterfactuals with bootstrap 95 % CIs + driver
+  fractions.
+- Figure: `figures/Phase5/step30_B_partC_hypothesis_decomposition.png`
+  — grouped bar chart per location.
+- Script: `step30e_pcompat_hypothesis_decomposition.py`.
+
 ### C.1 Test 1 — Mate-limitation regression (goals 1 + 2)
 
 Under strict SI + random mating in a **tetraploid sporophytic** system
@@ -2253,6 +2321,8 @@ or right-click → *Save link as…* to pull the TSV into your local pipeline.
 - [`step30_B_partC_clean_overlap_per_location.tsv`](tables/Phase5/step30_B_partC_clean_overlap_per_location.tsv) — § C.0.a Part C anchor at Phase 5 location scale for the three clean-overlap EOs (EO67, EO70, EO76 — 187 adults). Observed vs Phase 5 predicted P_compat, observed vs Phase 5 predicted Fg count, and the no-drift upper bound at the adult sample size.
 - [`step30_B_partC_clean_overlap_fg_frequencies.tsv`](tables/Phase5/step30_B_partC_clean_overlap_fg_frequencies.tsv) — long form, one row per (clean locationCode × Fg) with observed f, species-wide P1 f, and present/absent flag.
 - [`step30_B_partC_clean_overlap.pdf`](figures/Phase5/step30_B_partC_clean_overlap.pdf) / [`.png`](figures/Phase5/step30_B_partC_clean_overlap.png) — three-panel figure: observed vs Phase 5 predicted P_compat per location, observed vs predicted Fg count with the no-drift upper bound overlay, and observed Fg frequency spectrum vs P1.
+- [`step30_B_partC_hypothesis_decomposition.tsv`](tables/Phase5/step30_B_partC_hypothesis_decomposition.tsv) — § C.0.b per-location decomposition: diversity trigger (observed vs Phase 5 predicted allele counts), observed + three single-swap counterfactual pollen compatibility estimates, driver fractions for within-class spread, Class I/II balance, zygosity.
+- [`step30_B_partC_hypothesis_decomposition.pdf`](figures/Phase5/step30_B_partC_hypothesis_decomposition.pdf) / [`.png`](figures/Phase5/step30_B_partC_hypothesis_decomposition.png) — § C.0.b grouped bar chart.
 
 ### Phase B — Post-genotyping (requires observed seed genotypes)
 
