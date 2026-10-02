@@ -40,7 +40,8 @@ decades of drift and local pools have drifted further. **Yet the
 pollen-compatibility prediction tracks observation closely** — EO67
 (observed 0.70 / predicted 0.72) and EO76 (0.72 / 0.78) overlap on
 their 95 % CIs; only EO70 shows a real gap (0.53 vs 0.78), a drift
-signal consistent with its FG024 monoculture. The hypothesis
+signal consistent with its high FG024 frequency (**0.35 locally,
+vs 0.18 species-wide**). The hypothesis
 decomposition ([Figure 11](#fig-11)) explains why: **within-class
 allele frequency spread, not allele count, drives pollen
 compatibility**, and tetraploid zygosity composition actively buffers
