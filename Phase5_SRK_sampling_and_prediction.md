@@ -24,32 +24,30 @@ than the 8 plants required to physically carry the species-wide
 pool of 32 SRK alleles** (4 alleles per tetraploid plant × 8 plants
 = 32 copies; [Figure 1b](#fig-1b)).
 
-**Methodology.** For each mating pool we simulate drift from the
-species-wide 32-allele empirical prior P1, aggregate SRK diversity
-by set union across pools ([Figure 3](#fig-3)), and compute pollen
-compatibility as a size-weighted mean under the **sporophytic
-Class I / Class II + empirical zygosity** model
-([Figure 4](#fig-4), [Figure 5](#fig-5)). The Part C anchor
-([Figure 10](#fig-10)) compares predictions against Phase 4 adult
-SRK genotypes at the three EOs — **EO67, EO70, EO76** — that map
-1:1 to a Phase 5 location.
+**Methodology.** For each mating pool we use **empirical allele-
+frequency data from plant genotyping (P1)** to simulate genetic
+drift, aggregate SRK diversity by set union across pools
+([Figure 3](#fig-3)), and compute pollen compatibility as a
+size-weighted mean under the **sporophytic Class I / Class II +
+empirical zygosity** model ([Figure 4](#fig-4), [Figure 5](#fig-5)).
 
-**Result + interpretation.** The diversity prediction
-**over-estimates** observed counts by ~20 alleles at every clean-
-overlap location (predicted 11 / 28 / 32 vs observed 7 / 6 / 9),
-because P1 itself has already absorbed decades of drift and local
-pools have drifted further. **Yet the pollen-compatibility prediction
-tracks observation closely** — EO67 (observed 0.70 / predicted 0.72)
-and EO76 (0.72 / 0.78) overlap on their 95 % CIs; only EO70 shows a
-real gap (0.53 vs 0.78), a drift signal consistent with its FG024
-monoculture. The hypothesis decomposition
-([Figure 11](#fig-11), § C.0.b) explains why: **within-class allele
-frequency spread, not allele count, drives pollen compatibility**,
-and tetraploid zygosity composition actively buffers locations with
-many homozygous mothers. The decisive variable is not *how many*
-alleles survive but *how their frequencies and genotypes are
-arranged* — which is why a huge diversity gap can coexist with an
-accurate pollen-compatibility prediction.
+**Result + interpretation.** Comparing predictions against observed
+adult SRK genotypes at three locations (**EO67, EO70, EO76**;
+[Figure 10](#fig-10)), the diversity prediction **over-estimates**
+observed counts by ~20 alleles everywhere (predicted 11 / 28 / 32
+vs observed 7 / 6 / 9) — because P1 itself has already absorbed
+decades of drift and local pools have drifted further. **Yet the
+pollen-compatibility prediction tracks observation closely** — EO67
+(observed 0.70 / predicted 0.72) and EO76 (0.72 / 0.78) overlap on
+their 95 % CIs; only EO70 shows a real gap (0.53 vs 0.78), a drift
+signal consistent with its FG024 monoculture. The hypothesis
+decomposition ([Figure 11](#fig-11)) explains why: **within-class
+allele frequency spread, not allele count, drives pollen
+compatibility**, and tetraploid zygosity composition actively buffers
+locations with many homozygous mothers. The decisive variable is not
+*how many* alleles survive but *how their frequencies and genotypes
+are arranged* — which is why a huge diversity gap can coexist with
+an accurate pollen-compatibility prediction.
 
 **Next test.** Within-BL5 pilot (option A2, § C.6): **EO48_7**
 (connected, 1 mating pool) vs **EO18-7_19** (fragmented, 3 mating

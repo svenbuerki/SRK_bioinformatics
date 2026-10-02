@@ -25,18 +25,17 @@ required to physically carry the species-wide pool of 32 SRK
 alleles** (4 alleles per tetraploid plant × 8 plants = 32 copies;
 Figure 2).
 
-**Methodology.** For each mating pool we simulate drift from the
-species-wide 32-allele empirical prior P1, aggregate SRK diversity
-by set union across pools (Figure 3), and compute pollen
-compatibility as a size-weighted mean under the **sporophytic
-Class I / Class II + empirical zygosity** model (Figures 3b, 4).
-The Part C anchor (Figures 5–6) compares predictions against
-Phase 4 adult SRK genotypes at the three EOs — **EO67, EO70,
-EO76** — that map 1:1 to a Phase 5 location.
+**Methodology.** For each mating pool we use **empirical allele-
+frequency data from plant genotyping (P1)** to simulate genetic
+drift, aggregate SRK diversity by set union across pools (Figure 3),
+and compute pollen compatibility as a size-weighted mean under the
+**sporophytic Class I / Class II + empirical zygosity** model
+(Figures 3b, 4).
 
-**Result + interpretation.** The diversity prediction
-**over-estimates** observed counts by ~20 alleles at every clean-
-overlap location (predicted 11 / 28 / 32 vs observed 7 / 6 / 9),
+**Result + interpretation.** Comparing predictions against observed
+adult SRK genotypes at three locations (**EO67, EO70, EO76**), the
+diversity prediction **over-estimates** observed counts by ~20
+alleles everywhere (predicted 11 / 28 / 32 vs observed 7 / 6 / 9) —
 because P1 itself has already absorbed decades of drift and local
 pools have drifted further. **Yet the pollen-compatibility
 prediction tracks observation closely** — EO67 (observed 0.70 /
