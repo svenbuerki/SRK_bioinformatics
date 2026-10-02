@@ -7,6 +7,49 @@
 > Share that with collaborators; use the doc you are currently reading
 > for methods, formulas, code, and full outputs.
 
+## Executive summary
+
+**Approach.** Phase 5 tests a single causal chain —
+**fragmentation → drift → mate limitation** — across the 39 LEPA
+locations of *Lepidium papilliferum*. The 50 m pollinator radius
+([Figure 1](#fig-1)) fixes the drift unit: a **50 m mating pool**
+is the set of plants whose events sit within one pollinator flight
+of each other. Locations hold 1–6 mating pools each; **31 of 101
+pools sit below the 8-plant coupon-collector floor** for the
+32-allele species pool ([Figure 1b](#fig-1b)).
+
+**Methodology.** For each mating pool we simulate drift from the
+species-wide 32-allele empirical prior P1, aggregate SRK diversity
+by set union across pools ([Figure 3](#fig-3)), and compute pollen
+compatibility as a size-weighted mean under the **sporophytic
+Class I / Class II + empirical zygosity** model
+([Figure 4](#fig-4), [Figure 5](#fig-5)). The Part C anchor
+([Figure 10](#fig-10)) compares predictions against Phase 4 adult
+SRK genotypes at the three EOs — **EO67, EO70, EO76** — that map
+1:1 to a Phase 5 location.
+
+**Result + interpretation.** The diversity prediction
+**over-estimates** observed counts by ~20 alleles at every clean-
+overlap location (predicted 11 / 28 / 32 vs observed 7 / 6 / 9),
+because P1 itself has already absorbed decades of drift and local
+pools have drifted further. **Yet the pollen-compatibility prediction
+tracks observation closely** — EO67 (observed 0.70 / predicted 0.72)
+and EO76 (0.72 / 0.78) overlap on their 95 % CIs; only EO70 shows a
+real gap (0.53 vs 0.78), a drift signal consistent with its FG024
+monoculture. The hypothesis decomposition
+([Figure 11](#fig-11), § C.0.b) explains why: **within-class allele
+frequency spread, not allele count, drives pollen compatibility**,
+and tetraploid zygosity composition actively buffers locations with
+many homozygous mothers. The decisive variable is not *how many*
+alleles survive but *how their frequencies and genotypes are
+arranged* — which is why a huge diversity gap can coexist with an
+accurate pollen-compatibility prediction.
+
+**Next test.** Within-BL5 pilot (option A2, § C.6): **EO48_7**
+(connected, 1 mating pool) vs **EO18-7_19** (fragmented, 3 mating
+pools) — 20 mothers × 25 seeds → ~300 genotyped seedlings at
+60 % germination.
+
 ## Contents
 
 The document is organised in **three parts** that follow the causal
