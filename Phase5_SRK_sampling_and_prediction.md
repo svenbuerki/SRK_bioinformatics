@@ -9,51 +9,67 @@
 
 ## Executive summary
 
-**Approach.** We aim to test within-location connectivity in
-*Lepidium papilliferum* by sweeping candidate pollinator radii
-(10 – 200 m) across the 39 LEPA locations with **2025 field data**
-(wild, in-situ, with coordinates — the data scope defined in § A.2).
-The chosen **50 m primary radius** ([Figure 1](#fig-1)) defines a
-**mating pool** — the set of plants reachable in one pollinator
-flight — and quantifies within-location **fragmentation**. These two
-spatial descriptors drive the predictions of **SRK allele diversity**
-and **random-mating pollen compatibility** — the two metrics that
-jointly determine whether mate limitation operates at a location.
-Locations hold 1–6 mating pools each; **31 of 101 pools hold fewer
-than the 8 plants required to physically carry the species-wide
-pool of 32 SRK alleles** (4 alleles per tetraploid plant × 8 plants
-= 32 copies; [Figure 1b](#fig-1b)).
+<span style="color:#777"><strong>Approach.</strong></span> We aim to test within-location
+connectivity in *Lepidium papilliferum* by sweeping candidate
+pollinator radii (10 – 200 m) across the 39 LEPA locations with
+**2025 field data** (wild, in-situ, with coordinates — the data
+scope defined in § A.2). The chosen **50 m primary radius**
+([Figure 1](#fig-1)) defines a **mating pool** — the set of plants
+reachable in one pollinator flight — and quantifies within-location
+**fragmentation**. These two spatial descriptors drive the
+predictions of **SRK allele diversity** and **random-mating pollen
+compatibility** — the two metrics that jointly determine whether
+mate limitation operates at a location. Locations hold 1–6 mating
+pools each; **31 of 101 pools hold fewer than the 8 plants required
+to physically carry the species-wide pool of 32 SRK alleles** (4
+alleles per tetraploid plant × 8 plants = 32 copies;
+[Figure 1b](#fig-1b)).
 
-**Methodology.** For each mating pool we use **empirical allele-
-frequency data from plant genotyping (P1)** to simulate genetic
-drift, aggregate SRK diversity by set union across pools
-([Figure 3](#fig-3)), and compute pollen compatibility as a
-size-weighted mean under the **sporophytic Class I / Class II +
-empirical zygosity** model ([Figure 4](#fig-4), [Figure 5](#fig-5)).
+<span style="color:#777"><strong>Methodology.</strong></span> For each mating pool we use
+**empirical allele-frequency data from plant genotyping (P1)** to
+simulate genetic drift, aggregate SRK diversity by set union
+across pools ([Figure 3](#fig-3)), and compute pollen compatibility
+as a size-weighted mean under the **sporophytic Class I / Class II
++ empirical zygosity** model ([Figure 4](#fig-4),
+[Figure 5](#fig-5)).
 
-**Result + interpretation.** Comparing predictions against observed
-adult SRK genotypes at three locations (**EO67, EO70, EO76**;
-[Figure 10](#fig-10)), the diversity prediction **over-estimates**
-observed counts by ~20 alleles everywhere (predicted 11 / 28 / 32
-vs observed 7 / 6 / 9) — because P1 itself has already absorbed
-decades of drift and local pools have drifted further. **Yet the
-pollen-compatibility prediction tracks observation closely** — EO67
-(observed 0.70 / predicted 0.72) and EO76 (0.72 / 0.78) overlap on
-their 95 % CIs; only EO70 shows a real gap (0.53 vs 0.78), a drift
-signal consistent with its high FG024 frequency (**0.35 locally,
-vs 0.18 species-wide**). The hypothesis
+<span style="color:#777"><strong>Result + interpretation.</strong></span> Comparing predictions
+against observed adult SRK genotypes at three locations (**EO67,
+EO70, EO76**; [Figure 10](#fig-10)), the diversity prediction
+**over-estimates** observed counts by ~20 alleles everywhere
+(predicted 11 / 28 / 32 vs observed 7 / 6 / 9) — because P1 itself
+has already absorbed decades of drift and local pools have drifted
+further. **Yet the pollen-compatibility prediction tracks observation
+closely** — EO67 (observed 0.70 / predicted 0.72) and EO76 (0.72 /
+0.78) overlap on their 95 % CIs; only EO70 shows a real gap (0.53
+vs 0.78), a drift signal consistent with its high FG024 frequency
+(**0.35 locally, vs 0.18 species-wide**). The hypothesis
 decomposition ([Figure 11](#fig-11)) explains why: **within-class
 allele frequency spread, not allele count, drives pollen
-compatibility**, and tetraploid zygosity composition actively buffers
-locations with many homozygous mothers. The decisive variable is not
-*how many* alleles survive but *how their frequencies and genotypes
-are arranged* — which is why a huge diversity gap can coexist with
-an accurate pollen-compatibility prediction.
+compatibility**, and tetraploid zygosity composition actively
+buffers locations with many homozygous mothers. The decisive
+variable is not *how many* alleles survive but *how their
+frequencies and genotypes are arranged* — which is why a huge
+diversity gap can coexist with an accurate pollen-compatibility
+prediction.
 
-**Next test.** Within-BL5 pilot (option A2, § C.6): **EO48_7**
-(connected, 1 mating pool) vs **EO18-7_19** (fragmented, 3 mating
-pools) — 20 mothers × 25 seeds → ~300 genotyped seedlings at
-60 % germination.
+<span style="color:#777"><strong>Next test.</strong></span> We propose a between-location pilot
+(§ C.6) that pairs a **big + connected anchor** with a **small +
+fragmented partner**, chosen from across the full LEPA dataset so
+that the pair spans the usable predicted pollen-compatibility
+spectrum. Three options are on the table — all share the same
+anchor (**EO29_8**, BL1: 417 adults in a single mating pool, 22
+mothers in DB, predicted pollen compatibility 0.779):
+
+| Option | Pair kind | Drift-sensitive partner | Predicted *P*<sub>compat</sub> gap | Size ratio | Mothers (anchor + partner) | Trade-off |
+|:---|:---|:---|:---:|:---:|:---:|:---|
+| **B1 ★** | within-BL1 | **EO26-2_35** (22 adults, 3 pools, share 0.50, 8 mothers) | **0.039** | 19× | 22 + 8 = 30 | Strongest confound control (both BL1 → same evolutionary context) and largest within-BL predicted gap. |
+| B2 | within-BL1, bigger size gap | EO26-3_34 (34 adults, 3 pools, share 0.71, 14 mothers) | 0.025 | 12× | 22 + 14 = 36 | More mothers → less sampling noise, but less fragmented partner and smaller contrast. |
+| B3 | between-BL | EO25-B_21 (BL5: 10 adults, 2 pools, 7 mothers) | **0.051** | **42×** | 22 + 7 = 29 | Largest predicted gap and biggest size ratio, but confounds fragmentation × BL identity. |
+
+**B1 is recommended** (★): it maximises within-BL contrast
+sharpness while holding BL identity constant. Full evaluations in
+[step29c_partC_between_location_candidates.tsv](Tables/Phase5/step29c_partC_between_location_candidates.tsv).
 
 ## Contents
 
@@ -534,17 +550,15 @@ the number of pollen-donor SRK allele copies a mother at that event
 can reach within pollinator range. This is exactly the K used in
 § B.3 for the coupon-collector formulas, viewed here as a
 **fragmentation predictor** at the mother scale.
-[Figure 2b](#fig-2b) shows the **distribution of K^(25m) across events
-within each location**, panelled by BL. Plotting the raw distribution
-rather than a single summary keeps the fine-scale process visible —
-which is exactly the level at which mate limitation acts, since a
-mother at an N_reachable = 1 event and a mother at an N_reachable ≈
-100 event of the same locationID face very different pollen contexts.
-In the 2025 field, **439 / 704 events (62 %)** have at least one other
-event within 50 m; the number of reachable donor plants per event
-ranges from **0** (isolated singletons) to **> 250** (dense BL3, BL4
-clusters), and under tetraploid this corresponds to K^(25m) allele
-copies from **0** to **> 1 000**.
+The **distribution of K^(25m) across events within each location**
+is captured per location by the sum of its event-scale neighbourhood
+counts and summarised at the location scale by F_location (below)
+and by the mating-pool structure in Figure 1b.
+In the 2025 field, **439 / 704 events (62 %)** have at least one
+other event within 50 m; the number of reachable donor plants per
+event ranges from **0** (isolated singletons) to **> 250** (dense
+BL3, BL4 clusters), and under tetraploid this corresponds to
+K^(25m) allele copies from **0** to **> 1 000**.
 
 **Location scale — the site-level view.** At the location scale
 fragmentation is the fraction of adults NOT in a multi-event
@@ -557,26 +571,25 @@ every adult exchanges pollen with at least one other event; `F_location = 1`
 when every adult is an isolated island. In the 2025 field, **21 / 39
 locations (54 %) sit at F_location ≥ 0.5** — the majority of LEPA
 sites are structurally fragmented at pollinator scale. The
-location-scale summary is shown in Figure 7 (§ B.2); [Figure 2b](#fig-2b)
-here shows the event-scale distribution underneath it so the two views
-are complementary rather than duplicative.
+location-scale summary is shown in Figure 7 (§ B.2); [Figure 1b](#fig-1b)
+decomposes each location into its 50 m mating pools so the per-
+component structure is explicit.
 
-**Reading the boxplot.** Three patterns dominate [Figure 2b](#fig-2b):
+**Patterns at the location scale** that the Figure 1b decomposition
+makes visible:
 
-- **Well-connected locations** — a tight box entirely to the right of
-  the **N = 8 species-pool floor**. Every event reaches ≥ 32 tetraploid
-  allele copies; mothers experience a uniform pollen environment.
-  Examples: EO30-1, EO27-3, EO29, EO70.
-- **Mixed-connectivity locations** — a wide box spanning **N = 1 → ≥
-  100**. Some events are isolated singletons while others sit in
-  connected clusters, and mothers of the same locationID face radically
-  different mate contexts. Examples: EO27-1, EO18-7, EO26-3, EO8
-  (several sub-locations). These are the locations where goal 3's β₂
-  (fragmentation) coefficient in Phase C will have the most
-  within-location leverage.
-- **Uniformly isolated locations** — a tight box at **N ≤ 1** (or a
-  single dot at N = 0). Every event is a lone plant; under strict SI
-  no seed set is possible. Examples: EO24, EO24-1, EO24-2, EO24-7.
+- **Well-connected locations** — a single large mating pool well
+  above the 8-plant species-pool threshold; every adult belongs to
+  the same pollen pool. Examples: EO30-1, EO27-3, EO29, EO70.
+- **Mixed-connectivity locations** — several mating pools of
+  varying sizes within one location, so mothers at the same
+  locationID face radically different pollen contexts. Examples:
+  EO27-1, EO18-7, EO26-3, EO8 (several sub-locations). These are
+  the locations where goal 3's β₂ (fragmentation) coefficient in
+  Phase C will have the most within-location leverage.
+- **Uniformly isolated locations** — a single mating pool at
+  N = 1 – 3 adults; under strict SI no seed set is possible from
+  that pool alone. Examples: EO24, EO24-1, EO24-2, EO24-7.
   These are the sites where fragmentation is predicted to be *fully*
   driving mate limitation.
 
@@ -700,27 +713,13 @@ mating pools; BL1 holds the widest *within-location* spread
 (EO8, EO26-3 fragmented across many small pools).
 
 **Downstream dependence.** Every per-location prediction below is
-derived from this structure: Figure 2 collapses it to one number
-per location (`N_fert_eff`), Figure 2b shows an event-scale
-companion of the same spatial data, and Figures 3 and 5 run per-
-component simulations whose aggregation back to the location depends
-on this mating-pool decomposition.
+derived from this structure: Figure 1b summarises the mating-pool
+inventory per location (count and sizes), and Figures 3 and 5 run
+per-component simulations whose aggregation back to the location
+depends on this mating-pool decomposition.
 
 <a id="fig-1b"></a>
 ![Figure 1b — Mating-pool structure per LEPA location. Two aligned panels; one row per locationID (unified `{EOID}_{locationID}` label), rows stacked vertically and grouped by Bottleneck Lineage in canonical BL_ORDER (BL4 → BL5 → BL3 → BL1 → BL2); within each BL rows sorted by largest-pool size. **Panel A — Within-location connectivity share** = `largest_pool_N / total_adults`, the fraction of a location's adults that sit in its biggest 50 m mating pool. Horizontal bars 0.0 → 1.0: 1.0 = fully connected; below 0.5 = majority of adults outside the biggest pool. Reference dotted lines at 0.5 (red) and 1.0 (grey). Single-number per-location fragmentation diagnostic. **Panel B — Mating-pool sizes.** Each dot = one 50 m connected component (= one mating pool), placed at its `component_N_fertile` adult count on the log₂ x-axis; dot size scales with pool size. Red dotted line: N = 1 = single-plant SI floor. Grey dashed line: N = 8 plants = 32 tetraploid allele copies = coupon-collector floor for the 32-allele species pool. Source: `step29d_mating_pool_structure.py`. Data: [`step29d_mating_pool_summary.tsv`](tables/Phase5/step29d_mating_pool_summary.tsv).](figures/Phase5/step29d_mating_pool_structure.png)
-
-<a id="fig-2"></a>
-![Figure 2 — `N_fertile_effective` per LEPA location, panelled by Bottleneck Lineage in canonical BL_ORDER. Within each BL, locations sorted by `N_fert_eff` ascending. Y-axis labels give `locationCode (raw N, N_fert_eff)`. **Panel A** — raw census `total_n_fertile`, log scale. Nature's biological potential at each location. **Panel B** — `N_fert_eff = total_n_fertile × largest_component_share_50m`, log scale. Number of adults that actually share a 50 m mating pool. **Panel C** — connectivity share = Panel B ÷ Panel A, linear 0–1. Dashed line at 1.0 = fully connected (no fragmentation). Locations far to the left of 1.0 lose a substantial fraction of their raw census to spatial fragmentation. This is the single input that drives Figure 3 (diversity), Figure 4 (per-mother P_compat), and Figure 5 (fecundation). Source: `step30_srk_diversity_prediction_vs_observed.py`.](figures/Phase5/step30_A_N_fertile_effective.png)
-
-**Event-scale reinforcement.** The per-location `N_fert_eff` metric
-above collapses each location's internal structure to one number. The
-event-scale distribution below shows the fine-grained picture that
-N_fert_eff summarises — how reachable mating pools vary mother-by-
-mother within a single locationID — and makes vivid why a census of
-e.g. 1 000 plants can behave like ~50 for drift purposes.
-
-<a id="fig-2b"></a>
-![Figure 2b: Event-scale distribution of the pollen-donor **plant count** reachable within 50 m per LEPA location, panelled by Bottleneck Lineage in the standard BL_ORDER (BL4, BL5, BL3, BL1, BL2). X-axis = `N_reachable_50m` = Σ N_fertile in events within 50 m − 1 (donor plants, not allele copies — plotted as plants to avoid conflation with the 32-Fg species allele-class count). Vertical **red dotted line at N = 1**: single-plant SI floor; every event at or below this line has zero reachable pollen donors and no seed set is possible under strict self-incompatibility. Vertical **grey dashed line at N = 8 plants**: coupon-collector floor for the 32-Fg species pool under **tetraploid LEPA** (4 alleles per plant × 8 plants = 32 allele copies). A mother reaching ≥ 8 donor plants has enough allele copies for the species pool to be *physically* reachable in principle; whether drift preserved the diversity is A.5's question. Log₂ x-axis so the 1 → 8 range (below the species floor) and the 8 → 500 range are both legible. Row labels give the location code, number of events, and total adult census. The figure exposes the fine-scale spatial process that a location-scale metric collapses: **a tight box far right of 8** (EO30-1, EO29, EO70) = every event well-connected, uniform pollen environment; **a wide box spanning 1 → hundreds** (EO27-1, EO18-7, EO26-3, EO8 groups) = the location holds a mix of isolated singletons and connected clusters, so mothers at different events face very different mate-availability contexts under the same locationID; **a tight box at N ≤ 1** (EO24 group, EO24-1, EO24-2, EO24-7) = every event is a lone plant. The metric uses only event coordinates, N_fertile, and the 50 m primary pollinator radius — no allele frequencies, no priors. Source: `step30b_fragmentation_index.py`. Data: [`step30_A_fragmentation_per_event.tsv`](tables/Phase5/step30_A_fragmentation_per_event.tsv), [`step30_A_fragmentation_per_location.tsv`](tables/Phase5/step30_A_fragmentation_per_location.tsv).](figures/Phase5/step30_A_fragmentation_index.png)
 
 ### A.6 Predicted SRK diversity per location
 
@@ -1673,10 +1672,10 @@ computes the coupon-collector M using the location's **aggregate**
 at the same locationID are not one mating unit — no pollen crosses
 between them. Treating them as one pool implicitly assumes a mother
 sampled at event A pays for detection at event B, which is only true
-when A and B are within pollinator range. The event-scale K^(50m)
-distribution in [Figure 2b](#fig-2b) (§ A.5) makes this vivid: at
-locations like EO27-1 (8 events across multiple disjoint 50 m mating
-units), the aggregate pool is a mathematical fiction.
+when A and B are within pollinator range. The per-location mating-
+pool decomposition in [Figure 1b](#fig-1b) (§ A.5) makes this vivid:
+at locations like EO27-1 (8 events across multiple disjoint 50 m
+mating units), the aggregate pool is a mathematical fiction.
 
 **Fragmentation-aware allocation — the method.** For each location we
 build the 50 m adjacency graph on its events (same graph § B.2 uses
@@ -2418,7 +2417,6 @@ or right-click → *Save link as…* to pull the TSV into your local pipeline.
 - [`step30_A_si_model_schematic.pdf`](figures/Phase5/step30_A_si_model_schematic.pdf) / [`.png`](figures/Phase5/step30_A_si_model_schematic.png) — three-panel pedagogical schematic of the sporophytic Class I / II model (§ A.7): dominance within a plant, worked example, compatibility rule by cross type.
 - [`step30_A_prediction_fecundation.pdf`](figures/Phase5/step30_A_prediction_fecundation.pdf) / [`.png`](figures/Phase5/step30_A_prediction_fecundation.png) — BL-panelled compatibility per location, traffic-light bands.
 - [`step30_A_diversity_vs_pcompat.pdf`](figures/Phase5/step30_A_diversity_vs_pcompat.pdf) / [`.png`](figures/Phase5/step30_A_diversity_vs_pcompat.png) — cross-plot: SRK diversity × pollen compatibility.
-- [`step30_A_fragmentation_index.pdf`](figures/Phase5/step30_A_fragmentation_index.pdf) / [`.png`](figures/Phase5/step30_A_fragmentation_index.png) — event-scale × location-scale fragmentation scatter, BL-coloured (pure spatial, no drift).
 - [`step30_A_N_fertile_effective.pdf`](figures/Phase5/step30_A_N_fertile_effective.pdf) / [`.png`](figures/Phase5/step30_A_N_fertile_effective.png) — three-panel per-location view of the pivotal `N_fertile_effective` metric: raw census, connectivity-adjusted `N_fert_eff`, and the connectivity share. The single input that drives Figures 3, 4, and 5.
 
 **Phase A validation (adult SRK genotypes from Phase 4 — Part C § C.0):**
