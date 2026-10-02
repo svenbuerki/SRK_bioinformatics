@@ -157,8 +157,8 @@ def plot_mating_pool_structure(summary: pd.DataFrame,
         ax_i.set_xticks([0.0, 0.25, 0.5, 0.75, 1.0])
         if ax_i is axesA[-1]:
             ax_i.set_xlabel(
-                "Share of location's adults in the LARGEST 50 m "
-                "mating pool  (1.0 = fully connected)",
+                "Fraction in the largest mating pool  "
+                "(1.0 = fully connected)",
                 fontsize=9,
             )
         else:
@@ -206,9 +206,7 @@ def plot_mating_pool_structure(summary: pd.DataFrame,
     axesB[-1].set_xticks(xticks)
     axesB[-1].set_xticklabels([str(x) for x in xticks], fontsize=9)
     axesB[-1].set_xlabel(
-        "Adult plants in each 50 m mating pool  (log₂ scale)  —  "
-        "red dotted = N = 1 (single-plant SI floor); "
-        "grey dashed = N = 8 (32-allele coupon-collector floor)",
+        "Adult plants per mating pool  (log₂)",
         fontsize=10,
     )
     # Share x-limits
