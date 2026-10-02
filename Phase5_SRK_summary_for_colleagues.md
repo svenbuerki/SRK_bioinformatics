@@ -12,12 +12,13 @@ companion doc [`Phase5_SRK_sampling_and_prediction.md`](Phase5_SRK_sampling_and_
 
 **Approach.** Phase 5 tests a single causal chain —
 **fragmentation → drift → mate limitation** — across the 39 LEPA
-locations of *Lepidium papilliferum*. The 50 m pollinator radius
-(Figure 1) fixes the drift unit: a **50 m mating pool** is the set
-of plants whose events sit within one pollinator flight of each
-other. Locations hold 1–6 mating pools each; **31 of 101 pools sit
-below the 8-plant coupon-collector floor** for the 32-allele
-species pool (Figure 2).
+locations of *Lepidium papilliferum* (**2025 field data**; wild,
+in-situ, with coordinates). The 50 m pollinator radius (Figure 1)
+fixes the drift unit: a **50 m mating pool** is the set of plants
+whose events sit within one pollinator flight of each other.
+Locations hold 1–6 mating pools each; **31 of 101 pools sit below
+the 8-plant coupon-collector floor** for the 32-allele species
+pool (Figure 2).
 
 **Methodology.** For each mating pool we simulate drift from the
 species-wide 32-allele empirical prior P1, aggregate SRK diversity
