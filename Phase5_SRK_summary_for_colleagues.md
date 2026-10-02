@@ -406,6 +406,24 @@ every location. Total seed counts in the DB span 1 (EO24-2) →
 model, what fraction of pollen would a mother at each location be
 compatible with under random mating?
 
+**The underlying biology — sporophytic Class I / II dominance.**
+LEPA SRK alleles fall into two dominance classes. **Class I is
+dominant**: a plant carrying any Class I allele expresses only its
+Class I alleles on both pollen and stigma, silencing its Class II
+alleles. A plant carrying only Class II alleles co-expresses all
+of them. **A cross is rejected if the two parents share any
+expressed allele**; between-class crosses (Class I plant × Class II
+plant) are always compatible by construction. This single rule
+drives the whole § 30.2 prediction — and crucially, it is what
+makes the § C.0.b hypothesis decomposition work: without Class I
+dominance, within-class drift concentration (EO70's FG024) and
+zygosity composition (EO76's homozygous buffer) would be
+indistinguishable from a plain allele-frequency effect. Figure 3b
+walks through the rule in three panels before we get into the
+simulation steps.
+
+![Figure 3b — Sporophytic SI with Class I / Class II dominance in tetraploid LEPA. **Panel A — dominance within one plant.** Case A: a plant with ≥ 1 Class I allele expresses only its Class I alleles; its Class II alleles are silent (shown faded). Case B: a plant carrying only Class II alleles expresses all four Class II alleles co-dominantly. **Panel B — between-plant recognition, worked example.** Mother M carries {FG001, FG002, FG024, FG031}; her Case-A expressed set is {FG001, FG002}. Three candidate fathers: F1 shares FG001 with M → rejected; F2 is all-Class-II so between-class → always compatible; F3 shares FG002 with M → rejected. **Panel C — compatibility rule by cross type.** Class I × Class I: compatible if their expressed Class I alleles differ (shared Class II is irrelevant because Class II is silent on both sides). Class I × Class II: always compatible by construction (disjoint expressed classes). Class II × Class II: all four alleles expressed on both sides, compatible only if none are shared.](figures/Phase5/step30_A_si_model_schematic.png)
+
 **Approach — how the simulation works, step by step.**
 
 Same per-component logic as § 30.1, but the recognition rule changes
