@@ -276,7 +276,7 @@ def draw_figure(stats: pd.DataFrame,
     # single-swap scenarios that explain the gap between them.
     scen_labels = [
         ("pred_P1_full",      "Predicted (species-wide)",                "#3c8f4c"),
-        ("observed_full",     "Observed",                                "#333333"),
+        ("observed_full",     "Observed",                                "#8a8a8a"),
         ("swap_within_class", "Swap within-class spread → species-wide", "#2b6cb0"),
         ("swap_class_bal",    "Swap Class I/II balance → species-wide",  "#c94b4b"),
         ("swap_zygosity",     "Swap zygosity → species-wide",            "#e6b325"),

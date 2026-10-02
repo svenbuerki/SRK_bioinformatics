@@ -110,14 +110,67 @@ def plot_mating_pool_structure(summary: pd.DataFrame,
     # in each BL.
     heights = [max(int((summary["BL"] == b).sum()), 1) for b in bls]
     fig = plt.figure(
-        figsize=(11.0, max(6.5, 0.30 * sum(heights) + 1.8)),
+        figsize=(15.0, max(6.5, 0.30 * sum(heights) + 1.8)),
     )
-    gs = fig.add_gridspec(len(bls), 1, hspace=0.14,
-                           height_ratios=heights)
-    axesB = [fig.add_subplot(gs[i, 0]) for i in range(len(bls))]
+    # Outer gridspec: Panel A (connectivity share summary; carries
+    # the row labels) + Panel B (per-location strip plot of pool
+    # sizes; label-free, aligned with Panel A row for row).
+    gs_outer = fig.add_gridspec(1, 2, width_ratios=[0.75, 1.4],
+                                 wspace=0.06)
+    gs_A = gs_outer[0, 0].subgridspec(len(bls), 1, hspace=0.14,
+                                       height_ratios=heights)
+    gs_B = gs_outer[0, 1].subgridspec(len(bls), 1, hspace=0.14,
+                                       height_ratios=heights)
+    axesA = [fig.add_subplot(gs_A[i, 0]) for i in range(len(bls))]
+    axesB = [fig.add_subplot(gs_B[i, 0]) for i in range(len(bls))]
 
     # -----------------------------------------------------------------
-    # Per-location strip plot: component_N_fertile per pool
+    # Panel A — per-location connectivity share (= largest-pool share
+    # of total adults). Single-number fragmentation diagnostic per
+    # location: 1.0 = fully connected (whole census in one mating
+    # pool), lower values = more fragmented.
+    # -----------------------------------------------------------------
+    # Pre-compute per-BL row ordering (sorted by largest_pool_N) so
+    # both panels use the same order. Row labels live on Panel A.
+    for ax_i, bl in zip(axesA, bls):
+        sub = summary[summary["BL"] == bl].sort_values(
+            "largest_pool_N", ascending=True).reset_index(drop=True)
+        colour = palette[bl]
+        y = np.arange(len(sub))
+        share = sub["largest_pool_share"].astype(float).values
+        ax_i.barh(y, share, color=colour, edgecolor="white",
+                   height=0.72, zorder=2)
+        ax_i.axvline(1.0, color="#444", ls=":", lw=0.9, alpha=0.6)
+        ax_i.axvline(0.5, color="#b2182b", ls=":", lw=0.9, alpha=0.4)
+        # Row labels on Panel A (leftmost column).
+        y_labels = [
+            f"{row['display_label']}  "
+            f"({row['n_mating_pools_50m']} pool"
+            f"{'s' if row['n_mating_pools_50m'] != 1 else ''}, "
+            f"{row['total_adults']} adults)"
+            for _, row in sub.iterrows()
+        ]
+        ax_i.set_yticks(y)
+        ax_i.set_yticklabels(y_labels, fontsize=8)
+        ax_i.set_xlim(0.0, 1.05)
+        ax_i.set_ylim(-0.6, len(sub) - 0.4)
+        ax_i.set_xticks([0.0, 0.25, 0.5, 0.75, 1.0])
+        if ax_i is axesA[-1]:
+            ax_i.set_xlabel(
+                "Share of location's adults in the LARGEST 50 m "
+                "mating pool  (1.0 = fully connected)",
+                fontsize=9,
+            )
+        else:
+            ax_i.set_xticklabels([])
+        ax_i.spines["top"].set_visible(False)
+        ax_i.spines["right"].set_visible(False)
+    axesA[0].set_title(
+        "A  Within-location connectivity share",
+        fontsize=10, loc="left")
+
+    # -----------------------------------------------------------------
+    # Panel B — per-location strip plot: component_N_fertile per pool
     # -----------------------------------------------------------------
     for ax_i, bl in zip(axesB, bls):
         sub = summary[summary["BL"] == bl].sort_values(
@@ -136,12 +189,7 @@ def plot_mating_pool_structure(summary: pd.DataFrame,
                 color=colour, edgecolor="white", linewidth=0.5,
                 alpha=0.85, zorder=3,
             )
-            y_labels.append(
-                f"{row['display_label']}  "
-                f"({row['n_mating_pools_50m']} pool"
-                f"{'s' if row['n_mating_pools_50m'] != 1 else ''}, "
-                f"{row['total_adults']} adults)"
-            )
+            y_labels.append("")  # row labels live on Panel A
         ax_i.axvline(1, color="#b2182b", ls=":", lw=1.0, alpha=0.7)
         ax_i.axvline(8, color="#333333", ls="--", lw=0.9, alpha=0.5)
         ax_i.set_xscale("log", base=2)
@@ -176,16 +224,15 @@ def plot_mating_pool_structure(summary: pd.DataFrame,
         ax_i.set_xticklabels([])
 
     axesB[0].set_title(
-        "Per-location mating-pool structure  (one dot per 50 m "
-        "connected component)",
-        fontsize=11, loc="left")
+        "B  Mating-pool sizes  (one dot per 50 m component)",
+        fontsize=10, loc="left")
 
     fig.suptitle(
         "Mating-pool structure per LEPA location — 50 m connected "
         "components (= distinct mating pools)",
         fontsize=12, y=0.995,
     )
-    fig.subplots_adjust(left=0.26, right=0.96, top=0.94, bottom=0.07)
+    fig.subplots_adjust(left=0.22, right=0.96, top=0.93, bottom=0.08)
     fig.savefig(out_png, dpi=200)
     fig.savefig(out_pdf)
     plt.close(fig)
