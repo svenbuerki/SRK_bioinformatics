@@ -226,10 +226,16 @@ def draw_figure(stats: pd.DataFrame,
                 bands: dict,
                 prior: pd.DataFrame,
                 out_png: Path, out_pdf: Path) -> None:
-    """Three horizontally-stacked panels.
-      A — observed vs Phase 5 predicted P_compat per location
-      B — observed vs Phase 5 predicted distinct Fg count
-      C — observed vs P1 Fg frequency spectrum (one row per location)
+    """Two-row figure.
+
+    Top row (two square panels):
+      A — predicted vs observed SRK diversity per location
+      B — predicted vs observed pollen compatibility per location
+    Bottom row (per-location drift residual, full width):
+      C — per-Fg (observed − species-wide P1) frequency deviation,
+          one lane per clean-overlap location. Positive bars = Fgs
+          drift-enriched beyond P1; negative bars = depleted or
+          absent at the location (direct visual of drift divergence).
     """
     stats = stats.sort_values("n_functional_carriers", ascending=False)
     fg_labels = prior["Fg"].astype(str).tolist()
@@ -238,18 +244,22 @@ def draw_figure(stats: pd.DataFrame,
                         ["Fg"].astype(str).tolist())
     fg_pos = {fg: i for i, fg in enumerate(prior_order)}
 
-    fig = plt.figure(figsize=(14.5, 5.2))
-    gs = fig.add_gridspec(1, 3, width_ratios=[1.0, 1.0, 2.4],
-                           wspace=0.40)
+    fig = plt.figure(figsize=(13.5, 8.5))
+    gs = fig.add_gridspec(
+        2, 2,
+        height_ratios=[1.0, 1.15],
+        width_ratios=[1.0, 1.0],
+        hspace=0.42, wspace=0.32,
+    )
     axA = fig.add_subplot(gs[0, 0])
     axB = fig.add_subplot(gs[0, 1])
-    axC = fig.add_subplot(gs[0, 2])
+    axC_gs = gs[1, :].subgridspec(len(stats), 1, hspace=0.18)
+    axC_rows = [fig.add_subplot(axC_gs[i, 0]) for i in range(len(stats))]
 
     # ------------------------------------------------------------------
-    # Panel A — SRK diversity (first, matches the fragmentation →
-    # drift → mate-limitation causal flow)
+    # Panel A — SRK diversity: predicted vs observed scatter (clean)
     # ------------------------------------------------------------------
-    hiA = 1.05 * max(stats["obs_distinct_Fgs"].max(),
+    hiA = 1.08 * max(stats["obs_distinct_Fgs"].max(),
                      stats["pred_phase5_distinct_Fgs_hi"].max(),
                      n_fg)
     axA.plot([0, hiA], [0, hiA], color="#888888", lw=1.0, ls="--",
@@ -257,45 +267,39 @@ def draw_figure(stats: pd.DataFrame,
     axA.axvline(n_fg, color="#aaaaaa", ls=":", lw=0.8, alpha=0.5)
     axA.axhline(n_fg, color="#aaaaaa", ls=":", lw=0.8, alpha=0.5)
     for _, r in stats.iterrows():
-        axA.scatter(r["pred_phase5_distinct_Fgs"],
-                    r["exp_distinct_adult_sample_from_P1_upper"],
-                    s=55, facecolors="none", edgecolors=COLOUR_PRED,
-                    linewidths=1.2, zorder=3)
         axA.errorbar(r["pred_phase5_distinct_Fgs"], r["obs_distinct_Fgs"],
                      xerr=[[r["pred_phase5_distinct_Fgs"]
                             - r["pred_phase5_distinct_Fgs_lo"]],
                            [r["pred_phase5_distinct_Fgs_hi"]
                             - r["pred_phase5_distinct_Fgs"]]],
                      fmt="s", color=COLOUR_OBS, ecolor="#999999",
-                     elinewidth=1.0, capsize=3, markersize=7, zorder=2)
-        axA.annotate(f"  {r['locationCode']} (n={int(r['n_functional_carriers'])})",
-                     xy=(r["pred_phase5_distinct_Fgs"], r["obs_distinct_Fgs"]),
-                     fontsize=9, va="center", ha="left")
+                     elinewidth=1.0, capsize=3, markersize=8, zorder=2)
+        label = (f"{r['locationCode']}  (n={int(r['n_functional_carriers'])}, "
+                 f"obs {int(r['obs_distinct_Fgs'])}/{n_fg})")
+        if r["pred_phase5_distinct_Fgs"] > 0.65 * hiA:
+            axA.annotate(
+                label + "  ",
+                xy=(r["pred_phase5_distinct_Fgs"], r["obs_distinct_Fgs"]),
+                fontsize=9, va="center", ha="right")
+        else:
+            axA.annotate(
+                "  " + label,
+                xy=(r["pred_phase5_distinct_Fgs"], r["obs_distinct_Fgs"]),
+                fontsize=9, va="center", ha="left")
     axA.set_xlim(0, hiA); axA.set_ylim(0, hiA)
-    axA.set_xlabel("Predicted (Phase 5 union across components)",
+    axA.set_xlabel("Phase 5 predicted (union across 50 m components)",
                    fontsize=10)
-    axA.set_ylabel("Fgs detected in adults", fontsize=10)
-    axA.set_title(f"A — SRK diversity per location (ceiling = {n_fg})",
+    axA.set_ylabel("Observed in adults (distinct Fgs)", fontsize=10)
+    axA.set_title(f"A  SRK diversity per location (ceiling = {n_fg} Fgs)",
                    fontsize=11, loc="left")
-    from matplotlib.lines import Line2D
-    legend_A = [
-        Line2D([0], [0], marker="s", color="w", markerfacecolor=COLOUR_OBS,
-                markersize=8, label="Observed count"),
-        Line2D([0], [0], marker="o", color="w",
-                markerfacecolor="none", markeredgecolor=COLOUR_PRED,
-                markeredgewidth=1.3, markersize=9,
-                label="No-drift upper bound at n adults (from P1)"),
-    ]
-    axA.legend(handles=legend_A, loc="upper left", fontsize=8,
-               frameon=True)
     axA.spines["top"].set_visible(False)
     axA.spines["right"].set_visible(False)
 
     # ------------------------------------------------------------------
-    # Panel B — Pollen compatibility (second, downstream of diversity)
+    # Panel B — Pollen compatibility: predicted vs observed scatter
     # ------------------------------------------------------------------
     hiB = max(0.05,
-             1.05 * max(stats["obs_pcompat_hi95"].max(),
+             1.08 * max(stats["obs_pcompat_hi95"].max(),
                         stats["pred_phase5_pcompat_hi95"].max(),
                         bands["species_mean"]))
     axB.add_patch(Rectangle((0, 0), hiB, bands["failed_max"],
@@ -317,44 +321,94 @@ def draw_figure(stats: pd.DataFrame,
                      yerr=[[r["obs_pcompat_mean"] - r["obs_pcompat_lo95"]],
                            [r["obs_pcompat_hi95"] - r["obs_pcompat_mean"]]],
                      fmt="o", color=COLOUR_OBS, ecolor="#999999",
-                     elinewidth=1.0, capsize=3, markersize=7, zorder=2)
-        axB.annotate(f"  {r['locationCode']}",
-                     xy=(r["pred_phase5_pcompat_mean"],
-                         r["obs_pcompat_mean"]),
-                     fontsize=9, va="center", ha="left")
+                     elinewidth=1.0, capsize=3, markersize=8, zorder=2)
+        # Flip label to the left of the dot when the dot sits in the
+        # right third of the axis, otherwise it clips.
+        label = f"{r['locationCode']}  (obs {r['obs_pcompat_mean']:.2f})"
+        if r["pred_phase5_pcompat_mean"] > 0.65 * hiB:
+            axB.annotate(
+                label + "  ",
+                xy=(r["pred_phase5_pcompat_mean"], r["obs_pcompat_mean"]),
+                fontsize=9, va="center", ha="right")
+        else:
+            axB.annotate(
+                "  " + label,
+                xy=(r["pred_phase5_pcompat_mean"], r["obs_pcompat_mean"]),
+                fontsize=9, va="center", ha="left")
     axB.set_xlim(0, hiB); axB.set_ylim(0, hiB)
-    axB.set_xlabel("Predicted (Phase 5, component-based)", fontsize=10)
-    axB.set_ylabel("Observed (adult genotypes)", fontsize=10)
-    axB.set_title("B — Pollen compatibility per location",
+    axB.set_xlabel("Phase 5 predicted (component-weighted mean)",
+                   fontsize=10)
+    axB.set_ylabel("Observed in adults", fontsize=10)
+    axB.set_title("B  Pollen compatibility per location",
                    fontsize=11, loc="left")
     axB.spines["top"].set_visible(False)
     axB.spines["right"].set_visible(False)
 
-    # Panel C — Fg frequency spectrum per location (grouped bars)
-    locs = stats["locationCode"].tolist()
+    # ------------------------------------------------------------------
+    # Panel C — Drift residual: f_observed − f_P1 per Fg, per location
+    # ------------------------------------------------------------------
+    # Fgs sorted by P1 descending (most-common on the left, matches
+    # the reader's intuition that drift most dramatically alters the
+    # tails of the distribution).
+    p1_order = np.array([prior.set_index("Fg")["f_mean"]
+                          .to_dict().get(fg, 0.0)
+                          for fg in prior_order])
     x = np.arange(n_fg)
-    width = 0.8 / (len(locs) + 1)
-    # P1 reference (grey bars)
-    p1_bar = np.array([prior.set_index("Fg")["f_mean"].to_dict().get(fg, 0.0)
-                        for fg in prior_order])
-    axC.bar(x - 0.4 + width / 2, p1_bar, width=width,
-            color="#bbbbbb", edgecolor="white", label="P1 species-wide")
     palette = ["#2b6cb0", "#c94b4b", "#3c8f4c"]
-    for i, loc in enumerate(locs):
+    y_abs_max = 0.0
+    locs = stats["locationCode"].tolist()
+    for ax_i, loc in zip(axC_rows, locs):
         sub = freqs[freqs["locationCode"] == loc].set_index("Fg")
         f_loc = np.array([sub.loc[fg, "f_observed"] if fg in sub.index else 0.0
                            for fg in prior_order])
-        axC.bar(x - 0.4 + (i + 1.5) * width, f_loc, width=width,
-                color=palette[i % len(palette)], edgecolor="white",
-                label=f"Observed at {loc}")
-    axC.set_xticks(x)
-    axC.set_xticklabels(prior_order, rotation=90, fontsize=7)
-    axC.set_ylabel("Fg frequency", fontsize=10)
-    axC.set_title("C — Observed Fg frequency spectrum vs P1 species-wide",
-                   fontsize=11, loc="left")
-    axC.legend(loc="upper right", fontsize=8, frameon=True)
-    axC.spines["top"].set_visible(False)
-    axC.spines["right"].set_visible(False)
+        residual = f_loc - p1_order
+        y_abs_max = max(y_abs_max, float(np.abs(residual).max()))
+
+        # Signed bars: green = enriched (observed > P1); red = depleted.
+        colours = ["#2ca25f" if v > 0 else "#de2d26" for v in residual]
+        ax_i.bar(x, residual, color=colours, edgecolor="white",
+                  linewidth=0.4)
+        ax_i.axhline(0.0, color="#333333", lw=0.6)
+        # Mark Fgs that are ABSENT at the location with a short tick
+        # at the x-axis so readers see which species-wide Fgs the
+        # location has lost entirely.
+        absent_idx = np.where(f_loc == 0.0)[0]
+        ax_i.scatter(absent_idx,
+                      np.full_like(absent_idx, -0.005, dtype=float),
+                      marker="x", color="#555555", s=16, zorder=3,
+                      label="Absent at location")
+        ax_i.set_xlim(-0.6, n_fg - 0.4)
+        ax_i.set_xticks(x)
+        if ax_i is axC_rows[-1]:
+            ax_i.set_xticklabels(prior_order, rotation=90, fontsize=7)
+            ax_i.set_xlabel(
+                "32 Fgs, sorted by species-wide (P1) frequency, "
+                "most-common → rarest. × marker = Fg absent at this location.",
+                fontsize=9)
+        else:
+            ax_i.set_xticklabels([])
+        n_fun = int(stats.set_index("locationCode").loc[loc,
+                                                         "n_functional_carriers"])
+        obs_fgs = int(stats.set_index("locationCode").loc[loc,
+                                                           "obs_distinct_Fgs"])
+        ax_i.text(0.995, 0.90,
+                   f"{loc}  (n={n_fun} adults, {obs_fgs}/{n_fg} Fgs present)",
+                   transform=ax_i.transAxes,
+                   fontsize=10, ha="right", va="top", fontweight="bold")
+        ax_i.set_ylabel("f_obs − f_P1", fontsize=9)
+        ax_i.spines["top"].set_visible(False)
+        ax_i.spines["right"].set_visible(False)
+
+    # Symmetric y-range so enrichment and depletion are directly
+    # comparable across the three locations.
+    y_lim = 1.15 * y_abs_max
+    for ax_i in axC_rows:
+        ax_i.set_ylim(-y_lim, y_lim)
+
+    axC_rows[0].set_title(
+        "C  Drift residual per Fg per location  "
+        "(green = observed > P1; red = observed < P1; × = absent)",
+        fontsize=11, loc="left")
 
     fig.suptitle(
         "Phase 5 Part C — Clean-overlap EOs (1:1 with Phase 5 location)  "
@@ -362,7 +416,7 @@ def draw_figure(stats: pd.DataFrame,
         f"{bands['species_mean']:.3f}",
         fontsize=12, y=0.995,
     )
-    fig.tight_layout(rect=[0, 0, 1, 0.95])
+    fig.subplots_adjust(left=0.07, right=0.98, top=0.94, bottom=0.08)
     fig.savefig(out_png, dpi=200)
     fig.savefig(out_pdf)
     plt.close(fig)

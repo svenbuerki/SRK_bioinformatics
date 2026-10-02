@@ -1899,13 +1899,17 @@ and keeps most mothers compatible even with limited local diversity.
   — long form (locationCode × Fg) with observed f, species-wide P1 f,
   and present/absent flag.
 - Figure: `figures/Phase5/step30_B_partC_clean_overlap.png` — three
-  panels ordered to follow the causal chain: **Panel A** diversity
-  (observed Fg count with the no-drift upper bound overlay), **Panel
-  B** pollen compatibility (observed vs Phase 5 predicted with
-  traffic-light bands), **Panel C** observed Fg frequency spectrum
-  per location vs the species-wide P1 reference — the direct visual
-  evidence that habitat-loss-driven drift has pushed local pools
-  past the already-skewed empirical P1.
+  panels ordered to follow the causal chain. **Panel A** — SRK
+  diversity predicted vs observed, 1:1 diagonal, ceiling at 32 Fgs.
+  **Panel B** — pollen compatibility predicted vs observed with
+  traffic-light bands. **Panel C** — **per-Fg drift residual**
+  `f_observed − f_P1` per location, one row each, Fgs sorted
+  species-wide-common → rarest; green bars = enriched (drift
+  favoured), red bars = depleted, × markers = absent (lost
+  entirely). This is the per-location drift fingerprint: EO70 shows
+  classical FG001 enrichment (+21 %) with 26/32 Fgs absent; EO67
+  shows a founder-effect-like signature with normally-rare FG018 /
+  FG023 elevated instead of the common Fgs.
 - Script: `step30d_partC_clean_overlap.py`.
 
 **Why P1 is empirical, not uniform.** A uniform-frequency P1
