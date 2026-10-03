@@ -976,7 +976,7 @@ def plot_diversity_unbiased_vs_sampling(pred: pd.DataFrame,
                                          out_png: Path, out_pdf: Path,
                                          year: int | None = None):
     """Three-column × BL-row figure separating the UNBIASED local Fg
-    diversity per location (what Nature holds, driven by
+    diversity per location (what the population holds, driven by
     N_fertile_effective alone) from the SAMPLING-inferred detection
     (what our seed genotyping will recover, driven by M × 15 seeds)
     and the coverage ratio.
@@ -1078,7 +1078,7 @@ def plot_diversity_unbiased_vs_sampling(pred: pd.DataFrame,
         axA_row.set_ylim(-0.7, len(sub) - 0.3)
         site_labels = location_label_series(sub)
         labels = [
-            f"{label}  ({int(k)} mating pool{'s' if int(k) != 1 else ''}, "
+            f"{label}  ({int(k)} deme{'s' if int(k) != 1 else ''}, "
             f"{int(n)} adults, "
             f"mothers sampled = {int(m)}, "
             f"seeds recorded = {int(s)})"
@@ -1126,7 +1126,7 @@ def plot_diversity_unbiased_vs_sampling(pred: pd.DataFrame,
         )
 
     # Column headers (only on the top row)
-    axes[0, 0].set_title("A. What Nature holds at each location",
+    axes[0, 0].set_title("A. What the population holds at each location",
                           fontsize=11)
     axes[0, 1].set_title("B. What our sampling will detect",
                           fontsize=11)
@@ -1151,7 +1151,7 @@ def plot_diversity_unbiased_vs_sampling(pred: pd.DataFrame,
     fig.suptitle(
         "Predicted SRK allele diversity per LEPA location"
         f"{_year_suffix(year)}\n"
-        "A: what Nature holds — driven by the effective mating pool at the location.  "
+        "A: what the population holds — driven by the effective breeding unit at the location.  "
         "B: what our sampling detects — from the mothers and seeds already recorded in the LEPA DB.  "
         "C: coverage = B ÷ A (dotted line = 90 % target).\n"
         "Panelled by Bottleneck Lineage in BL_ORDER.",
@@ -1237,7 +1237,7 @@ def plot_prediction_fecundation(pcompat_per_loc: pd.DataFrame,
             pd.Series(1, index=sub.index)).astype(int)
         site_labels = location_label_series(sub)
         labels = [
-            f"{label}  ({int(k)} mating pool{'s' if int(k) != 1 else ''}, "
+            f"{label}  ({int(k)} deme{'s' if int(k) != 1 else ''}, "
             f"{int(n)} adults, "
             f"mothers sampled = {int(m)})"
             for label, k, n, m in zip(

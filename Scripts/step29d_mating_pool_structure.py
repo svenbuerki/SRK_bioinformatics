@@ -145,7 +145,7 @@ def plot_mating_pool_structure(summary: pd.DataFrame,
         # Row labels on Panel A (leftmost column).
         y_labels = [
             f"{row['display_label']}  "
-            f"({row['n_mating_pools_50m']} pool"
+            f"({row['n_mating_pools_50m']} deme"
             f"{'s' if row['n_mating_pools_50m'] != 1 else ''}, "
             f"{row['total_adults']} adults)"
             for _, row in sub.iterrows()
@@ -157,7 +157,7 @@ def plot_mating_pool_structure(summary: pd.DataFrame,
         ax_i.set_xticks([0.0, 0.25, 0.5, 0.75, 1.0])
         if ax_i is axesA[-1]:
             ax_i.set_xlabel(
-                "Fraction in the largest mating pool  "
+                "Fraction in the largest deme  "
                 "(1.0 = fully connected)",
                 fontsize=9,
             )
@@ -206,7 +206,7 @@ def plot_mating_pool_structure(summary: pd.DataFrame,
     axesB[-1].set_xticks(xticks)
     axesB[-1].set_xticklabels([str(x) for x in xticks], fontsize=9)
     axesB[-1].set_xlabel(
-        "Adult plants per mating pool  (log₂)",
+        "Adult plants per deme  (log₂)",
         fontsize=10,
     )
     # Share x-limits
@@ -222,12 +222,12 @@ def plot_mating_pool_structure(summary: pd.DataFrame,
         ax_i.set_xticklabels([])
 
     axesB[0].set_title(
-        "B  Mating-pool sizes  (one dot per 50 m component)",
+        "B  Deme sizes  (one dot per 50 m component)",
         fontsize=10, loc="left")
 
     fig.suptitle(
-        "Mating-pool structure per LEPA location — 50 m connected "
-        "components (= distinct mating pools)",
+        "Deme structure per LEPA location — 50 m connected "
+        "components (= distinct demes)",
         fontsize=12, y=0.995,
     )
     fig.subplots_adjust(left=0.22, right=0.96, top=0.93, bottom=0.08)
