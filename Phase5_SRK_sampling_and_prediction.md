@@ -9,62 +9,92 @@
 
 ## Executive summary
 
-<span style="color:#777"><strong>Approach.</strong></span> We aim to delineate the
-**operational deme** — the local breeding unit — within each
-*Lepidium papilliferum* location, because SRK allele diversity and
-pollen compatibility are **per-deme quantities** and therefore so
-is the mate-limitation signal we ultimately want to measure. Get
-the deme wrong and the whole causal chain goes wrong. The
-delineation is a Wright-style genetic-neighbourhood argument
-(Wright 1943, 1946; Levin & Kerster 1974; Vekemans & Hardy 2004 —
-see § References) implemented as a hard-threshold connectivity
-rule: we sweep pollinator radii (10 – 200 m) across the 39 LEPA
-locations with **2025 field data** (wild, in-situ, with coordinates
-— the data scope defined in § A.2), pick the **50 m primary
-radius** ([Figure 1](#fig-1)) where connectivity, sampling cost,
-and *P*<sub>compat</sub> all plateau, and read off a **50 m
-connected component = one operational deme**. The 50 m threshold
-is a step-function stand-in for the (unmeasured) dispersal
-variance σ²; the resulting partition is a geographic upper bound
-on realised gene flow (§ A.5). Locations hold 1–6 operational
-demes each; **31 of 101 demes hold fewer than the 8 plants required
-to physically carry the species-wide pool of 32 SRK alleles** (4
-alleles per tetraploid plant × 8 plants = 32 copies;
-[Figure 1b](#fig-1b)).
+<span style="color:#777"><strong>Context.</strong></span> *Lepidium papilliferum*
+(slickspot peppergrass) is a federally-listed tetraploid
+Brassicaceae whose remaining populations occupy **39 spatially
+isolated locations** across southwestern Idaho and are in
+documented decline. This work investigates the **genomic mechanism
+of that decline**: habitat fragmentation shrinks the local
+breeding pool, genetic drift erodes the pool of self-incompatibility
+(SRK) alleles each plant needs to find a compatible mate, reduced
+pollen compatibility surfaces as reduced seed set. The three
+questions that follow — how to identify the breeding units, how
+to predict allele diversity and pollen compatibility inside each,
+and how to test those predictions with seed data — are all
+operationalised at the scale of the local breeding unit (**deme**).
+
+<span style="color:#777"><strong>Approach.</strong></span> Because the 39 locations are
+already spatially isolated from each other, between-location pollen
+flow is approximately zero and **the location is the natural
+starting point for identifying local breeding units**. The question
+we ask here is whether **within-location further subdivision is
+needed** — i.e. whether a single location holds one breeding unit
+or several — because SRK allele diversity (how many SRK alleles
+physically live inside a breeding unit) and pollen compatibility
+(what fraction of pollen × stigma combinations succeed inside it)
+are both per-breeding-unit quantities. We follow a Wright-style
+genetic-neighbourhood argument (Wright 1943, 1946; Levin & Kerster
+1974; Vekemans & Hardy 2004 — see § References) implemented as a
+hard-threshold connectivity rule: sweep pollinator radii
+(10 – 200 m) across the 39 locations with **2025 field data**
+(wild, in-situ, with coordinates — the data scope defined in
+§ A.2), pick the **50 m primary radius** ([Figure 1](#fig-1))
+where connectivity, sampling cost, and pollen compatibility all
+plateau, and read off a **50 m connected component = one
+operational deme**. The 50 m threshold is a step-function stand-in
+for the (unmeasured) dispersal variance σ²; the resulting
+partition is a geographic upper bound on realised gene flow
+([Figure 1b](#fig-1b); § A.5).
 
 <span style="color:#777"><strong>Methodology.</strong></span> For each operational deme we
-use **empirical allele-frequency data from plant genotyping (P1)**
-to simulate genetic drift, aggregate SRK diversity by set union
-across demes ([Figure 3](#fig-3)), and compute pollen compatibility
-as a size-weighted mean under the **sporophytic Class I / Class II
-model with empirical zygosity** ([Figure 4](#fig-4),
-[Figure 5](#fig-5)). The deme is both the hypothesis the pipeline
-*uses* to generate predictions and the hypothesis the Part C
-seed-genotyping data will *test*.
+use **empirical allele-frequency data from plant genotyping** to
+simulate genetic drift, aggregate SRK allele diversity by set
+union across demes to the location ([Figure 3](#fig-3)), and
+compute pollen compatibility as a size-weighted mean under the
+**sporophytic Class I / Class II model with empirical zygosity**
+([Figure 4](#fig-4), [Figure 5](#fig-5)). The deme is both the
+hypothesis the pipeline *uses* to generate these predictions and
+the hypothesis the next seed-genotyping campaign (see **Next test**
+below) will *test*.
 
-<span style="color:#777"><strong>Result + interpretation.</strong></span> Comparing predictions
-against observed adult SRK genotypes at three locations (**EO67,
-EO70, EO76**; [Figure 10](#fig-10)), the diversity prediction
-**over-estimates** observed counts by ~20 alleles everywhere
-(predicted 11 / 28 / 32 vs observed 7 / 6 / 9) — because P1 itself
-has already absorbed decades of drift and local demes have drifted
-further. **Yet the pollen-compatibility prediction tracks observation
-closely** — EO67 (observed 0.70 / predicted 0.72) and EO76 (0.72 /
-0.78) overlap on their 95 % CIs; only EO70 shows a real gap (0.53
-vs 0.78), a drift signal consistent with its high FG024 frequency
-(**0.35 locally, vs 0.18 species-wide**). The hypothesis
-decomposition ([Figure 11](#fig-11)) explains why: **within-class
-allele frequency spread, not allele count, drives pollen
-compatibility**, and tetraploid zygosity composition actively
-buffers locations with many homozygous mothers. The decisive
-variable is not *how many* alleles survive but *how their
-frequencies and genotypes are arranged* — which is why a huge
-diversity gap can coexist with an accurate pollen-compatibility
-prediction. **These location-level mismatches are themselves
-information about the 50 m operational deme**: systematic
-over-prediction says realised gene flow is tighter than 50 m
-suggests, inviting a future refinement of the deme definition
-(§ A.5).
+<span style="color:#777"><strong>Result + interpretation.</strong></span> **Deme-structure
+census ([Figure 1b](#fig-1b)).** The 39 locations collectively
+hold **101 operational demes** at 50 m (mean 2.6 demes per
+location, range 1 – 6). **13 of 39 locations are a single
+connected deme**; the remaining **26 are fragmented into 2 – 6
+demes** (10 locations at 2 demes, 6 at 3, 3 at 4, 4 at 5, 3 at 6).
+Deme sizes span **1 – 420 adults** (median 23). **31 of 101 demes
+(31 %) hold fewer than the 8 plants required to physically carry
+the species-wide pool of 32 SRK alleles** (4 alleles per tetraploid
+plant × 8 plants = 32 copies), and **6 of 101 (6 %) hold a single
+plant with nobody to mate with at 50 m**. So within-location
+subdivision is not just real but widespread — two-thirds of the
+range operates as several small demes rather than one location-
+wide one.
+
+**Prediction vs observation at three locations ([Figure 10](#fig-10)).**
+Comparing predictions against observed adult SRK genotypes at
+**EO67, EO70, EO76**, the diversity prediction **over-estimates**
+observed counts by ~20 SRK alleles everywhere (predicted 11 / 28 /
+32 vs observed 7 / 6 / 9) — because the empirical allele-frequency
+prior has already absorbed decades of species-wide drift, and
+local demes have drifted further on top of it. **Yet the pollen-
+compatibility prediction tracks observation closely** — EO67
+(observed 0.70 / predicted 0.72) and EO76 (0.72 / 0.78) overlap
+on their 95 % CIs; only EO70 shows a real gap (0.53 vs 0.78), a
+drift signal consistent with its high FG024 frequency (**0.35
+locally, vs 0.18 species-wide**). The hypothesis decomposition
+([Figure 11](#fig-11)) explains why: **within-class allele
+frequency spread, not allele count, drives pollen compatibility**,
+and tetraploid zygosity composition actively buffers locations
+with many homozygous mothers. The decisive variable is not *how
+many* alleles survive but *how their frequencies and genotypes are
+arranged* — which is why a huge diversity gap can coexist with an
+accurate pollen-compatibility prediction. **These location-level
+mismatches are themselves information about the 50 m operational
+deme**: systematic over-prediction says realised gene flow is
+tighter than 50 m suggests, inviting a future refinement of the
+deme definition (§ A.5).
 
 <span style="color:#777"><strong>Next test.</strong></span> We propose a between-location pilot
 (§ C.6) that pairs a **big + connected anchor** with a **small +
@@ -74,7 +104,7 @@ spectrum. Three options are on the table — all share the same
 anchor (**EO29_8**, BL1: 417 adults in a single deme, 22
 mothers in DB, predicted pollen compatibility 0.779):
 
-| Option | Pair kind | Drift-sensitive partner | Predicted *P*<sub>compat</sub> gap | Size ratio | Mothers (anchor + partner) | Trade-off |
+| Option | Pair kind | Drift-sensitive partner | Predicted pollen-compatibility gap | Size ratio | Mothers (anchor + partner) | Trade-off |
 |:---|:---|:---|:---:|:---:|:---:|:---|
 | **B1 ★** | within-BL1 | **EO26-2_35** (22 adults, 3 demes, share 0.50, 8 mothers) | **0.039** | 19× | 22 + 8 = 30 | Strongest confound control (both BL1 → same evolutionary context) and largest within-BL predicted gap. |
 | B2 | within-BL1, bigger size gap | EO26-3_34 (34 adults, 3 demes, share 0.71, 14 mothers) | 0.025 | 12× | 22 + 14 = 36 | More mothers → less sampling noise, but less fragmented partner and smaller contrast. |
@@ -769,14 +799,40 @@ drives the per-component drift simulations in § A.6 and § A.8.
 deme lookup (`step29c_event_to_component_50m.tsv`);
 `step29d_mating_pool_structure.py` builds the display below.
 
-**Dataset-wide result.** 39 locations hold **101 distinct 50 m
-demes** (mean 2.6 pools per location, median 2, max 6).
-Deme sizes span **1 adult (SI floor) → 420 adults**, median
-23 adults. **31 of 101 demes (31 %)** sit below the N = 8
-per-mother floor and **6 of 101 (6 %)** sit at the N = 1
-single-plant SI floor. BL5 tail (EO24 group) concentrates the small
-demes; BL1 holds the widest *within-location* spread
-(EO8, EO26-3 fragmented across many small pools).
+**Dataset-wide result — how many demes do the 39 LEPA locations
+hold?** The connectivity rule yields **101 operational demes
+across 39 isolated locations** at 50 m. The per-location breakdown
+is informative:
+
+| Demes at a location | Locations | Interpretation |
+|:---:|:---:|:---|
+| 1 | **13** | single connected deme; the location-wide census and the breeding unit coincide |
+| 2 | 10 | two sub-demes separated by a > 50 m internal gap |
+| 3 | 6 | three sub-demes |
+| 4 | 3 | four sub-demes |
+| 5 | 4 | five sub-demes |
+| 6 | 3 | six sub-demes — the most fragmented locations |
+
+So **~⅓ of locations (13 / 39) operate as a single location-wide
+deme**, and **~⅔ (26 / 39) require within-location subdivision**
+into 2–6 operational demes to represent gene flow correctly.
+Deme sizes span **1 adult (SI floor) → 420 adults** with a median
+of **23 adults**. **31 of 101 demes (31 %)** sit below the 8-plant
+species-pool threshold (fewer than enough plants to physically
+carry 32 SRK alleles), and **6 of 101 (6 %)** sit at the N = 1
+single-plant SI floor (a plant with nobody to mate with at 50 m).
+The BL5 tail (EO24 group) concentrates the small demes; BL1 holds
+the widest *within-location* spread (EO8, EO26-3 fragmented across
+many small sub-demes). Figure 1b plots every deme and location
+in this distribution.
+
+**Conclusion for the modelling framework.** Within-location
+subdivision is widespread, not an edge case. Treating each
+location as a single pool would collapse 101 drift units into 39
+and would misclassify two-thirds of the range — enough to drive
+qualitatively different predictions of SRK allele diversity and
+pollen compatibility. From § A.6 onward the drift unit is therefore
+the 50 m operational deme, not the location.
 
 **Downstream dependence.** Every per-location prediction below is
 derived from this structure: Figure 1b summarises the deme
