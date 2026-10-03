@@ -60,13 +60,17 @@ RADII_M = [10, 25, 50, 75, 100, 150]
 N_REPLICATES = 2000
 RNG_SEED = 2030
 
-# Three clean-overlap locations (1:1 locationCode <-> locationID; no
-# within-EO 500 m split). locationIDs taken from Phase 2 Locations
-# table and confirmed in step30_B_partC_clean_overlap_per_location.tsv.
+# Clean-overlap locations with meaningful fragmentation across the
+# radius sweep (deme count varies 10 -> 150 m). EO67 has only 2
+# events > 150 m apart, so its deme partition is INVARIANT at every
+# tested radius -> no information for the H1-vs-H2 test; it is
+# included in the TSV for the record but omitted from the figure.
+# locationIDs taken from Phase 2 Locations table and confirmed in
+# step30_B_partC_clean_overlap_per_location.tsv.
 TARGETS = [
-    ("EO67", 39, "#0072B2"),  # Okabe-Ito blue
-    ("EO70", 26, "#D55E00"),  # vermillion
-    ("EO76",  2, "#009E73"),  # teal green
+    ("EO67", 39, "#8a8a8a", False),  # grey; invariant deme count, TSV only
+    ("EO70", 26, "#D55E00", True),   # vermillion; plotted
+    ("EO76",  2, "#009E73", True),   # teal green; plotted
 ]
 
 
@@ -139,7 +143,7 @@ def main() -> None:
     obs_by_id = obs.set_index("locationID")["obs_distinct_Fgs"].to_dict()
 
     rows: list[dict] = []
-    for eo_code, loc_id, _color in TARGETS:
+    for eo_code, loc_id, _color, _plot in TARGETS:
         sub = events[events["locationID"] == loc_id].copy()
         print(f"\n[step30f] {eo_code} (locationID={loc_id}) — "
               f"{len(sub)} events, N_fertile total = {int(sub['n_fertile'].sum())}")
@@ -182,46 +186,70 @@ def main() -> None:
     df.to_csv(out_tsv, sep="\t", index=False)
     print(f"\n[step30f] Wrote {out_tsv}")
 
-    # ---- Figure ----
-    fig, ax = plt.subplots(figsize=(8.5, 5.2))
-    for eo_code, loc_id, color in TARGETS:
-        sub = df[df["EO"] == eo_code].sort_values("radius_m")
-        obs_val = sub["observed"].iloc[0]
-        ax.plot(sub["radius_m"], sub["pred_mean"], "-o",
-                color=color, linewidth=2.2, markersize=6,
-                label=f"{eo_code} predicted")
-        ax.fill_between(sub["radius_m"], sub["pred_lo95"], sub["pred_hi95"],
-                         color=color, alpha=0.15)
-        ax.axhline(obs_val, color=color, linestyle="--",
-                   linewidth=1.5, alpha=0.75,
-                   label=f"{eo_code} observed = {obs_val}")
+    # ---- Figure — gap-focused single panel ----
+    # y-axis = predicted - observed (distinct SRK alleles). Zero line =
+    # perfect match. Observed values appear only as right-side labels
+    # (not horizontal lines, because they are single-measurement adult
+    # counts, not an outcome of the radius sweep).
+    fig, ax = plt.subplots(figsize=(9.0, 5.2))
 
-    ax.axvline(50, color="#555555", linestyle=":", linewidth=1.3, alpha=0.7)
+    plotted_any = False
+    for eo_code, loc_id, color, plot_it in TARGETS:
+        if not plot_it:
+            continue
+        sub = df[df["EO"] == eo_code].sort_values("radius_m")
+        obs_val = int(sub["observed"].iloc[0])
+        gap_mean = sub["pred_mean"].values - obs_val
+        gap_lo = sub["pred_lo95"].values - obs_val
+        gap_hi = sub["pred_hi95"].values - obs_val
+
+        ax.plot(sub["radius_m"], gap_mean, "-o",
+                color=color, linewidth=2.4, markersize=7,
+                label=f"{eo_code}  (observed = {obs_val} alleles)")
+        ax.fill_between(sub["radius_m"], gap_lo, gap_hi,
+                         color=color, alpha=0.18)
+
+        # Right-side label: "+22" style gap at the largest radius
+        x_right = sub["radius_m"].iloc[-1]
+        y_right = gap_mean[-1]
+        ax.annotate(f"gap: +{y_right:.0f}", xy=(x_right, y_right),
+                    xytext=(10, 0), textcoords="offset points",
+                    color=color, fontsize=10, fontweight="bold",
+                    va="center", ha="left")
+
+        plotted_any = True
+
+    ax.axhline(0, color="#444", linewidth=1.4, zorder=0)
+    ax.text(RADII_M[0] * 0.95, 0.5, "perfect match",
+            fontsize=8.5, color="#444", va="bottom", ha="left")
+
+    # 50 m marker
+    ax.axvline(50, color="#777", linestyle=":", linewidth=1.3, alpha=0.8)
     y_top = ax.get_ylim()[1]
-    ax.text(50, y_top * 0.97, "50 m (current\noperational deme)",
-            fontsize=9, color="#333", ha="center", va="top")
+    ax.text(50, y_top * 0.97,
+            "50 m\n(current\noperational\ndeme)",
+            fontsize=8.5, color="#333", ha="center", va="top")
 
     ax.set_xscale("log")
     ax.set_xticks(RADII_M)
     ax.set_xticklabels([str(r) for r in RADII_M])
-    ax.set_xlabel("Pollinator radius (m, log scale)")
-    ax.set_ylabel("Predicted distinct SRK alleles at the location")
+    ax.set_xlabel("Pollinator radius used to build the deme partition  (m, log scale)")
+    ax.set_ylabel("Predicted − observed distinct SRK alleles\n(the diversity gap at each radius)")
     ax.set_title(
-        "SRK allele diversity vs pollinator radius — three clean-overlap locations\n"
-        "Does the diversity gap close at a tighter radius? (H1 vs H2 test; "
-        "see step30f header)",
+        "SRK diversity gap vs pollinator radius — EO70 and EO76\n"
+        "If gene flow were tighter than 50 m (H1), the gap should\n"
+        "shrink as radius decreases. It does not.",
         fontsize=11,
     )
-    ax.legend(loc="center left", bbox_to_anchor=(1.02, 0.5),
-              fontsize=9, frameon=False)
+    ax.legend(loc="upper right", fontsize=9, frameon=True)
     ax.grid(True, alpha=0.3)
-    ax.set_ylim(bottom=0)
     fig.tight_layout()
     for ext in ("png", "pdf"):
         fig.savefig(FIGURES / f"step30f_srk_diversity_radius_sweep.{ext}",
                     dpi=200, bbox_inches="tight")
     plt.close(fig)
-    print(f"[step30f] Wrote {FIGURES}/step30f_srk_diversity_radius_sweep.{{png,pdf}}")
+    print(f"[step30f] Wrote {FIGURES}/step30f_srk_diversity_radius_sweep.{{png,pdf}}  "
+          f"(EO67 omitted from plot: deme count invariant across sweep)")
 
 
 if __name__ == "__main__":
