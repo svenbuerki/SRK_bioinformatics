@@ -190,7 +190,7 @@ sitting on top of this hierarchy:
 | Fertile plant census | `total_n_fertile` | location | All fertile plants at a location, summed across every event. The biological potential, with no spatial filtering. |
 | **Mating pool size** | `component_N_fertile` | component | The fertile plants that share a single 50 m pollen pool — **this is the drift unit for both diversity and pollen-compatibility prediction**. Each 50 m connected component = one mating pool. A location can hold one mating pool (fully connected) or several (fragmented); see Figure 2. |
 | Fragmentation-aware mother target | `M_frag` | event, derived from components | For each event, the number of mothers to sample so that each 50 m connected component reaches 90 % allele-detection coverage, with a ≥ 1-per-event maternal-genotype floor. Sums across events to the location-level `M_frag_aware`. |
-| Rule 2 tetraploid seed cap | 15 seeds/mother | mother plant | Each seed contributes 2 paternal allele draws from the local pollen pool. 15 seeds/mother is the coupon-collector floor for a mother to see every allele in her component's pollen pool with 90 % probability. |
+| Tetraploid per-mother seed cap | 15 seeds/mother | mother plant | Each seed contributes 2 paternal allele draws from the local pollen pool. 15 seeds/mother is the per-mother floor that gives a 90 % chance of seeing every allele in her component's pollen pool. |
 | Species prior | `P1` | species-wide | The **32 Fgs identified across LEPA plus their empirical species-wide frequencies** — a 32-slot probability vector that sums to 1, built from the Canu-amplicon L1 carrier inventory. Common Fgs (e.g. FG001 at 41 %) have a large slot; rare ones have a small slot. Every per-location prediction draws alleles from P1, so small locations lose the rare Fgs to drift by chance. |
 
 **Why components matter in one sentence.** Every per-location
@@ -245,7 +245,7 @@ skipped:
 
 - **Fragmentation** — how many adults actually share a pollen
   environment at each location.
-- **SRK diversity** — how many Fg alleles Nature holds locally under
+- **SRK diversity** — how many Fg alleles the population holds locally under
   fragmentation-driven drift.
 - **Pollen compatibility (P_compat)** — how much of the local pool
   a mother is compatible with under sporophytic Class I / II SI.
@@ -256,7 +256,7 @@ sampling design — mother count per location, seed count per mother
 
 ---
 
-## Link 1 — Pollinator-radius choice (Step 29b)
+## Fragmentation — Pollinator-radius choice (Step 29b)
 
 **Question.** What pollen-flight radius best represents LEPA's
 mating process, given the biology of its small-bee pollinators?
@@ -315,10 +315,11 @@ event → mating-pool lookup (`step29c_event_to_component_50m.tsv`);
   (mean 2.6 pools per location, median 2, max 6).
 - Pool sizes span the full biological range: **1 adult (SI floor) → 420 adults**;
   median pool size = 23 adults.
-- **31 of 101 mating pools (31 %) sit below the N = 8 coupon-collector
-  floor** (fewer than 32 tetraploid allele copies in the pool) —
-  these are drift-limited for the 32-allele species pool regardless
-  of location mean.
+- **31 of 101 mating pools (31 %) sit below the 8-plant species-pool
+  threshold** (4 alleles per tetraploid plant × 8 plants = 32 copies —
+  the minimum needed to physically carry one copy of every SRK allele
+  in the species pool). These pools are drift-limited for the
+  32-allele species pool regardless of location mean.
 - **6 of 101 mating pools (6 %) sit at the N = 1 single-plant SI floor** —
   a single plant has nobody to mate with at the 50 m radius.
 - Pattern across BLs: BL5 tail (EO24 group) carries the small-pool
@@ -338,7 +339,7 @@ is the fastest way to anticipate which locations will stand out in
 Figures 3 and 4.
 
 <a id="fig-2"></a>
-![Figure 2 — Mating-pool structure per LEPA location. Two aligned panels; one row per locationID (unified `{EOID}_{locationID}` label), rows stacked vertically and grouped by Bottleneck Lineage in canonical BL_ORDER (BL4 → BL5 → BL3 → BL1 → BL2); within each BL rows are sorted by largest-pool size. **Panel A — Within-location connectivity share** = `largest_pool_N / total_adults`, the fraction of a location's adults that sit in its biggest 50 m mating pool. Horizontal bars run 0.0 → 1.0: **1.0 = fully connected** (whole census in one mating pool); **below 0.5 = majority of adults sit outside the biggest pool** (highly fragmented). Reference dotted lines at 0.5 (red) and 1.0 (grey). This is the single-number per-location fragmentation diagnostic. **Panel B — Mating-pool sizes.** Each dot = one 50 m connected component (= one mating pool), placed at its `component_N_fertile` adult count on the log₂ x-axis; dot size scales with pool size. **Red dotted line: N = 1** = the single-plant SI floor. **Grey dashed line: N = 8 plants = 32 tetraploid allele copies** = the coupon-collector floor for the 32-allele species pool. Row labels: `locationCode_locationID (K pools, X total adults)`. 6/101 pools at or below the SI floor; 31/101 below the coupon-collector floor. Source: `step29d_mating_pool_structure.py`.](figures/Phase5/step29d_mating_pool_structure.png)
+![Figure 2 — Mating-pool structure per LEPA location. Two aligned panels; one row per locationID (unified `{EOID}_{locationID}` label), rows stacked vertically and grouped by Bottleneck Lineage in canonical BL_ORDER (BL4 → BL5 → BL3 → BL1 → BL2); within each BL rows are sorted by largest-pool size. **Panel A — Within-location connectivity share** = `largest_pool_N / total_adults`, the fraction of a location's adults that sit in its biggest 50 m mating pool. Horizontal bars run 0.0 → 1.0: **1.0 = fully connected** (whole census in one mating pool); **below 0.5 = majority of adults sit outside the biggest pool** (highly fragmented). Reference dotted lines at 0.5 (red) and 1.0 (grey). This is the single-number per-location fragmentation diagnostic. **Panel B — Mating-pool sizes.** Each dot = one 50 m connected component (= one mating pool), placed at its `component_N_fertile` adult count on the log₂ x-axis; dot size scales with pool size. **Red dotted line: N = 1** = the single-plant SI floor. **Grey dashed line: N = 8 plants = 32 tetraploid allele copies** = the 8-plant species-pool threshold (minimum plants to physically carry 32 SRK alleles at 4 alleles / plant). Row labels: `locationCode_locationID (K pools, X total adults)`. 6/101 pools at or below the SI floor; 31/101 below the 8-plant species-pool threshold. Source: `step29d_mating_pool_structure.py`.](figures/Phase5/step29d_mating_pool_structure.png)
 
 ## Step 30 Phase A — Per-location predictions
 
@@ -351,10 +352,10 @@ mothers × actual seeds/mother in the DB. The prospective design
 question ("how many mothers × how many seeds do we NEED for a new
 location?") is answered in Steps 28 – 29.
 
-1. **What Nature actually holds at this location** (unbiased truth) —
+1. **What the population actually holds at this location** (unbiased truth) —
    how many SRK alleles are physically present. Driven **per mating
    pool** by `component_N_fertile` (Figure 2), then unioned to the
-   location level. This is the Link 2 output of the causal chain and
+   location level. This is the drift output of the causal chain and
    the raw material on which the pollen-compatibility prediction
    (§ 30.2) operates.
 2. **What our sampling will recover** (sampling-inferred) — expected
@@ -420,7 +421,7 @@ coverage below.
 
 **Result.**
 
-| Location | BL | N_fert_eff (50 m) | n components | M_mothers | total_seeds | Nature holds | Sampling detects | Coverage |
+| Location | BL | N_fert_eff (50 m) | n components | M_mothers | total_seeds | Population holds | Sampling detects | Coverage |
 |---|---|---|---|---|---|---|---|---|
 | EO24-2 (1 plant, BL5 tail) | BL5 | 1 | 1 | 1 | 1 | ~3 | ~2.6 | **87 %** |
 | EO24 (BL5 tail) | BL5 | 2 | 1 | 1 | 5 | ~4.5 | ~4.1 | **91 %** |
@@ -564,36 +565,36 @@ proposed independently.
 characterise her local pollen environment well enough to test the
 mate-limitation prediction in § C.1?
 
-**Approach — Rule 2 tetraploid allele-detection floor.** Each seed
+**Approach — tetraploid per-mother allele-detection floor.** Each seed
 contributes 2 paternal SRK alleles under tetraploid sporophytic
-inheritance. Under a uniform-pollen coupon collector, the probability
-of missing any one of K local paternal Fgs after 2·n seed alleles is
-`(1 − 1/K)^(2n)`. Setting `(1 − 1/K)^(2n) = 0.10` gives the seeds
-needed for a 90 % chance to see every Fg. **Rule 2 caps this at
-n = 15 seeds/mother** — the point where the return per additional
-seed is negligible.
+inheritance. Treating pollen pickup as sampling with replacement from
+the local pollen pool, the probability of missing any one of K local
+paternal Fgs after 2·n seed alleles is `(1 − 1/K)^(2n)`. Setting
+`(1 − 1/K)^(2n) = 0.10` gives the seeds needed for a 90 % chance to
+see every Fg. **This saturates at n = 15 seeds/mother** — the point
+where the return per additional seed is negligible.
 
-![Figure — Step 28 coverage curves. Panel A: per-mother detection of the local Fg pool as a function of seeds genotyped, one curve per event-size bin; the vertical red line at 15 marks the tetraploid Rule 2 cap. Panel B: aggregation of coverage across mothers at a location (15 seeds × M). Every event size reaches its local ceiling by 5 mothers.](figures/Phase5/step28_coverage_curves.png)
+![Figure — Step 28 coverage curves. Panel A: per-mother detection of the local Fg pool as a function of seeds genotyped, one curve per event-size bin; the vertical red line at 15 marks the tetraploid per-mother cap. Panel B: aggregation of coverage across mothers at a location (15 seeds × M). Every event size reaches its local ceiling by 5 mothers.](figures/Phase5/step28_coverage_curves.png)
 
 **Field → lab correction — 60 % germination rate.** Part C
 genotypes **seedlings**, not seeds (user-confirmed design,
 2026-10-03). LEPA seeds germinate at **≈ 60 %** under greenhouse
-conditions, so to end up with the Rule 2 target of 15 genotyped
-seedlings per mother the field protocol must germinate
-`ceil(15 ÷ 0.60) = 25` seeds per mother. The totals become:
+conditions, so to end up with the target of 15 genotyped seedlings
+per mother the field protocol must germinate `ceil(15 ÷ 0.60) = 25`
+seeds per mother. The totals become:
 
 - **Collect / germinate:** 505 mothers × 25 seeds = **12 625 seeds**.
 - **Expected after germination:** ~15 seedlings/mother × 505 = **~7 575 seedlings**.
 - **Genotype:** up to 15 seedlings per mother → **7 575 seedling genotypes**.
 
-The coupon-collector allele-detection guarantee still holds —
-Rule 2 is a floor on *seedling* genotypes delivered to the lab, not
-on seeds extracted in the field. The field-team recipe in
+The 90 % allele-detection guarantee still holds — 15 is a floor on
+*seedling* genotypes delivered to the lab, not on seeds extracted in
+the field. The field-team recipe in
 [`step29c_partC_germplasmID_selection.tsv`](tables/Phase5/step29c_partC_germplasmID_selection.tsv)
 now carries both `n_seeds_to_germinate` and `n_seedlings_to_genotype`.
 
 **Does 15 seedlings give enough Part C testing power?**
-Coupon-collector justifies 15 as the allele-detection floor. Two
+The 90 % allele-detection target justifies 15 as the floor. Two
 additional simulations confirm it also passes the regression
 thresholds:
 
@@ -622,11 +623,11 @@ pool?
 
 **Approach.** Under tetraploid sampling each adult contributes
 `PLOIDY × component_N_fertile = 4·component_N_fertile` allele copies
-to its mating pool. Coupon-collector target: 90 % chance of
-observing every allele in a given mating pool at the total delivered
-allele draws `A_delivered = M × (4 + 2 × 15) = 34·M`. Plus a private-
-allele floor: **at least one mother per event** (an isolated
-slickspot's private allele cannot be recovered from any other event).
+to its mating pool. Target: 90 % chance of observing every allele in
+a given mating pool at the total delivered allele draws
+`A_delivered = M × (4 + 2 × 15) = 34·M`. Plus a private-allele floor:
+**at least one mother per event** (an isolated slickspot's private
+allele cannot be recovered from any other event).
 
 **Refinement — fragmentation-aware allocation.** If a location is
 fragmented into several disconnected 50 m mating pools, we decompose
@@ -655,13 +656,13 @@ next field season:
 | Primary pollinator radius | **50 m** |
 | Drift unit | **50 m mating pool** = 50 m connected component of events; `component_N_fertile` adults per pool (Figure 2) |
 | Mother allocation per location | Fragmentation-aware `M_frag` (per 50 m mating pool + ≥ 1 per event) |
-| Rule 2 seedling-genotype floor | **15 seedlings/mother** |
+| Per-mother seedling-genotype floor | **15 seedlings/mother** (90 % allele-detection target) |
 | Field-side germination assumption | **60 %** |
 | Seeds to germinate per mother | **25** (= ceil(15 ÷ 0.60)) |
 | **Total mothers across 39 locations** | **505** |
 | **Total seeds to germinate** | **505 × 25 = 12 625** |
 | **Total seedlings to genotype** | **~505 × 15 = ~7 575** |
-| Coupon-collector target | 90 % allele detection per 50 m mating pool |
+| Allele-detection target | 90 % probability of seeing every allele in each 50 m mating pool |
 
 **Three authoritative files:**
 
@@ -1049,7 +1050,7 @@ Source table:
 
 - **Figure 1** — [`step30_A_radius_sensitivity.png`](figures/Phase5/step30_A_radius_sensitivity.png) — why 50 m is the right primary pollinator radius.
 - **Figure 2** — [`step29d_mating_pool_structure.png`](figures/Phase5/step29d_mating_pool_structure.png) — per-location mating-pool structure: one dot per 50 m connected component (= one mating pool), log x-axis for pool size.
-- **Figure 3** — [`step30_A_diversity_unbiased_vs_sampling.png`](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.png) — three-panel: what Nature holds (unbiased) vs what our sampling detects vs coverage.
+- **Figure 3** — [`step30_A_diversity_unbiased_vs_sampling.png`](figures/Phase5/step30_A_diversity_unbiased_vs_sampling.png) — three-panel: what the population holds (unbiased) vs what our sampling detects vs coverage.
 - **Figure 4** — [`step30_A_prediction_fecundation.png`](figures/Phase5/step30_A_prediction_fecundation.png) — predicted pollen compatibility per location, traffic-light bands.
 - **Figure 5** — [`step30_B_partC_clean_overlap.png`](figures/Phase5/step30_B_partC_clean_overlap.png) — § C.0.a Part C anchor at Phase 5 location scale (SRK diversity + pollen compatibility + per-allele drift residual).
 - **Figure 6** — [`step30_B_partC_hypothesis_decomposition.png`](figures/Phase5/step30_B_partC_hypothesis_decomposition.png) — § C.0.b competing-hypothesis decomposition.
