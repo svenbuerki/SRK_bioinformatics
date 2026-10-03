@@ -3,7 +3,7 @@
 
 Reads the event-level spatial frame written by Step 28
 (`step28_events_spatial_neighborhood.tsv`) and computes, for each LEPA
-location, how much of its adult mating pool is actually connected via
+location, how much of its adult breeding pool is actually connected via
 pollen flow at seven flight radii (10, 25, 50, 75, 100, 150, 200 m).
 The primary radius adopted downstream is **50 m** — see Step 29a
 (`step29a_pollinator_radius_sensitivity.py`) for the biological

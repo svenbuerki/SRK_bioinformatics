@@ -90,7 +90,13 @@ and tetraploid zygosity composition actively buffers locations
 with many homozygous mothers. The decisive variable is not *how
 many* alleles survive but *how their frequencies and genotypes are
 arranged* — which is why a huge diversity gap can coexist with an
-accurate pollen-compatibility prediction. **A radius sweep at
+accurate pollen-compatibility prediction. **Three mechanisms —
+Class I dominance (26 of 32 Fgs), the species's current class
+imbalance that keeps common Class I alleles numerous even after
+drift, and tetraploid homozygosity — stack into structural
+redundancy that lets a location keep breeding after severe allele
+loss, reversing the standard allele-count-equals-mating-success
+intuition.** **A radius sweep at
 EO70 and EO76 ([Figure 12](#fig-12), § C.0.c) tests whether the
 diversity gap is just an artefact of the deme being too wide at
 50 m.** Rebuilding the deme partition at radii 10 – 150 m leaves
@@ -569,6 +575,20 @@ cannot be mistaken for one another.
 
 ### A.5 Fragmentation of pollen flow — event and location scales
 
+**The deme as the unit, before the metrics.** Every quantitative
+output in Phase 5 — predicted SRK allele diversity, predicted
+pollen compatibility, mother-sampling allocation — is a *per-deme*
+quantity before it aggregates to the location. The deme is the
+biological unit of inference; the radius choice below is the
+operational knob that *delineates* that unit. For the full
+rationale (why per-deme quantities are paramount, why we invoke
+Wright's genetic-neighbourhood scaffolding without estimating
+*N*<sub>b</sub> itself, and why the deme is treated as a testable
+working hypothesis rather than a fixed assumption) see the deme-
+structure subsection further down in § A.5 and § References. The
+section below picks the operational radius, after which § A.5.1
+and the deme-structure subsection describe what the resulting
+partition looks like at each location.
 
 **Pollinator-radius choice.** Every fragmentation and downstream prediction in Phase 5 depends on the assumed pollen-flight radius. A dedicated sensitivity sweep across 10, 25, 50, 75, 100, 150, 200 m ([Figure 1](#fig-1)) demonstrates that **50 m is the biologically sound primary radius**: it sits within the halictid / small-bee foraging literature range, captures 43 % of the sampling-cost reduction available on the radius curve, and retains meaningful fragmentation variation across BLs (median connectivity 0.81, not yet saturated at 1.00 like at 75 m+). Every downstream analysis in this doc uses 50 m as the primary radius; 10 m and 25 m are always computed and stored as sensitivity checks.
 
@@ -2203,6 +2223,49 @@ gametophytic approximation would collapse all three into a single
 "effective diversity" number and mis-predict the EO76 outcome.
 The hypothesis test therefore doubles as validation of the model's
 mechanistic structure.
+
+**Biological take-home — the deme buffers intense drift.** The
+three channels above are not independent model knobs but three
+**buffering mechanisms stacked on top of each other** that let a
+deme keep breeding after severe allele loss:
+
+1. **Class I dominance (26 of 32 Fgs).** Every between-class cross
+   is compatible by construction, and Class I > Class II within a
+   plant, so a mother carrying any Class I allele has her
+   compatibility set primarily by that allele. Losing *rare*
+   Class I alleles barely moves the mean because the common Class I
+   alleles still carry the pool.
+2. **Frequency-dependent selection is forgiving when drift
+   collapses onto *common* alleles.** The classical SI catastrophe
+   (Lawrence 2000; Castric & Vekemans 2004) is a deme that collapses
+   onto so few alleles that most mothers share them all → crash.
+   At EO70 the 6 surviving Fgs are the species's *common* ones
+   (FG001 at 41 %, FG024 at 35 % locally) — the opposite of the
+   worst case. Different mothers still carry different combinations,
+   so the pollen pool still finds compatible targets.
+3. **Tetraploid zygosity actively buffers at homozygous-rich sites.**
+   A homozygous mother expresses a single Fg at her stigma, which
+   pollen fathers can more easily avoid matching than a
+   heterozygous mother's larger expressed set. The yellow bar at
+   EO76 in Figure 11 **drops below the observed black bar** — the
+   quantitative signature of this mechanism.
+
+**What this reverses in the standard conservation-genetics
+intuition.** The usual story *lose SRK alleles → mating failure*
+treats allele count as the bottom line. In a **tetraploid +
+sporophytic Class I / II system with the specific class imbalance
+LEPA has**, the mating-level consequence of allele loss is
+**actively buffered** until the pool either (i) collapses onto a
+single class or (ii) homozygosity becomes so extreme that the
+expressed-set channel constrains compatibility. The 32 → 6 drift
+collapse at EO70 is severe by any count, and yet the pollen pool
+still works at 70 % compatibility (close to the species mean
+0.78). **The system has structural redundancy that diversity-
+counting alone cannot see** — a central Phase 5 result and a
+reason the pollen-compatibility metric, not raw allele count, is
+the one that enters the § C.1 mate-limitation regression. The
+B1 pilot pair in § C.6 will tell us whether any location is near
+either tipping point.
 
 **Outputs.**
 

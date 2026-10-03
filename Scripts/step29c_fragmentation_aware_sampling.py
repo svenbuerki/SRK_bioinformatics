@@ -208,7 +208,7 @@ def build_per_location(event_df: pd.DataFrame) -> pd.DataFrame:
     })
     per_loc = per_loc.merge(cur_slim, on="locationID", how="left")
     # Merge step29b connectivity so the figure label can show N_fert_eff
-    # (drift-relevant mating pool) alongside the raw census.
+    # (drift-relevant deme) alongside the raw census.
     conn_tsv = DEFAULT_TABLES / "step29_location_connectivity.tsv"
     if conn_tsv.exists():
         conn = pd.read_csv(conn_tsv, sep="\t", encoding="utf-8-sig")

@@ -421,7 +421,7 @@ def predicted_pcompat_per_location(
 
     Rationale (per-component, not location-wide proxy)
     --------------------------------------------------
-    Effective mating pool size is a property of each 50 m connected
+    Effective deme size is a property of each 50 m connected
     component inside a location, not of the location as a whole: plants
     inside a component share pollen; plants in a different component
     (same location but no pollen link) do not. Earlier revisions used
@@ -1010,8 +1010,8 @@ def plot_diversity_unbiased_vs_sampling(pred: pd.DataFrame,
         else "M_achievable_location"
     df["M"] = df[m_col].astype(float)
     df["N_eff"] = df["N_fertile_effective"].astype(float)
-    # Number of 50 m mating pools at the location — the explicit
-    # link to Figure 2's per-location mating-pool structure.
+    # Number of 50 m demes at the location — the explicit link to
+    # Figure 2's per-location deme-structure display.
     df["n_pools"] = df.get("n_components_50m",
                              pd.Series(1, index=df.index)).astype(int)
     # Total seeds recorded at each location in the LEPA DB — the raw
@@ -1812,7 +1812,7 @@ def main() -> None:
     print(f"[step30] Wrote {bands_path}")
 
     # Legacy N_fertile_effective figure dropped (2026-10-03) — the
-    # per-location mating pool structure is now shown directly in
+    # per-location deme structure is now shown directly in
     # step29d_mating_pool_structure.py, and the per-component drift
     # simulations (Figures 3 and 4) are the authoritative display.
     plot_diversity_unbiased_vs_sampling(pred_div, prior,

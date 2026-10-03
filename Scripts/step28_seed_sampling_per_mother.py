@@ -252,7 +252,7 @@ def haversine_meters(lat1: np.ndarray, lon1: np.ndarray,
 def load_all_events(db_path: Path, year: int | None = None) -> pd.DataFrame:
     """All LEPA events with coordinates and organismQuantityFertile (parsed
     leniently — the DB stores free-text notes in that field for some rows).
-    Includes the event's own N_fertile so we can build the mating pool.
+    Includes the event's own N_fertile so we can build the deme.
 
     If `year` is given, restrict to events of that eventDate year — the
     spatial neighbourhood should never mix survey years (§ 1.5 of the

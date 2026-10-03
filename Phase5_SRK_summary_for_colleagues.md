@@ -89,7 +89,13 @@ tetraploid zygosity composition actively buffers locations with
 many homozygous mothers. The decisive variable is not *how many*
 alleles survive but *how their frequencies and genotypes are
 arranged* — which is why a huge diversity gap can coexist with an
-accurate pollen-compatibility prediction. **A radius sweep at
+accurate pollen-compatibility prediction. **Three mechanisms —
+Class I dominance (26 of 32 Fgs), the species's current class
+imbalance that keeps common Class I alleles numerous even after
+drift, and tetraploid homozygosity — stack into structural
+redundancy that lets a location keep breeding after severe allele
+loss, reversing the standard allele-count-equals-mating-success
+intuition.** **A radius sweep at
 EO70 and EO76 ([Figure 7](#fig-7)) tests whether the diversity
 gap is just an artefact of the deme being too wide at 50 m.**
 Rebuilding the deme partition at radii 10 – 150 m leaves the
@@ -312,40 +318,7 @@ sampling design — mother count per location, seed count per mother
 
 ---
 
-## Fragmentation — Pollinator-radius choice (Step 29b)
-
-**Question.** What pollen-flight radius best represents LEPA's
-mating process, given the biology of its small-bee pollinators?
-
-**Approach.** Sweep candidate radii from 10 m to 200 m. At each
-radius, build a within-location graph in which two adults are
-connected if they sit within that radius of each other, and record
-(i) the fraction of adults in a multi-event pollen-flow component
-(connectivity), (ii) the fragmentation-aware sampling cost
-(§ Sampling design), and (iii) the predicted random-mating pollen
-compatibility under the sporophytic Class I/II model.
-
-**Result.** Connectivity plateaus at ≥ 75 m; sampling cost stabilises
-at 75–100 m; predicted pollen compatibility is radius-independent
-under the empirical zygosity (§ 30.2). **50 m is the sweet spot**:
-within the halictid / small-bee foraging literature range,
-captures 43 % of the sampling-cost reduction, and keeps meaningful
-fragmentation variation across BLs. Every downstream metric in this
-doc — deme structure (Figure 2), event-scale reachability
-SRK diversity prediction (Figure 3), pollen compatibility
-prediction (Figure 4) — is computed at this 50 m choice.
-
-<a id="fig-1"></a>
-![Figure 1 — Pollinator-radius sensitivity sweep. Four panels showing how connectivity, fragmentation-aware sampling cost, predicted P_compat, and the sustainable-band fraction of locations change across radii from 10 to 200 m. Connectivity plateaus at ≥ 75 m and P_compat is radius-independent under empirical zygosity, justifying 50 m as the primary radius.](figures/Phase5/step30_A_radius_sensitivity.png)
-
----
-
-## Deme structure per location — the drift unit (Step 29c)
-
-**The 50 m choice above is the knob that controls every downstream
-fragmentation metric.** Fix the radius first; the deme
-structure (Figure 2) follows directly from it, and in turn feeds
-the Phase A predictions (Figures 3, 4).
+## Delineating the deme — pollen-flight radius (Step 29b)
 
 ### The deme as a working hypothesis
 
@@ -368,10 +341,9 @@ neighbourhood parameter *N*<sub>b</sub> itself — that would require
 parent-offspring dispersal distances or a fine-scale *F*<sub>ST</sub> ~ distance
 curve, neither of which exists for LEPA. Instead we delineate
 **operational demes** using a hard-threshold connectivity rule
-(50 m, bridged by events), calibrated by the sensitivity sweep in
-which connectivity, cost, and compatibility all plateau at ≥ 75 m.
-Our partition is a **geographic / topological upper bound** on
-realised gene flow — flow across 50 m could be lower, but not
+(50 m, bridged by events), calibrated by the sensitivity sweep
+below. Our partition is a **geographic / topological upper bound**
+on realised gene flow — flow across 50 m could be lower, but not
 higher.
 
 **The deme definition is a testable working hypothesis.** The
@@ -385,9 +357,42 @@ radius, behavioural weights) to close the gap. The deme is both
 the hypothesis the pipeline *uses* to generate predictions and the
 hypothesis the Part C data will *test*.
 
+### Picking the pollen-flight radius
+
+**Question.** With the deme defined operationally as "events whose
+plants are connected within one pollinator flight", what *radius*
+should the flight be? The answer must come from pollinator biology,
+not from the sampling budget, so we sweep candidates and look for
+the biologically defensible plateau.
+
+**Approach.** Sweep candidate radii from 10 m to 200 m. At each
+radius, build a within-location graph in which two events are
+connected if any pair of their plants sits within that radius, and
+record (i) the fraction of adults in a multi-event pollen-flow
+component (connectivity), (ii) the fragmentation-aware sampling
+cost (§ Sampling design), and (iii) the predicted random-mating
+pollen compatibility under the sporophytic Class I/II model.
+
+**Result.** Connectivity plateaus at ≥ 75 m; sampling cost
+stabilises at 75–100 m; predicted pollen compatibility is radius-
+independent under the empirical zygosity (§ 30.2). **50 m is the
+sweet spot** — inside the halictid / small-bee foraging literature
+range, captures 43 % of the sampling-cost reduction, and keeps
+meaningful fragmentation variation across Bottleneck Lineages.
+Every downstream metric in this doc — deme structure (Figure 2),
+SRK diversity prediction (Figure 3), pollen compatibility
+prediction (Figure 4) — is computed at this 50 m choice.
+
+<a id="fig-1"></a>
+![Figure 1 — Pollinator-radius sensitivity sweep. Four panels showing how connectivity, fragmentation-aware sampling cost, predicted pollen compatibility, and the sustainable-band fraction of locations change across radii from 10 to 200 m. Connectivity plateaus at ≥ 75 m and pollen compatibility is radius-independent under empirical zygosity, justifying 50 m as the primary radius.](figures/Phase5/step30_A_radius_sensitivity.png)
+
+---
+
+## Deme structure per location — what the 50 m partition yields (Step 29c)
+
 ### How the deme is built
 
-**Question.** Within a location, how many pollen pools does a plant
+**Question.** Within a location, how many demes does a plant
 belong to, and how big is each one? A **50 m connected component**
 is the Phase 5 **deme**: the set of adult plants whose events
 are reachable from each other at the primary pollinator radius.
@@ -1013,6 +1018,50 @@ mis-predict EO76 outright. The hypothesis decomposition therefore
 doubles as validation of the model's mechanistic structure: it
 successfully resolves cases where the three channels pull in
 different directions.
+
+#### Biological take-home — the deme can buffer intense drift
+
+The three single-swap counterfactuals (within-class spread, Class I /
+Class II balance, tetraploid zygosity) are not independent model
+knobs — they are three **buffering mechanisms** stacked on top of
+each other that let a deme keep breeding even after severe allele
+loss:
+
+1. **Class I dominance (26 of 32 Fgs).** Every between-class cross
+   is compatible by construction, and Class I dominates Class II
+   within a plant. A mother carrying any Class I allele has her
+   compatibility set primarily by that allele, so losing *rare*
+   Class I alleles barely moves the mean (the common Class I
+   alleles still carry the pool).
+2. **Frequency-dependent selection is forgiving when drift
+   collapses onto *common* alleles.** The classical SI catastrophe
+   (Lawrence 2000; Castric & Vekemans 2004) is a deme that collapses
+   onto so few alleles that most mothers share them all → crash.
+   But at EO70 the 6 surviving Fgs are the species's *common* ones
+   (FG001 at 41 %, FG024 at 35 % locally) — the opposite of the
+   worst case. Different mothers still carry different combinations,
+   so the pollen pool still finds compatible targets.
+3. **Tetraploid zygosity actively buffers at homozygous-rich sites.**
+   At EO76, 76 % of mothers are homozygous: a homozygous mother
+   expresses a single Fg at her stigma, which pollen fathers can
+   more easily avoid matching than a heterozygous mother's larger
+   expressed set. The yellow bar at EO76 in Figure 6 **drops below
+   the observed black bar** — the quantitative signature of this
+   mechanism.
+
+**What this reverses in the standard conservation-genetics
+intuition.** The usual story — *lose SRK alleles → mating failure*
+— treats allele count as the bottom line. In a **tetraploid +
+sporophytic Class I / II system with the specific class imbalance
+LEPA has**, the mating-level consequence of allele loss is
+**actively buffered** until the pool either (i) collapses onto a
+single class or (ii) homozygosity becomes so extreme that the
+expressed-set channel constrains compatibility. The 32 → 6 drift
+collapse at EO70 is severe by any count, and yet the pollen pool
+still works at 70 % compatibility (close to the species mean 0.78).
+**The system has structural redundancy that diversity-counting
+alone cannot see.** The next-sampling-campaign data at the B1 pilot
+pair will tell us whether any location is near either tipping point.
 
 **Workflow placement.** This analysis is a follow-through on § C.0.a's
 diversity trigger, not a stand-alone pollen-compatibility test.
