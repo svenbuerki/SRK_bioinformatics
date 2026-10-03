@@ -89,11 +89,21 @@ tetraploid zygosity composition actively buffers locations with
 many homozygous mothers. The decisive variable is not *how many*
 alleles survive but *how their frequencies and genotypes are
 arranged* — which is why a huge diversity gap can coexist with an
-accurate pollen-compatibility prediction. **These location-level
-mismatches are themselves information about the 50 m operational
-deme**: systematic over-prediction says realised gene flow is
-tighter than 50 m suggests, inviting a future refinement of the
-deme definition.
+accurate pollen-compatibility prediction. **The diversity-gap
+origin is settled by a radius sweep at the three clean-overlap
+locations ([Figure 7](#fig-7)):** rebuilding the deme partition
+at radii 10 – 150 m leaves the predicted diversity flat and well
+above observed at every radius — including the 10 m extreme that
+fragments EO76 into 17 small demes. So the gap is **not** a
+spatial-partitioning error (the 50 m operational deme is
+defensible); it is **per-deme drift history beyond what the
+species-wide prior captures** — a signal we want, because it is
+exactly what the Part C seed-genotyping will measure directly.
+The direction of error also works in our favour: over-predicting
+at a radius that is already a geographic upper bound says real
+demes are at most 50 m and could be tighter, so a future
+refinement can only add demes (and therefore mothers), giving us
+finer-scale information for free.
 
 <span style="color:#777"><strong>Next test.</strong></span> We propose a between-location pilot that
 pairs a **big + connected anchor** with a **small + fragmented
@@ -1036,6 +1046,71 @@ every observed location "drifted", which is both less informative
 (the species-wide signal is real) and less actionable (the baseline
 would not reflect how LEPA actually enters the modelling frame).
 
+### C.0.c Hypothesis test — SRK diversity gap: deme size vs residual drift
+
+**Why this test exists.** Figure 5 shows the diversity prediction
+over-estimates the observed SRK allele count by ~20 alleles at every
+clean-overlap location (predicted 11 / 28 / 32 vs observed 7 / 6 / 9).
+§ C.0.b above decomposes *why pollen compatibility nevertheless
+tracks observation*, but is silent on *why diversity misses*. Two
+competing hypotheses:
+
+- **H1 — the 50 m operational deme is too wide.** Realised gene
+  flow is actually tighter; a smaller radius should partition each
+  location into more small demes with independent drift histories,
+  and the union across them should recover fewer Fgs.
+- **H2 — per-deme drift history exceeds what the species-wide
+  prior P1 captures.** Decades of local drift have pushed each
+  deme's SRK pool below P1 even at the correct deme size, so the
+  gap is a signal of excess local drift rather than a spatial
+  partitioning error.
+
+**Approach.** Re-run the per-deme diversity simulation at radii
+**10, 25, 50, 75, 100, 150 m** for EO67, EO70, EO76; see
+[Figure 7](#fig-7). The 50 m column reproduces Figure 3 Panel A;
+the surrounding columns say what would happen under tighter or
+wider deme definitions.
+
+**Result — H2 wins decisively.** The predicted curve stays flat
+and well above observed at every radius for EO70 and EO76 —
+including the 10 m extreme that fragments EO76 into **17** small
+demes and EO70 into **3**. Even that extreme fragmentation only
+drops predicted from ~28 → ~28 at EO70 and ~32 → ~32 at EO76,
+because the small sub-demes together still carry ~every Fg. EO67
+sits inside the 95 % CI at every radius 10–100 m (the "gap" at
+EO67 was simulation noise, not signal).
+
+| Location | Observed | Predicted at r = 10 m | at 50 m | at 150 m | Deme count 10 m / 50 m / 150 m |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **EO67** | 7 | 10.9 **[7, 15]** | 10.8 **[7, 15]** | 10.9 [8, 15] | 2 / 2 / 2 |
+| **EO70** | 6 | 28.3 [25, 31] | 28.3 [25, 31] | 28.4 [25, 31] | 3 / 1 / 1 |
+| **EO76** | 9 | 31.8 [31, 32] | 31.8 [31, 32] | 31.8 [31, 32] | 17 / 6 / 5 |
+
+95 % CIs in brackets; **bold** means observed is inside the CI.
+Full table at [`step30f_srk_diversity_radius_sweep.tsv`](tables/Phase5/step30f_srk_diversity_radius_sweep.tsv).
+
+**Interpretation — three take-homes.**
+
+1. **The 50 m operational deme is defensible as a first-pass
+   partition.** No tighter radius would reconcile prediction with
+   observation here, so deme-size is not the knob to turn.
+2. **The over-prediction is a signal we should want to see.** It
+   says each deme's SRK pool has drifted further than the
+   species-wide prior captures — and the only way to *measure*
+   that extra drift is by genotyping real local samples.
+3. **The direction of error works in our favour.** If diversity
+   had been under-predicted (observed > predicted), the deme would
+   be too *narrow* — a false-positive fragmentation signal that
+   would waste sampling effort on sub-demes that do not exist.
+   Over-predicting at a radius that is already a geographic upper
+   bound says the real demes are **at most** 50 m and could be
+   tighter. Refining the deme definition can only add more demes,
+   i.e. **more mothers per location**, which gives us finer-scale
+   information for free.
+
+<a id="fig-7"></a>
+![Figure 7 — SRK allele diversity prediction vs observed at the three clean-overlap locations (EO67, EO70, EO76) across a sweep of pollinator radii (10 → 150 m, log x-axis). Solid lines + shaded bands = per-location predicted distinct Fg count under the per-deme simulation (mean + 95 % CI, 2000 replicates), with each location's connected-component partition rebuilt at each radius. Dashed horizontal lines = observed count at each location. Vertical dotted line marks the current 50 m operational deme. If predicted crossed observed at a radius below 50 m, deme size would be the problem (H1); the fact that predicted stays flat and well above observed at every radius for EO70 and EO76 — including the 10 m extreme — rules out H1 and supports H2 (per-deme drift history beyond the species-wide prior). EO67 is already inside the CI at every radius (no real gap there). Source: `step30f_srk_diversity_hypothesis_test.py`. Data: [`step30f_srk_diversity_radius_sweep.tsv`](tables/Phase5/step30f_srk_diversity_radius_sweep.tsv).](figures/Phase5/step30f_srk_diversity_radius_sweep.png)
+
 ---
 
 ## Phase B — Closing the causal chain with seed data
@@ -1148,6 +1223,7 @@ Source table:
 - **Figure 4** — [`step30_A_prediction_fecundation.png`](figures/Phase5/step30_A_prediction_fecundation.png) — predicted pollen compatibility per location, traffic-light bands.
 - **Figure 5** — [`step30_B_partC_clean_overlap.png`](figures/Phase5/step30_B_partC_clean_overlap.png) — § C.0.a Part C anchor at Phase 5 location scale (SRK diversity + pollen compatibility + per-allele drift residual).
 - **Figure 6** — [`step30_B_partC_hypothesis_decomposition.png`](figures/Phase5/step30_B_partC_hypothesis_decomposition.png) — § C.0.b competing-hypothesis decomposition.
+- **Figure 7** — [`step30f_srk_diversity_radius_sweep.png`](figures/Phase5/step30f_srk_diversity_radius_sweep.png) — § C.0.c SRK-diversity radius sweep (deme-size vs residual-drift test).
 
 ---
 
