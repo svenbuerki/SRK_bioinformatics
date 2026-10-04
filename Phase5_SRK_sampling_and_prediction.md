@@ -105,8 +105,9 @@ radius, including the 10 m extreme that fragments EO76 into 17
 small demes and EO70 into 3. The gap therefore **cannot be a pure
 spatial-partitioning error** under the current model: the only
 way it closes is if each deme's drift history has diverged from
-the species-wide prior — the H2 scenario, which the next
-seed-genotyping campaign is designed to measure. The 50 m
+the species-wide prior — i.e. each deme carries its own frequency
+vector that the species-wide prior does not capture, which the
+next seed-genotyping campaign is designed to measure. The 50 m
 operational deme is defensible as a first-pass partition, and the
 direction of error is favourable: over-predicting at a radius
 that is already a geographic upper bound says real demes are
@@ -2341,13 +2342,35 @@ demes at 10 m, or EO70 into 3 demes at 10 m, leaves the union-of-
 per-deme pools at essentially the same 28–32 Fgs. The ~22-allele
 gap at EO70 and ~23-allele gap at EO76 do not close.
 
-**Why the prediction is flat under P1 — a one-sentence mechanics
-note.** Under P1 (FG001 ≈ 41 %, five more Fgs ≈ 25 % combined, 20+
-rare Fgs each < 2 %), even sub-demes of 18–78 plants (72–312 allele
-copies) reliably sample all common Fgs, so the union-across-sub-
-demes quickly reconstructs the full species-wide pool. The
-information content of a spatial subdivision washes out when the
-underlying drift model is identical across sub-demes.
+**Why the prediction is flat across the sweep — the mechanics.**
+The location-level prediction is the **union** of per-deme Fg sets,
+not a weighted sum. When a radius change re-partitions a location
+into more or fewer sub-demes, the **total number of allele copies
+sampled at that location stays fixed at `PLOIDY × N_fertile_total`**
+— the sweep only redistributes those draws across sub-demes. Each
+sub-deme on its own may miss rare Fgs under P1 (where FG001 ≈ 41 %,
+five more Fgs ≈ 25 % combined, and 20+ rare Fgs are each < 2 %),
+but a rare Fg at frequency *p* now has **multiple sub-demes to
+appear in**, and the union captures it with probability
+`1 − (1 − p)^(PLOIDY × N_total)` — which is governed by the
+**location total, not the partition**. The partition therefore only
+matters when (a) `N_fertile_total` is already below the P1
+saturation ceiling (~50–100 adults, where the full-pool draw itself
+starts missing rare Fgs — e.g. EO67's 10 adults), **or** (b)
+sub-deme sizes drop into the low single digits AND the location
+total is also near the ceiling. Neither applies at EO70 (161
+plants, 644 copies) or EO76 (517 plants, 2068 copies): both are
+far above the ceiling at every radius in the sweep. Concretely, at
+EO70's 10 m extreme the 161 plants split into sub-demes of 78 / 65 /
+18 that each recover ~26 / 25 / 19 Fgs independently — but their
+union still delivers 28, same as the single 161-plant deme at 50 m.
+This is a general feature, not a parameter artefact: **under a
+drift model that is identical across sub-demes, spatial sub-
+partitioning washes out at the location level once the total pool
+saturates P1**. Varying the partition can therefore never close the
+diversity gap under P1 — only a drift model that differs per deme
+can (i.e. H2, which requires per-deme empirical priors from Part C
+seed-genotyping).
 
 **Interpretation — what we can and cannot say.**
 
