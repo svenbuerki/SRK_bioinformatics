@@ -132,8 +132,12 @@ mothers in DB, predicted pollen compatibility 0.779):
 | B3 | between-BL | EO25-B_21 (BL5: 10 adults, 2 demes, 7 mothers) | **0.051** | **42×** | 22 + 7 = 29 | Largest predicted gap and biggest size ratio, but confounds fragmentation × BL identity. |
 
 **B1 is recommended** (★): it maximises within-BL contrast
-sharpness while holding BL identity constant. Full evaluations in
-[step29c_partC_between_location_candidates.tsv](Tables/Phase5/step29c_partC_between_location_candidates.tsv).
+sharpness while holding BL identity constant. Full pair evaluations
+in [step29c_partC_between_location_candidates.tsv](Tables/Phase5/step29c_partC_between_location_candidates.tsv).
+Per-mother sampling recipe (germplasmIDs to pull from the LEPA DB,
+with per-deme allocation, seeds-to-germinate and seedlings-to-
+genotype columns, 60 % germination correction baked in) in
+[step29c_partC_germplasmID_selection.tsv](Tables/Phase5/step29c_partC_germplasmID_selection.tsv).
 
 ## Contents
 
