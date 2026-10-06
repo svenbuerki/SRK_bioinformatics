@@ -130,10 +130,15 @@ def silhouette_curve(D: np.ndarray, Z: np.ndarray,
 # ---------------------------------------------------------------------------
 def plot_dendrogram(Z: np.ndarray, cents: pd.DataFrame,
                       k_optimal: int,
-                      out_png: Path, out_pdf: Path) -> None:
+                      out_png: Path, out_pdf: Path) -> dict:
+    """Render the dendrogram and ALSO return the leaf order so the
+    downstream Phase III script can renumber populations by dendrogram
+    position (the user-selected within-BL sort key). The dendrogram
+    `leaves` attribute is a list of positional indices into `cents`
+    in the x-axis order the plot shows them."""
     fig, ax = plt.subplots(figsize=(14, 7))
     labels = [f"P{int(r):>2}" for r in cents["populationID"]]
-    dendrogram(
+    ddata = dendrogram(
         Z,
         labels=labels,
         leaf_rotation=90,
@@ -159,6 +164,7 @@ def plot_dendrogram(Z: np.ndarray, cents: pd.DataFrame,
     fig.savefig(out_pdf, dpi=200, bbox_inches="tight")
     plt.close(fig)
     print(f"[step30h] Wrote {out_png.name} + .pdf")
+    return ddata
 
 
 def plot_silhouette_curve(sil: pd.DataFrame, k_optimal: int,
@@ -227,16 +233,24 @@ def main() -> None:
     assigns["cluster_k_optimal"] = labels_opt
     assigns["cluster_k5"]        = labels_5
     assigns["k_optimal"]         = k_optimal
-    assigns.to_csv(TABLES / "step30h_cluster_assignments.tsv",
-                    sep="\t", index=False)
-    print(f"[step30h] Wrote step30h_cluster_assignments.tsv")
 
-    # Figures
-    plot_dendrogram(
+    # Figures first (so we can read the dendrogram leaf order out
+    # before writing cluster_assignments.tsv).
+    ddata = plot_dendrogram(
         Z, cents, k_optimal,
         FIGURES / "step30h_dendrogram.png",
         FIGURES / "step30h_dendrogram.pdf",
     )
+    # Dendrogram leaf order → populationID → position (0-indexed from
+    # left). Each population gets a `dendrogram_leaf_pos` column.
+    leaf_positions: dict[int, int] = {}
+    for pos, leaf_idx in enumerate(ddata["leaves"]):
+        pop_id = int(cents.iloc[leaf_idx]["populationID"])
+        leaf_positions[pop_id] = pos
+    assigns["dendrogram_leaf_pos"] = assigns["populationID"].map(leaf_positions)
+    assigns.to_csv(TABLES / "step30h_cluster_assignments.tsv",
+                    sep="\t", index=False)
+    print(f"[step30h] Wrote step30h_cluster_assignments.tsv")
     plot_silhouette_curve(
         sil, k_optimal,
         FIGURES / "step30h_silhouette_curve.png",

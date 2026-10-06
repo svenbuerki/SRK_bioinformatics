@@ -1,17 +1,18 @@
-"""Step 30h / Phase IV — predictions split by year, grouped by BL.
+"""Step 30h / Phase IV — predictions in the fecundation style, per year.
 
-Phase 5 § A.4.5. The core "re-run predictions split by year" view
-the user asked for: each population's predicted SRK diversity and
-pollen compatibility shown as parallel 2025 vs 2026 bars with 95 %
-CIs, with populations grouped by new BL (BL1 → BL5, each a
-sub-panel). No simulation re-run — just reads the step30g per-
-(populationID, year) prediction TSV that already has new population
-IDs and BL after Phase III.
+Phase 5 § A.4.5. Rebuilt to match `step30_A_prediction_fecundation.png`:
+dots + 95 % CI error bars, traffic-light background bands (pollen
+compatibility only), species-mean reference line, BL-coloured points,
+BL label on the right in bold BL colour, one row per population,
+panels stacked by BL (BL_ORDER from srk_bl_constants).
 
-Outputs
--------
-figures/Phase5/step30h_pred_diversity_by_BL_year.png / .pdf
-figures/Phase5/step30h_pred_pcompat_by_BL_year.png / .pdf
+User's request: PREDICTIONS SPLIT BY YEAR → one figure per year per
+metric, i.e. four PNGs total:
+
+    step30h_pred_pcompat_2025.png / .pdf
+    step30h_pred_pcompat_2026.png / .pdf
+    step30h_pred_diversity_2025.png / .pdf
+    step30h_pred_diversity_2026.png / .pdf
 """
 from __future__ import annotations
 
@@ -20,18 +21,29 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
 
-from srk_bl_constants import make_location_label
+from srk_bl_constants import BL_COLORS, make_location_label
 
 TABLES  = Path("Tables/Phase5")
 FIGURES = Path("figures/Phase5")
 
-BAR_2025 = "#0072B2"   # Okabe-Ito blue
-BAR_2026 = "#E69F00"   # Okabe-Ito orange
+# BL_ORDER for the NEW population-based BL framework = BL1 → BL5
+# (area DESC → connectivity DESC rule, locked in step30h Phase III).
+NEW_BL_ORDER = ["BL1", "BL2", "BL3", "BL4", "BL5"]
+
+# Traffic-light thresholds — same as step30_A_prediction_fecundation
+T_FAILED_HI     = 0.259
+T_STRUGGLING_HI = 0.519
+SPECIES_MEAN_PC = 0.778
+X_UPPER_PC      = 1.0
+
+K_FG_CEILING    = 32  # SRK diversity species-wide ceiling
 
 
 def population_labels() -> dict[int, str]:
-    """Build {new populationID → '{EO_locID}, ...'} by walking the
+    """Build {populationID (new) → '{EO_locID}, ...'} by walking the
     (now remapped) crosswalk."""
     cw = pd.read_csv(TABLES / "step29a_population_crosswalk.tsv",
                       sep="\t", encoding="utf-8-sig")
@@ -52,84 +64,115 @@ def population_labels() -> dict[int, str]:
     return out
 
 
-def plot_metric(pred: pd.DataFrame, labels: dict[int, str],
-                  metric: str,
-                  display_name: str,
-                  x_axis_label: str,
-                  out_png: Path, out_pdf: Path) -> None:
-    """One sub-panel per BL; within each panel one row per population
-    sorted by populationID; two bars per population (2025 blue + 2026
-    orange) with 95 % CI error bars."""
-    bls = sorted(pred["BL"].dropna().unique())
-    heights = [max(int((pred["BL"] == b).sum() / 2), 1)   # /2 because 2 years
-               for b in bls]
-    x_max = max(pred[f"pred_{metric}_hi95"].max(),
-                 pred[f"pred_{metric}_mean"].max())
+def plot_metric_year(pred_y: pd.DataFrame,
+                       labels: dict[int, str],
+                       year: int,
+                       metric: str,                 # "pcompat" | "srk_diversity"
+                       x_label: str,
+                       suptitle: str,
+                       x_upper: float,
+                       traffic_light: bool,
+                       species_mean_x: float | None,
+                       out_png: Path, out_pdf: Path) -> None:
+
+    bls = [b for b in NEW_BL_ORDER if b in pred_y["BL"].values]
+    heights = [max(int((pred_y["BL"] == b).sum()), 1) for b in bls]
 
     fig, axes = plt.subplots(
         len(bls), 1,
-        figsize=(10.5, max(9, 0.35 * (len(pred) // 2) + 3)),
+        figsize=(10, max(6.5, 0.30 * sum(heights) + 1.8)),
         gridspec_kw={"height_ratios": heights},
         sharex=True,
     )
     if len(bls) == 1:
         axes = [axes]
 
-    width = 0.4
     for ax, bl in zip(axes, bls):
-        sub = (pred[pred["BL"] == bl]
-                  .sort_values(["populationID", "year"])
-                  .reset_index(drop=True))
-        pops = sub["populationID"].unique()
-        y_pos = np.arange(len(pops))
-        for yr, color, offset in [(2025, BAR_2025, -width/2),
-                                     (2026, BAR_2026, +width/2)]:
-            yr_sub = sub[sub["year"] == yr].set_index("populationID")
-            means = [yr_sub.loc[p, f"pred_{metric}_mean"]
-                        if p in yr_sub.index else np.nan
-                     for p in pops]
-            los   = [yr_sub.loc[p, f"pred_{metric}_lo95"]
-                        if p in yr_sub.index else np.nan
-                     for p in pops]
-            his   = [yr_sub.loc[p, f"pred_{metric}_hi95"]
-                        if p in yr_sub.index else np.nan
-                     for p in pops]
-            means_arr = np.array(means, dtype=float)
-            errs_lo = means_arr - np.array(los, dtype=float)
-            errs_hi = np.array(his, dtype=float) - means_arr
-            errs = np.vstack([np.clip(np.nan_to_num(errs_lo, nan=0),
-                                        0, None),
-                               np.clip(np.nan_to_num(errs_hi, nan=0),
-                                        0, None)])
-            ax.barh(y_pos + offset, means_arr, height=width,
-                    color=color, alpha=0.85, label=str(yr),
-                    xerr=errs, ecolor="#333",
-                    error_kw={"elinewidth": 0.7, "capsize": 2})
+        sub = (pred_y[pred_y["BL"] == bl]
+                   .sort_values(f"pred_{metric}_mean", ascending=True)
+                   .reset_index(drop=True))
+        y = np.arange(len(sub))
+        colour = BL_COLORS.get(bl, "#777777")
 
-        row_labels = [f"P{int(p):>2}  ({labels.get(int(p), '')})"
-                       for p in pops]
-        ax.set_yticks(y_pos)
-        ax.set_yticklabels(row_labels, fontsize=8)
-        ax.set_xlim(0, x_max * 1.05)
-        ax.invert_yaxis()
-        ax.grid(axis="x", alpha=0.3)
+        # Traffic-light bands (pollen compatibility only)
+        if traffic_light:
+            band_alpha = 0.12
+            ax.axvspan(0.0, T_FAILED_HI, color="#b2182b",
+                       alpha=band_alpha, zorder=0)
+            ax.axvspan(T_FAILED_HI, T_STRUGGLING_HI, color="#e08214",
+                       alpha=band_alpha, zorder=0)
+            ax.axvspan(T_STRUGGLING_HI, x_upper, color="#1b7837",
+                       alpha=band_alpha, zorder=0)
+        # Species-mean reference line
+        if species_mean_x is not None:
+            ax.axvline(species_mean_x, color="#1b7837", ls=":",
+                       lw=1.0, alpha=0.75)
+
+        # Error bars + dots
+        means = sub[f"pred_{metric}_mean"].to_numpy()
+        xerr_lo = np.clip(means - sub[f"pred_{metric}_lo95"].to_numpy(),
+                           0, None)
+        xerr_hi = np.clip(sub[f"pred_{metric}_hi95"].to_numpy() - means,
+                           0, None)
+        ax.errorbar(means, y, xerr=[xerr_lo, xerr_hi],
+                     fmt="none", ecolor=colour, alpha=0.5,
+                     elinewidth=1.2, capsize=2.5, zorder=1)
+        sizes = 30 + 8 * np.sqrt(np.clip(sub["N_fertile_total"], 1, None))
+        ax.scatter(means, y, s=sizes, c=colour, edgecolor="white",
+                   linewidth=0.6, zorder=2)
+
+        # Row labels: 'P{N}  ({EO_locID})  (K demes, N adults)'
+        row_lbls = []
+        for _, r in sub.iterrows():
+            pid = int(r["populationID"])
+            loc_lbl = labels.get(pid, "")
+            k = int(r["n_demes"])
+            n = int(r["N_fertile_total"])
+            row_lbls.append(
+                f"P{pid:>2}  ({loc_lbl})  "
+                f"({k} deme{'s' if k != 1 else ''}, {n} adults)"
+            )
+        ax.set_yticks(y)
+        ax.set_yticklabels(row_lbls, fontsize=8)
+        ax.set_xlim(0.0, x_upper)
+        ax.set_ylim(-0.7, len(sub) - 0.3)
+
+        # BL label on the right
+        ax.text(1.01, 0.5, bl,
+                transform=ax.transAxes,
+                fontsize=13, fontweight="bold", color=colour,
+                va="center", ha="left")
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
-        ax.text(1.012, 0.5, f"{bl}\n(n = {len(pops)})",
-                transform=ax.transAxes,
-                color="#5e3c99", fontsize=11, fontweight="bold",
-                va="center", ha="left")
 
-    axes[-1].set_xlabel(x_axis_label)
-    axes[0].legend(loc="lower right", fontsize=10, frameon=True)
-    fig.suptitle(
-        f"Phase 5 predicted {display_name} per population — "
-        "2025 vs 2026, grouped by new BL",
-        fontsize=12, y=0.995,
-    )
-    fig.tight_layout(rect=[0, 0, 0.92, 0.985])
-    fig.savefig(out_png, dpi=200, bbox_inches="tight")
-    fig.savefig(out_pdf, dpi=200, bbox_inches="tight")
+    # Legend on the first panel
+    legend_handles: list = []
+    if traffic_light:
+        legend_handles += [
+            Patch(facecolor="#b2182b", alpha=0.35,
+                  label=f"failed  (< {T_FAILED_HI:.3f})"),
+            Patch(facecolor="#e08214", alpha=0.35,
+                  label=f"struggling  "
+                        f"({T_FAILED_HI:.3f}–{T_STRUGGLING_HI:.3f})"),
+            Patch(facecolor="#1b7837", alpha=0.35,
+                  label=f"sustainable  (≥ {T_STRUGGLING_HI:.3f})"),
+        ]
+    if species_mean_x is not None:
+        tag = ("sporophytic species mean"
+               if traffic_light else "species-wide ceiling")
+        legend_handles.append(
+            Line2D([0], [0], color="#1b7837", ls=":", lw=1.2,
+                   label=f"{tag}  ({species_mean_x:.3f})"),
+        )
+    if legend_handles:
+        axes[0].legend(handles=legend_handles, loc="upper left",
+                        fontsize=9, frameon=True)
+
+    axes[-1].set_xlabel(x_label, fontsize=11)
+    fig.suptitle(suptitle, fontsize=13, y=0.995)
+    fig.tight_layout(rect=[0, 0, 0.94, 0.97])
+    fig.savefig(out_png, dpi=200)
+    fig.savefig(out_pdf)
     plt.close(fig)
     print(f"[step30h-IV] Wrote {out_png.name} + .pdf")
 
@@ -139,22 +182,38 @@ def main() -> None:
                         sep="\t", encoding="utf-8-sig")
     labels = population_labels()
 
-    plot_metric(
-        pred, labels,
-        metric="srk_diversity",
-        display_name="SRK allele diversity (distinct Fgs)",
-        x_axis_label="Predicted distinct SRK alleles",
-        out_png=FIGURES / "step30h_pred_diversity_by_BL_year.png",
-        out_pdf=FIGURES / "step30h_pred_diversity_by_BL_year.pdf",
-    )
-    plot_metric(
-        pred, labels,
-        metric="pcompat",
-        display_name="pollen compatibility",
-        x_axis_label="Predicted pollen compatibility",
-        out_png=FIGURES / "step30h_pred_pcompat_by_BL_year.png",
-        out_pdf=FIGURES / "step30h_pred_pcompat_by_BL_year.pdf",
-    )
+    for yr in (2025, 2026):
+        pred_y = pred[pred["year"] == yr].copy()
+
+        # Pollen compatibility
+        plot_metric_year(
+            pred_y, labels, year=yr,
+            metric="pcompat",
+            x_label=("Predicted pollen compatibility under random "
+                      "mating  (mean per population; 95 % credible interval)"),
+            suptitle=f"Predicted per-mother pollen compatibility — "
+                      f"Snake River Plain populations — {yr}",
+            x_upper=X_UPPER_PC,
+            traffic_light=True,
+            species_mean_x=SPECIES_MEAN_PC,
+            out_png=FIGURES / f"step30h_pred_pcompat_{yr}.png",
+            out_pdf=FIGURES / f"step30h_pred_pcompat_{yr}.pdf",
+        )
+
+        # SRK diversity
+        plot_metric_year(
+            pred_y, labels, year=yr,
+            metric="srk_diversity",
+            x_label=("Predicted distinct SRK alleles at the population  "
+                      "(mean; 95 % credible interval)"),
+            suptitle=f"Predicted SRK allele diversity — Snake River Plain "
+                      f"populations — {yr}",
+            x_upper=K_FG_CEILING + 1,
+            traffic_light=False,
+            species_mean_x=K_FG_CEILING,
+            out_png=FIGURES / f"step30h_pred_diversity_{yr}.png",
+            out_pdf=FIGURES / f"step30h_pred_diversity_{yr}.pdf",
+        )
 
 
 if __name__ == "__main__":

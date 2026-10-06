@@ -96,23 +96,29 @@ def define_bl(bl_land: pd.DataFrame) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 def renumber_populations(cl: pd.DataFrame,
                            bl_def: pd.DataFrame) -> pd.DataFrame:
-    """Within each new BL, sort populations by lat DESC (N → S) then
-    lon ASC (W → E) as tiebreak. New populationID = running index."""
+    """BLs stay in area DESC → connectivity DESC order (BL1..BL5).
+    Within each BL, populations are ordered by their dendrogram leaf
+    position (ASC = leftmost first), so adjacent populationIDs are
+    also adjacent on the dendrogram inside each BL. User choice
+    locked 2026-10-06."""
     cluster_to_bl = dict(zip(bl_def["BL_cluster_id"], bl_def["BL"]))
     bl_to_rank    = dict(zip(bl_def["BL"], bl_def["BL_rank"]))
 
     df = cl.copy()
     df["BL"] = df["cluster_k_optimal"].map(cluster_to_bl)
     df["BL_rank"] = df["BL"].map(bl_to_rank)
+    # Primary: BL rank (BL1 → BL5). Secondary: dendrogram leaf
+    # position within BL (left → right on the dendrogram plot).
     df = df.sort_values(
-        ["BL_rank", "lat", "lon"],
-        ascending=[True, False, True],
+        ["BL_rank", "dendrogram_leaf_pos"],
+        ascending=[True, True],
     ).reset_index(drop=True)
     df["populationID_new"] = range(1, len(df) + 1)
     df = df.rename(columns={"populationID": "populationID_old"})
     return df[[
         "populationID_new", "populationID_old", "BL",
-        "cluster_k_optimal", "lat", "lon",
+        "cluster_k_optimal", "dendrogram_leaf_pos",
+        "lat", "lon",
     ]]
 
 
