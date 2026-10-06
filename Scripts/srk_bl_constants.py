@@ -147,3 +147,61 @@ def location_label_series(df: pd.DataFrame,
     return (df[code_col].astype(str).str.strip()
             + "_"
             + df[id_col].astype(int).astype(str))
+
+
+# ---------------------------------------------------------------------------
+# NEW BL framework (2026-10-06, Phase 5 § A.4.5) — populationID-based
+# ---------------------------------------------------------------------------
+# From 2026-10-06 the Bottleneck Lineage (BL) is a POPULATION-level
+# property, not an EO property. The population-level BL framework was
+# built in step30h_* on the 44 populations defined by step29a (500 m
+# connectivity on pooled 2025+2026 events + historical centroids).
+#
+# Transition status (2026-10-06): both frameworks coexist in the code
+# base.
+#   - locationCode_to_bl()  — OLD EO-based BL (via Tables/EO_*_summary.csv)
+#   - populationID_to_bl()  — NEW population-based BL (via
+#                             Tables/Phase5/step30h_populationID_crosswalk.tsv)
+# New Phase 5 scripts (step30h_*, step30g_* post-remap) use the new
+# BL. Legacy per-locationCode figures (step30, step30c-e) still use
+# the EO-based mapping; migrate those scripts individually as needed.
+#
+# BL_COLORS stay the same 5-colour Set1 palette (BL names BL1..BL5
+# are reused with new meanings). The new BL_ORDER is read from
+# Tables/Phase5/step30h_bl_definition.tsv (area DESC → connectivity
+# DESC rule) and will typically read BL1 → BL5 directly.
+
+DEFAULT_POPULATION_BL_TSV = Path(
+    "Tables/Phase5/step30h_bl_definition.tsv"
+)
+DEFAULT_POPULATION_CROSSWALK_TSV = Path(
+    "Tables/Phase5/step30h_populationID_crosswalk.tsv"
+)
+
+
+def load_population_bl_order(
+        path: Path = DEFAULT_POPULATION_BL_TSV) -> list[str]:
+    """BL_ORDER for the NEW population-based BL framework.
+
+    Reads step30h_bl_definition.tsv; falls back to the hard-coded
+    BL1..BL5 if the file does not exist (so this import does not
+    break scripts that run before Phase III).
+    """
+    if not path.exists():
+        return ["BL1", "BL2", "BL3", "BL4", "BL5"]
+    df = pd.read_csv(path, sep="\t", encoding="utf-8-sig")
+    return df.sort_values("BL_rank")["BL"].tolist()
+
+
+def populationID_to_bl(
+        population_ids,
+        crosswalk_path: Path = DEFAULT_POPULATION_CROSSWALK_TSV
+) -> pd.Series:
+    """Vectorised NEW BL lookup: populationID → BL. Reads the Phase III
+    crosswalk."""
+    if not crosswalk_path.exists():
+        return pd.Series([pd.NA] * len(list(population_ids)),
+                          dtype="object")
+    cw = pd.read_csv(crosswalk_path, sep="\t", encoding="utf-8-sig")
+    m = cw.set_index("populationID_new")["BL"].to_dict()
+    return pd.Series(population_ids, dtype="Int64").map(m)
