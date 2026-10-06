@@ -1,0 +1,3 @@
+role	populationID	n_demes_2025	n_demes_2026	n_events_2025	n_events_2026	N_fert_2025	N_fert_2026	N_fert_total	mean_nfert_per_event_2025	mean_nfert_per_event_2026	crash_ratio_nfert	pred_diversity_2025	pred_diversity_2026	delta_diversity	diversity_CI_overlap	pred_pcompat_2025	pred_pcompat_2026	delta_pcompat	pcompat_CI_overlap	stable_across_years
+LARGE	1	11	28	14	61	548	1239	1787	39.142857142857146	20.311475409836067	2.260948905109489	31.873333333333335	32.0	0.1266666666666651	True	0.7789229629629629	0.775927037037037	-0.0029959259259259	True	True
+SMALL	35	2	1	2	2	10	12	22	5.0	6.0	1.2	10.906666666666666	11.666666666666666	0.7599999999999998	True	0.7592411111111111	0.7524092592592592	-0.0068318518518519	True	True

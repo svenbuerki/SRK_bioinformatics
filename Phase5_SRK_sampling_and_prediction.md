@@ -581,22 +581,205 @@ corresponding *comparison* outputs (Phase B, once seed genotypes exist)
 carry a different prefix (`step30_B_*`) so prediction and comparison
 cannot be mistaken for one another.
 
-### A.5 Fragmentation of pollen flow — event and location scales
+### A.5 Fragmentation of pollen flow — population, deme, event scales
 
-**The deme as the unit, before the metrics.** Every quantitative
-output in Phase 5 — predicted SRK allele diversity, predicted
-pollen compatibility, mother-sampling allocation — is a *per-deme*
-quantity before it aggregates to the location. The deme is the
-biological unit of inference; the radius choice below is the
-operational knob that *delineates* that unit. For the full
-rationale (why per-deme quantities are paramount, why we invoke
-Wright's genetic-neighbourhood scaffolding without estimating
-*N*<sub>b</sub> itself, and why the deme is treated as a testable
-working hypothesis rather than a fixed assumption) see the deme-
-structure subsection further down in § A.5 and § References. The
-section below picks the operational radius, after which § A.5.1
-and the deme-structure subsection describe what the resulting
-partition looks like at each location.
+**A three-level spatial hierarchy for an annual plant.**
+*L. papilliferum* is an annual whose above-ground presence at a
+slickspot can switch on and off between years depending on seed-
+bank germination and growing-season conditions. A single-year
+"location" footprint is therefore unstable: a slickspot can show
+plants in 2025 and not in 2026, or vice versa, while the
+**underlying seed-bank patch persists**. To get a spatial frame
+that does not flicker with the above-ground emergence, Phase 5
+distinguishes three nested units — a stable **population** that
+spans years, a within-year **deme** that is the drift unit, and
+the raw per-year **event**:
+
+| Level | Operational definition | Biological meaning | Reference |
+|---|---|---|---|
+| **Species** | the 32 Fgs that make up the species-wide prior P1 | *L. papilliferum* on the Snake River Plain | this doc + § A.3 |
+| **Population** (metapopulation unit) | 500 m-separated connected components, built from the **pooled 2025 + 2026 event coordinates + historical locationID centroids** | A demographically independent spatial unit. 500 m is >> contemporary pollen flight (≈ 10 × the primary pollinator radius) and >> LEPA seed dispersal (gravity + short-distance wind in low-stature slickspot vegetation), so between-population gene flow on an ecological timescale is negligible. The population is **the stable patch** over the project timescale — the above-ground emergence may be zero in a given year while the seed-bank patch persists. | Levins 1969; Hanski 1998; Freckleton & Watkinson 2002 |
+| **Deme** (local breeding unit) | 50 m connected component **within one year's event set**, nested inside a population | Operational deme / Wright's genetic neighbourhood — the within-year pollen pool and drift unit on which all SRK allele diversity and pollen compatibility predictions are built | Wright 1943, 1946; Levin & Kerster 1974; Vekemans & Hardy 2004 |
+| **Event** | one occupied slick spot in one year | Darwin Core `dwc:eventID` — the raw observation record | DB definition |
+
+Every quantitative output in Phase 5 — predicted SRK allele
+diversity, predicted pollen compatibility, mother-sampling
+allocation — is a **per-deme** quantity before it aggregates
+upward. The deme is the biological unit of inference; the
+population is the stable spatial frame it nests inside; the radius
+choices below are the operational knobs that delineate each level.
+
+#### A.5.0 Populations — the stable spatial frame (Step 29a)
+
+**Why we need a population level above the deme.** The 50 m deme
+is a **within-year** unit — it uses the pollinator-flight radius to
+define who could have exchanged pollen *in a given season*. For a
+multi-year study of an annual plant, that leaves a gap: how do
+you compare drift at the "same location" across years when the
+above-ground footprint shifts? Classical metapopulation theory
+answers this by separating the **patch** (geographic unit that
+persists) from the **local population** (the biological community
+occupying it in a given year, which can collapse to the seed
+bank). Phase 5 adopts the same split: the **population** is the
+patch, the **deme** is the within-year local population inside it.
+
+**Why 500 m — three independent justifications converge.**
+
+1. **≈ 10 × the primary pollinator radius (50 m).** Contemporary
+   pollen gene flow across a 500 m gap under the halictid /
+   small-bee foraging envelope is effectively zero. The 50 m
+   deme-level connectivity itself plateaus by 75 m
+   ([Figure 1](#fig-1)), so a gap an order of magnitude wider
+   is firmly outside the ecologically-realised neighbourhood.
+2. **>> LEPA seed dispersal.** Brassicaceae in low-stature arid
+   vegetation disperse seeds predominantly by gravity + short-
+   distance wind on the order of **metres**. 500 m is well beyond
+   the realised seed shadow — long-distance dispersal events are
+   rare and demographically irrelevant on the project timescale.
+3. **Consistent with the existing within-EO 500 m rule.** Phase 5
+   already uses 500 m as the within-EO location-splitting threshold
+   (§ Spatial hierarchy — DB terms, 5 EOs split → 16 Phase 5
+   locationCodes). Promoting that rule to the formal population
+   threshold removes a loose end rather than adding a new parameter.
+
+**Operational algorithm.** Note that **eventIDs are NOT stable
+across years** — the field crews assign fresh barcodes each
+season, so there is no explicit "same slickspot visited again"
+link in the DB. We therefore need a cross-year **slickspot-matching
+step** based on coordinates + a buffer that absorbs GPS drift
+before the population graph is built.
+
+1. Load all **2025 + 2026 LEPA events** (coords + `n_fertile`;
+   same data-scope filters as § A.2), tagged with their source
+   year.
+2. Add the **historical centroid** of every DB-level locationID
+   (= mean lat/lon across every event ever recorded at that
+   locationID). This anchors the population on the DB-level
+   location identity even when both 2025 and 2026 above-ground
+   emergence happened to be zero at some slickspot.
+3. **Cross-year slickspot matching** — build a **10 m** haversine
+   graph on the pooled 2025 ∪ 2026 event set; connected components
+   of that graph are **slickspots** (`slickspotID`). The 10 m
+   buffer absorbs typical consumer-GPS error (3–5 m open sky, up
+   to ~10 m in poor conditions). Each slickspot is tagged
+   `both_years` / `2025_only` / `2026_only`.
+4. Pool slickspot centroids + locationID centroids into the final
+   point set, each row tagged with its source.
+5. Build the **500 m haversine connectivity graph** on that set
+   — an edge wherever two points sit within 500 m.
+6. **Connected components = populations.** Assign a reproducible
+   `populationID` to each component (sorted by total `n_fertile`
+   across both years DESC, then westmost lon ASC).
+7. Write a two-level crosswalk TSV
+   (`step29a_population_crosswalk.tsv`) that maps every
+   `(year, eventID) → slickspotID → populationID`, preserving the
+   DB `locationID` and Phase 5 `locationCode` in extra columns so
+   legacy references in older tables and figures do not break.
+8. **Nested step within each population × year**: rebuild the 50 m
+   deme partition on that year's events only (Step 29c logic, now
+   scoped to `(populationID, year)` rather than Phase 5
+   locationCode).
+9. **Seed-cleaning priority ranking.** The Phase 5 collaborators
+   are still cleaning 2026 seed and extracting germplasm; this
+   step feeds that queue. For each population, score by (a)
+   presence in **both** 2025 and 2026 above-ground samples, (b)
+   the number of same-slickspot re-visits, (c) total `n_fertile`.
+   The output flags **one large and one small candidate** —
+   populations with ≥ 2 re-visited slickspots in both years and
+   consistent above-ground trend — as the preliminary across-year
+   analysis targets.
+
+**What a population IS and ISN'T.**
+
+- **IS** — a geographic patch that persists across the 2025 + 2026
+  project window and the historical DB record; the stable frame
+  for cross-year comparison; the between-population scale beyond
+  which contemporary pollen and seeds do not flow.
+- **ISN'T** — a genetic deme (that's the within-year 50 m level);
+  nor a strictly panmictic unit (the demes inside it can still be
+  internally fragmented at 50 m); nor a management unit (BLs
+  remain the management stratum).
+
+**Downstream consequences.** The old Phase 5 locationCode becomes
+a legacy label kept in the crosswalk for traceability but no
+longer the inferential unit. Current `(39 locationCodes, 101 demes)`
+re-expresses as `(N populations, M_2025 + M_2026 demes)`. SRK
+diversity and *P*<sub>compat</sub> become **year-resolved per
+population** (one prediction per `populationID × year`), which
+turns the drift story into a measurable **temporal** signal:
+within one population, the 2025 and 2026 above-ground samples are
+two independent draws from the same seed bank, and systematic
+drift between them is a direct estimate of per-population drift
+beyond P1 (the H2 scenario of § C.0.c, now observable in the
+project's own data rather than needing a decades-long historical
+baseline).
+
+**Script.** `step29a_populations.py` builds the crosswalk +
+population-structure summary; `step30g_population_year_predictions.py`
+runs the per (populationID, year) SRK diversity + pollen
+compatibility simulation; `step29a_population_maps.py` draws the
+overview + candidate zoom figures.
+
+**Dataset-wide results (first run, 2025 + 2026 pooled).** Site
+visitation effort was equal across years; 2026 adds many more
+occurrence records (mother plants collected for seed banking) that
+Phase 5 does not use at this stage, so raw `N_fertile` sums are
+the appropriate across-year axis.
+
+- **44 populations** total across the Snake River Plain, built
+  from **514 slickspots** (514 cross-year matched components out
+  of 644 raw events; 10 m buffer) + **52 historical locationID
+  centroids**.
+- **22 populations present in both 2025 and 2026** (above-ground
+  emergence); **11 only in 2025**; **11 only in 2026**. 0
+  populations are purely historical (every population is anchored
+  by at least one year's above-ground events).
+- **38 of 514 slickspots (7.4 %) were re-visited in both years**;
+  the other 476 are single-year — the raw signal of the annual
+  plant's year-to-year above-ground flickering.
+- **258 per-year demes** across the 44 populations (vs 101 under
+  the previous single-year-single-locationCode framework).
+- **Legacy locationCode mapping.** 21 of 30 Phase 5 locationCodes
+  present in the 2-year data map 1:1 to a population. 2
+  populations aggregate ≥ 2 legacy locationCodes (the clearest
+  example is populationID = 1, which merges EO27-1 and EO27RT —
+  the 500 m-separation rule now connects slickspots that used to
+  be split, consistent with the metapopulation framing).
+
+**Across-year prediction behaviour.** `step30g` ran the per
+(populationID, year) simulation on all 44 × up-to-2 = 66
+population-year combinations; the 22 both-year populations yielded
+across-year comparisons:
+
+- **13 stable** (both 2025 and 2026 95 % CIs overlap on both SRK
+  diversity and pollen compatibility).
+- **9 CI-mismatched** on SRK diversity — all 9 are driven by
+  deme-size differences year-to-year; **0 of 22 populations show
+  a pollen-compatibility CI mismatch**, reflecting the structural
+  redundancy documented in § C.0.b.
+- **4 crash candidates** — populations where `N_fertile_2026` ≤
+  25 % of `N_fertile_2025` with negative Δdiversity. Striking
+  highlight: **populationID = 10 (locationCode EO76)** — one of
+  the three § C.0.a clean-overlap EOs — collapsed from 445 to 16
+  plants between years. If the 2026 genotyping confirms the same
+  severely-collapsed allele pool observed at EO76 in 2025 (9/32
+  Fgs), that is **direct second-year evidence for the H2 scenario
+  of § C.0.c** — the diversity gap is not a one-year sampling
+  fluke but a persistent per-deme drift signal.
+- **Preliminary LARGE + SMALL candidate pair for the across-year
+  analysis** (`step30g_stable_candidate_pair.tsv`):
+  - **LARGE = populationID 1** (locationCodes EO27-1 + EO27RT),
+    `N_fertile` 548 → 1239, predicted diversity 31.9 → 32.0 at
+    the species ceiling, predicted pollen compatibility 0.779 →
+    0.776 (stable).
+  - **SMALL = populationID 35** (locationCode EO67),
+    `N_fertile` 10 → 12, predicted diversity 10.9 → 11.7,
+    predicted pollen compatibility 0.759 → 0.752 (stable at a
+    tiny scale).
+
+**Figures.** Overview + candidate panels + crash panels + across-
+year scatter are produced by `step29a_population_maps.py` and
+`step30g_plot.py` — see output map at the end of this doc.
 
 **Pollinator-radius choice.** Every fragmentation and downstream prediction in Phase 5 depends on the assumed pollen-flight radius. A dedicated sensitivity sweep across 10, 25, 50, 75, 100, 150, 200 m ([Figure 1](#fig-1)) demonstrates that **50 m is the biologically sound primary radius**: it sits within the halictid / small-bee foraging literature range, captures 43 % of the sampling-cost reduction available on the radius curve, and retains meaningful fragmentation variation across BLs (median connectivity 0.81, not yet saturated at 1.00 like at 75 m+). Every downstream analysis in this doc uses 50 m as the primary radius; 10 m and 25 m are always computed and stored as sensitivity checks.
 
@@ -2904,7 +3087,10 @@ self-incompatibility biology (§ A.7). BibTeX entries live in
 
 - **Aguilar, R., Quesada, M., Ashworth, L., Herrerías-Diego, Y. & Lobo, J. (2008).** Genetic consequences of habitat fragmentation in plant populations: susceptible signals in plant traits and methodological approaches. *Molecular Ecology* 17, 5177–5188. — Fragmentation signatures in plant populations; motivation for the fragmentation → drift → mate-limitation causal chain tested here.
 - **Castric, V. & Vekemans, X. (2004).** Plant self-incompatibility in natural populations: a critical assessment of recent theoretical and empirical advances. *Molecular Ecology* 13, 2873–2889. — Review of SI population-genetic theory; context for the sporophytic Class I / Class II model in § A.7.
+- **Freckleton, R.P. & Watkinson, A.R. (2002).** Large-scale spatial dynamics of plants: metapopulations, regional ensembles and patchy populations. *Journal of Ecology* 90, 419–434. — Framework for distinguishing patch dynamics from true metapopulations in plants; the formal justification for separating the stable "patch" from the within-year above-ground local population used in § A.5.0.
+- **Hanski, I. (1998).** Metapopulation dynamics. *Nature* 396, 41–49. — Modern synthesis of metapopulation theory; motivates the population-as-stable-patch convention used in § A.5.0.
 - **Hardy, O.J. & Vekemans, X. (1999).** Isolation by distance in a continuous population: reconciliation between spatial autocorrelation analysis and population genetics models. *Heredity* 83, 145–154. — Estimator for Wright's neighbourhood from fine-scale *F*<sub>ST</sub> ~ distance; the statistical route to the *N*<sub>b</sub> we do **not** currently estimate.
+- **Levins, R. (1969).** Some demographic and genetic consequences of environmental heterogeneity for biological control. *Bulletin of the Entomological Society of America* 15, 237–240. — Original formulation of the metapopulation concept; theoretical foundation for the population level introduced in § A.5.0.
 - **Honnay, O. & Jacquemyn, H. (2007).** Susceptibility of common and rare plant species to the genetic consequences of habitat fragmentation. *Conservation Biology* 21, 823–831. — Rare-species context for LEPA; drift effects on SI loci are a known risk category.
 - **Lawrence, M.J. (2000).** Population genetics of the homomorphic self-incompatibility polymorphisms in flowering plants. *Annals of Botany* 85 (Suppl. A), 221–226. — Allele-count theory for *S*-locus systems; background for the 32-Fg species-wide pool.
 - **Levin, D.A. & Kerster, H.W. (1974).** Gene flow in seed plants. *Evolutionary Biology* 7, 139–220. — Pollen-mediated gene flow in flowering plants; the operational-deme radius is in the empirical range reported here for small-bee pollinators.
