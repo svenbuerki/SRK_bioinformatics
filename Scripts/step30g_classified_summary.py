@@ -29,6 +29,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from srk_bl_constants import make_location_label
+
 TABLES  = Path("Tables/Phase5")
 FIGURES = Path("figures/Phase5")
 
@@ -70,11 +72,37 @@ def classify(row: pd.Series) -> str:
     return "ambiguous"
 
 
+def build_population_labels() -> pd.Series:
+    """From the crosswalk, build a project-standard per-population
+    label: comma-separated `{locationCode}_{locationID}` strings in
+    sorted order, one row per unique (locationCode, locationID) pair."""
+    cw = pd.read_csv(TABLES / "step29a_population_crosswalk.tsv",
+                      sep="\t", encoding="utf-8-sig")
+    cw["locationCode"] = cw["locationCode"].astype(str).replace("nan", "")
+    pairs = cw[["populationID", "locationCode", "locationID"]].drop_duplicates()
+    labels: dict[int, str] = {}
+    for pop_id, sub in pairs.groupby("populationID"):
+        parts = []
+        for _, r in sub.iterrows():
+            code = str(r["locationCode"]).strip()
+            loc_id = int(r["locationID"])
+            if code and code != "nan":
+                parts.append(make_location_label(code, loc_id))
+            else:
+                # Historical locationID with no Phase 5 locationCode
+                parts.append(f"locID_{loc_id}")
+        parts = sorted(set(parts))
+        labels[int(pop_id)] = ", ".join(parts)
+    return pd.Series(labels, name="population_label")
+
+
 def build_master() -> pd.DataFrame:
     pop  = pd.read_csv(TABLES / "step29a_population_summary.tsv",
                         sep="\t", encoding="utf-8-sig")
     comp = pd.read_csv(TABLES / "step30g_across_year_comparison.tsv",
                         sep="\t", encoding="utf-8-sig")
+    pop = pop.merge(build_population_labels(),
+                     left_on="populationID", right_index=True, how="left")
 
     # Rename comp n_fertile columns to match pop (avoid conflict)
     comp = comp.rename(columns={
@@ -107,8 +135,8 @@ def build_master() -> pd.DataFrame:
 
     # Reorder key columns to front
     front = [
-        "populationID", "trend_class", "locationCodes", "locationIDs",
-        "occupancy",
+        "populationID", "population_label", "trend_class",
+        "locationCodes", "locationIDs", "occupancy",
         "n_events_2025", "n_events_2026",
         "n_fertile_2025", "n_fertile_2026", "n_fertile_total",
         "n_slickspots", "n_slickspots_both_years",
@@ -144,10 +172,7 @@ def plot_summary(df: pd.DataFrame,
         axes = [axes]
 
     def _lbl(row: pd.Series) -> str:
-        codes = row["locationCodes"]
-        if pd.isna(codes) or str(codes) == "nan" or codes == "":
-            codes = f"locID {row['locationIDs']}"
-        return f"P{int(row['populationID']):>2}  ({codes})"
+        return f"P{int(row['populationID']):>2}  ({row['population_label']})"
 
     width = 0.4
     for ax, cls in zip(axes, classes_present):
@@ -199,12 +224,10 @@ def main() -> None:
     print(df["trend_class"].value_counts().reindex(CLASS_ORDER)
           .fillna(0).astype(int).to_string())
     print()
-    print("Full breakdown (populationID, locationCodes, N_fert 2025/2026, class):")
+    print("Full breakdown (populationID, label, N_fert 2025/2026, class):")
     for _, r in df.iterrows():
-        codes = r["locationCodes"] if pd.notna(r["locationCodes"]) \
-                                   else f"locID {r['locationIDs']}"
         print(f"  P{int(r['populationID']):>2}  "
-              f"{str(codes):<24}  "
+              f"{str(r['population_label']):<36}  "
               f"{int(r['n_fertile_2025']):>4}/{int(r['n_fertile_2026']):>4}  "
               f"{r['trend_class']}")
 

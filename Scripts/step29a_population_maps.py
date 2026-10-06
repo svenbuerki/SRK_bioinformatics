@@ -27,7 +27,7 @@ import pandas as pd
 from matplotlib.patches import Circle
 from scipy.spatial import ConvexHull
 
-from srk_bl_constants import BL_COLORS, BL_ORDER, locationCode_to_bl
+from srk_bl_constants import BL_COLORS, BL_ORDER, locationCode_to_bl, make_location_label
 
 TABLES  = Path("Tables/Phase5")
 FIGURES = Path("figures/Phase5")
@@ -165,8 +165,21 @@ def plot_candidate_panels(candidates: pd.DataFrame,
         slick_pop = slickspots[slickspots["populationID"] == pop_id]
         info = candidates[candidates["populationID"] == pop_id].iloc[0]
         role = info.get("role", "")
+        # Project-standard labels: {locationCode}_{locationID} per
+        # merged location, comma-separated.
+        pairs = (events_pop[["locationCode", "locationID"]]
+                    .drop_duplicates().sort_values("locationID"))
+        labels = []
+        for _, p in pairs.iterrows():
+            code = str(p["locationCode"]).strip()
+            lid = int(p["locationID"])
+            if code and code != "nan":
+                labels.append(make_location_label(code, lid))
+            else:
+                labels.append(f"locID_{lid}")
+        location_label = ", ".join(labels)
         title = (f"populationID = {pop_id}  {role}\n"
-                 f"locationCodes: {info['locationCodes']}  |  "
+                 f"locations: {location_label}  |  "
                  f"N_fert 2025/2026 = {info['n_fertile_2025']}/{info['n_fertile_2026']}  "
                  f"|  slickspots {info['n_slickspots']} "
                  f"(both-years {info['n_slickspots_both_years']})")
