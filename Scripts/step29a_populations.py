@@ -103,13 +103,21 @@ def load_locationID_centroids(db_path: Path) -> pd.DataFrame:
              .agg(lat=("lat", "mean"), lon=("lon", "mean")))
 
 
-def load_locationID_to_locationCode() -> pd.Series:
-    """Build locationID → locationCode map from the Phase 5 step29d
-    summary (which has one row per locationID with its locationCode)."""
-    tsv = TABLES / "step29d_mating_pool_summary.tsv"
-    if not tsv.exists():
-        return pd.Series(dtype=object)
-    df = pd.read_csv(tsv, sep="\t", encoding="utf-8-sig")
+def load_locationID_to_locationCode(db_path: Path) -> pd.Series:
+    """locationID → locationCode map from the DB `Locations` table —
+    covers every DB location, not just the 2025-year Phase 5 subset
+    that step29d_mating_pool_summary.tsv carries. Needed so the
+    2026-only populations (new slickspots) still get a real EO code
+    instead of a `locID_N` fallback."""
+    con = sqlite3.connect(str(db_path))
+    try:
+        df = pd.read_sql_query(
+            "SELECT locationID, locationCode FROM Locations", con,
+        )
+    finally:
+        con.close()
+    df["locationCode"] = df["locationCode"].astype(str).str.strip()
+    df = df[df["locationCode"] != ""]
     return df.set_index("locationID")["locationCode"]
 
 
@@ -337,9 +345,9 @@ def main() -> None:
     loc_centroids = load_locationID_centroids(DEFAULT_DB)
     print(f"[step29a] Loaded {len(loc_centroids)} historical locationID centroids")
 
-    locid_to_loccode = load_locationID_to_locationCode()
+    locid_to_loccode = load_locationID_to_locationCode(DEFAULT_DB)
     print(f"[step29a] locationID → locationCode map: "
-          f"{len(locid_to_loccode)} entries from step29d_mating_pool_summary.tsv")
+          f"{len(locid_to_loccode)} entries from DB Locations table")
 
     events_ss = assign_slickspots(events)
     n_slickspots = int(events_ss["slickspotID"].nunique())
