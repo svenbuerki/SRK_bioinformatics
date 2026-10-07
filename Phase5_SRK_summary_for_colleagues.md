@@ -28,31 +28,45 @@ and pollen compatibility inside each, and how to test those
 predictions with seed data — are all operationalised at the scale
 of the local breeding unit (**deme**).
 
-<span style="color:#777"><strong>Approach.</strong></span> Because the 39 locations are
-already spatially isolated from each other, between-location pollen
-flow is approximately zero and **the location is the natural
-starting point for identifying local breeding units**. The question
-we ask here is whether **within-location further subdivision is
-needed** — i.e. whether a single location holds one breeding unit
-or several — because SRK allele diversity (how many SRK alleles
-physically live inside a breeding unit) and pollen compatibility
-(what fraction of pollen × stigma combinations succeed inside it)
-are both per-breeding-unit quantities. We follow a Wright-style
-genetic-neighbourhood argument (Wright 1943, 1946; Levin & Kerster
-1974) implemented as a hard-threshold connectivity rule: sweep
-pollinator radii (10 – 200 m) across the 39 locations with **2025
-field data** (wild, in-situ, with coordinates), pick the **50 m
-primary radius** ([Figure 1](#fig-1)) where connectivity, sampling
-cost, and pollen compatibility all plateau, and read off a **50 m
-connected component = one operational deme**. The 50 m threshold
-is a step-function stand-in for the (unmeasured) dispersal
-variance σ²; the resulting partition is a geographic upper bound
-on realised gene flow ([Figure 2](#fig-2)).
+<span style="color:#777"><strong>Approach.</strong></span> To predict SRK allele
+diversity (how many alleles a breeding unit holds) and pollen
+compatibility (what fraction of pollen × stigma combinations
+succeed in it), we must first identify the **breeding units**.
+Phase 5 nests three spatial scales:
+
+- **Population** (500 m-separated connected component, 2-year
+  stable, built on pooled 2025 + 2026 event coordinates +
+  historical locationID centroids) — the **demographically
+  independent spatial patch**. 500 m is ≈ 10 × the pollinator
+  radius and well beyond LEPA's gravity-dominated seed dispersal,
+  so between-population gene flow is ≈ 0 on an ecological
+  timescale. **44 populations** in the current pooled data
+  (§ Populations). The population replaces the single-year
+  "location" footprint as the stable spatial frame — the
+  above-ground emergence of this annual plant can flicker between
+  years while the underlying seed-bank patch persists.
+- **Bottleneck Lineage** (BL) — a Ward's hierarchical cluster of
+  populations sharing an evolutionary context. Silhouette-optimal
+  *k* = 5 on the 44 population centroids reproduces the Phase 4
+  EO-level BL cardinality on independent 2-year population-level
+  data (§ Bottleneck Lineages). BL stratifies every per-population
+  figure by shared drift history.
+- **Deme** (50 m connected component within **one year**, nested
+  inside a population) — the **within-year drift unit** on which
+  every per-population SRK allele diversity and pollen
+  compatibility prediction is built. The 50 m radius is fixed via
+  a Wright-style genetic-neighbourhood argument (Wright 1943, 1946;
+  Levin & Kerster 1974) and a pollinator-radius sweep (10 – 200 m)
+  across the 2025 single-year data; 50 m is where connectivity,
+  sampling cost, and pollen compatibility all plateau
+  ([Figure 1](#fig-1)). The threshold is a step-function stand-in
+  for the (unmeasured) dispersal variance σ²; the resulting
+  partition is a geographic upper bound on realised gene flow.
 
 <span style="color:#777"><strong>Methodology.</strong></span> For each operational deme we
 use **empirical allele-frequency data from plant genotyping** to
 simulate genetic drift, aggregate SRK allele diversity by set
-union across demes to the location ([Figure 8](#fig-8)), and
+union across demes to the population ([Figure 8](#fig-8)), and
 compute pollen compatibility as a size-weighted mean under the
 **sporophytic Class I / Class II model with empirical zygosity**
 ([Figure 9](#fig-9), [Figure 10](#fig-10)). The deme is both the
@@ -154,8 +168,8 @@ hypothesise a single causal chain that drives reproductive failure:
 
 > **Fragmentation → genetic drift → mate limitation.**
 >
-> Habitat fragmentation shrinks the effective deme at each
-> location (fewer plants within ~50 m pollinator flight of each
+> Habitat fragmentation shrinks the effective deme inside each
+> population (fewer plants within ~50 m pollinator flight of each
 > other). Small effective demes intensify genetic drift on
 > SRK, which erodes local SRK diversity and skews local Fg
 > composition. The eroded and skewed local pool reduces the fraction
@@ -165,16 +179,16 @@ hypothesise a single causal chain that drives reproductive failure:
 The pipeline evaluates the chain in order — **fragmentation first**,
 then its drift consequences, then its mate-limitation consequences —
 because fragmentation is the physical driver upstream of everything
-else. It is where location size enters the model (via the per-
-deme `component_N_fertile`); a census of 1 000 plants split
+else. It is where population size enters the model (via the
+per-deme `component_N_fertile`); a census of 1 000 plants split
 across 20 disconnected slickspots behaves like 20 small drift-prone
-pools of ~50 plants each, not one pool of 1 000.
+demes of ~50 plants each, not one pool of 1 000.
 
 | Link | What we measure | Steps that produce it |
 |---|---|---|
-| **1. Fragmentation** | 50 m deme structure per location (count + size per deme) | Step 29b, Step 29c, Step 29d (§ A.5, § B.2 of long doc) |
-| **2. Genetic drift on SRK** | Predicted local allele pool size + frequency composition **per deme**, aggregated to the location | Step 30 Phase A (§ A.6) |
-| **3. Mate limitation** | Predicted per-location random-mating pollen compatibility `P_compat` under sporophytic Class I / II SI | Step 30 Phase A (§ A.7, § A.8); Step 30c empirical validation on adult SRK genotypes (§ C.0) |
+| **1. Fragmentation** | 50 m deme structure per population (count + size per deme) | Step 29b, Step 29c, Step 29d (§ A.5, § B.2 of long doc) |
+| **2. Genetic drift on SRK** | Predicted local allele pool size + frequency composition **per deme**, aggregated to the population | Step 30 Phase A (§ A.6) |
+| **3. Mate limitation** | Predicted per-population random-mating pollen compatibility `P_compat` under sporophytic Class I / II SI | Step 30 Phase A (§ A.7, § A.8); Step 30c empirical validation on adult SRK genotypes (§ C.0) |
 | **4. Reduced seed set** | Observed per-mother seed set regressed on predicted `P_compat` | Step 30 Phase B mate-limitation regression (§ C.1) — needs seed genotypes |
 
 **Not part of this framework.** Detecting cases where SI has broken
@@ -196,10 +210,15 @@ experimental target.
   carry a single distinct functional SRK identity (homozygote-like),
   32 % carry two, ~2 % carry three. This empirical distribution is
   the mother- and father-drawing prior in every P_compat calculation.
-- **Data source.** `LEPA_SQL.db` — 2025 wild in-situ occurrences,
+- **Data source.** `LEPA_SQL.db` — wild in-situ occurrences,
   filtered to records with coordinates inside LEPA's Idaho range.
-  **39 locations, 3 140 events (individual slickspots), 765 mothers
-  with seed records.**
+  The 2025 single-year scope used by the Phase 4 adult SRK
+  validation (§ C.0 and the figures below): **39 Phase 5
+  locationCodes, 3 140 events (individual slickspots), 765 mothers
+  with seed records.** The 2025 + 2026 pooled scope used by the
+  Population framework (§ Populations) and the across-year dynamic
+  (§ Across-year population dynamic): **44 populations, 514
+  slickspots after 10 m cross-year matching, 258 per-year demes.**
 - **Species-wide SRK prior (P1).** The **32 functional SRK allele
   groups (Fgs)** identified across LEPA, together with their
   species-wide empirical frequencies — a 32-slot probability
@@ -218,92 +237,115 @@ experimental target.
 
 ## Key concepts and terminology
 
-Every per-location quantity in this doc is derived from a nested
-spatial hierarchy. The two top levels are **quoted verbatim from the
-LEPA DB `Terms` table** (the canonical glossary that ships with
-`LEPA_SQL.db`) so the vocabulary matches every other LEPA analysis.
-Reading from the biggest unit down to the individual plant:
+Every per-population quantity in this doc is derived from a nested
+spatial hierarchy. The top three levels are **Phase 5 constructs**
+built on top of the LEPA DB; the two DB-level entries below them are
+**quoted verbatim from the LEPA DB `Terms` table** (the canonical
+glossary that ships with `LEPA_SQL.db`). Reading from the biggest
+unit down to the individual plant:
 
-- **Location** (`locationID` / `locationCode`) — DB `Locations`
-  table: `locationID` = "Location Unique Barcode #" (Darwin Core
-  `dwc:locationID`); `locationCode` = the EO code of the sampling
-  site ("Report the unique EO # where the sampling is conducted
-  (e.g., EO38)"). May span several slick spots.
-  - **Within-EO location split (Phase 5 refinement).** When events
-    inside the same EO sit **≥ 500 m apart with no bridging events
-    in between**, Phase 5 tracks the disjoint pieces as separate
-    `locationCode`s (e.g. EO24 → `EO24`, `EO24-1`, `EO24-2`,
-    `EO24-7`; EO27 → `EO27`, `EO27-1`, `EO27-3`, `EO27RT`), each
-    with its own `locationID`. In the current data **5 EOs are
-    split this way** (EO18, EO24, EO25, EO26, EO27 → 16 Phase 5
-    locationCodes). 500 m is 10× LEPA's primary pollinator radius
-    (50 m), so these sub-locations cannot share pollen under any
-    plausible flight distance and must be modelled as independent
-    drift units.
-  - **Event** (`eventID` / `occurrenceID`) — DB `Events` table:
-    "**an 'Event' refers to an occupied slick spot within a
-    Location**" (Darwin Core `dwc:eventID`). Each event has its own
-    census of fertile plants and its own coordinates.
-    - **50 m connected component** (`component_id_50m`) — a group
-      of events whose plants sit within 50 m pollinator-flight range
-      of each other. **Plants in the same component share a pollen
-      pool; plants in different components — even at the same
-      location — do not.** Phase 5 derived concept, not a DB term.
-      - **Mother plant** (`germplasmID`) — an individual plant
-        already collected and stored in the LEPA DB, sitting at one
-        specific event.
+- **Species** — *Lepidium papilliferum* on the Snake River Plain,
+  summarised at the SRK level by the 32-Fg species-wide prior P1.
+- **Bottleneck Lineage** (BL) — a Ward's hierarchical cluster of
+  populations sharing an evolutionary context. 5 BLs in LEPA
+  (silhouette-optimal, § Bottleneck Lineages); ordered BL1 … BL5 by
+  convex-hull area DESC → within-BL connectivity DESC. Phase 5
+  derived concept, not a DB term.
+  - **Population** (`populationID`) — a 500 m-separated connected
+    component on the pooled 2025 + 2026 event coordinates +
+    historical locationID centroids. 44 populations in the current
+    data. 500 m is ≈ 10 × the pollinator radius and well beyond
+    LEPA's seed dispersal, so between-population gene flow is ≈ 0
+    on an ecological timescale. The population is the **stable
+    spatial patch** that persists even in years when above-ground
+    emergence is zero at a given slickspot. Phase 5 derived concept,
+    not a DB term; carries a comma-separated legacy label
+    `{locationCode}_{locationID}` for human readability (e.g.
+    `EO27-1_11, EO27RT_12` for the merged population P13).
+    - **Deme** (`component_id_50m`) — a group of events whose
+      plants sit within 50 m of each other **within one year**,
+      nested inside a population. **Plants in the same deme share
+      a pollen pool; plants in different demes — even in the same
+      population — do not.** This is the within-year drift unit on
+      which every per-population prediction is built. Phase 5
+      derived concept, not a DB term.
+      - **Event** (`eventID` / `occurrenceID`) — DB `Events` table:
+        "**an 'Event' refers to an occupied slick spot within a
+        Location**" (Darwin Core `dwc:eventID`). Each event has its
+        own census of fertile plants and its own coordinates. EventIDs
+        are NOT stable across years — field crews assign fresh
+        barcodes each season, so Phase 5 matches slickspots across
+        years with a 10 m haversine buffer before the population
+        graph is built.
+        - **Mother plant** (`germplasmID`) — an individual plant
+          already collected and stored in the LEPA DB, sitting at
+          one specific event.
+
+**Legacy DB label — Location** (`locationID` / `locationCode`) —
+DB `Locations` table: `locationID` = "Location Unique Barcode #"
+(Darwin Core `dwc:locationID`); `locationCode` = the EO code
+("Report the unique EO # where the sampling is conducted
+(e.g., EO38)"). A single `locationID` can appear inside one
+population (1:1 mapping — the common case) or get merged with
+sibling locationIDs when ≤ 500 m apart (e.g. P13 = EO27-1_11 +
+EO27RT_12). The Phase 5 refinement that split EOs ≥ 500 m apart
+into dash-suffixed `locationCode`s (EO24, EO24-1, EO24-2, EO24-7;
+EO27, EO27-1, EO27-3, EO27RT) is preserved in the crosswalk
+([`step29a_population_crosswalk.tsv`](tables/Phase5/step29a_population_crosswalk.tsv))
+so every legacy reference stays traceable through the new
+population frame.
 
 Everything else in the pipeline is a count or a derived number
 sitting on top of this hierarchy:
 
 | Concept (full English name) | Code identifier | Rooted at | Definition |
 |---|---|---|---|
-| Fertile plant census | `total_n_fertile` | location | All fertile plants at a location, summed across every event. The biological potential, with no spatial filtering. |
-| **Deme size** | `component_N_fertile` | component | The fertile plants that share a single 50 m pollen pool — **this is the drift unit for both diversity and pollen-compatibility prediction**. Each 50 m connected component = one deme. A location can hold one deme (fully connected) or several (fragmented); see § Deme structure per location. |
-| Fragmentation-aware mother target | `M_frag` | event, derived from components | For each event, the number of mothers to sample so that each 50 m connected component reaches 90 % allele-detection coverage, with a ≥ 1-per-event maternal-genotype floor. Sums across events to the location-level `M_frag_aware`. |
-| Tetraploid per-mother seed cap | 15 seeds/mother | mother plant | Each seed contributes 2 paternal allele draws from the local pollen pool. 15 seeds/mother is the per-mother floor that gives a 90 % chance of seeing every allele in her component's pollen pool. |
-| Species prior | `P1` | species-wide | The **32 Fgs identified across LEPA plus their empirical species-wide frequencies** — a 32-slot probability vector that sums to 1, built from the Canu-amplicon L1 carrier inventory. Common Fgs (e.g. FG001 at 41 %) have a large slot; rare ones have a small slot. Every per-location prediction draws alleles from P1, so small locations lose the rare Fgs to drift by chance. |
+| Fertile plant census | `total_n_fertile` | population | All fertile plants in a population, summed across every event in a given year. The biological potential, with no within-year spatial filtering. |
+| **Deme size** | `component_N_fertile` | deme | The fertile plants that share a single 50 m pollen pool in one year — **this is the drift unit for both diversity and pollen-compatibility prediction**. Each 50 m connected component within a population × year = one deme. A population can hold one deme (fully connected in a given year) or several (fragmented); see § Delineating the deme. |
+| Fragmentation-aware mother target | `M_frag` | event, derived from demes | For each event, the number of mothers to sample so that each 50 m deme reaches 90 % allele-detection coverage, with a ≥ 1-per-event maternal-genotype floor. Sums across events to the population-level `M_frag_aware`. |
+| Tetraploid per-mother seed cap | 15 seeds/mother | mother plant | Each seed contributes 2 paternal allele draws from the local pollen pool. 15 seeds/mother is the per-mother floor that gives a 90 % chance of seeing every allele in her deme's pollen pool. |
+| Species prior | `P1` | species-wide | The **32 Fgs identified across LEPA plus their empirical species-wide frequencies** — a 32-slot probability vector that sums to 1, built from the Canu-amplicon L1 carrier inventory. Common Fgs (e.g. FG001 at 41 %) have a large slot; rare ones have a small slot. Every per-population prediction draws alleles from P1, so small populations lose the rare Fgs to drift by chance. |
 
-**Why components matter in one sentence.** Every per-location
-prediction in this doc — SRK diversity, pollen compatibility, mother
-allocation — is built **component-by-component**, because a 50 m
-connected component is what trades pollen. Each component gets its
-own `component_N_fertile`; location-level numbers are the **set
-union** across components for diversity (Fgs are a set) and the
-**size-weighted mean** across components for pollen compatibility
-(a continuous rate). A location with 500 fertile plants spread
-across 20 isolated slickspots behaves like 20 small drift-prone
-pools, not one pool of 500.
+**Why demes matter in one sentence.** Every per-population
+prediction in this doc — SRK diversity, pollen compatibility,
+mother allocation — is built **deme-by-deme**, because a 50 m
+connected component is what trades pollen within one year. Each
+deme gets its own `component_N_fertile`; population-level numbers
+are the **set union** across demes for diversity (Fgs are a set)
+and the **size-weighted mean** across demes for pollen
+compatibility (a continuous rate). A population with 500 fertile
+plants spread across 20 isolated slickspots behaves like 20 small
+drift-prone demes, not one pool of 500.
 
 ### How the five quantities chain together
 
-1. **Location → events.** Raw census `total_n_fertile` = Σ event
-   `n_fertile` across the location's 50 m-resolved events
-   (step28_events_spatial_neighborhood.tsv).
-2. **Events → 50 m components.** Within each location, connect
+1. **Population → events.** Raw census per year `total_n_fertile`
+   = Σ event `n_fertile` across the population's events in that
+   year (step28_events_spatial_neighborhood.tsv).
+2. **Events → 50 m demes.** Within each population × year, connect
    events whose fertile plants sit within ≤ 50 m; the connected
-   components are the `component_id_50m` units
+   components are the demes
    (step29c_event_to_component_50m.tsv).
-3. **Components → effective deme.**
+3. **Demes → effective deme size.**
    `component_N_fertile_c` = Σ_{events ∈ c} `n_fertile_e` — the
    plants that actually share one 50 m pollen pool and the drift
    unit for both predictions.
-4. **Effective deme → SRK diversity.** For each component,
-   draw `4 × component_N_fertile_c` alleles from P1 → the component's
-   present Fgs. Location pool size = |union of component Fg sets|.
-   Sampling is simulated per component too (mothers and seeds
-   distributed proportional to component size).
-5. **Effective deme → pollen compatibility.** For each
-   component, sample mothers from its local frequencies under the
-   empirical LEPA zygosity and compute sporophytic Class I / II
-   P_compat per mother. Location P_compat = size-weighted mean of
-   per-component P_compat.
+4. **Effective deme → SRK diversity.** For each deme,
+   draw `4 × component_N_fertile_c` alleles from P1 → the deme's
+   present Fgs. Population pool size = |union of per-deme Fg sets|.
+   Sampling is simulated per deme too (mothers and seeds
+   distributed proportional to deme size).
+5. **Effective deme → pollen compatibility.** For each deme,
+   sample mothers from its local frequencies under the empirical
+   LEPA zygosity and compute sporophytic Class I / II P_compat per
+   mother. Population P_compat = size-weighted mean of per-deme
+   P_compat.
 
 The whole causal chain **fragmentation → drift → mate limitation**
 enters at step 3 and comes out at steps 4 and 5: fragmented
-locations have small components → small drift-prone pools → fewer
-Fgs and lower pollen compatibility than a one-pool location of the
-same raw census would predict.
+populations have small demes → small drift-prone pools → fewer
+Fgs and lower pollen compatibility than a one-pool population of
+the same raw census would predict.
 
 ---
 
@@ -315,15 +357,21 @@ framework, and it depends on three things — none of which can be
 skipped:
 
 - **Fragmentation** — how many adults actually share a pollen
-  environment at each location.
-- **SRK diversity** — how many Fg alleles the population holds locally under
-  fragmentation-driven drift.
+  environment inside each population.
+- **SRK diversity** — how many Fg alleles the population holds
+  locally under fragmentation-driven drift.
 - **Pollen compatibility (P_compat)** — how much of the local pool
   a mother is compatible with under sporophytic Class I / II SI.
 
-The next sections build those three quantities up in order. The
-sampling design — mother count per location, seed count per mother
-— is derived at the end, once the causal chain is on the table.
+The next sections build those three quantities up in order:
+Populations (§ Populations) define the stable spatial frame,
+Bottleneck Lineages (§ Bottleneck Lineages) stratify them by
+shared drift history, the across-year dynamic (§ Across-year
+population dynamic) classifies each population's trajectory, and
+only then do we delineate demes inside each population and run the
+Phase A predictions. The sampling design — mother count per
+population, seed count per mother — is derived at the end, once
+the causal chain is on the table.
 
 ---
 
