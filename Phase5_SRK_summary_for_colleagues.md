@@ -140,25 +140,33 @@ for free. (EO67 is a null — its deme partition is invariant
 across the sweep and its observed count is already inside the
 95 % CI of the prediction.)
 
-<span style="color:#777"><strong>Next test.</strong></span> We propose a between-location pilot that
-pairs a **big + connected anchor** with a **small + fragmented
-partner**, chosen from across the full LEPA dataset so that the
-pair spans the usable predicted pollen-compatibility spectrum.
-Three options are on the table — all share the same anchor
-(**EO29_8**, BL1: 417 adults in a single deme, 22 mothers
-in DB, predicted pollen compatibility 0.779):
+<span style="color:#777"><strong>Next test.</strong></span> We propose a **within-BL
+small-vs-big stable** pilot: a **BIG** stable population paired
+with a **SMALL** stable population inside the same Bottleneck
+Lineage. Both sides have overlapping 95 % 2025 vs 2026 CIs on
+both diversity and pollen compatibility and `N_fert_total ≥ 20`
+(§ Across-year population dynamic), so both patches persist
+across both field seasons; holding BL identity constant means
+observed deviations are a within-BL small-vs-big signal rather
+than confounded with the shared drift history between BLs. BL1 /
+BL2 / BL3 each hold a candidate pair; BL4 and BL5 do not (one
+stable population each, no within-BL contrast).
 
-| Option | Pair kind | Drift-sensitive partner | Predicted pollen-compatibility gap | Size ratio | Mothers (anchor + partner) | Trade-off |
-|:---|:---|:---|:---:|:---:|:---:|:---|
-| **B1 ★** | within-BL1 | **EO26-2_35** (22 adults, 3 demes, share 0.50, 8 mothers) | **0.039** | 19× | 22 + 8 = 30 | Strongest confound control (both BL1 → same evolutionary context) and largest within-BL predicted gap. |
-| B2 | within-BL1, bigger size gap | EO26-3_34 (34 adults, 3 demes, share 0.71, 14 mothers) | 0.025 | 12× | 22 + 14 = 36 | More mothers → less sampling noise, but less fragmented partner and smaller contrast. |
-| B3 | between-BL | EO25-B_21 (BL5: 10 adults, 2 demes, 7 mothers) | **0.051** | **42×** | 22 + 7 = 29 | Largest predicted gap and biggest size ratio, but confounds fragmentation × BL identity. |
+| Option | BL | SMALL — populationID, N_fert, mothers in DB **(2025 + 2026)** | BIG — same | Size ratio | Pair mother total | Comment |
+|:---|:---:|:---|:---|:---:|:---:|:---|
+| **D1 ★** | BL3 | **P34 EO25-B_21** · 26 adults · **7 + 8 = 15** mothers | **P32 EO18-7+EO18-8** · 1440 adults · **115 + 161 = 276** mothers | 55× | **291** | Highest total mother budget by a wide margin; 2026 collection roughly doubled both sides. |
+| D2 | BL2 | P21 EO26-3_32/33/34 · 58 adults · 2025: 35; 2026: 0 new | P16 EO8_27+EO8_28 · 876 adults · 37 + 137 = 174 mothers | 15× | ~209 | Healthy BIG; SMALL received no 2026 top-up; smallest size contrast. |
+| D3 | BL1 | P3 EO67_39 · 22 adults · 4 + 6 = 10 mothers | P13 EO27-1_11+EO27RT_12 · 1787 adults · 55 + 125 = 180 mothers | 81× | 190 | Biggest size contrast but SMALL only 10 mothers across both years — thinnest Part C power. |
 
-**B1 is recommended** (★): it maximises within-BL contrast
-sharpness while holding BL identity constant. Full pair evaluations
-in [step29c_partC_between_location_candidates.tsv](Tables/Phase5/step29c_partC_between_location_candidates.tsv).
-Per-mother sampling recipe (germplasmIDs to pull from the LEPA DB,
-with per-deme allocation, seeds-to-germinate and seedlings-to-
+**D1 is recommended** (★): it maximises the mother-plant budget
+(291 across the pair), keeps a sharp 55× contrast, and holds BL
+identity constant (both sides in BL3, same regional habitat-loss
+history). The 2026 germplasm top-up roughly doubled both sides —
+P34 goes from 7 to 15 mothers, P32 from 115 to 276. Full
+`populationID → locationCode` map + stable candidates in
+[step30g_populations_classified.tsv](tables/Phase5/step30g_populations_classified.tsv).
+Per-mother sampling recipe (germplasmIDs to pull from the LEPA
+DB, per-deme allocation, seeds-to-germinate and seedlings-to-
 genotype columns, 60 % germination correction baked in) in
 [step29c_partC_germplasmID_selection.tsv](Tables/Phase5/step29c_partC_germplasmID_selection.tsv).
 
@@ -467,6 +475,70 @@ that structure every per-population figure, and § **Across-year
 population dynamic** classifies each population's 2025 → 2026
 trajectory and names the first candidate test pairs.
 
+### populationID ↔ locationCode(s) lookup
+
+The inline table below is the authoritative populationID ↔
+locationCode(s) + BL + occupancy + trend-class map for the 44
+Phase 5 populations. Every per-population figure that uses
+short `P{N}` row labels resolves here; the same information is
+also in the TSV
+[`step30g_populations_classified.tsv`](tables/Phase5/step30g_populations_classified.tsv)
+(which carries additional columns — N_fertile per year,
+predicted diversity, predicted pollen compatibility, cross-year
+flags). Rows ordered by BL (BL1 → BL5) then populationID.
+
+| populationID | BL | locationCode(s) + locationID(s) | occupancy | trend class |
+|:-:|:-:|---|:-:|:-:|
+| P1  | BL1 | EO30-1_13                          | both years | stable |
+| P2  | BL1 | EO30-2_42                          | 2026 only  | 2026_only |
+| P3  | BL1 | EO67_39                            | both years | **stable (SMALL)** |
+| P4  | BL1 | EO72-2_40                          | 2025 only  | 2025_only |
+| P5  | BL1 | EO27-3_10                          | both years | crash |
+| P6  | BL1 | EO27_9                             | 2026 only  | 2026_only |
+| P7  | BL1 | EO27_44                            | 2026 only  | 2026_only |
+| P8  | BL1 | EO27_9                             | both years | stable |
+| P9  | BL1 | EO27_9                             | 2026 only  | 2026_only |
+| P10 | BL1 | EO27-5_43                          | 2026 only  | 2026_only |
+| P11 | BL1 | EO27-1_37                          | 2025 only  | 2025_only |
+| P12 | BL1 | EO27-1_45                          | 2026 only  | 2026_only |
+| P13 | BL1 | EO27-1_11, EO27RT_12               | both years | **stable (BIG)** |
+| P14 | BL1 | EO27-1_46                          | 2026 only  | 2026_only |
+| P15 | BL2 | EO8_29, EO8_47                     | both years | growth |
+| P16 | BL2 | EO8_27, EO8_28                     | both years | **stable (BIG)** |
+| P17 | BL2 | EO26-2_35                          | 2025 only  | 2025_only |
+| P18 | BL2 | EO26-1_30                          | 2025 only  | 2025_only |
+| P19 | BL2 | EO26-4_36                          | 2025 only  | 2025_only |
+| P20 | BL2 | EO26-3_31, EO26-3_32               | both years | stable |
+| P21 | BL2 | EO26-3_32, EO26-3_33, EO26-3_34    | both years | **stable (SMALL)** |
+| P22 | BL2 | EO61_38                            | 2025 only  | 2025_only |
+| P23 | BL2 | EO29_8                             | 2025 only  | 2025_only |
+| P24 | BL3 | EO48_7                             | 2025 only  | 2025_only |
+| P25 | BL3 | EO32_6                             | both years | growth |
+| P26 | BL3 | EO32_6                             | both years | stable |
+| P27 | BL3 | EO24-7_25                          | 2025 only  | 2025_only |
+| P28 | BL3 | EO24-1_22                          | 2025 only  | 2025_only |
+| P29 | BL3 | EO24_24                            | both years | growth |
+| P30 | BL3 | EO24-2_23                          | both years | ambiguous |
+| P31 | BL3 | EO18-7_17                          | 2026 only  | 2026_only |
+| P32 | BL3 | EO18-7_15, EO18-7_16, EO18-7_17, EO18-7_19, EO18-8_18 | both years | **stable (BIG) ★** |
+| P33 | BL3 | EO25-A_20                          | both years | growth |
+| P34 | BL3 | EO25-B_21                          | both years | **stable (SMALL) ★** |
+| P35 | BL4 | EO52_3                             | both years | crash |
+| P36 | BL4 | EO38_1                             | both years | ambiguous |
+| P37 | BL4 | EO38_1                             | 2026 only  | 2026_only |
+| P38 | BL4 | EO118_4                            | both years | stable |
+| P39 | BL4 | EO76_2                             | both years | **crash (standout)** |
+| P40 | BL4 | EO76_2                             | 2025 only  | 2025_only |
+| P41 | BL5 | EO70_26                            | both years | stable |
+| P42 | BL5 | EO69_41                            | 2026 only  | 2026_only |
+| P43 | BL5 | EO68-3_5                           | both years | crash |
+| P44 | BL5 | EO68-3_5                           | 2026 only  | 2026_only |
+
+★ = recommended Next-test pair (BL3 within-BL stable
+small-vs-big, D1 in the Executive summary and § Recommended field
+pilot). SMALL / BIG tags in **bold** mark the three within-BL
+stable pairs.
+
 ---
 
 ## Bottleneck Lineages (BL) — clustering and population naming (Step 30h)
@@ -713,7 +785,7 @@ computed at this 50 m choice.
 
 ---
 
-## Deme structure per location — what the 50 m partition yields (Step 29c)
+## Deme structure per population — what the 50 m partition yields (Step 29c)
 
 ### How the deme is built
 
@@ -776,9 +848,9 @@ allocation (§ Sampling design) assigns mothers per deme, with the
 the fastest way to anticipate which locations will stand out in
 Figures 8 and 10.
 
-## Step 30 Phase A — Per-location predictions
+## Step 30 Phase A — Per-population predictions
 
-### 30.1 Predicted SRK diversity per location — unbiased truth vs sampling
+### 30.1 Predicted SRK diversity per population — unbiased truth vs sampling
 
 **Two questions, kept strictly separate.** SRK diversity at a
 location has two very different meanings and the pipeline predicts
@@ -882,7 +954,7 @@ every location. Total seed counts in the DB span 1 (EO24-2) →
 
 **Figure 8.** Predicted SRK allele diversity per population, 2025 and 2026 overlaid. One row per population; the 2025 draw is shown as an open circle, the 2026 draw as a filled circle in the same BL colour, with a thin connector line joining the two when both years are present. 95 % credible intervals shown as horizontal error bars; dot size ∝ `N_fertile` for that year. Single-year populations show only the applicable year's marker and no connector. Dotted vertical line = species-wide ceiling (32 Fgs). Panels stacked by BL (BL1 → BL5, area DESC → connectivity DESC); within each BL populations ordered by the mean of their available-year predicted means. Left margin: short `P{N}` identifiers; right margin: per-year `{K demes}d / {N adults}`. The full `populationID → locationCode` map is in [`step30g_populations_classified.tsv`](tables/Phase5/step30g_populations_classified.tsv). The across-year comparison within a population is the within-pipeline H2 test of § C.0.c — populations whose predicted diversity shifts markedly between years carry the strongest signal of per-deme drift beyond the species-wide prior. Source: `step30h_predictions_by_BL_year.py`.
 
-### 30.2 Predicted pollen compatibility per location
+### 30.2 Predicted pollen compatibility per population
 
 **Question.** Under the sporophytic Class I / II + empirical-zygosity
 model, what fraction of pollen would a mother at each location be
@@ -1569,62 +1641,71 @@ before seed data arrive.
 
 ---
 
-## Recommended field pilot — BL5 (EO48_7 + EO18-7_19)
+## Recommended field pilot — BL3 within-BL stable pair (P34 + P32)
 
-Before running Phase B across all 39 locations, we recommend a
-**two-location pilot within Bottleneck Lineage 5 (BL5)** — one
-**fully-connected** location (**EO48_7**, 98 adults in 1 mating
-pool, 9 mothers in DB) paired with one **fragmented** location
-(**EO18-7_19**, 34 adults across 3 demes, 11 mothers in DB).
-User-selected 2026-10-03 (option A2 in
-[`step29c_partC_BL5_pilot_candidates.tsv`](tables/Phase5/step29c_partC_BL5_pilot_candidates.tsv),
-below).
+Before running Phase B across all 44 populations, we recommend a
+**two-population pilot within Bottleneck Lineage 3 (BL3)** — one
+**SMALL stable** population (**P34 = EO25-B_21**, 26 adults
+across both years, 7 + 8 = **15 mothers in DB**) paired with one
+**BIG stable** population (**P32 = EO18-7 + EO18-8**, 1440 adults
+across five locationIDs, 115 + 161 = **276 mothers in DB**).
+Both pass the stability test (both-year occupancy, overlapping
+95 % 2025 vs 2026 CIs on diversity and pollen compatibility,
+`N_fert_total ≥ 20`). Updated 2026-10-07 from the earlier
+BL5-fragmentation-contrast design; see § Across-year population
+dynamic for the stable-population inventory and the Executive
+summary **Next test** block for the full D1/D2/D3 option table.
 
-**Why BL5.** It is the LEPA Bottleneck Lineage with the **widest
-within-BL variation** in both census size and deme structure
-(see § Across-year population dynamic): BL5 holds the drift-collapsed tail (EO24 group,
-1–3 adult singletons) *and* the largest, most-connected locations
-(EO32_6 at 466 adults; EO48_7 at 98 adults in a single deme).
-A within-BL5 contrast therefore rules out between-BL noise while
-testing the full span of the fragmentation × drift axis the model
-predicts matters.
+**Why BL3.** Across the three BLs that hold ≥ 2 stable populations
+(BL1, BL2, BL3), **BL3 holds the single largest well-stocked
+population** (P32, 1440 adults with 276 mothers in the LEPA DB
+after the 2026 top-up) **and** a stable SMALL population at the
+other end of the size spectrum (P34, 26 adults). The pair-level
+mother budget of **291 mothers across 2025 + 2026** is the
+largest available within-BL stable contrast in Phase 5 and
+roughly **1.5 × the next-best option** (D3 at 190 mothers,
+BL1 P3 + P13). Holding BL identity constant means observed
+deviations are a within-BL small-vs-big signal, not a between-BL
+drift-history confound.
 
 **What this specific pair tests.**
 
-- **EO48_7 — fully-connected regime** (`component_N_fertile = 98`,
-  single deme). Phase 5 predicts a sustainable location
-  because `N_fert_eff = total_n_fertile`; this location is the
-  cleanest test of the model's "no fragmentation → species mean"
-  prediction.
-- **EO18-7_19 — fragmented regime** at a similar order of magnitude
-  for total adults (34) but split across 3 demes.
-  Phase 5's per-component simulation treats this as three
-  independent drift experiments; the comparison with EO48_7
-  isolates the pure fragmentation effect from raw-size effects.
+- **P32 EO18-7 + EO18-8 — large stable regime** (1440 adults
+  spread across 5 locationIDs and several demes). Phase 5
+  predicts a sustainable population at the species mean; this
+  side is the cleanest test of the model's "ample pool →
+  compatible mating" prediction.
+- **P34 EO25-B_21 — small stable regime** (26 adults). Small
+  enough that drift should erode the pool measurably per deme,
+  yet stable enough to carry a mother budget. If Phase 5's
+  per-deme simulation predicts a materially lower pollen
+  compatibility at P34 than P32, and the observed seed-set data
+  track that gap, the within-BL small-vs-big signal is confirmed.
 
-**Caveat on the Phase 4 adult SRK data.** The two BL5 EOs that
-*do* have adult SRK genotypes from Phase 4 (EO25, EO18 at n ≥ 10)
-are both split under the 500 m rule and sit in § C.0 only — they
-cannot yet be used at the Phase 5 location scale. So this pilot is a
-**seed-genotyping (Phase B) pilot**, not a retrospective-on-adults
-pilot like § C.0.a.
+**Mother-plant feasibility (LEPA DB, Wild germplasm, 2025 + 2026).**
 
-**Pilot cost.** 20 mothers × 25 seeds = **500 seeds to germinate**
-→ ~300 seedlings to genotype (at 60 % germination), compared to
-~12 600 for the full 2026 design. **< 4 % of the full genotyping
-budget** for a within-BL contrast with a clear a priori hypothesis.
+| Side | populationID | Location(s) | 2025 mothers | 2026 mothers | **Total** |
+|---|---|---|---:|---:|---:|
+| SMALL | P34 | EO25-B (locationID 21) | 7 | 8 | **15** |
+| BIG | P32 | EO18-7 + EO18-8 (locationIDs 15, 16, 17, 18, 19) | 115 | 161 | **276** |
+| **Pair** |  |  | **122** | **169** | **291** |
 
-**All three options kept on file.**
+**Pilot cost (upper bound).** If all 291 mothers were genotyped
+at 15 seedlings each: 291 × 25 seeds = **~7 275 seeds to
+germinate** → ~4 365 seedlings to genotype (at 60 % germination).
+A more targeted subset — say 15 SMALL mothers × 15 seedlings and
+30 – 60 BIG mothers × 15 seedlings — brings the cost well below
+2 000 seedlings. Exact per-mother allocation per deme is in
+[`step29c_partC_germplasmID_selection.tsv`](tables/Phase5/step29c_partC_germplasmID_selection.tsv)
+(germplasmIDs to pull, per-deme allocation, 60 % germination
+correction baked in).
 
-| Option | Robust candidate | Drift-sensitive candidate | Mothers in DB | Note |
-|---|---|---|---:|---|
-| A1 | **EO32_6** (5 pools, 466 adults) | **EO25-B_21** (2 pools, 10 adults) | 38 + 7 | Maximum size contrast; both have mothers; drift-sensitive is small-but-not-tiny. |
-| **A2 ★** | **EO48_7** (1 pool, 98 adults) | **EO18-7_19** (3 pools, 34 adults) | 9 + 11 | **User-recommended.** Isolates the fragmentation × drift axis — similar order-of-magnitude totals, opposite pool structure. |
-| A3 | **EO18-7_17** (5 pools, 242 adults) | **EO24-7_25** (1 pool, 3 adults) | 33 + 3 | Maximum biological contrast but drift-sensitive has only 3 adults — poor statistical power. |
-
-Source table:
-[`step29c_partC_BL5_pilot_candidates.tsv`](tables/Phase5/step29c_partC_BL5_pilot_candidates.tsv)
-(generated by `build_bl5_pilot_candidates.py`).
+**Pair evaluations and stable-population inventory**:
+[`step30g_populations_classified.tsv`](tables/Phase5/step30g_populations_classified.tsv)
+is the authoritative source of the trend classification plus the
+`populationID → locationCode` map; the three within-BL stable
+pair options (D1 / D2 / D3) are summarised in the Executive
+summary.
 
 ---
 

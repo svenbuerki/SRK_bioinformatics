@@ -2996,111 +2996,117 @@ mate-limitation results can be overlaid with the Genetic-Rescue-DB
 ISI / fruit-set phenotype to provide an independent line of evidence
 under Phase III of the wider project.
 
-### C.6 BL5 pilot study — EO48_7 (connected) + EO18-7_19 (fragmented)
+### C.6 Phase B pilot — BL3 within-BL stable pair (P34 + P32)
 
-Before running Phase B across all 39 locations, we recommend a
-**two-location pilot within Bottleneck Lineage 5 (BL5)**: one
-**fully-connected** location (**EO48_7**, 98 adults in a single
-50 m deme, 9 mothers in the LEPA DB) paired with one
-**fragmented** location (**EO18-7_19**, 34 adults distributed across
-3 demes, 11 mothers in the DB). User-selected 2026-10-03
-(option A2 in
-[`Tables/Phase5/step29c_partC_BL5_pilot_candidates.tsv`](tables/Phase5/step29c_partC_BL5_pilot_candidates.tsv)).
+Before running Phase B across all 44 populations, we recommend a
+**within-BL stable small-vs-big pilot** inside Bottleneck
+Lineage 3: one **SMALL stable** population (**P34 = EO25-B_21**,
+26 adults across both years, **15 mothers in DB** after the 2026
+top-up) paired with one **BIG stable** population (**P32 =
+EO18-7 + EO18-8**, 1440 adults across five locationIDs, **276
+mothers in DB**). Both pass the stability test from
+§ A.5.0b (both-year occupancy, overlapping 95 % 2025 vs 2026 CIs
+on diversity and pollen compatibility, `N_fert_total ≥ 20`).
+Updated 2026-10-07 from the earlier BL5-fragmentation-contrast
+design (A2 pair EO48_7 + EO18-7_19) once the 2026 germplasm
+top-up at EO25-B lifted the SMALL side out of the mother-count
+corner that made it unfeasible before.
 
-**Why BL5.** It is the LEPA Bottleneck Lineage with the **widest
-within-BL variation** in both census size and deme structure
-(see § A.5 Figure 1b): BL5 holds the drift-collapsed tail (EO24
-group, 1 – 3 adult singletons) *and* the largest, most-connected
-locations (EO32_6 at 466 adults; EO48_7 at 98 adults in a single
-deme). A within-BL5 contrast therefore rules out between-BL
-noise while testing the full span of the fragmentation × drift axis
-the model predicts matters.
+**Why BL3.** Across the three BLs that hold ≥ 2 stable populations
+(BL1, BL2, BL3), **BL3 holds the single largest well-stocked
+population** (P32 — 1440 adults with 276 mothers in the LEPA DB
+after the 2026 top-up) **and** a stable SMALL population at the
+other end of the size spectrum (P34 — 26 adults). The pair-level
+mother budget of **291 mothers across 2025 + 2026** is the
+largest within-BL stable contrast in Phase 5 and roughly 1.5 ×
+the next-best option (BL1 P3 + P13 at 190 mothers). Holding BL
+identity constant means observed deviations are a within-BL
+small-vs-big signal, not a between-BL drift-history confound.
 
-**The two pilot locations.**
+**The two pilot populations.**
 
-| Attribute | **EO48_7** (connected) | **EO18-7_19** (fragmented) |
+| Attribute | **P32 EO18-7 + EO18-8** (BIG stable) | **P34 EO25-B_21** (SMALL stable) |
 |---|---|---|
-| 50 m demes (`n_components_50m`) | **1** | **3** |
-| Total fertile adults | 98 | 34 |
-| Largest-pool `component_N_fertile` | 98 | 20 |
-| Mothers with seed records in DB | **9** | **11** |
-| Seedling-genotype target (§ B.3.2) | 15 seedlings/mother | 15 seedlings/mother |
-| Seeds to germinate per mother (60 % germination) | 25 seeds | 25 seeds |
-| Predicted per-location pollen compatibility (sporophytic + empirical zygosity, § A.8) | **sustainable** — single-pool model's cleanest test case | **sustainable mean, wider CI** — three independent small-pool drift experiments averaged by `component_N_fertile` weight |
+| locationIDs | 15, 16, 17, 18, 19 | 21 |
+| 50 m demes (per year, pooled) | several | 1–2 |
+| Total fertile adults (2025 + 2026) | **1440** | **26** |
+| Mothers in LEPA DB — 2025 | 115 | 7 |
+| Mothers in LEPA DB — 2026 | 161 | 8 |
+| Mothers in LEPA DB — **total** | **276** | **15** |
+| Across-year stability (§ A.5.0b) | 2025 vs 2026 CIs overlap on both metrics | 2025 vs 2026 CIs overlap on both metrics |
+| Predicted per-population pollen compatibility (sporophytic + empirical zygosity, § A.8) | **sustainable** at species mean (large pool with mild per-deme drift) | **sustainable mean, wider CI** (small pool, several draws from P1 per deme) |
 
 **What this specific pair tests.**
 
-- **EO48_7 — fully-connected regime** (single deme,
-  component_N_fertile = 98). Phase 5 predicts a sustainable location
-  because the location is unfragmented; the deme-based
-  simulation reduces to a single pool. This location is the cleanest
-  test of the model's "no fragmentation → species mean" prediction.
-- **EO18-7_19 — fragmented regime** at a similar order of magnitude
-  for total adults (34) but split across 3 demes (20, 12, 2
-  adults — two pools above the 8-plant species-pool threshold, one
-  below). The per-component simulation treats each as an independent
-  drift experiment; the comparison with EO48_7 isolates the pure
-  fragmentation effect from the raw-size effect.
+- **P32 — large stable regime** (five locationIDs merged into one
+  500 m-connected population). Phase 5 predicts a sustainable
+  population at the species mean because the pool is deep enough
+  that drift barely moves per-deme frequencies; this side is the
+  cleanest test of the "ample pool → compatible mating"
+  prediction.
+- **P34 — small stable regime** (one locationID, 26 adults
+  across both years). Small enough that drift should erode the
+  pool measurably per deme, yet stable enough across years to
+  carry a usable mother budget. If Phase 5's per-deme simulation
+  predicts a materially lower pollen compatibility at P34 than
+  P32, and the observed seed-set data track that gap, the
+  within-BL small-vs-big signal is confirmed.
 
-**Caveat on retrospective adult SRK data.** The two BL5 EOs that
-*do* have adult SRK genotypes from Phase 4 at n ≥ 10 (EO25 and EO18)
-are both split under the 500 m rule and sit in § C.0 only — they
-cannot yet be used at the Phase 5 location scale. So this pilot is a
-**seed-genotyping (Phase B) pilot**, not a retrospective-on-adults
-pilot like § C.0.a. The 2026 pilot can run as soon as seeds from
-EO48 and EO18-7 are collected and germinated.
+**Caveat on retrospective adult SRK data.** EO18 and EO25 both
+have adult SRK genotypes from Phase 4 at n ≥ 10, but both are
+split under the 500 m rule and sit in § C.0 only — they cannot
+yet be used at the Phase 5 location (or new population) scale.
+So this pilot is a **seed-genotyping (Phase B) pilot**, not a
+retrospective-on-adults pilot like § C.0.a. The 2026 pilot can
+run as soon as seeds from EO25-B and EO18-7 / EO18-8 are
+collected and germinated.
 
-**Pilot cost.** 20 mothers × 25 seeds = **500 seeds to germinate**
-→ ~15 seedlings/mother × 20 = **~300 seedlings to genotype**
-at 60 % germination (§ B.3.2). That is **< 4 % of the full 2026
-genotyping budget** (12 625 seeds / ~7 575 seedlings) for a
-within-BL contrast with a clear a priori hypothesis.
+**Pilot cost (upper bound).** All 291 mothers genotyped at
+15 seedlings each: 291 × 25 seeds = **~7 275 seeds to germinate**
+→ ~4 365 seedlings to genotype (at 60 % germination, § B.3.2).
+A more targeted subset — say 15 SMALL mothers × 15 seedlings and
+30 – 60 BIG mothers × 15 seedlings — brings the cost well below
+2 000 seedlings. Exact per-mother allocation per deme is in
+[`step29c_partC_germplasmID_selection.tsv`](tables/Phase5/step29c_partC_germplasmID_selection.tsv).
 
-**Three options kept on file** (full table in
-[`Tables/Phase5/step29c_partC_BL5_pilot_candidates.tsv`](tables/Phase5/step29c_partC_BL5_pilot_candidates.tsv),
-generator `build_bl5_pilot_candidates.py`):
+**Alternative pairs kept on file.** The Executive summary of the
+compact doc (`Phase5_SRK_summary_for_colleagues.md`) lists the
+three within-BL stable options (D1 ★ = BL3, D2 = BL2 P21 + P16,
+D3 = BL1 P3 + P13). The stable-population inventory +
+`populationID → locationCode` lookup is in
+[`step30g_populations_classified.tsv`](tables/Phase5/step30g_populations_classified.tsv).
 
-| Option | Connected candidate | Fragmented / drift-sensitive candidate | Mothers in DB | Design note |
-|---|---|---|---:|---|
-| A1 | EO32_6 (5 pools, 466 adults) | EO25-B_21 (2 pools, 10 adults) | 38 + 7 | Maximum size contrast; drift-sensitive is small but not tiny. |
-| **A2 ★** | **EO48_7 (1 pool, 98 adults)** | **EO18-7_19 (3 pools, 34 adults)** | **9 + 11** | **User-recommended.** Isolates fragmentation × drift at matched order-of-magnitude total adults. |
-| A3 | EO18-7_17 (5 pools, 242 adults) | EO24-7_25 (1 pool, 3 adults) | 33 + 3 | Maximum biological contrast but drift-sensitive has only 3 adults — low genotyping statistical power. |
-
-**Field-team recipe for the pilot.** Under the § B.4.2 default, the
-authoritative per-event allocation is `M_frag` in
-[`step29c_sampling_frag_aware_per_event.tsv`](tables/Phase5/step29c_sampling_frag_aware_per_event.tsv);
-filter to the pilot `locationID`s (EO48_7 → locationID 7, EO18-7_19
-→ locationID 19) to isolate the two locations. The lab recipe is
+**Field-team recipe for the pilot.** The lab recipe is
 [`step29c_partC_germplasmID_selection.tsv`](tables/Phase5/step29c_partC_germplasmID_selection.tsv),
-sorted `EOID → locationID → component → germplasmID`; the per-mother
-columns `n_seeds_to_germinate` (= 25) and `n_seedlings_to_genotype`
-(= 15 at 60 % germination) are already baked in. The older
-[`step29_field_team_sampling_recipe.tsv`](tables/Phase5/step29_field_team_sampling_recipe.tsv)
-is kept for reference / audit but no longer drives field effort.
+sorted `EOID → locationID → component → germplasmID`; the
+per-mother columns `n_seeds_to_germinate` (= 25) and
+`n_seedlings_to_genotype` (= 15 at 60 % germination) are already
+baked in. Filter to the P34 and P32 locationIDs (21 for P34; 15,
+16, 17, 18, 19 for P32) to isolate the two populations.
 
 **Companion tables for pilot review:**
 
-- [`step29c_sampling_comparison_per_location.tsv`](tables/Phase5/step29c_sampling_comparison_per_location.tsv) — head-to-head of current vs fragmentation-aware M per location; the two pilot rows show how much extra effort the honest allocation asks for.
+- [`step30g_populations_classified.tsv`](tables/Phase5/step30g_populations_classified.tsv) — stable / crash / growth / 2025_only / 2026_only classification + per-year N_fertile + mothers in DB; the primary filter for selecting within-BL stable pairs.
+- [`step29c_sampling_comparison_per_location.tsv`](tables/Phase5/step29c_sampling_comparison_per_location.tsv) — head-to-head of current vs fragmentation-aware M per location.
 - [`step28_seed_sampling_per_mother.tsv`](tables/Phase5/step28_seed_sampling_per_mother.tsv) — analyst view (per-mother targets, achievable coverage, budget flags).
-- [`step29_sampling_per_location.tsv`](tables/Phase5/step29_sampling_per_location.tsv) — per-location design table (M, target, delivered coverage) under the older § B.4 allocation, kept for audit.
 - [`step29_location_connectivity.tsv`](tables/Phase5/step29_location_connectivity.tsv) — the 50 m primary + 10 m / 50 m sensitivity connectivity metrics.
-- [`step30_A_prediction_location_diversity.tsv`](tables/Phase5/step30_A_prediction_location_diversity.tsv) — predicted SRK allele count with 95 % credible interval per location.
-- [`step30_A_prediction_location_pcompat.tsv`](tables/Phase5/step30_A_prediction_location_pcompat.tsv) — predicted random-mating pollen compatibility with 95 % credible interval per location (finite-population model at 50 m).
+- [`step30_A_prediction_location_diversity.tsv`](tables/Phase5/step30_A_prediction_location_diversity.tsv) — predicted SRK allele count with 95 % CI per location (2025 single-year, legacy).
+- [`step30_A_prediction_location_pcompat.tsv`](tables/Phase5/step30_A_prediction_location_pcompat.tsv) — predicted random-mating pollen compatibility with 95 % CI per location (2025 single-year, legacy).
 
-**Downstream in Phase B.** Once EO67 and EO27-1 seed genotypes exist,
+**Downstream in Phase B.** Once P34 and P32 seed genotypes exist,
 run Step 30 with the pilot subset:
 
 ```
 python step30_srk_diversity_prediction_vs_observed.py \
     --year 2025 \
-    --seed-genotypes  real_seeds_BL4_pilot.tsv \
-    --mother-genotypes real_mothers_BL4_pilot.tsv \
+    --seed-genotypes  real_seeds_BL3_pilot.tsv \
+    --mother-genotypes real_mothers_BL3_pilot.tsv \
     --match-seed-count
 ```
 
-The two-point mate-limitation regression will fire on the two pilot
-locations; scaling to the full 39-location dataset is then just a
-matter of adding rows to the two TSV inputs.
+The two-point mate-limitation regression will fire on the two
+pilot populations; scaling to the full 44-population dataset is
+then just a matter of adding rows to the two TSV inputs.
 
 ---
 
