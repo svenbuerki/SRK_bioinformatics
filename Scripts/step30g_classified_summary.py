@@ -129,9 +129,17 @@ def build_master() -> pd.DataFrame:
     df["class_rank"] = df["trend_class"].map(
         {c: i for i, c in enumerate(CLASS_ORDER)}
     )
-    # Within class: sort by N_fert_total DESC
-    df = df.sort_values(["class_rank", "n_fertile_total"],
-                         ascending=[True, False]).reset_index(drop=True)
+    # Within class: sort by BL (BL1 → BL5), then by populationID
+    # (within-BL order already follows the dendrogram leaf position
+    # from Phase III, so adjacent IDs within a BL are spatial
+    # neighbours too). Rationale (team feedback 2026-10-06): grouping
+    # by BL within each trend class exposes which BLs carry each
+    # dynamic, and makes selection of pair candidates per BL direct.
+    df["bl_rank"] = (df["BL"].str.extract(r"BL(\d+)")[0]
+                      .astype("Int64")
+                      .fillna(99))
+    df = df.sort_values(["class_rank", "bl_rank", "populationID"],
+                         ascending=[True, True, True]).reset_index(drop=True)
 
     # Reorder key columns to front
     front = [
@@ -144,7 +152,7 @@ def build_master() -> pd.DataFrame:
         "pred_diversity_2025", "pred_diversity_2026",
         "pred_pcompat_2025", "pred_pcompat_2026",
     ]
-    rest = [c for c in df.columns if c not in front + ["class_rank"]]
+    rest = [c for c in df.columns if c not in front + ["class_rank", "bl_rank"]]
     df = df[front + rest]
     return df
 
@@ -172,7 +180,18 @@ def plot_summary(df: pd.DataFrame,
         axes = [axes]
 
     def _lbl(row: pd.Series) -> str:
-        return f"P{int(row['populationID']):>2}  ({row['population_label']})"
+        bl = str(row.get("BL", "")) if pd.notna(row.get("BL", "")) else ""
+        bl_tag = f"[{bl}] " if bl else ""
+        return (f"P{int(row['populationID']):>2}  {bl_tag}"
+                f"({row['population_label']})")
+
+    # Load BL colours for colouring row labels — the 'srk_bl_constants
+    # Set1 palette' used throughout Phase 5 for BL1..BL5.
+    try:
+        from srk_bl_constants import BL_COLORS as _BL_COL
+        bl_colour = {k: v for k, v in _BL_COL.items()}
+    except Exception:
+        bl_colour = {}
 
     width = 0.4
     for ax, cls in zip(axes, classes_present):
@@ -184,8 +203,23 @@ def plot_summary(df: pd.DataFrame,
                 color=BAR_2026, alpha=0.85, label="2026")
 
         ax.set_yticks(y_pos)
-        ax.set_yticklabels([_lbl(r) for _, r in sub.iterrows()],
-                             fontsize=8.5)
+        tick_labels = ax.set_yticklabels(
+            [_lbl(r) for _, r in sub.iterrows()],
+            fontsize=8.5,
+        )
+        # Colour each row label by its BL.
+        for lbl_obj, (_, r) in zip(tick_labels, sub.iterrows()):
+            bl = str(r.get("BL", "")) if pd.notna(r.get("BL", "")) else ""
+            col = bl_colour.get(bl)
+            if col:
+                lbl_obj.set_color(col)
+        # Thin horizontal separators between BL groups within the class
+        prev_bl = None
+        for i, (_, r) in enumerate(sub.iterrows()):
+            bl = str(r.get("BL", "")) if pd.notna(r.get("BL", "")) else ""
+            if prev_bl is not None and bl != prev_bl:
+                ax.axhline(i - 0.5, color="#aaaaaa", lw=0.6, alpha=0.55)
+            prev_bl = bl
         ax.set_xlim(0, x_max * 1.05)
         ax.invert_yaxis()
         ax.grid(axis="x", alpha=0.3)
@@ -215,7 +249,7 @@ def plot_summary(df: pd.DataFrame,
 
 def main() -> None:
     df = build_master()
-    df_write = df.drop(columns=["class_rank"], errors="ignore")
+    df_write = df.drop(columns=["class_rank", "bl_rank"], errors="ignore")
     df_write.to_csv(TABLES / "step30g_populations_classified.tsv",
                      sep="\t", index=False)
     print("[step30g-classified] Wrote Tables/Phase5/step30g_populations_classified.tsv")
