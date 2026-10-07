@@ -28,6 +28,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.patches import Rectangle
 
 from srk_bl_constants import make_location_label
 
@@ -160,9 +161,11 @@ def build_master() -> pd.DataFrame:
 def plot_summary(df: pd.DataFrame,
                   out_png: Path, out_pdf: Path) -> None:
     """Horizontal grouped-bar chart, faceted vertically by trend class.
-    One subplot per class, with populations ranked by N_fertile_total
-    within class. Row labels: 'P{N}  (locationCodes)'. Each subplot
-    gets a title with the class name + count."""
+    One subplot per class; within each subplot, populations are sorted
+    by BL (BL1 → BL5) then populationID. BL grouping inside each
+    class panel is shown as a **facet-strip** on the left margin —
+    a thin coloured vertical stripe + bold BL label — not as colour
+    on the row labels themselves (user preference, 2026-10-07)."""
     classes_present = [c for c in CLASS_ORDER
                        if (df["trend_class"] == c).any()]
     heights = [max(int((df["trend_class"] == c).sum()), 1)
@@ -172,26 +175,25 @@ def plot_summary(df: pd.DataFrame,
 
     fig, axes = plt.subplots(
         len(classes_present), 1,
-        figsize=(10.5, max(8, 0.33 * len(df) + 2.5)),
+        figsize=(11.5, max(8, 0.33 * len(df) + 2.5)),
         gridspec_kw={"height_ratios": heights},
         sharex=True,
     )
     if len(classes_present) == 1:
         axes = [axes]
 
-    def _lbl(row: pd.Series) -> str:
-        bl = str(row.get("BL", "")) if pd.notna(row.get("BL", "")) else ""
-        bl_tag = f"[{bl}] " if bl else ""
-        return (f"P{int(row['populationID']):>2}  {bl_tag}"
-                f"({row['population_label']})")
-
-    # Load BL colours for colouring row labels — the 'srk_bl_constants
-    # Set1 palette' used throughout Phase 5 for BL1..BL5.
     try:
         from srk_bl_constants import BL_COLORS as _BL_COL
         bl_colour = {k: v for k, v in _BL_COL.items()}
     except Exception:
         bl_colour = {}
+
+    # BL facet strip positions (in axes-fraction x, data y via
+    # ax.get_yaxis_transform()). Strip sits in the left margin,
+    # outside the plot area.
+    STRIP_X     = -0.085   # x-centre of coloured stripe
+    STRIP_W     = 0.016    # stripe width (axes-fraction)
+    LABEL_X     = -0.100   # x-centre of BL text (further left)
 
     width = 0.4
     for ax, cls in zip(axes, classes_present):
@@ -202,24 +204,55 @@ def plot_summary(df: pd.DataFrame,
         ax.barh(y_pos + width/2, sub["n_fertile_2026"], height=width,
                 color=BAR_2026, alpha=0.85, label="2026")
 
+        # Row labels: short 'P{N}' only. The full locationCode list
+        # is in step30g_populations_classified.tsv — the figure
+        # caption cites that lookup. Keeps the figure legible when
+        # populations merge several legacy locationCodes.
         ax.set_yticks(y_pos)
-        tick_labels = ax.set_yticklabels(
-            [_lbl(r) for _, r in sub.iterrows()],
-            fontsize=8.5,
+        ax.set_yticklabels(
+            [f"P{int(r['populationID']):>2}"
+             for _, r in sub.iterrows()],
+            fontsize=9,
         )
-        # Colour each row label by its BL.
-        for lbl_obj, (_, r) in zip(tick_labels, sub.iterrows()):
-            bl = str(r.get("BL", "")) if pd.notna(r.get("BL", "")) else ""
-            col = bl_colour.get(bl)
-            if col:
-                lbl_obj.set_color(col)
-        # Thin horizontal separators between BL groups within the class
-        prev_bl = None
-        for i, (_, r) in enumerate(sub.iterrows()):
-            bl = str(r.get("BL", "")) if pd.notna(r.get("BL", "")) else ""
-            if prev_bl is not None and bl != prev_bl:
-                ax.axhline(i - 0.5, color="#aaaaaa", lw=0.6, alpha=0.55)
-            prev_bl = bl
+
+        # BL facet-strip rendering within this class panel
+        bls_in_class = (sub["BL"].astype(str)
+                           .where(sub["BL"].notna(), "")
+                           .tolist())
+        if bls_in_class:
+            # Walk contiguous BL blocks (sub is already BL-sorted)
+            i = 0
+            while i < len(bls_in_class):
+                bl = bls_in_class[i]
+                j = i
+                while j + 1 < len(bls_in_class) and bls_in_class[j + 1] == bl:
+                    j += 1
+                # Block = rows i..j inclusive
+                y_top = i - 0.5
+                y_bot = j + 0.5
+                y_center = (y_top + y_bot) / 2
+                col = bl_colour.get(bl, "#777777")
+                # Coloured strip (axes-fraction x, data y)
+                ax.add_patch(Rectangle(
+                    (STRIP_X - STRIP_W / 2, y_top),
+                    STRIP_W, y_bot - y_top,
+                    transform=ax.get_yaxis_transform(),
+                    facecolor=col, edgecolor="none", alpha=0.95,
+                    clip_on=False, zorder=5,
+                ))
+                # Bold BL label to the left of the stripe
+                if bl:
+                    ax.text(LABEL_X, y_center, bl,
+                            transform=ax.get_yaxis_transform(),
+                            fontsize=9.5, fontweight="bold", color=col,
+                            ha="center", va="center", rotation=90,
+                            clip_on=False, zorder=6)
+                # Horizontal separator between BL blocks (not above the
+                # first block)
+                if i > 0:
+                    ax.axhline(i - 0.5, color="#888888", lw=0.7, alpha=0.7)
+                i = j + 1
+
         ax.set_xlim(0, x_max * 1.05)
         ax.invert_yaxis()
         ax.grid(axis="x", alpha=0.3)
@@ -237,14 +270,16 @@ def plot_summary(df: pd.DataFrame,
 
     fig.suptitle(
         "Phase 5 populations — 2025 vs 2026 N_fertile by across-year "
-        f"trend class (n = {len(df)} populations)",
+        f"trend class (n = {len(df)} populations); BL facet strip on "
+        f"left",
         fontsize=12, y=0.995,
     )
-    fig.tight_layout(rect=[0, 0, 0.92, 0.985])
+    fig.tight_layout(rect=[0.05, 0, 0.92, 0.985])
     fig.savefig(out_png, dpi=200, bbox_inches="tight")
     fig.savefig(out_pdf, dpi=200, bbox_inches="tight")
     plt.close(fig)
     print(f"[step30g-classified] Wrote {out_png.name} + .pdf")
+
 
 
 def main() -> None:

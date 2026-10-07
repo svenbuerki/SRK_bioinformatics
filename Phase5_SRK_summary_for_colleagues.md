@@ -46,10 +46,16 @@ Phase 5 nests three spatial scales:
   above-ground emergence of this annual plant can flicker between
   years while the underlying seed-bank patch persists.
 - **Bottleneck Lineage** (BL) — a Ward's hierarchical cluster of
-  populations sharing an evolutionary context. Silhouette-optimal
-  *k* = 5 on the 44 population centroids reproduces the Phase 4
-  EO-level BL cardinality on independent 2-year population-level
-  data (§ Bottleneck Lineages). BL stratifies every per-population
+  populations sharing a geographic (and therefore habitat-loss)
+  context. BLs are the frame in which we quantify how habitat
+  contraction has driven **genetic bottlenecks**: populations in
+  the same BL have been reduced in parallel by the same regional
+  habitat loss, so their drift signatures are expected to co-vary
+  and BL identity controls that shared history when comparing
+  predictions across populations. Silhouette-optimal *k* = 5 on
+  the 44 population centroids reproduces the Phase 4 EO-level BL
+  cardinality on independent 2-year population-level data
+  (§ Bottleneck Lineages). BL stratifies every per-population
   figure by shared drift history.
 - **Deme** (50 m connected component within **one year**, nested
   inside a population) — the **within-year drift unit** on which
@@ -445,13 +451,15 @@ across-year axis.
 - **38 of 514 slickspots (7.4 %) were re-visited in both years** —
   the raw signal of the annual's year-to-year above-ground
   flickering.
-- Legacy locationCode mapping: 21 locationCodes map 1:1 to a
-  population; 2 populations aggregate ≥ 2 legacy locationCodes
-  (populationID 1 merges EO27-1 + EO27RT, the clearest case).
 
 **Legacy locationCode mapping.** 21 locationCodes map 1:1 to a
 population; 2 populations aggregate ≥ 2 legacy locationCodes
 (populationID 13 merges EO27-1 + EO27RT, the clearest case).
+
+<a id="fig-2"></a>
+![Figure 2](figures/Phase5/step29a_populations_overview.png)
+
+**Figure 2.** Phase 5 populations across the Snake River Plain — 2025 + 2026 above-ground occupancy. One dot per population centroid, size ∝ total `n_fertile` across both years, coloured by occupancy pattern: purple = present in both years (22 of 44 populations), blue = 2025 only (11), orange = 2026 only (11). 44 populations total built from 514 slickspots (10 m cross-year matching) plus historical locationID centroids; 500 m connectivity graph on the pooled point set. 7.4 % of slickspots were re-visited at the 10 m scale across both years — the raw signal of the annual's year-to-year above-ground flickering. Source: `step29a_population_maps.py`.
 
 The two downstream sections pick up from here: § **Bottleneck
 Lineages** below groups the 44 populations into the five BLs
@@ -601,21 +609,21 @@ diversity gap is persistent, not a one-year sampling fluke.
 
 **Figure 6.** The 44 Phase 5 populations grouped by across-year
 trend class, each class as a vertical panel. Within each class,
-rows are sorted by **BL (BL1 → BL5)** then **populationID** so
-that spatially-adjacent populations stay adjacent in the figure
-(team feedback 2026-10-06 — grouping by BL within each dynamic
-exposes which BLs carry each pattern and makes selection of pair
-candidates per BL direct). Row labels carry a `[BL{n}]` tag and
-are coloured by BL (purple = BL1, blue = BL2, red = BL3,
-orange = BL4, green = BL5). Blue bars = `N_fertile_2025`, orange
-bars = `N_fertile_2026`. Thin horizontal separators mark BL
-boundaries within each class. **Headline patterns:** the four
-crash populations spread across BL1 / BL4 / BL5; the twelve
-stable populations are BL1-dominant (4 populations); the four
-growth populations are BL3-dominant (3 populations); the eleven
-2026-only populations are BL1-dominant (7 populations, mostly
-EO27 variants that emerged in 2026 after a dry 2025). Source:
-`step30g_classified_summary.py`.
+rows are sorted by **BL (BL1 → BL5)** then **populationID**; the
+BL grouping is shown as a left-margin **facet strip** (thin
+coloured stripe + vertical BL label in BL colour) so BL blocks
+read as sub-facets inside each class panel. Row labels are plain
+short `P{N}` identifiers; the full `populationID → locationCode`
+map is in
+[`step30g_populations_classified.tsv`](tables/Phase5/step30g_populations_classified.tsv).
+Blue bars = `N_fertile_2025`, orange bars = `N_fertile_2026`.
+Thin horizontal separators mark BL boundaries within each class.
+**Headline patterns:** the four crash populations spread across
+BL1 / BL4 / BL5; the twelve stable populations are BL1-dominant
+(4 populations); the four growth populations are BL3-dominant
+(3 populations); the eleven 2026-only populations are
+BL1-dominant (7 populations, mostly EO27 variants that emerged
+in 2026 after a dry 2025). Source: `step30g_classified_summary.py`.
 
 ![Figure 7](figures/Phase5/step30g_across_year_scatter.png)
 
@@ -768,11 +776,6 @@ allocation (§ Sampling design) assigns mothers per deme, with the
 the fastest way to anticipate which locations will stand out in
 Figures 8 and 10.
 
-<a id="fig-2"></a>
-![Figure 2](figures/Phase5/step29a_populations_overview.png)
-
-**Figure 2.** Phase 5 populations across the Snake River Plain — 2025 + 2026 above-ground occupancy. One dot per population centroid, size ∝ total `n_fertile` across both years, coloured by occupancy pattern: purple = present in both years (22 of 44 populations), blue = 2025 only (11), orange = 2026 only (11). 44 populations total built from 514 slickspots (10 m cross-year matching) plus historical locationID centroids; 500 m connectivity graph on the pooled point set. 7.4 % of slickspots were re-visited at the 10 m scale across both years — the raw signal of the annual's year-to-year above-ground flickering. Source: `step29a_population_maps.py`.
-
 ## Step 30 Phase A — Per-location predictions
 
 ### 30.1 Predicted SRK diversity per location — unbiased truth vs sampling
@@ -875,14 +878,9 @@ every location. Total seed counts in the DB span 1 (EO24-2) →
 11 723 (EO76), so most locations are well provisioned.
 
 <a id="fig-8"></a>
-![Figure 8 — 2025](figures/Phase5/step30h_pred_diversity_2025.png)
+![Figure 8](figures/Phase5/step30h_pred_diversity.png)
 
-**Figure 8 (2025).** Predicted SRK allele diversity per **population** in 2025, built per 50 m deme and unioned at the population level. One row per population, dots sized by population `n_fertile`, 95 % credible intervals shown as horizontal error bars. Rows grouped by new BL (area DESC → connectivity DESC): BL1 purple, BL2 blue, BL3 red, BL4 orange, BL5 green. Row labels: `P{N}  ({locationCode}_{locationID})  (K demes, N adults)`. Dotted vertical line = species-wide ceiling (32 Fgs). Within each BL, populations are ordered by dendrogram leaf position so adjacent populationIDs are also adjacent on the clustering tree.
-
-<a id="fig-8b"></a>
-![Figure 8 — 2026](figures/Phase5/step30h_pred_diversity_2026.png)
-
-**Figure 8b (2026).** Same figure for the 2026 above-ground sample. Across-year comparison within a population is a within-pipeline H2 test (§ C.0.c) — populations whose predicted diversity shifts markedly between years carry the strongest signal of per-deme drift beyond the species-wide prior. Source: `step30h_predictions_by_BL_year.py`.
+**Figure 8.** Predicted SRK allele diversity per population, 2025 and 2026 overlaid. One row per population; the 2025 draw is shown as an open circle, the 2026 draw as a filled circle in the same BL colour, with a thin connector line joining the two when both years are present. 95 % credible intervals shown as horizontal error bars; dot size ∝ `N_fertile` for that year. Single-year populations show only the applicable year's marker and no connector. Dotted vertical line = species-wide ceiling (32 Fgs). Panels stacked by BL (BL1 → BL5, area DESC → connectivity DESC); within each BL populations ordered by the mean of their available-year predicted means. Left margin: short `P{N}` identifiers; right margin: per-year `{K demes}d / {N adults}`. The full `populationID → locationCode` map is in [`step30g_populations_classified.tsv`](tables/Phase5/step30g_populations_classified.tsv). The across-year comparison within a population is the within-pipeline H2 test of § C.0.c — populations whose predicted diversity shifts markedly between years carry the strongest signal of per-deme drift beyond the species-wide prior. Source: `step30h_predictions_by_BL_year.py`.
 
 ### 30.2 Predicted pollen compatibility per location
 
@@ -989,14 +987,9 @@ mean P_compat from the per-component simulation is a faithful
 estimator of the population-mean P_compat.
 
 <a id="fig-10"></a>
-![Figure 10 — 2025](figures/Phase5/step30h_pred_pcompat_2025.png)
+![Figure 10](figures/Phase5/step30h_pred_pcompat.png)
 
-**Figure 10 (2025).** Predicted per-population pollen compatibility under sporophytic Class I / II + empirical LEPA zygosity for the 2025 above-ground sample. One dot per population, 95 % CI horizontal error bars, dot size ∝ `n_fertile`. Rows grouped by new BL (BL1 purple at top → BL5 green at bottom). Traffic-light bands: red = failed (< 0.259), amber = struggling (0.259–0.519), green = sustainable (≥ 0.519). Dotted green line = sporophytic species mean 0.778. Nearly all populations with ≥ 8 adults sit on or just below the species mean — the structural redundancy of Class I dominance + empirical zygosity (§ C.0.b) swamps between-population variation. BL3's EO24 tail (new P27–P30, 1–3 plants each) is the only group with meaningful credible-interval spread below the mean.
-
-<a id="fig-10b"></a>
-![Figure 10 — 2026](figures/Phase5/step30h_pred_pcompat_2026.png)
-
-**Figure 10b (2026).** Same figure for the 2026 above-ground sample. Across-year invariance of pollen compatibility across all 22 both-year populations (0 / 22 showed a CI mismatch, § C.0.b buffering) means Figures 10 and 10b differ almost entirely at the single-year populations (BL1's new 2026-only EO27 variants + the single-plant BL3 tail). Source: `step30h_predictions_by_BL_year.py`.
+**Figure 10.** Predicted per-population pollen compatibility under sporophytic Class I / II SI + empirical LEPA zygosity, 2025 and 2026 overlaid. Same layout as Figure 8: open circle = 2025, filled circle = 2026, same BL colour, thin connector line for both-year populations. 95 % CI horizontal error bars; dot size ∝ `N_fertile` for that year. Traffic-light bands: red = failed (< 0.259), amber = struggling (0.259 – 0.519), green = sustainable (≥ 0.519). Dotted green line = sporophytic species mean 0.778. Panels stacked by BL (BL1 → BL5); within each BL rows ordered by the mean of available-year means. Left margin: short `P{N}` identifiers; right margin: per-year `{K demes}d / {N adults}`. The full `populationID → locationCode` map is in [`step30g_populations_classified.tsv`](tables/Phase5/step30g_populations_classified.tsv). Nearly all populations with ≥ 8 adults sit on or just below the species mean — the structural redundancy of Class I dominance + empirical zygosity (§ C.0.b) swamps between-population variation; BL3's EO24 tail (P27 – P30, 1 – 3 plants each) is the only group with meaningful credible-interval spread below the mean. All 22 both-year populations have overlapping 2025 and 2026 CIs on pollen compatibility (0 / 22 mismatches), so the across-year differences are concentrated in the single-year populations. Source: `step30h_predictions_by_BL_year.py`.
 
 ---
 
@@ -1661,9 +1654,9 @@ Source table:
 - **Figure 5** — [`step30h_overview_by_BL.png`](figures/Phase5/step30h_overview_by_BL.png) — Snake River Plain overview with populations and convex hulls coloured by BL1 … BL5.
 - **Figure 6** — [`step30g_populations_classified.png`](figures/Phase5/step30g_populations_classified.png) — the 44 populations grouped by across-year trend class (crash / stable / growth / ambiguous / 2025_only / 2026_only), sorted by BL within each class.
 - **Figure 7** — [`step30g_across_year_scatter.png`](figures/Phase5/step30g_across_year_scatter.png) — predicted SRK diversity and pollen compatibility, 2025 vs 2026, per both-year population.
-- **Figure 8 (2025) + 8b (2026)** — [`step30h_pred_diversity_2025.png`](figures/Phase5/step30h_pred_diversity_2025.png) / [`step30h_pred_diversity_2026.png`](figures/Phase5/step30h_pred_diversity_2026.png) — predicted SRK allele diversity per population per year, dots + 95 % CI, grouped by new BL.
+- **Figure 8** — [`step30h_pred_diversity.png`](figures/Phase5/step30h_pred_diversity.png) — predicted SRK allele diversity per population, 2025 (open) vs 2026 (filled) overlaid, grouped by new BL.
 - **Figure 9** — [`step30_A_si_model_schematic.png`](figures/Phase5/step30_A_si_model_schematic.png) — sporophytic Class I / Class II dominance in tetraploid LEPA: dominance within one plant, between-plant recognition, and the compatibility rule by cross type.
-- **Figure 10 (2025) + 10b (2026)** — [`step30h_pred_pcompat_2025.png`](figures/Phase5/step30h_pred_pcompat_2025.png) / [`step30h_pred_pcompat_2026.png`](figures/Phase5/step30h_pred_pcompat_2026.png) — predicted pollen compatibility per population per year, traffic-light bands, grouped by new BL.
+- **Figure 10** — [`step30h_pred_pcompat.png`](figures/Phase5/step30h_pred_pcompat.png) — predicted pollen compatibility per population, 2025 (open) vs 2026 (filled) overlaid, traffic-light bands, grouped by new BL.
 - **Figure 11** — [`step30_B_partC_clean_overlap.png`](figures/Phase5/step30_B_partC_clean_overlap.png) — § C.0.a Part C anchor at EO67 / EO70 / EO76 (SRK diversity + pollen compatibility + per-allele drift residual).
 - **Figure 12** — [`step30_B_partC_hypothesis_decomposition.png`](figures/Phase5/step30_B_partC_hypothesis_decomposition.png) — § C.0.b competing-hypothesis decomposition.
 - **Figure 13** — [`step30f_srk_diversity_radius_sweep.png`](figures/Phase5/step30f_srk_diversity_radius_sweep.png) — § C.0.c SRK-diversity radius sweep (deme-size vs residual-drift test).
