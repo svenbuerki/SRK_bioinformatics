@@ -48,6 +48,7 @@ from srk_bl_constants import BL_COLORS, BL_ORDER, locationCode_to_bl
 from step28_seed_sampling_per_mother import (
     haversine_meters, K_pool, K_SPECIES_FG, PLOIDY,
     mothers_for_full_detection, n_for_miss_probability,
+    load_all_events, DEFAULT_DB,
 )
 from srk_si_model import (
     load_class_map, build_class_i_mask,
@@ -185,151 +186,126 @@ def compute_per_location(events: pd.DataFrame, m_lookup: dict,
 # ---------------------------------------------------------------------------
 # Figure
 # ---------------------------------------------------------------------------
-def plot_sensitivity(summary: pd.DataFrame, per_loc: pd.DataFrame,
-                     bands: dict, out_png: Path, out_pdf: Path):
+def plot_sensitivity(summaries_by_year: dict,
+                     bands: dict, out_png: Path, out_pdf: Path,
+                     n_locations_by_year: dict | None = None):
     """Four-panel sensitivity view: connectivity, sampling, compatibility,
-    sustainable fraction, all as a function of pollinator radius."""
-    fig, axes = plt.subplots(2, 2, figsize=(12.5, 10.0))
+    sustainable fraction, all as a function of pollinator radius. 2025 and
+    2026 are overlaid in each panel following the project convention —
+    **2025 = open marker + dashed line**, **2026 = filled marker + solid
+    line** (same convention as the merged Phase A prediction figures,
+    Figures 8 and 10 of the compact doc)."""
+    fig, axes = plt.subplots(2, 2, figsize=(13, 10.5))
     (axA, axB), (axC, axD) = axes
 
-    x = summary["radius_m"].values
+    # Shared style per year — kept consistent across all panels.
+    year_style = {
+        2025: dict(marker="o", linestyle="--", markerfacecolor="white",
+                   markeredgewidth=1.6, label_tag="2025 (open)"),
+        2026: dict(marker="o", linestyle="-",  markerfacecolor=None,
+                   markeredgewidth=0.6, label_tag="2026 (filled)"),
+    }
+    # Per-panel colour (same between years)
+    PANEL_COL = {"A": "#1b7837", "B": "#c73030",
+                 "C": "#5A5A9F", "D": "#009E73"}
 
-    # A. Connectivity — mean and median connected_share across locations.
-    axA.plot(x, summary["connected_share_median"],
-             "o-", color="#1b7837", lw=2.0, label="median across locations")
-    axA.plot(x, summary["connected_share_mean"],
-             "s--", color="#1b7837", lw=1.4, alpha=0.7,
-             label="mean across locations")
-    axA.axvline(50, color="#666", ls=":", lw=1.0)
-    axA.text(50, 0.02, "  adopted primary\n  = 50 m",
-             fontsize=8, color="#666", va="bottom")
-    axA.set_xlabel("Pollinator radius (m)"); axA.set_ylabel(
-        "Fraction of adults in a multi-event component")
+    for yr, summary in summaries_by_year.items():
+        if summary is None or summary.empty:
+            continue
+        st = year_style[yr]
+        x = summary["radius_m"].values
+        tag = st["label_tag"]
+        n_loc = (n_locations_by_year or {}).get(yr, "?")
+
+        mfc_A = ("white" if yr == 2025 else PANEL_COL["A"])
+        mfc_B = ("white" if yr == 2025 else PANEL_COL["B"])
+        mfc_C = ("white" if yr == 2025 else PANEL_COL["C"])
+        mfc_D = ("white" if yr == 2025 else PANEL_COL["D"])
+
+        axA.plot(x, summary["connected_share_median"],
+                 marker=st["marker"], linestyle=st["linestyle"],
+                 color=PANEL_COL["A"], markerfacecolor=mfc_A,
+                 markeredgewidth=st["markeredgewidth"],
+                 lw=1.8, label=f"{tag} · median ({n_loc} pops)")
+        axB.plot(x, summary["M_frag_total"],
+                 marker=st["marker"], linestyle=st["linestyle"],
+                 color=PANEL_COL["B"], markerfacecolor=mfc_B,
+                 markeredgewidth=st["markeredgewidth"],
+                 lw=1.8, label=f"{tag} · total ({n_loc} pops)")
+        axC.plot(x, summary["P_compat_median"],
+                 marker=st["marker"], linestyle=st["linestyle"],
+                 color=PANEL_COL["C"], markerfacecolor=mfc_C,
+                 markeredgewidth=st["markeredgewidth"],
+                 lw=1.8, label=f"{tag} · median")
+        axD.plot(x, summary["frac_sustainable"],
+                 marker=st["marker"], linestyle=st["linestyle"],
+                 color=PANEL_COL["D"], markerfacecolor=mfc_D,
+                 markeredgewidth=st["markeredgewidth"],
+                 lw=1.8, label=f"{tag}")
+
+    for ax in (axA, axB, axC, axD):
+        ax.axvline(50, color="#666", ls=":", lw=1.0)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+
+    axA.set_xlabel("Pollinator radius (m)")
+    axA.set_ylabel("Fraction of adults in a multi-event component")
     axA.set_title("A. Landscape connectivity", fontsize=12, loc="left",
                   weight="bold")
     axA.set_ylim(0, 1.02)
-    axA.legend(loc="lower right", fontsize=9)
-    axA.spines["top"].set_visible(False); axA.spines["right"].set_visible(False)
+    axA.legend(loc="lower right", fontsize=8)
 
-    # B. Fragmentation-aware sampling — total mothers across the 39 locations.
-    axB.plot(x, summary["M_frag_total"], "o-", color="#c73030", lw=2.0,
-             label="total M_frag_aware across 39 locations")
-    axB.axvline(50, color="#666", ls=":", lw=1.0)
-    axB.text(25, summary["M_frag_total"].max() * 0.02,
-             "  50 m", fontsize=8, color="#666", va="bottom")
     axB.set_xlabel("Pollinator radius (m)")
     axB.set_ylabel("Total mothers required (M_frag_aware)")
     axB.set_title("B. § B.4.2 sampling cost", fontsize=12, loc="left",
                   weight="bold")
-    axB.legend(loc="upper right", fontsize=9)
-    axB.spines["top"].set_visible(False); axB.spines["right"].set_visible(False)
+    axB.legend(loc="upper right", fontsize=8)
 
-    # C. Species-mean pollen compatibility (over locations) at each radius.
-    axC.plot(x, summary["P_compat_median"], "o-", color="#5A5A9F", lw=2.0,
-             label="median location P_compat mean")
-    axC.plot(x, summary["P_compat_mean"], "s--", color="#5A5A9F", lw=1.4,
-             alpha=0.7, label="mean location P_compat mean")
     axC.axhline(bands["species_mean"], color="#1b7837", ls=":", lw=1.2,
                 label=f"sporophytic species mean ({bands['species_mean']:.3f})")
     axC.axhline(bands["struggling_max"], color="#c73030", ls=":", lw=1.0,
-                alpha=0.6, label=f"sustainable threshold "
-                                  f"({bands['struggling_max']:.3f})")
-    axC.axvline(50, color="#666", ls=":", lw=1.0)
+                alpha=0.6,
+                label=f"sustainable threshold ({bands['struggling_max']:.3f})")
     axC.set_xlabel("Pollinator radius (m)")
     axC.set_ylabel("Predicted per-mother P_compat mean")
     axC.set_title("C. Pollen-compatibility prediction",
                   fontsize=12, loc="left", weight="bold")
     axC.set_ylim(0, 1.0)
     axC.legend(loc="lower right", fontsize=8, frameon=True)
-    axC.spines["top"].set_visible(False); axC.spines["right"].set_visible(False)
 
-    # D. Fraction of locations in sustainable band.
-    axD.plot(x, summary["frac_sustainable"], "o-", color="#009E73", lw=2.0)
-    axD.axvline(50, color="#666", ls=":", lw=1.0)
     axD.set_xlabel("Pollinator radius (m)")
     axD.set_ylabel("Fraction of locations in 'sustainable' band")
     axD.set_title("D. Locations at or above sustainable",
                   fontsize=12, loc="left", weight="bold")
     axD.set_ylim(0, 1.02)
-    axD.spines["top"].set_visible(False); axD.spines["right"].set_visible(False)
+    axD.legend(loc="lower right", fontsize=8)
 
+    years_tag = " + ".join(str(y) for y in sorted(summaries_by_year.keys()))
     fig.suptitle(
         "Sensitivity of Phase 5 predictions + sampling to the "
         "pollinator radius\n"
         "(fragmentation, § B.4.2 M_frag, § A.8 pollen compatibility, "
-        "sustainable fraction — 39 LEPA locations, 2025 field)",
+        f"sustainable fraction — LEPA Snake River Plain, {years_tag} field)",
         fontsize=13, y=0.995,
     )
-    fig.tight_layout(rect=[0, 0, 1, 0.965])
+    fig.tight_layout(rect=[0, 0, 1, 0.955])
     fig.savefig(out_png, dpi=200); fig.savefig(out_pdf); plt.close(fig)
 
 
-def main() -> None:
-    if not EVENT_TSV.exists():
-        raise SystemExit(f"Missing {EVENT_TSV} — run step28 first.")
-    if not PRIOR_TSV.exists():
-        raise SystemExit(f"Missing {PRIOR_TSV}.")
-
-    events = pd.read_csv(EVENT_TSV, sep="\t", encoding="utf-8-sig")
-    # Only the year-filtered events (step28 writes only 2025 when --year set)
-    events = events.dropna(subset=["lat", "lon", "n_fertile"])
-    events["n_fertile"] = events["n_fertile"].astype(int)
-
-    # P1 prior
-    p1 = pd.read_csv(PRIOR_TSV, sep="\t", encoding="utf-8-sig")
-    fg_freq = (p1.groupby("Fg")["n_carriers"].sum().reset_index()
-                 .sort_values("Fg").reset_index(drop=True))
-    prior_f = (fg_freq["n_carriers"] / fg_freq["n_carriers"].sum()).values
-    fg_labels = fg_freq["Fg"].astype(str).tolist()
-    class_i_mask = build_class_i_mask(fg_labels, load_class_map())
-    zygosity_probs = load_zygosity_dist()
-
-    # Species-mean bands (independent of radius — used only as reference)
-    rng0 = np.random.default_rng(2026)
-    species_mean_pc = species_mean_p_compat_empirical(
-        prior_f, class_i_mask, zygosity_probs,
-        n_mothers=5_000, n_fathers=1_000, rng=rng0)
-    bands = traffic_light_bands(species_mean_pc)
-    print(f"[sensitivity] Sporophytic + empirical-zygosity species-mean = "
-          f"{species_mean_pc:.4f}; bands failed < {bands['failed_max']:.3f}, "
-          f"struggling < {bands['struggling_max']:.3f}, sustainable ≥ "
-          f"{bands['struggling_max']:.3f}.")
-
-    # Per-location M lookup from step29
-    m_lookup = {}
-    if LOCATIONS_TSV.exists():
-        loc_df = pd.read_csv(LOCATIONS_TSV, sep="\t", encoding="utf-8-sig")
-        col = ("M_actual_in_step28" if "M_actual_in_step28" in loc_df.columns
-               else "M_mothers_in_db" if "M_mothers_in_db" in loc_df.columns
-               else None)
-        if col is not None:
-            m_lookup = dict(zip(loc_df["locationID"].astype(int),
-                                loc_df[col].fillna(1).astype(int)))
-    if not m_lookup:
-        # Fallback: use 5 mothers per location as a placeholder
-        m_lookup = {int(k): 5 for k in events["locationID"].unique()}
-
-    all_rows = []
-    rng = np.random.default_rng(2029)
+def _sweep_one_year(events: pd.DataFrame, m_lookup: dict,
+                      prior_f: np.ndarray, class_i_mask: np.ndarray,
+                      zygosity_probs: np.ndarray, bands: dict,
+                      rng_seed: int) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Run the pollinator-radius sweep over `RADII_M` for one year's
+    event set. Returns `(per_loc, summary)`."""
+    rng = np.random.default_rng(rng_seed)
+    rows_per_r = []
     for r in RADII_M:
-        print(f"[sensitivity] radius {r} m …")
+        print(f"[sensitivity]   radius {r} m …")
         rows = compute_per_location(events, m_lookup, prior_f, class_i_mask,
                                      zygosity_probs, r, rng)
-        all_rows.append(rows)
-    per_loc = pd.concat(all_rows, ignore_index=True)
-
-    # Attach locationCode from step29 for readability
-    if LOCATIONS_TSV.exists():
-        loc_meta = pd.read_csv(LOCATIONS_TSV, sep="\t", encoding="utf-8-sig")
-        per_loc = per_loc.merge(
-            loc_meta[["locationID", "locationCode"]].drop_duplicates(),
-            on="locationID", how="left")
-
-    out_ploc = TABLES / "step30_A_radius_sensitivity_per_location.tsv"
-    per_loc.to_csv(out_ploc, sep="\t", index=False)
-    print(f"[sensitivity] Wrote {out_ploc}")
-
-    # Summary — one row per radius across the 39 locations
+        rows_per_r.append(rows)
+    per_loc = pd.concat(rows_per_r, ignore_index=True)
     summary = (per_loc.groupby("radius_m")
                .agg(n_locations=("locationID", "nunique"),
                     connected_share_mean=("connected_share", "mean"),
@@ -356,22 +332,109 @@ def main() -> None:
     summary["species_mean_reference"] = bands["species_mean"]
     summary["sustainable_threshold"] = bands["struggling_max"]
     summary["failed_threshold"] = bands["failed_max"]
+    return per_loc, summary
 
-    out_sum = TABLES / "step30_A_radius_sensitivity_summary.tsv"
-    summary.to_csv(out_sum, sep="\t", index=False)
-    print(f"[sensitivity] Wrote {out_sum}")
 
-    print("[sensitivity] Summary preview:")
-    print(summary[["radius_m", "connected_share_median", "M_frag_total",
-                   "P_compat_median", "frac_sustainable"]].round(3).to_string(index=False))
+def main() -> None:
+    if not PRIOR_TSV.exists():
+        raise SystemExit(f"Missing {PRIOR_TSV}.")
 
+    # P1 prior
+    p1 = pd.read_csv(PRIOR_TSV, sep="\t", encoding="utf-8-sig")
+    fg_freq = (p1.groupby("Fg")["n_carriers"].sum().reset_index()
+                 .sort_values("Fg").reset_index(drop=True))
+    prior_f = (fg_freq["n_carriers"] / fg_freq["n_carriers"].sum()).values
+    fg_labels = fg_freq["Fg"].astype(str).tolist()
+    class_i_mask = build_class_i_mask(fg_labels, load_class_map())
+    zygosity_probs = load_zygosity_dist()
+
+    # Species-mean bands (independent of radius — used only as reference)
+    rng0 = np.random.default_rng(2026)
+    species_mean_pc = species_mean_p_compat_empirical(
+        prior_f, class_i_mask, zygosity_probs,
+        n_mothers=5_000, n_fathers=1_000, rng=rng0)
+    bands = traffic_light_bands(species_mean_pc)
+    print(f"[sensitivity] Sporophytic + empirical-zygosity species-mean = "
+          f"{species_mean_pc:.4f}; bands failed < {bands['failed_max']:.3f}, "
+          f"struggling < {bands['struggling_max']:.3f}, sustainable ≥ "
+          f"{bands['struggling_max']:.3f}.")
+
+    # Per-location M lookup (static — same for both years; falls back to
+    # 5 if the step29 lookup is missing).
+    m_lookup: dict[int, int] = {}
+    if LOCATIONS_TSV.exists():
+        loc_df = pd.read_csv(LOCATIONS_TSV, sep="\t", encoding="utf-8-sig")
+        col = ("M_actual_in_step28" if "M_actual_in_step28" in loc_df.columns
+               else "M_mothers_in_db" if "M_mothers_in_db" in loc_df.columns
+               else None)
+        if col is not None:
+            m_lookup = dict(zip(loc_df["locationID"].astype(int),
+                                loc_df[col].fillna(1).astype(int)))
+
+    # locationCode lookup (for the per-location TSV)
+    loc_meta = None
+    if LOCATIONS_TSV.exists():
+        loc_meta = (pd.read_csv(LOCATIONS_TSV, sep="\t", encoding="utf-8-sig")
+                      [["locationID", "locationCode"]]
+                      .drop_duplicates())
+
+    # ---- Loop over 2025 and 2026, each year queried directly from the DB
     FIGURES.mkdir(parents=True, exist_ok=True)
+    summaries_by_year: dict[int, pd.DataFrame] = {}
+    n_locations_by_year: dict[int, int] = {}
+    for yr in (2025, 2026):
+        print(f"[sensitivity] =============================================="
+              f"\n[sensitivity] Year {yr} — loading events from LEPA DB")
+        events = load_all_events(DEFAULT_DB, year=yr)
+        if events.empty:
+            print(f"[sensitivity]   WARNING: no events for {yr}; skipping.")
+            continue
+        events = events.dropna(subset=["lat", "lon", "n_fertile"]).copy()
+        events["n_fertile"] = events["n_fertile"].astype(int)
+        n_loc = int(events["locationID"].nunique())
+        n_evt = len(events)
+        print(f"[sensitivity]   {n_evt} events across {n_loc} locationIDs")
+        n_locations_by_year[yr] = n_loc
+
+        # Fallback m_lookup for locationIDs missing from the static lookup
+        local_m_lookup = dict(m_lookup)
+        for lid in events["locationID"].unique():
+            local_m_lookup.setdefault(int(lid), 5)
+
+        per_loc, summary = _sweep_one_year(
+            events, local_m_lookup, prior_f, class_i_mask, zygosity_probs,
+            bands, rng_seed=2029 + yr)
+        per_loc["year"] = yr
+        summary["year"] = yr
+        if loc_meta is not None:
+            per_loc = per_loc.merge(loc_meta, on="locationID", how="left")
+
+        out_ploc = TABLES / f"step30_A_radius_sensitivity_per_location_{yr}.tsv"
+        per_loc.to_csv(out_ploc, sep="\t", index=False)
+        out_sum  = TABLES / f"step30_A_radius_sensitivity_summary_{yr}.tsv"
+        summary.to_csv(out_sum, sep="\t", index=False)
+        print(f"[sensitivity]   wrote {out_ploc.name}, {out_sum.name}")
+        print(summary[["radius_m", "connected_share_median", "M_frag_total",
+                        "P_compat_median", "frac_sustainable"]]
+              .round(3).to_string(index=False))
+        summaries_by_year[yr] = summary
+
+    # Combined summary TSV with year column (easy for downstream reporting)
+    if summaries_by_year:
+        combined = pd.concat(list(summaries_by_year.values()),
+                              ignore_index=True)
+        out_combined = TABLES / "step30_A_radius_sensitivity_summary.tsv"
+        combined.to_csv(out_combined, sep="\t", index=False)
+        print(f"[sensitivity] Combined summary → {out_combined.name}")
+
+    # Overlay figure — 2025 open+dashed, 2026 filled+solid
     plot_sensitivity(
-        summary, per_loc, bands,
+        summaries_by_year, bands,
         out_png=FIGURES / "step30_A_radius_sensitivity.png",
         out_pdf=FIGURES / "step30_A_radius_sensitivity.pdf",
+        n_locations_by_year=n_locations_by_year,
     )
-    print(f"[sensitivity] Figure in {FIGURES}/")
+    print(f"[sensitivity] Figure in {FIGURES}/step30_A_radius_sensitivity.png")
 
 
 if __name__ == "__main__":
