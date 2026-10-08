@@ -226,7 +226,74 @@ def per_population_year_test(df: pd.DataFrame) -> pd.DataFrame:
                                        & (res["mean_resid"] < 0))
     res["flag_above_expectation"] = ((res["q_ttest"].fillna(1.0) < 0.05)
                                        & (res["mean_resid"] > 0))
+
+    # Conservation-priority bucket per (populationID, year). The test
+    # separates populations into **buffered** (reproduction is near
+    # or above the species expectation — mate availability holds) vs
+    # **mate-limited** (reproduction is below size expectation —
+    # candidate for prioritization). Four tiers so the "which
+    # populations to intervene on" question has a one-shot answer.
+    def _bucket(r):
+        if r["n_plants"] < 3:
+            return "insufficient_data"
+        if r["flag_below_expectation"]:
+            return "mate_limited"
+        if r["flag_above_expectation"]:
+            return "buffered_surplus"
+        if r["fold_of_expectation"] < 0.8:
+            # Trend below but not FDR-sig — watch
+            return "candidate_mate_limited"
+        return "buffered"
+
+    res["conservation_bucket"] = res.apply(_bucket, axis=1)
     return res
+
+
+def summarise_per_population(res: pd.DataFrame) -> pd.DataFrame:
+    """Collapse per-year rows into one row per populationID with the
+    worst-case conservation bucket across years (conservative — if
+    EITHER year is flagged mate-limited the population is flagged).
+    Useful as the one-shot 'which populations to prioritize' table."""
+    PRIORITY = {
+        "mate_limited":            0,  # highest priority
+        "candidate_mate_limited":  1,
+        "insufficient_data":       2,
+        "buffered":                3,
+        "buffered_surplus":        4,  # lowest priority
+    }
+    rows = []
+    for pid, g in res.groupby("populationID"):
+        # Worst bucket across years (lowest PRIORITY score)
+        buckets = g["conservation_bucket"].tolist()
+        worst = min(buckets, key=lambda b: PRIORITY.get(b, 99))
+        years_flagged_below = sorted(
+            int(y) for y in g.loc[g["flag_below_expectation"], "year"]
+        )
+        years_flagged_above = sorted(
+            int(y) for y in g.loc[g["flag_above_expectation"], "year"]
+        )
+        bl = str(g["BL"].iloc[0])
+        label = str(g["population_label"].iloc[0])
+        folds_by_year = {int(y): float(f) for y, f in
+                           zip(g["year"], g["fold_of_expectation"])}
+        rows.append(dict(
+            populationID=int(pid),
+            BL=bl,
+            population_label=label,
+            conservation_priority=worst,
+            priority_rank=PRIORITY.get(worst, 99),
+            years_observed=sorted(int(y) for y in g["year"]),
+            years_sig_below=years_flagged_below,
+            years_sig_above=years_flagged_above,
+            fold_2025=folds_by_year.get(2025, np.nan),
+            fold_2026=folds_by_year.get(2026, np.nan),
+            n_plants_2025=int(g.loc[g["year"] == 2025, "n_plants"].sum())
+                           if (g["year"] == 2025).any() else 0,
+            n_plants_2026=int(g.loc[g["year"] == 2026, "n_plants"].sum())
+                           if (g["year"] == 2026).any() else 0,
+        ))
+    out = pd.DataFrame(rows).sort_values(["priority_rank", "populationID"])
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -449,14 +516,20 @@ def plot_forest(res: pd.DataFrame, df: pd.DataFrame,
             s = 30 + 4.5 * np.sqrt(max(n, 1))
             mfc = ("white" if yr == 2025 else colour)
             mew = (1.4 if yr == 2025 else 0.6)
-            # FDR-sig below → draw a red "halo" ring BEHIND the dot
-            # so the flag ties to the specific (population, year)
-            # data point and does not obscure the open/filled fill
-            # (user feedback 2026-10-08). The halo is slightly
-            # larger than the dot so the ring shows around it.
+            # Halo ring BEHIND the dot ties the FDR-flag to the
+            # specific (population, year) data point and keeps the
+            # open/filled fill visible. Red = below expectation
+            # (seed shortfall → mate limitation surfacing);
+            # green = above expectation (seed surplus → population
+            # is mate-replete). Both halos are predictions tested
+            # against observed seed yield (user feedback 2026-10-08).
             if bool(row["flag_below_expectation"]):
                 ax.scatter([fold], [yi], s=s * 2.3,
                             facecolor="none", edgecolor="#b2182b",
+                            linewidth=2.0, zorder=2)
+            elif bool(row["flag_above_expectation"]):
+                ax.scatter([fold], [yi], s=s * 2.3,
+                            facecolor="none", edgecolor="#1b7837",
                             linewidth=2.0, zorder=2)
             ax.scatter([fold], [yi], s=s, facecolor=mfc,
                         edgecolor=colour, linewidth=mew, zorder=3)
@@ -506,10 +579,10 @@ def plot_forest(res: pd.DataFrame, df: pd.DataFrame,
 
     axes[-1].set_xlabel(
         "Fold of expectation  =  observed yield ÷ expected from size "
-        "(log scale)   ·   < 1 = seed shortfall   ·   "
-        "red halo around a dot = FDR < 0.05 below for that "
-        "(population, year)",
-        fontsize=10.5,
+        "(log scale)   ·   < 1 = seed shortfall  ·  > 1 = seed surplus"
+        "\nred halo = FDR < 0.05 BELOW   ·   green halo = FDR < 0.05 "
+        "ABOVE   (both for that specific population × year)",
+        fontsize=10,
     )
 
     # Figure-level legend above subplots
@@ -526,7 +599,11 @@ def plot_forest(res: pd.DataFrame, df: pd.DataFrame,
         Line2D([0], [0], marker="o", linestyle="",
                 markerfacecolor="none", markeredgecolor="#b2182b",
                 markeredgewidth=2.0, markersize=13,
-                label="red halo = FDR < 0.05 below for that (pop, year)"),
+                label="red halo = FDR < 0.05 BELOW  (seed shortfall)"),
+        Line2D([0], [0], marker="o", linestyle="",
+                markerfacecolor="none", markeredgecolor="#1b7837",
+                markeredgewidth=2.0, markersize=13,
+                label="green halo = FDR < 0.05 ABOVE  (seed surplus)"),
     ]
     fig.legend(handles=legend_handles,
                 loc="upper center", bbox_to_anchor=(0.5, 0.965),
@@ -618,6 +695,20 @@ def main() -> None:
     # Keep the predictor-selection CV table for the methods section
     cv_table.to_csv(TABLES / "step30i_size_seed_cv_rmse.tsv",
                      sep="\t", index=False)
+
+    # Per-population aggregated conservation priority (worst-case
+    # bucket across years → one row per populationID). This is the
+    # one-shot "which populations to prioritize" answer.
+    prio = summarise_per_population(res)
+    out_prio = TABLES / "step30i_conservation_priority.tsv"
+    prio.to_csv(out_prio, sep="\t", index=False)
+    print(f"[step30i] Conservation priority (per population) → {out_prio}")
+    print(f"[step30i] Priority counts:")
+    for bucket in ("mate_limited", "candidate_mate_limited",
+                     "insufficient_data", "buffered", "buffered_surplus"):
+        n = int((prio["conservation_priority"] == bucket).sum())
+        if n:
+            print(f"           {bucket:<28} {n}")
 
     FIGURES.mkdir(parents=True, exist_ok=True)
     # Figure 17a — species-wide calibration (across-species evidence)

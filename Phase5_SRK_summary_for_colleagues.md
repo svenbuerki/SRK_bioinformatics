@@ -53,8 +53,9 @@ Phase 5 nests three spatial scales:
   habitat loss, so their drift signatures are expected to co-vary
   and BL identity controls that shared history when comparing
   predictions across populations. Silhouette-optimal *k* = 5 on
-  the 44 population centroids reproduces the Phase 4 EO-level BL
-  cardinality on independent 2-year population-level data
+  the 44 population centroids reproduces the earlier EO-level
+  Bottleneck Lineage grouping on independent 2-year population-level
+  data
   (§ Bottleneck Lineages). BL stratifies every per-population
   figure by shared drift history.
 - **Deme** (50 m connected component within **one year**, nested
@@ -95,7 +96,7 @@ subdivision is not just real but widespread — two-thirds of the
 range operates as several small demes rather than one location-
 wide one.
 
-**Prediction vs observation at three locations ([Figure 14](#fig-14)).**
+**Prediction vs observation at three locations ([Figure 15](#fig-15)).**
 Comparing predictions against observed adult SRK genotypes at
 **EO67 (= P3), EO70 (= P41), EO76 (= P39)**, the diversity prediction **over-estimates**
 observed counts by ~20 SRK alleles everywhere (predicted 11 / 28 /
@@ -107,7 +108,7 @@ compatibility prediction tracks observation closely** — EO67
 on their 95 % CIs; only EO70 shows a real gap (0.53 vs 0.78), a
 drift signal consistent with its high FG024 frequency (**0.35
 locally, vs 0.18 species-wide**). The hypothesis decomposition
-([Figure 15](#fig-15)) explains why: **within-class allele frequency
+([Figure 16](#fig-16)) explains why: **within-class allele frequency
 spread, not allele count, drives pollen compatibility**, and
 tetraploid zygosity composition actively buffers locations with
 many homozygous mothers. The decisive variable is not *how many*
@@ -120,7 +121,7 @@ drift, and tetraploid homozygosity — stack into structural
 redundancy that lets a location keep breeding after severe allele
 loss, reversing the standard allele-count-equals-mating-success
 intuition.** **A radius sweep at
-EO70 and EO76 ([Figure 16](#fig-16)) tests whether the diversity
+EO70 and EO76 ([Figure 17](#fig-17)) tests whether the diversity
 gap is just an artefact of the deme being too wide at 50 m.**
 Rebuilding the deme partition at radii 10 – 150 m leaves the
 predicted diversity flat and well above observed at every radius,
@@ -140,42 +141,69 @@ for free. (EO67 is a null — its deme partition is invariant
 across the sweep and its observed count is already inside the
 95 % CI of the prediction.)
 
-**Behavioural validation on all 44 populations
-([Figure 17a](#fig-17a) build + [Figure 17b](#fig-17b) test).**
-The three SRK-based tests above are
-confined to the three Phase 4 clean-overlap EOs because they need
-adult SRK genotypes. A fourth test runs on **every** Phase 5
-population at once, using **no SRK data**: for each plant, compare
-observed seed yield against what the species-wide **size → yield
-allometry** predicts for a plant of that size. If a population's
-plants systematically produce fewer seeds than their sizes predict
-(fold < 1 at FDR < 0.05), mate limitation is surfacing
-*behaviourally* — a direct signature of the Phase A P_compat
-prediction. If a **small** population's plants produce **as many
-seeds as their size predicts** (fold ≈ 1), the § C.0.b buffering
-stack held even there. The two cases are what this test cleanly
-separates. **Headline findings** on the first run: (i) the BL1
-EO27 cluster is the clearest below-expectation signal (P5, P8, P13
-fold 0.37 – 0.42) — behavioural match to the field note that
-originally motivated this analysis; (ii) **EO70 (P41 BL5)
-reproduces the Phase 4 P_compat shortfall behaviourally** (fold
-0.55 / 0.61) *without any SRK genotype*, which is independent
-corroboration of the SRK-based call at the one EO where the SRK
-test flagged a gap; (iii) the Next-test **D1 pair direction is
-confirmed**: SMALL side P34 EO25-B fold 0.50 vs BIG side P32
-EO18-7+EO18-8 fold 0.82 in 2026 — the SMALL side has a 2× bigger
-seed shortfall than the BIG side, in the direction predicted;
-(iv) several small populations (n = 3 – 29) show fold ≥ 1 — the
-§ C.0.b buffering stack held even there. 2026 germplasm clean-up
-is still in progress, so 2026 shortfall calls may be inflated
-at populations still missing collections; the signal direction
-holds and will tighten as the 2026 germplasm records come in.
+**Behavioural validation on all 44 populations — a
+conservation-priority classifier
+([Figure 12a](#fig-12a) build + [Figure 12b](#fig-12b) test).**
+The three SRK-based tests above are confined to the three
+clean-overlap populations (P3 = EO67, P41 = EO70, P39 = EO76)
+because they need adult SRK genotypes. A fourth test runs on
+**every** Phase 5 population at once, using **no SRK data**:
+for each plant, compare observed seed yield against what the
+species-wide **size → yield allometry** predicts for a plant
+of that size. The outcome cleanly bins each population into
+one of two conservation-priority buckets:
+
+- **Mate-limited populations** (red halos in Figure 12b) —
+  plants produce *fewer* seeds than their sizes predict. The
+  pollen-compatibility pathway is surfacing behaviourally; the
+  § C.0.b buffering stack is NOT absorbing drift pressure here.
+  **Priority for conservation intervention.**
+- **Buffered populations** (green halos + populations whose
+  credible interval overlaps fold = 1) — plants produce *at or
+  above* the size expectation. The § C.0.b buffering
+  mechanisms (Class I dominance + class imbalance + tetraploid
+  homozygosity) are keeping reproduction intact. **No priority
+  intervention needed.**
+
+First-run tally (one-shot table at
+[`step30i_conservation_priority.tsv`](tables/Phase5/step30i_conservation_priority.tsv),
+one row per populationID with worst-case bucket across years):
+**8 populations mate-limited** (FDR-sig below in ≥ 1 year),
+**4 candidate mate-limited** (fold < 0.8 but sub-threshold),
+**12 buffered**, **8 buffered-surplus** (FDR-sig above —
+mate-replete, prediction confirmed from the opposite side),
+**5 insufficient data**.
+
+**Headline findings**: (i) **the EO27 cluster + P41 EO70 are
+the clearest mate-limited populations**. P5 EO27-3 and P41
+EO70 are flagged in **both years** (most severe); P8, P13
+flagged 2025. (ii) **P41 (EO70) reproduces its predicted
+pollen-compatibility shortfall behaviourally** (fold 0.55 /
+0.61) *without any SRK genotype*, corroborating the SRK-based
+call at the one clean-overlap population where the SRK test
+flagged a gap. (iii) The **Next-test D1 pair direction is
+confirmed**: SMALL P34 (EO25-B) fold 0.50 vs BIG P32 (EO18-7
++ EO18-8) fold 0.82 in 2026 — SMALL has a 2× bigger seed
+shortfall than BIG, as predicted. (iv) **BL2 2025 is
+surplus-dominant** — 6 of the 7 both-year BL2 populations with
+≥ 20 plants are statistically above the size-only expectation
+(P15, P16, P18, P20, P22, P23, fold 1.43 – 2.17). BL2 is the
+mid-area / high-connectivity grouping; plants there are
+predicted mate-replete and the observed surplus **confirms
+the compatible-mate availability from the opposite side of
+the prediction**. (v) Several small populations (n = 3 – 29)
+sit at or above the species curve — the § C.0.b buffering
+stack held even there. 2026 germplasm clean-up is still in
+progress; 2026 calls may be inflated at populations still
+missing collections, so re-run step30i when the clean-up
+completes.
 
 <span style="color:#777"><strong>Next test.</strong></span> We propose a **within-BL
 small-vs-big stable** pilot: a **BIG** stable population paired
 with a **SMALL** stable population inside the same Bottleneck
-Lineage. Both sides have overlapping 95 % 2025 vs 2026 CIs on
-both diversity and pollen compatibility and `N_fert_total ≥ 20`
+Lineage. Both sides have overlapping 95 % 2025 vs 2026 credible
+intervals on both diversity and pollen compatibility and at
+least 20 fertile plants summed across years
 (§ Across-year population dynamic), so both patches persist
 across both field seasons; holding BL identity constant means
 observed deviations are a within-BL small-vs-big signal rather
@@ -183,7 +211,7 @@ than confounded with the shared drift history between BLs. BL1 /
 BL2 / BL3 each hold a candidate pair; BL4 and BL5 do not (one
 stable population each, no within-BL contrast).
 
-| Option | BL | SMALL — populationID, N_fert, mothers in DB **(2025 + 2026)** | BIG — same | Size ratio | Pair mother total | Comment |
+| Option | BL | SMALL — populationID, fertile plants, mothers in DB **(2025 + 2026)** | BIG — same | Size ratio | Pair mother total | Comment |
 |:---|:---:|:---|:---|:---:|:---:|:---|
 | **D1 ★** | BL3 | **P34 EO25-B_21** · 26 adults · **7 + 8 = 15** mothers | **P32 EO18-7+EO18-8** · 1440 adults · **115 + 161 = 276** mothers | 55× | **291** | Highest total mother budget by a wide margin; 2026 collection roughly doubled both sides. |
 | D2 | BL2 | P21 EO26-3_32/33/34 · 58 adults · 2025: 35; 2026: 0 new | P16 EO8_27+EO8_28 · 876 adults · 37 + 137 = 174 mothers | 15× | ~209 | Healthy BIG; SMALL received no 2026 top-up; smallest size contrast. |
@@ -234,7 +262,7 @@ demes of ~50 plants each, not one pool of 1 000.
 | **1. Fragmentation** | 50 m deme structure per population (count + size per deme) | Step 29b, Step 29c, Step 29d (§ A.5, § B.2 of long doc) |
 | **2. Genetic drift on SRK** | Predicted local allele pool size + frequency composition **per deme**, aggregated to the population | Step 30 Phase A (§ A.6) |
 | **3. Mate limitation** | Predicted per-population random-mating pollen compatibility `P_compat` under sporophytic Class I / II SI | Step 30 Phase A (§ A.7, § A.8); Step 30c empirical validation on adult SRK genotypes (§ C.0.a) |
-| **4a. Behavioural seed-set check** (**no SRK genotype needed — runs on all 44 populations**) | Observed seed yield per plant vs the species-wide size → yield allometry; populations with fold < 1 at FDR < 0.05 under-produce for their size (behavioural signature of mate limitation); small populations with fold ≈ 1 are § C.0.b buffering candidates | Step 30i (§ C.0.d) |
+| **4a. Behavioural seed-set check** (**no SRK genotype needed — runs on all 44 populations**) | Observed seed yield per plant vs the species-wide size → yield allometry; populations with fold < 1 at FDR < 0.05 under-produce for their size (behavioural signature of mate limitation); small populations with fold ≈ 1 are § C.0.b buffering candidates | Step 30i (§ 30.3) |
 | **4b. Mate-limitation regression** (full test — needs seed genotypes) | Observed per-mother seed set regressed on **observed** `P_compat` from seed-father genotypes, decomposed into drift (β₁) and fragmentation (β₂) channels | Step 30 Phase B (§ C.1 of long doc) |
 
 **Not part of this framework.** Detecting cases where SI has broken
@@ -1126,7 +1154,200 @@ estimator of the population-mean P_compat.
 <a id="fig-11"></a>
 ![Figure 11](figures/Phase5/step30h_pred_pcompat.png)
 
-**Figure 11.** Predicted per-population pollen compatibility under sporophytic Class I / II SI + empirical LEPA zygosity, 2025 and 2026 overlaid. Same layout as Figure 8: open circle = 2025, filled circle = 2026, same BL colour, thin connector line for both-year populations. 95 % CI horizontal error bars; dot size ∝ `N_fertile` for that year. Traffic-light bands: red = failed (< 0.259), amber = struggling (0.259 – 0.519), green = sustainable (≥ 0.519). Dotted green line = sporophytic species mean 0.778. Panels stacked by BL (BL1 → BL5); within each BL rows ordered by the mean of available-year means. Left margin: short `P{N}` identifiers; right margin: per-year `{K demes}d / {N adults}`. The full `populationID → locationCode` map is in [`step30g_populations_classified.tsv`](tables/Phase5/step30g_populations_classified.tsv). Nearly all populations with ≥ 8 adults sit on or just below the species mean — the structural redundancy of Class I dominance + empirical zygosity (§ C.0.b) swamps between-population variation; BL3's EO24 tail (P27 – P30, 1 – 3 plants each) is the only group with meaningful credible-interval spread below the mean. All 22 both-year populations have overlapping 2025 and 2026 CIs on pollen compatibility (0 / 22 mismatches), so the across-year differences are concentrated in the single-year populations. Source: `step30h_predictions_by_BL_year.py`.
+**Figure 11.** Predicted per-population pollen compatibility under sporophytic Class I / II SI + empirical LEPA zygosity, 2025 and 2026 overlaid. Same layout as Figure 9: open circle = 2025, filled circle = 2026, same BL colour, thin connector line for both-year populations. 95 % CI horizontal error bars; dot size ∝ `N_fertile` for that year. Traffic-light bands: red = failed (< 0.259), amber = struggling (0.259 – 0.519), green = sustainable (≥ 0.519). Dotted green line = sporophytic species mean 0.778. Panels stacked by BL (BL1 → BL5); within each BL rows ordered by the mean of available-year means. Left margin: short `P{N}` identifiers; right margin: per-year `{K demes}d / {N adults}`. The full `populationID → locationCode` map is in [`step30g_populations_classified.tsv`](tables/Phase5/step30g_populations_classified.tsv). Nearly all populations with ≥ 8 adults sit on or just below the species mean — the structural redundancy of Class I dominance + empirical zygosity (§ C.0.b) swamps between-population variation; BL3's EO24 tail (P27 – P30, 1 – 3 plants each) is the only group with meaningful credible-interval spread below the mean. All 22 both-year populations have overlapping 2025 and 2026 CIs on pollen compatibility (0 / 22 mismatches), so the across-year differences are concentrated in the single-year populations. Source: `step30h_predictions_by_BL_year.py`.
+
+
+### 30.3 Do populations produce more or fewer seeds than their size predicts? Buffering vs mate limitation across all 44 populations (Step 30i)
+
+**Why this test exists.** The SRK-based Part C validation tests (§ C.0.a – § C.0.c, below) are confined to the three clean-overlap populations (P3 = EO67, P41 = EO70, P39 = EO76) because they need adult SRK genotypes. **This step adds a behavioural check that uses no SRK data** and therefore runs on **all 44 Phase 5 populations NOW**, before any seed-genotyping campaign starts — a direct validation of the Phase A pollen-compatibility prediction that places § 30.3 cleanly inside the predictions pipeline rather than waiting for Part C.
+
+**Approach — across-species build, then within-population test.**
+The test splits into two stages:
+
+1. **Across-species build**: Stage 1 picks the best size
+   predictor out-of-sample via 10-fold CV RMSE on log<sub>10</sub>
+   seed yield across four candidate allometries — `height`,
+   `crown`, `area = π/4 · crown · height`, and `crown + height`
+   (free exponents). Stage 2 refits the CV-winner on **all plants
+   pooled across populations and years**: this is the
+   species-wide expectation curve. Every plant then has an
+   expected log<sub>10</sub>(yield) and a residual = observed −
+   expected. **Figure 12a** shows this build: observed vs
+   expected for every plant, log-log, coloured by BL, with the
+   1:1 species curve and the ×½ / ×2 reference lines.
+2. **Within-population test**: Stage 3 tests per (populationID,
+   year) whether the mean residual is systematically < 0 using
+   a one-sample t-test (n ≥ 3) with a Benjamini-Hochberg FDR
+   across the ~ 80 strata. **No min-n threshold** — small
+   populations are **included and highlighted** (user focus
+   2026-10-07): small-N rows carry wide CIs, but still show up
+   in the plot. **Figure 12b** is the per-population forest
+   plot of fold-of-expectation (= 10<sup>mean residual</sup>).
+
+Each plant is its own control via the species-wide allometry, so
+a population that shows a systematic residual is NOT just a size
+artefact — it is behaving differently from same-size plants
+elsewhere in the species.
+
+**Caveat on 2026 germplasm coverage.** A fraction of the 2026
+mother-plant occurrences do not yet have associated germplasm
+records attached in the DB (clean-up in progress 2026-10-07).
+2026 shortfall calls may therefore be inflated at populations
+that are still missing collections; re-run step30i once the
+2026 germplasm cleaning is complete.
+
+<a id="fig-12a"></a>
+![Figure 12a](figures/Phase5/step30i_species_calibration.png)
+
+**Figure 12a — the across-species build.** Species-wide
+calibration scatter underlying the per-population test. **Panel
+A (left):** every plant that has crown + height + seed yield
+plotted as expected (species-wide allometry, log scale) vs
+observed (log scale), coloured by its population's BL. Dashed
+line = the species curve (fold = 1); dotted lines = ×½ and ×2
+reference bands. **Panel B (right):** the model build itself —
+the Stage 1 10-fold CV predictor-selection table (which
+allometry wins out-of-sample) + the Stage 2 refitted
+expectation-model summary (coefficients, R², residual SD). This
+is what every row of Figure 12b is measured against. Source:
+`step30i_size_seed_population_test.py`.
+Data: [`step30i_size_seed_cv_rmse.tsv`](tables/Phase5/step30i_size_seed_cv_rmse.tsv).
+
+<a id="fig-12b"></a>
+![Figure 12b](figures/Phase5/step30i_size_seed_population.png)
+
+**Figure 12b — the within-population test.** Observed seed yield
+per plant divided by the expected yield from Figure 12a's
+species-wide allometry, aggregated per (populationID, year). One
+row per population; **open circle = 2025 draw, filled circle =
+2026 draw** in the same BL colour, slightly offset vertically;
+dot size ∝ √*n* plants. Horizontal bars = 95 % credible
+interval; the dashed vertical line at fold = 1 is the species
+curve. The light grey ×½ and ×2 reference bands are the
+operational "biologically meaningful shortfall / surplus"
+markers. **Two halo colours flag the FDR-significant
+predictions**, both tied to the specific (populationID,
+**year**) data point and both informative tests of the
+pollen-compatibility prediction:
+
+- **Red halo = below expectation** (q < 0.05 and fold < 1) —
+  the population's plants produced fewer seeds than their sizes
+  predict, a behavioural signature of **mate limitation
+  surfacing**.
+- **Green halo = above expectation** (q < 0.05 and fold > 1) —
+  the population's plants produced more seeds than their sizes
+  predict, a behavioural signature of a **mate-replete
+  population**. Pollen compatibility is predicted sustainable;
+  the surplus confirms the compatible-mate availability from
+  the opposite side.
+
+The flag is per-year, not per-population: a population halo'd
+in only 2025 means the 2025 draw was flagged and 2026 was not
+(or vice versa); a population halo'd in both years means the
+same signal is sustained across years. Panels stacked by BL;
+left margin = `P{N}`; right margin = per-year `n` plants.
+Source: `step30i_size_seed_population_test.py`. Data:
+[`step30i_size_seed_population_strata.tsv`](tables/Phase5/step30i_size_seed_population_strata.tsv).
+
+**Framing: buffered vs mate-limited populations.** The test
+cleanly separates the 44 populations into **conservation-
+priority buckets** by whether their observed seed yield matches
+what plant size alone predicts:
+
+- **Mate-limited populations** (red halos in Figure 12b) —
+  plants produce fewer seeds than their sizes predict. The
+  pollen-compatibility pathway is surfacing behaviourally — the
+  § C.0.b buffering stack is NOT absorbing the drift pressure
+  at this population. **These are the conservation-priority
+  populations to intervene on.**
+- **Buffered populations** (green halos + populations whose CI
+  overlaps fold = 1) — plants produce at or above the size
+  expectation. The pollen-compatibility prediction holds: the
+  § C.0.b buffering mechanisms (Class I dominance + class
+  imbalance + tetraploid homozygosity) are keeping reproduction
+  intact. **No priority intervention needed.**
+
+The one-shot "which populations to prioritize" table is
+[`step30i_conservation_priority.tsv`](tables/Phase5/step30i_conservation_priority.tsv),
+one row per populationID with the worst-case bucket across
+years. First-run counts:
+
+| Bucket | n populations | Meaning |
+|---|:-:|---|
+| **mate_limited**           | **8**  | FDR-sig below in ≥ 1 year — PRIORITY |
+| **candidate_mate_limited** | 4  | fold < 0.8 but not FDR-sig — WATCH |
+| **buffered**               | 12 | CI overlaps fold = 1 — species curve holds |
+| **buffered_surplus**       | 8  | FDR-sig ABOVE — mate-replete, prediction confirmed from the opposite side |
+| **insufficient_data**      | 5  | n < 3, cannot test |
+
+**The 8 mate-limited populations** (priority list, worst-case
+flag across years):
+
+- **P5 EO27-3 (BL1)** — flagged **both 2025 and 2026** (fold
+  0.42 / 0.02) — most severe; the EO27 size-restriction field
+  note confirmed behaviourally.
+- **P41 EO70 (BL5)** — flagged **both years** (fold 0.55 /
+  0.61) — behavioural reproduction of the predicted
+  pollen-compatibility shortfall at the one clean-overlap
+  population where the SRK test flagged a gap. Independent
+  corroboration without any SRK data.
+- **P8 EO27 (BL1)** — flagged 2025 (fold 0.39).
+- **P13 EO27-1 + EO27RT (BL1)** — flagged 2025 (fold 0.37).
+  BIG side of the Next-test D3 candidate — in the direction
+  predicted.
+- **P16 EO8_27+28 (BL2)** — flagged 2026 (fold 0.58).
+- **P29 EO24_24 (BL3)** — flagged 2026 (fold 0.21).
+- **P32 EO18-7+EO18-8 (BL3)** — flagged 2026 (fold 0.82). BIG
+  side of the Next-test D1 candidate.
+- **P34 EO25-B_21 (BL3)** — flagged 2026 (fold 0.50). SMALL
+  side of the Next-test D1 candidate — the SMALL vs BIG
+  **direction** of the D1 prediction is confirmed: P34 at
+  0.50 vs P32 at 0.82 means the SMALL side has a 2× bigger
+  seed shortfall than the BIG side.
+
+**The 8 buffered-surplus populations** (opposite-side
+validation — mate-replete, seed set significantly above
+expectation):
+
+- **BL2 2025 is surplus-dominant**: **P15 EO8_29+47** (fold
+  2.17), **P16 EO8_27+28** (1.68), **P18 EO26-1_30** (1.59),
+  **P20 EO26-3_31+32** (2.10, big surplus), **P22 EO61_38**
+  (1.85), **P23 EO29_8** (1.43) — 6 of the 7 both-year BL2
+  populations with ≥ 20 plants. BL2 is the mid-area /
+  high-connectivity grouping (50 % of within-BL pairs ≤ 5 km)
+  — plants are predicted mate-replete and the observed surplus
+  confirms the compatible-mate availability from the opposite
+  side of the prediction.
+- **Big absolute surpluses** (fold ≥ 2): **P36 EO38_1** 2026
+  (2.33), **P15 EO8_29+47** 2025 (2.17), **P20 EO26-3** 2025
+  (2.10), **P39 EO76_2** 2025 (2.08). P39 at EO76 is
+  particularly striking: surviving 2025 adults produced
+  strong seed set *before* the population collapsed to 16
+  plants in 2026 — a snapshot of pre-crash fitness.
+
+**Candidate mate-limited (sub-threshold)** — fold < 0.8 but not
+FDR-sig, worth watching: **P3 EO67_39** (fold 0.51 both years,
+SMALL candidate from § C.0.a — needs more mothers to confirm
+statistically), **P11 EO27-1_37**, **P17 EO26-2_35**, **P24
+EO48_7**.
+
+**Year-switching populations** — a population can be buffered
+in one year and mate-limited in the other. P16 (EO8_27+28) is
+surplus in 2025 (fold 1.68) and mate-limited in 2026 (0.58);
+P32 (EO18-7 + EO18-8) is surplus in 2025 (1.23) and
+mate-limited in 2026 (0.82). Could be a genuine year effect
+(good vs bad pollination year) or an artefact of the 2026
+germplasm clean-up still in progress at these locations.
+Worth re-running step30i once the 2026 germplasm records are
+complete.
+
+**Buffering is also visible at tiny N** — small populations
+with seed yield at or above the species curve despite N ≤ 20:
+P40 EO76_2 2025 n = 4 fold 2.35; P27 EO24-7_25 2025 n = 3
+fold 2.43; P43 EO68-3_5 2025 n = 21 fold 1.29. The § C.0.b
+buffering stack worked even without a deep allele pool. The
+seed-set data cleanly separates the "small → mate-limited"
+cases from the "small → buffered sustainable" cases.
 
 ---
 
@@ -1152,10 +1373,10 @@ paternal Fgs after 2·n seed alleles is `(1 − 1/K)^(2n)`. Setting
 see every Fg. **This saturates at n = 15 seeds/mother** — the point
 where the return per additional seed is negligible.
 
-<a id="fig-12"></a>
-![Figure 12](figures/Phase5/step28_coverage_curves.png)
+<a id="fig-13"></a>
+![Figure 13](figures/Phase5/step28_coverage_curves.png)
 
-**Figure 12.** Step 28 SRK allele detection under tetraploid LEPA (4 SRK copies per plant; 2 paternal alleles per seed), on the absolute-allele scale with the local pool capped at the species-wide ceiling of 32 Fgs. Shaded bands = 95 % simulation CI. **Panel A — per mother.** x = seeds genotyped, one curve per event-size bin (each seed contributes 2 paternal allele draws); the **vertical red line at 15 seeds** marks the per-mother operational cap under tetraploid. One mother's 15 seeds cannot saturate a 32-allele pool at large event sizes — this is the allele-detection limit for a single sampler, not undersampling. **Panel B — aggregation across mothers at a location.** x = number of mothers sampled (15 seeds each = 34 allele draws per mother: 4 maternal + 2 × 15 = 30 paternal). At the 5-mother benchmark (green dotted line, 75 cumulative seeds), **every event size reaches its local ceiling** — 4 of 4, 12 of 12, 27.9 of 28, 31.9 of 32, 31.9 of 32, 31.9 of 32. Panel B is continuous in M so any real location can read its own coverage off the correct curve. **This is the proof that seed-genotyping at 15 seeds/mother × 5+ mothers/location recovers the local SRK pool well enough to test the Phase A predictions.** Source: `step28_seed_sampling_per_mother.py`. Data: [`step28_coverage_curves_by_Nfertile.tsv`](tables/Phase5/step28_coverage_curves_by_Nfertile.tsv), [`step28_aggregation_curves_by_Nfertile.tsv`](tables/Phase5/step28_aggregation_curves_by_Nfertile.tsv).
+**Figure 13.** Step 28 SRK allele detection under tetraploid LEPA (4 SRK copies per plant; 2 paternal alleles per seed), on the absolute-allele scale with the local pool capped at the species-wide ceiling of 32 Fgs. Shaded bands = 95 % simulation CI. **Panel A — per mother.** x = seeds genotyped, one curve per event-size bin (each seed contributes 2 paternal allele draws); the **vertical red line at 15 seeds** marks the per-mother operational cap under tetraploid. One mother's 15 seeds cannot saturate a 32-allele pool at large event sizes — this is the allele-detection limit for a single sampler, not undersampling. **Panel B — aggregation across mothers at a location.** x = number of mothers sampled (15 seeds each = 34 allele draws per mother: 4 maternal + 2 × 15 = 30 paternal). At the 5-mother benchmark (green dotted line, 75 cumulative seeds), **every event size reaches its local ceiling** — 4 of 4, 12 of 12, 27.9 of 28, 31.9 of 32, 31.9 of 32, 31.9 of 32. Panel B is continuous in M so any real location can read its own coverage off the correct curve. **This is the proof that seed-genotyping at 15 seeds/mother × 5+ mothers/location recovers the local SRK pool well enough to test the Phase A predictions.** Source: `step28_seed_sampling_per_mother.py`. Data: [`step28_coverage_curves_by_Nfertile.tsv`](tables/Phase5/step28_coverage_curves_by_Nfertile.tsv), [`step28_aggregation_curves_by_Nfertile.tsv`](tables/Phase5/step28_aggregation_curves_by_Nfertile.tsv).
 
 **Field → lab correction — 60 % germination rate.** Part C
 genotypes **seedlings**, not seeds (user-confirmed design,
@@ -1194,10 +1415,10 @@ signals. The marginal power at small effect sizes comes from the same
 25-mother / 6-location shortage the mother-count section flags —
 the 2026 top-up addresses both.
 
-<a id="fig-13"></a>
-![Figure 13](figures/Phase5/step28d_matelim_power.png)
+<a id="fig-14"></a>
+![Figure 14](figures/Phase5/step28d_matelim_power.png)
 
-**Figure 13.** Statistical justification for the 15-seedlings-per-mother operational floor — two complementary simulations. **Left panel — per-mother P_compat precision.** Observed P_compat has binomial SE `√(p · (1 − p) / n_seeds)`; four curves plot SE vs seeds genotyped for four true P_compat values (0.3 / 0.5 / 0.7 / 0.9). The precision gain per additional seed is steep at low seed counts (SE drops from ~0.28 at 3 seeds to ~0.12 at 15 seeds) and **visibly plateaus around 15** — marginal gains beyond are negligible for the regression. **Right panel — § C.1 mate-limitation regression power** from a full-pipeline simulation of 505 mothers × 39 locations with per-mother P_compat drawn from the Phase 5 prediction. Four curves for four β₁ effect sizes (50 / 100 / 200 / 400 seeds per unit P_compat). At `n_seeds = 15`: **99.6 % power for medium effect (β₁ = 100)**; 69 % for the small effect (β₁ = 50, below the 80 % target). Errors-in-variables attenuation of β̂₁ is ~ 0.42 — real but doesn't prevent detection at realistic effect sizes. **Together with Figure 12, these two simulations are the proof that the Part C seed-genotyping protocol (15 seedlings per mother, with the field-side correction to 25 seeds at 60 % germination) has enough statistical power to test the Phase A per-population predictions.** Source: `step28_seed_sampling_per_mother.py`. Companion precision-only figure: [`step28d_pcompat_precision.png`](figures/Phase5/step28d_pcompat_precision.png).
+**Figure 14.** Statistical justification for the 15-seedlings-per-mother operational floor — two complementary simulations. **Left panel — per-mother P_compat precision.** Observed P_compat has binomial SE `√(p · (1 − p) / n_seeds)`; four curves plot SE vs seeds genotyped for four true P_compat values (0.3 / 0.5 / 0.7 / 0.9). The precision gain per additional seed is steep at low seed counts (SE drops from ~0.28 at 3 seeds to ~0.12 at 15 seeds) and **visibly plateaus around 15** — marginal gains beyond are negligible for the regression. **Right panel — § C.1 mate-limitation regression power** from a full-pipeline simulation of 505 mothers × 39 locations with per-mother P_compat drawn from the Phase 5 prediction. Four curves for four β₁ effect sizes (50 / 100 / 200 / 400 seeds per unit P_compat). At `n_seeds = 15`: **99.6 % power for medium effect (β₁ = 100)**; 69 % for the small effect (β₁ = 50, below the 80 % target). Errors-in-variables attenuation of β̂₁ is ~ 0.42 — real but doesn't prevent detection at realistic effect sizes. **Together with Figure 13, these two simulations are the proof that the Part C seed-genotyping protocol (15 seedlings per mother, with the field-side correction to 25 seeds at 60 % germination) has enough statistical power to test the Phase A per-population predictions.** Source: `step28_seed_sampling_per_mother.py`. Companion precision-only figure: [`step28d_pcompat_precision.png`](figures/Phase5/step28d_pcompat_precision.png).
 
 ### How many mothers per location?
 
@@ -1360,10 +1581,10 @@ here; that is scheduled as future work.
 - [`step30_B_partC_clean_overlap_fg_frequencies.tsv`](tables/Phase5/step30_B_partC_clean_overlap_fg_frequencies.tsv) — long form, one row per (location, Fg) with observed f and P1 f.
 - [`step30_B_partC_clean_overlap.png`](figures/Phase5/step30_B_partC_clean_overlap.png) — three-panel figure (P_compat scatter, Fg count comparison, Fg frequency spectrum).
 
-<a id="fig-14"></a>
-![Figure 14](figures/Phase5/step30_B_partC_clean_overlap.png)
+<a id="fig-15"></a>
+![Figure 15](figures/Phase5/step30_B_partC_clean_overlap.png)
 
-**Figure 14.** Phase 5 Part C anchor at the three clean-overlap populations — **P3 (= EO67_39)**, **P41 (= EO70_26)**, **P39 (= EO76_2)** — each 1:1 with a Phase 5 locationCode in 2025. (The figure's own axis labels still show legacy EO codes; a full re-run with population labels is a follow-up task.) Panel order follows the causal chain: diversity → pollen compatibility → per-Fg drift fingerprint. **Panel A — SRK diversity.** Phase 5 predicted (x) vs observed in adults (y), one square per location with 95 % CI horizontal error bars. 1:1 diagonal + ceiling at 32 Fgs. EO67 sits on the diagonal (model passes); EO70 (6/32) and EO76 (9/32) sit far below (large drift gap). **Panel B — pollen compatibility.** Phase 5 predicted vs observed, with the traffic-light background (red = failed, amber = struggling, green = sustainable) and 1:1 diagonal. EO67 and EO76 close to the diagonal; EO70 is the clear outlier (observed 0.53 vs predicted 0.78). **Panel C — per-Fg drift residual** `f_observed − f_P1` per location (one row each, Fgs sorted left-to-right by species-wide P1 frequency, most-common → rarest). **Green bars = Fg enriched vs P1** (drift favoured it); **red bars = Fg depleted vs P1**; **× markers = Fg absent at the location** (lost entirely). The residual pops out the drift fingerprint that the raw-frequency plot blurred — EO70 shows classic FG001 drift (+21 %) + FG024 (+18 %) with 26/32 Fgs absent; EO76 shows milder enrichment of FG012 / FG010; EO67's small-population signature elevates the normally-rare FG018 and FG023 instead of the common Fgs — a founder-effect signature rather than classical drift. Source: `step30d_partC_clean_overlap.py`.
+**Figure 15.** Phase 5 Part C anchor at the three clean-overlap populations — **P3 (= EO67_39)**, **P41 (= EO70_26)**, **P39 (= EO76_2)** — each 1:1 with a Phase 5 locationCode in 2025. (The figure's own axis labels still show legacy EO codes; a full re-run with population labels is a follow-up task.) Panel order follows the causal chain: diversity → pollen compatibility → per-Fg drift fingerprint. **Panel A — SRK diversity.** Phase 5 predicted (x) vs observed in adults (y), one square per location with 95 % CI horizontal error bars. 1:1 diagonal + ceiling at 32 Fgs. EO67 sits on the diagonal (model passes); EO70 (6/32) and EO76 (9/32) sit far below (large drift gap). **Panel B — pollen compatibility.** Phase 5 predicted vs observed, with the traffic-light background (red = failed, amber = struggling, green = sustainable) and 1:1 diagonal. EO67 and EO76 close to the diagonal; EO70 is the clear outlier (observed 0.53 vs predicted 0.78). **Panel C — per-Fg drift residual** `f_observed − f_P1` per location (one row each, Fgs sorted left-to-right by species-wide P1 frequency, most-common → rarest). **Green bars = Fg enriched vs P1** (drift favoured it); **red bars = Fg depleted vs P1**; **× markers = Fg absent at the location** (lost entirely). The residual pops out the drift fingerprint that the raw-frequency plot blurred — EO70 shows classic FG001 drift (+21 %) + FG024 (+18 %) with 26/32 Fgs absent; EO76 shows milder enrichment of FG012 / FG010; EO67's small-population signature elevates the normally-rare FG018 and FG023 instead of the common Fgs — a founder-effect signature rather than classical drift. Source: `step30d_partC_clean_overlap.py`.
 
 ### C.0.b Diversity collapse → pollen compatibility: hypothesis decomposition
 
@@ -1518,7 +1739,7 @@ loss:
    At EO76, 76 % of mothers are homozygous: a homozygous mother
    expresses a single Fg at her stigma, which pollen fathers can
    more easily avoid matching than a heterozygous mother's larger
-   expressed set. The yellow bar at EO76 in Figure 15 **drops below
+   expressed set. The yellow bar at EO76 in Figure 16 **drops below
    the observed black bar** — the quantitative signature of this
    mechanism.
 
@@ -1554,10 +1775,10 @@ pollen-compatibility response.
 - [`step30_B_partC_hypothesis_decomposition.png`](figures/Phase5/step30_B_partC_hypothesis_decomposition.png)
   — grouped bar chart per location (see caption below).
 
-<a id="fig-15"></a>
-![Figure 15](figures/Phase5/step30_B_partC_hypothesis_decomposition.png)
+<a id="fig-16"></a>
+![Figure 16](figures/Phase5/step30_B_partC_hypothesis_decomposition.png)
 
-**Figure 15.** Competing-hypothesis decomposition of per-location pollen compatibility. Triggered by the SRK diversity discrepancies in § C.0.a. For each clean-overlap population — P3 (= EO67), P41 (= EO70), P39 (= EO76) — the figure shows five pollen-compatibility values from the same simulation (sporophytic Class I / II + empirical zygosity, 800 candidate fathers per mother, observed mother genotypes held fixed), each differing in which part of the father-drawing distribution is swapped to the species-wide reference. **Black — Observed:** fathers drawn from observed local allele frequencies and observed local zygosity. **Blue — Swap within-class spread:** keep observed Class I and Class II total masses, but reshape the within-class spread to match the P1 pattern (isolates the "drift monoculture" channel). **Red — Swap Class I / II balance:** keep within-class shape observed, rescale the two class totals to the species-wide values (isolates between-class rescue). **Yellow — Swap zygosity:** keep observed allele frequencies, swap father zygosity to species-wide 66/32/2 % (isolates the per-mother expressed-set channel). **Green — Phase 5 prediction:** everything swapped to species-wide. Error bars = bootstrap 95 % CI (400 mother resamples). Traffic-light bands shaded in the background; dashed grey line = species-wide pollen compatibility 0.78. **Reading rules:** a blue/red/yellow bar jumping toward green means that factor caused the gap; staying next to black means it was not involved; dropping below black means it is **buffering** the location (observed state on that axis is better than species-wide). **EO70** — blue dominates (within-class drift monoculture, FG024 at 35 % of pool); red and yellow neutral. **EO67** — small deficit, blue explains it; zygosity slightly buffering. **EO76** — small deficit despite collapsing from 32 to 9 alleles; yellow drops below black, meaning zygosity (76 % homozygous mothers) is actively buffering the location, and blue overshoots green because the specific within-class spread at EO76 is better than drift-only P1 would deliver. Source: `step30e_pcompat_hypothesis_decomposition.py`.
+**Figure 16.** Competing-hypothesis decomposition of per-location pollen compatibility. Triggered by the SRK diversity discrepancies in § C.0.a. For each clean-overlap population — P3 (= EO67), P41 (= EO70), P39 (= EO76) — the figure shows five pollen-compatibility values from the same simulation (sporophytic Class I / II + empirical zygosity, 800 candidate fathers per mother, observed mother genotypes held fixed), each differing in which part of the father-drawing distribution is swapped to the species-wide reference. **Black — Observed:** fathers drawn from observed local allele frequencies and observed local zygosity. **Blue — Swap within-class spread:** keep observed Class I and Class II total masses, but reshape the within-class spread to match the P1 pattern (isolates the "drift monoculture" channel). **Red — Swap Class I / II balance:** keep within-class shape observed, rescale the two class totals to the species-wide values (isolates between-class rescue). **Yellow — Swap zygosity:** keep observed allele frequencies, swap father zygosity to species-wide 66/32/2 % (isolates the per-mother expressed-set channel). **Green — Phase 5 prediction:** everything swapped to species-wide. Error bars = bootstrap 95 % CI (400 mother resamples). Traffic-light bands shaded in the background; dashed grey line = species-wide pollen compatibility 0.78. **Reading rules:** a blue/red/yellow bar jumping toward green means that factor caused the gap; staying next to black means it was not involved; dropping below black means it is **buffering** the location (observed state on that axis is better than species-wide). **EO70** — blue dominates (within-class drift monoculture, FG024 at 35 % of pool); red and yellow neutral. **EO67** — small deficit, blue explains it; zygosity slightly buffering. **EO76** — small deficit despite collapsing from 32 to 9 alleles; yellow drops below black, meaning zygosity (76 % homozygous mothers) is actively buffering the location, and blue overshoots green because the specific within-class spread at EO76 is better than drift-only P1 would deliver. Source: `step30e_pcompat_hypothesis_decomposition.py`.
 
 **Note — why P1 is empirical, not uniform.** A uniform-frequency P1
 (Dirichlet(α = 1) over 32 Fgs, equivalent to the P0 "uninformative"
@@ -1576,7 +1797,7 @@ would not reflect how LEPA actually enters the modelling frame).
 
 ### C.0.c Hypothesis test — can the diversity gap be closed by tightening the deme radius?
 
-**Why this test exists.** Figure 14 shows the diversity prediction
+**Why this test exists.** Figure 15 shows the diversity prediction
 over-estimates the observed SRK allele count by ~20 alleles at every
 clean-overlap location (predicted 11 / 28 / 32 vs observed 7 / 6 / 9).
 § C.0.b above decomposes *why pollen compatibility nevertheless
@@ -1614,7 +1835,7 @@ show meaningful fragmentation across the sweep (EO70: 1 → 3 demes;
 EO76: 5 → 17 demes as radius tightens).
 
 **Result — H1 is rejected within the P1 drift assumption at EO70
-and EO76** ([Figure 16](#fig-16)).
+and EO76** ([Figure 17](#fig-17)).
 
 | Location | Observed | Predicted at r = 10 m | at 50 m | at 150 m | Deme count 10 m / 50 m / 150 m |
 |---|:---:|:---:|:---:|:---:|:---:|
@@ -1679,139 +1900,11 @@ will measure).
    fragmentation — would waste sampling on sub-demes that do not
    exist.
 
-<a id="fig-16"></a>
-![Figure 16](figures/Phase5/step30f_srk_diversity_radius_sweep.png)
+<a id="fig-17"></a>
+![Figure 17](figures/Phase5/step30f_srk_diversity_radius_sweep.png)
 
-**Figure 16.** SRK diversity gap (y = predicted − observed distinct SRK alleles) vs pollinator radius at **P41 (= EO70)** and **P39 (= EO76)**. x = radius used to rebuild the deme partition (10 → 150 m, log scale). Lines + 95 % CI bands = per-location per-radius simulation (2000 replicates per combination). Right-side labels show the gap at the largest radius; parenthetical observed counts come from the Phase 4 adult SRK genotypes (a single measurement, not a sweep output — shown as labels, not horizontal lines). Zero line = perfect match. Vertical dotted line at 50 m marks the current operational deme. H1 (deme too wide) would predict the gap to shrink toward zero as radius tightens; it stays flat at +22 and +23 across all radii, including the 10 m extreme that fragments EO70 into 3 demes and EO76 into 17 — rejecting H1 within the P1 drift assumption. P3 (= EO67) is omitted (deme partition invariant across the sweep, test non-informative). Source: `step30f_srk_diversity_hypothesis_test.py`.
+**Figure 17.** SRK diversity gap (y = predicted − observed distinct SRK alleles) vs pollinator radius at **P41 (= EO70)** and **P39 (= EO76)**. x = radius used to rebuild the deme partition (10 → 150 m, log scale). Lines + 95 % CI bands = per-location per-radius simulation (2000 replicates per combination). Right-side labels show the gap at the largest radius; parenthetical observed counts come from the Phase 4 adult SRK genotypes (a single measurement, not a sweep output — shown as labels, not horizontal lines). Zero line = perfect match. Vertical dotted line at 50 m marks the current operational deme. H1 (deme too wide) would predict the gap to shrink toward zero as radius tightens; it stays flat at +22 and +23 across all radii, including the 10 m extreme that fragments EO70 into 3 demes and EO76 into 17 — rejecting H1 within the P1 drift assumption. P3 (= EO67) is omitted (deme partition invariant across the sweep, test non-informative). Source: `step30f_srk_diversity_hypothesis_test.py`.
 
-### C.0.d Behavioural check — observed seed yield vs size expectation per population (Step 30i)
-
-**Why this test exists.** § C.0.a – C.0.c compare predicted vs
-observed SRK quantities (allele counts, pollen compatibility,
-drift fingerprints) — all require **adult SRK genotypes**.
-Phase 4 only has genotypes at three clean-overlap populations (P3 = EO67, P41 = EO70, P39 = EO76). This
-section adds a **behavioural check that uses no SRK data** and
-therefore runs on all 44 Phase 5 populations: **does each
-population's observed seed yield match what its plants'
-sizes predict?** If a population's plants systematically
-produce fewer seeds than the species-wide size → yield allometry
-expects, mate limitation is surfacing *behaviourally* — a direct
-signature of the Phase A P_compat prediction without needing a
-single SRK call. Equally important, if a **small** population's
-plants produce **as many seeds as their size predicts**, then
-the § C.0.b buffering stack (Class I dominance + class imbalance
-+ tetraploid homozygosity) held even there — a positive result
-for the predicted-sustainable call.
-
-**Approach — across-species build, then within-population test.**
-The test splits into two stages:
-
-1. **Across-species build**: Stage 1 picks the best size
-   predictor out-of-sample via 10-fold CV RMSE on log<sub>10</sub>
-   seed yield across four candidate allometries — `height`,
-   `crown`, `area = π/4 · crown · height`, and `crown + height`
-   (free exponents). Stage 2 refits the CV-winner on **all plants
-   pooled across populations and years**: this is the
-   species-wide expectation curve. Every plant then has an
-   expected log<sub>10</sub>(yield) and a residual = observed −
-   expected. **Figure 17a** shows this build: observed vs
-   expected for every plant, log-log, coloured by BL, with the
-   1:1 species curve and the ×½ / ×2 reference lines.
-2. **Within-population test**: Stage 3 tests per (populationID,
-   year) whether the mean residual is systematically < 0 using
-   a one-sample t-test (n ≥ 3) with a Benjamini-Hochberg FDR
-   across the ~ 80 strata. **No min-n threshold** — small
-   populations are **included and highlighted** (user focus
-   2026-10-07): small-N rows carry wide CIs, but still show up
-   in the plot. **Figure 17b** is the per-population forest
-   plot of fold-of-expectation (= 10<sup>mean residual</sup>).
-
-Each plant is its own control via the species-wide allometry, so
-a population that shows a systematic residual is NOT just a size
-artefact — it is behaving differently from same-size plants
-elsewhere in the species.
-
-**Caveat on 2026 germplasm coverage.** A fraction of the 2026
-mother-plant occurrences do not yet have associated germplasm
-records attached in the DB (clean-up in progress 2026-10-07).
-2026 shortfall calls may therefore be inflated at populations
-that are still missing collections; re-run step30i once the
-2026 germplasm cleaning is complete.
-
-<a id="fig-17a"></a>
-![Figure 17a](figures/Phase5/step30i_species_calibration.png)
-
-**Figure 17a — the across-species build.** Species-wide
-calibration scatter underlying the per-population test. **Panel
-A (left):** every plant that has crown + height + seed yield
-plotted as expected (species-wide allometry, log scale) vs
-observed (log scale), coloured by its population's BL. Dashed
-line = the species curve (fold = 1); dotted lines = ×½ and ×2
-reference bands. **Panel B (right):** the model build itself —
-the Stage 1 10-fold CV predictor-selection table (which
-allometry wins out-of-sample) + the Stage 2 refitted
-expectation-model summary (coefficients, R², residual SD). This
-is what every row of Figure 17b is measured against. Source:
-`step30i_size_seed_population_test.py`.
-Data: [`step30i_size_seed_cv_rmse.tsv`](tables/Phase5/step30i_size_seed_cv_rmse.tsv).
-
-<a id="fig-17b"></a>
-![Figure 17b](figures/Phase5/step30i_size_seed_population.png)
-
-**Figure 17b — the within-population test.** Observed seed yield
-per plant divided by the expected yield from Figure 17a's
-species-wide allometry, aggregated per (populationID, year). One
-row per population; **open circle = 2025 draw, filled circle =
-2026 draw** in the same BL colour, slightly offset vertically;
-dot size ∝ √*n* plants. Horizontal bars = 95 % CI; the dashed
-vertical line at fold = 1 is the species curve. The light grey
-×½ and ×2 reference bands are the operational "biologically
-meaningful shortfall / surplus" markers. A **red halo around a
-specific dot** = that (populationID, **year**) is FDR-sig below
-expectation (q < 0.05 and mean residual < 0) — i.e. its plants
-produced fewer seeds than their sizes predict, a behavioural
-signature of mate limitation. The flag is per-year, not
-per-population: a population halo'd in only 2025 means the
-2025 draw underperformed and 2026 did not (or vice versa); a
-population halo'd in both years means the shortfall was
-sustained across years. Panels stacked by BL; left margin =
-`P{N}`; right margin = per-year `n` plants. Source:
-`step30i_size_seed_population_test.py`. Data:
-[`step30i_size_seed_population_strata.tsv`](tables/Phase5/step30i_size_seed_population_strata.tsv).
-
-**Headline findings** (first run, 2026-10-07 — 10 strata flagged
-below expectation at FDR < 0.05).
-
-- **BL1 EO27 cluster is the clearest signal.** Four of the EO27-*
-  populations under-produce: **P5 EO27-3** both years (fold 0.42
-  / 0.02), **P8 EO27** 2025 (0.39), **P13 EO27-1 + EO27RT** 2025
-  (0.37, BIG D3 Next-test candidate). Consistent with the
-  dedicated EO27-is-size-restricted field note that originally
-  motivated this analysis in the parent LEPA_fieldwork_protocol
-  study.
-- **EO70 (P41 BL5) reproduces the Phase 4 P_compat gap**
-  behaviourally: fold 0.55 (2025) / 0.61 (2026). The Phase 4
-  adult SRK data at EO70 (§ C.0.a) called observed P_compat
-  0.53 vs predicted 0.78 — i.e. a predicted sustainable
-  population that was behaving as struggling. The seed-shortfall
-  signal here reaches the same conclusion **without needing any
-  SRK genotype**.
-- **The Next-test D1 pair direction confirms the prediction.**
-  SMALL side **P34 EO25-B_21** fold = 0.50 (2026, 8 mothers);
-  BIG side **P32 EO18-7 + EO18-8** fold = 0.82 (2026, 140
-  mothers). The SMALL side has a **2× bigger seed shortfall**
-  than the BIG side, in the direction the Phase A P_compat
-  prediction says it should be.
-- **Buffering candidates.** Several small populations show seed
-  yield **at or above** the size expectation despite tiny N —
-  e.g. P40 EO76_2 2025 n = 4 fold = 2.35; P27 EO24-7_25 2025
-  n = 3 fold = 2.43; P43 EO68-3_5 2025 n = 21 fold = 1.29. These
-  are the populations where the § C.0.b buffering stack worked
-  even without a deep allele pool. The seed-set data separates
-  the "small → mate limitation surfaces" cases from the "small
-  → buffered sustainable" cases cleanly.
-
----
 
 ## Phase B — Closing the causal chain with seed data
 
@@ -1937,13 +2030,13 @@ summary.
 - **Figure 9** — [`step30h_pred_diversity.png`](figures/Phase5/step30h_pred_diversity.png) — predicted SRK allele diversity per population, 2025 (open) vs 2026 (filled) overlaid, grouped by new BL.
 - **Figure 10** — [`step30_A_si_model_schematic.png`](figures/Phase5/step30_A_si_model_schematic.png) — sporophytic Class I / Class II dominance in tetraploid LEPA: dominance within one plant, between-plant recognition, and the compatibility rule by cross type.
 - **Figure 11** — [`step30h_pred_pcompat.png`](figures/Phase5/step30h_pred_pcompat.png) — predicted pollen compatibility per population, 2025 (open) vs 2026 (filled) overlaid, traffic-light bands, grouped by new BL.
-- **Figure 12** — [`step28_coverage_curves.png`](figures/Phase5/step28_coverage_curves.png) — § B.3 Step 28 SRK allele detection curves under tetraploid LEPA; per-mother + aggregation-across-mothers panels. The proof that 15 seeds per mother × 5+ mothers per location recovers the local SRK pool well enough to test Phase A predictions.
-- **Figure 13** — [`step28d_matelim_power.png`](figures/Phase5/step28d_matelim_power.png) — § B.3.1 two-panel justification for the 15-seedlings-per-mother floor: per-mother P_compat precision (left) + § C.1 mate-limitation regression power (right).
-- **Figure 14** — [`step30_B_partC_clean_overlap.png`](figures/Phase5/step30_B_partC_clean_overlap.png) — § C.0.a Part C anchor at P3 (EO67) / P41 (EO70) / P39 (EO76) (SRK diversity + pollen compatibility + per-allele drift residual).
-- **Figure 15** — [`step30_B_partC_hypothesis_decomposition.png`](figures/Phase5/step30_B_partC_hypothesis_decomposition.png) — § C.0.b competing-hypothesis decomposition.
-- **Figure 16** — [`step30f_srk_diversity_radius_sweep.png`](figures/Phase5/step30f_srk_diversity_radius_sweep.png) — § C.0.c SRK-diversity radius sweep (deme-size vs residual-drift test).
-- **Figure 17a** — [`step30i_species_calibration.png`](figures/Phase5/step30i_species_calibration.png) — § C.0.d across-species build: calibration scatter (observed vs expected per plant, coloured by BL) + predictor-selection CV table + expectation-model summary.
-- **Figure 17b** — [`step30i_size_seed_population.png`](figures/Phase5/step30i_size_seed_population.png) — § C.0.d within-population test: observed seed yield per population vs size expectation, 2025 (open) vs 2026 (filled), all 44 populations with ≥ 2 plants; red halo around a specific dot = FDR-sig below expectation for that (population, year).
+- **Figure 12a** — [`step30i_species_calibration.png`](figures/Phase5/step30i_species_calibration.png) — § 30.3 across-species build: calibration scatter (observed vs expected per plant, coloured by BL) + predictor-selection CV table + expectation-model summary.
+- **Figure 12b** — [`step30i_size_seed_population.png`](figures/Phase5/step30i_size_seed_population.png) — § 30.3 within-population test: observed seed yield per population vs size expectation, 2025 (open) vs 2026 (filled), all 44 populations with ≥ 2 plants; **red halo** = FDR-sig below (mate-limited), **green halo** = FDR-sig above (buffered surplus) for that (population, year). Priority list in [`step30i_conservation_priority.tsv`](tables/Phase5/step30i_conservation_priority.tsv) (one row per populationID, worst-case bucket across years).
+- **Figure 13** — [`step28_coverage_curves.png`](figures/Phase5/step28_coverage_curves.png) — § B.3 Step 28 SRK allele detection curves under tetraploid LEPA; per-mother + aggregation-across-mothers panels. The proof that 15 seeds per mother × 5+ mothers per location recovers the local SRK pool well enough to test Phase A predictions.
+- **Figure 14** — [`step28d_matelim_power.png`](figures/Phase5/step28d_matelim_power.png) — § B.3.1 two-panel justification for the 15-seedlings-per-mother floor: per-mother pollen-compatibility precision (left) + § C.1 mate-limitation regression power (right).
+- **Figure 15** — [`step30_B_partC_clean_overlap.png`](figures/Phase5/step30_B_partC_clean_overlap.png) — § C.0.a Part C anchor at P3 (EO67) / P41 (EO70) / P39 (EO76) (SRK diversity + pollen compatibility + per-allele drift residual).
+- **Figure 16** — [`step30_B_partC_hypothesis_decomposition.png`](figures/Phase5/step30_B_partC_hypothesis_decomposition.png) — § C.0.b competing-hypothesis decomposition.
+- **Figure 17** — [`step30f_srk_diversity_radius_sweep.png`](figures/Phase5/step30f_srk_diversity_radius_sweep.png) — § C.0.c SRK-diversity radius sweep (deme-size vs residual-drift test).
 - Candidate-population zoom panels — [`step29a_candidate_populations_zoom.png`](figures/Phase5/step29a_candidate_populations_zoom.png) + [`step29a_crash_populations_zoom.png`](figures/Phase5/step29a_crash_populations_zoom.png) (supporting plots for the LARGE + SMALL + crash candidates).
 
 ---
