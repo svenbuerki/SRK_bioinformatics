@@ -1766,12 +1766,16 @@ row per population; **open circle = 2025 draw, filled circle =
 dot size ∝ √*n* plants. Horizontal bars = 95 % CI; the dashed
 vertical line at fold = 1 is the species curve. The light grey
 ×½ and ×2 reference bands are the operational "biologically
-meaningful shortfall / surplus" markers. **★ in the left margin**
-(not on the dot) = FDR-sig below expectation (q < 0.05 and mean
-residual < 0) — i.e. the population's plants produce fewer
-seeds than their sizes predict, a behavioural signature of mate
-limitation. Panels stacked by BL; left margin = `P{N}`; right
-margin = per-year `n` plants. Source:
+meaningful shortfall / surplus" markers. A **red halo around a
+specific dot** = that (populationID, **year**) is FDR-sig below
+expectation (q < 0.05 and mean residual < 0) — i.e. its plants
+produced fewer seeds than their sizes predict, a behavioural
+signature of mate limitation. The flag is per-year, not
+per-population: a population halo'd in only 2025 means the
+2025 draw underperformed and 2026 did not (or vice versa); a
+population halo'd in both years means the shortfall was
+sustained across years. Panels stacked by BL; left margin =
+`P{N}`; right margin = per-year `n` plants. Source:
 `step30i_size_seed_population_test.py`. Data:
 [`step30i_size_seed_population_strata.tsv`](tables/Phase5/step30i_size_seed_population_strata.tsv).
 
@@ -1939,7 +1943,7 @@ summary.
 - **Figure 15** — [`step30_B_partC_hypothesis_decomposition.png`](figures/Phase5/step30_B_partC_hypothesis_decomposition.png) — § C.0.b competing-hypothesis decomposition.
 - **Figure 16** — [`step30f_srk_diversity_radius_sweep.png`](figures/Phase5/step30f_srk_diversity_radius_sweep.png) — § C.0.c SRK-diversity radius sweep (deme-size vs residual-drift test).
 - **Figure 17a** — [`step30i_species_calibration.png`](figures/Phase5/step30i_species_calibration.png) — § C.0.d across-species build: calibration scatter (observed vs expected per plant, coloured by BL) + predictor-selection CV table + expectation-model summary.
-- **Figure 17b** — [`step30i_size_seed_population.png`](figures/Phase5/step30i_size_seed_population.png) — § C.0.d within-population test: observed seed yield per population vs size expectation, 2025 (open) vs 2026 (filled), all 44 populations with ≥ 2 plants; ★ in left margin = FDR-sig below expectation.
+- **Figure 17b** — [`step30i_size_seed_population.png`](figures/Phase5/step30i_size_seed_population.png) — § C.0.d within-population test: observed seed yield per population vs size expectation, 2025 (open) vs 2026 (filled), all 44 populations with ≥ 2 plants; red halo around a specific dot = FDR-sig below expectation for that (population, year).
 - Candidate-population zoom panels — [`step29a_candidate_populations_zoom.png`](figures/Phase5/step29a_candidate_populations_zoom.png) + [`step29a_crash_populations_zoom.png`](figures/Phase5/step29a_crash_populations_zoom.png) (supporting plots for the LARGE + SMALL + crash candidates).
 
 ---

@@ -381,18 +381,17 @@ def plot_forest(res: pd.DataFrame, df: pd.DataFrame,
             s = 30 + 4.5 * np.sqrt(max(n, 1))
             mfc = ("white" if yr == 2025 else colour)
             mew = (1.4 if yr == 2025 else 0.6)
+            # FDR-sig below → draw a red "halo" ring BEHIND the dot
+            # so the flag ties to the specific (population, year)
+            # data point and does not obscure the open/filled fill
+            # (user feedback 2026-10-08). The halo is slightly
+            # larger than the dot so the ring shows around it.
+            if bool(row["flag_below_expectation"]):
+                ax.scatter([fold], [yi], s=s * 2.3,
+                            facecolor="none", edgecolor="#b2182b",
+                            linewidth=2.0, zorder=2)
             ax.scatter([fold], [yi], s=s, facecolor=mfc,
                         edgecolor=colour, linewidth=mew, zorder=3)
-            # Flag — bold red star in the LEFT margin at this row's y
-            # position, outside the plot so the open/filled fill of
-            # the circle stays legible (user feedback 2026-10-08).
-            if bool(row["flag_below_expectation"]):
-                ax.annotate("★", xy=(-0.028, yi),
-                             xycoords=("axes fraction", "data"),
-                             fontsize=14, color="#b2182b",
-                             fontweight="bold",
-                             ha="center", va="center",
-                             annotation_clip=False, zorder=5)
 
         # Left margin: P{N} identifier
         ax.set_yticks(list(y_pos.values()))
@@ -440,7 +439,8 @@ def plot_forest(res: pd.DataFrame, df: pd.DataFrame,
     axes[-1].set_xlabel(
         "Fold of expectation  =  observed yield ÷ expected from size "
         "(log scale)   ·   < 1 = seed shortfall   ·   "
-        "★ in left margin = FDR-sig below (q < 0.05)",
+        "red halo around a dot = FDR < 0.05 below for that "
+        "(population, year)",
         fontsize=10.5,
     )
 
@@ -455,8 +455,10 @@ def plot_forest(res: pd.DataFrame, df: pd.DataFrame,
                 markeredgewidth=0.5, markersize=8, label="2026 (filled)"),
         Line2D([0], [0], color="#444", ls="--", lw=1.0,
                 label="on species curve  (fold = 1)"),
-        Line2D([0], [0], marker="*", linestyle="", color="#b2182b",
-                markersize=12, label="★ (left margin) = FDR < 0.05 below"),
+        Line2D([0], [0], marker="o", linestyle="",
+                markerfacecolor="none", markeredgecolor="#b2182b",
+                markeredgewidth=2.0, markersize=13,
+                label="red halo = FDR < 0.05 below for that (pop, year)"),
     ]
     fig.legend(handles=legend_handles,
                 loc="upper center", bbox_to_anchor=(0.5, 0.965),
