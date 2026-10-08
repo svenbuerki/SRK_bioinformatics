@@ -1652,6 +1652,97 @@ will measure).
 
 **Figure 16.** SRK diversity gap (y = predicted − observed distinct SRK alleles) vs pollinator radius at EO70 and EO76. x = radius used to rebuild the deme partition (10 → 150 m, log scale). Lines + 95 % CI bands = per-location per-radius simulation (2000 replicates per combination). Right-side labels show the gap at the largest radius; parenthetical observed counts come from the Phase 4 adult SRK genotypes (a single measurement, not a sweep output — shown as labels, not horizontal lines). Zero line = perfect match. Vertical dotted line at 50 m marks the current operational deme. H1 (deme too wide) would predict the gap to shrink toward zero as radius tightens; it stays flat at +22 and +23 across all radii, including the 10 m extreme that fragments EO70 into 3 demes and EO76 into 17 — rejecting H1 within the P1 drift assumption. EO67 is omitted (deme partition invariant across the sweep, test non-informative). Source: `step30f_srk_diversity_hypothesis_test.py`.
 
+### C.0.d Behavioural check — observed seed yield vs size expectation per population (Step 30i)
+
+**Why this test exists.** § C.0.a – C.0.c compare predicted vs
+observed SRK quantities (allele counts, pollen compatibility,
+drift fingerprints) — all require **adult SRK genotypes**.
+Phase 4 only has genotypes at three clean-overlap EOs. This
+section adds a **behavioural check that uses no SRK data** and
+therefore runs on all 44 Phase 5 populations: **does each
+population's observed seed yield match what its plants'
+sizes predict?** If a population's plants systematically
+produce fewer seeds than the species-wide size → yield allometry
+expects, mate limitation is surfacing *behaviourally* — a direct
+signature of the Phase A P_compat prediction without needing a
+single SRK call. Equally important, if a **small** population's
+plants produce **as many seeds as their size predicts**, then
+the § C.0.b buffering stack (Class I dominance + class imbalance
++ tetraploid homozygosity) held even there — a positive result
+for the predicted-sustainable call.
+
+**Approach.** Each plant is its own control via the species-wide
+allometry. Stage 1 picks the best size predictor out-of-sample
+(10-fold CV RMSE across `height` / `crown` / `area` =
+π/4 · crown · height / `crown + height`); Stage 2 refits the
+winner on all plants, giving every plant an expected
+log<sub>10</sub>(yield) and a residual; Stage 3 tests per
+(populationID, year) whether the mean residual is < 0 with a
+Benjamini-Hochberg FDR across the ~ 80 strata. **No min-n
+threshold** — small populations are **included and highlighted**
+(the user focus for the 2026-10-07 run): the ★ badge marks
+FDR-sig below-expectation strata; the dot size encodes
+`n_plants` so small-N rows read as uncertain by eye.
+
+**Caveat on 2026 germplasm coverage.** A fraction of the 2026
+mother-plant occurrences do not yet have associated germplasm
+records attached in the DB (clean-up in progress 2026-10-07).
+2026 shortfall calls may therefore be inflated at populations
+that are still missing collections; re-run step30i once the
+2026 germplasm cleaning is complete.
+
+![Figure 17](figures/Phase5/step30i_size_seed_population.png)
+
+**Figure 17.** Observed seed yield per plant divided by the
+expected yield from the species-wide size → yield allometry,
+aggregated per (populationID, year). One row per population;
+**open circle = 2025 draw, filled circle = 2026 draw** in the
+same BL colour, slightly offset vertically; dot size ∝ √*n*
+plants. Horizontal bars = 95 % CI; the dashed vertical line at
+fold = 1 is the species curve. The light grey ×½ and ×2
+reference bands are the operational "biologically meaningful
+shortfall / surplus" markers. **★** = FDR-sig below expectation
+(q < 0.05 and mean residual < 0) — i.e. the population's plants
+produce fewer seeds than their sizes predict, a behavioural
+signature of mate limitation. Panels stacked by BL; left margin
+= `P{N}`; right margin = per-year `n` plants. Source:
+`step30i_size_seed_population_test.py`. Data:
+[`step30i_size_seed_population_strata.tsv`](tables/Phase5/step30i_size_seed_population_strata.tsv),
+predictor-selection CV in
+[`step30i_size_seed_cv_rmse.tsv`](tables/Phase5/step30i_size_seed_cv_rmse.tsv).
+
+**Headline findings** (first run, 2026-10-07 — 10 strata flagged
+below expectation at FDR < 0.05).
+
+- **BL1 EO27 cluster is the clearest signal.** Four of the EO27-*
+  populations under-produce: **P5 EO27-3** both years (fold 0.42
+  / 0.02), **P8 EO27** 2025 (0.39), **P13 EO27-1 + EO27RT** 2025
+  (0.37, BIG D3 Next-test candidate). Consistent with the
+  dedicated EO27-is-size-restricted field note that originally
+  motivated this analysis in the parent LEPA_fieldwork_protocol
+  study.
+- **EO70 (P41 BL5) reproduces the Phase 4 P_compat gap**
+  behaviourally: fold 0.55 (2025) / 0.61 (2026). The Phase 4
+  adult SRK data at EO70 (§ C.0.a) called observed P_compat
+  0.53 vs predicted 0.78 — i.e. a predicted sustainable
+  population that was behaving as struggling. The seed-shortfall
+  signal here reaches the same conclusion **without needing any
+  SRK genotype**.
+- **The Next-test D1 pair direction confirms the prediction.**
+  SMALL side **P34 EO25-B_21** fold = 0.50 (2026, 8 mothers);
+  BIG side **P32 EO18-7 + EO18-8** fold = 0.82 (2026, 140
+  mothers). The SMALL side has a **2× bigger seed shortfall**
+  than the BIG side, in the direction the Phase A P_compat
+  prediction says it should be.
+- **Buffering candidates.** Several small populations show seed
+  yield **at or above** the size expectation despite tiny N —
+  e.g. P40 EO76_2 2025 n = 4 fold = 2.35; P27 EO24-7_25 2025
+  n = 3 fold = 2.43; P43 EO68-3_5 2025 n = 21 fold = 1.29. These
+  are the populations where the § C.0.b buffering stack worked
+  even without a deep allele pool. The seed-set data separates
+  the "small → mate limitation surfaces" cases from the "small
+  → buffered sustainable" cases cleanly.
+
 ---
 
 ## Phase B — Closing the causal chain with seed data
@@ -1783,6 +1874,7 @@ summary.
 - **Figure 14** — [`step30_B_partC_clean_overlap.png`](figures/Phase5/step30_B_partC_clean_overlap.png) — § C.0.a Part C anchor at EO67 / EO70 / EO76 (SRK diversity + pollen compatibility + per-allele drift residual).
 - **Figure 15** — [`step30_B_partC_hypothesis_decomposition.png`](figures/Phase5/step30_B_partC_hypothesis_decomposition.png) — § C.0.b competing-hypothesis decomposition.
 - **Figure 16** — [`step30f_srk_diversity_radius_sweep.png`](figures/Phase5/step30f_srk_diversity_radius_sweep.png) — § C.0.c SRK-diversity radius sweep (deme-size vs residual-drift test).
+- **Figure 17** — [`step30i_size_seed_population.png`](figures/Phase5/step30i_size_seed_population.png) — § C.0.d behavioural check: observed seed yield per population vs size expectation, 2025 (open) vs 2026 (filled), all 44 populations with ≥ 2 plants.
 - Candidate-population zoom panels — [`step29a_candidate_populations_zoom.png`](figures/Phase5/step29a_candidate_populations_zoom.png) + [`step29a_crash_populations_zoom.png`](figures/Phase5/step29a_crash_populations_zoom.png) (supporting plots for the LARGE + SMALL + crash candidates).
 
 ---

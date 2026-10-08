@@ -1,0 +1,446 @@
+"""Step 30i — size → seed-yield test at the Phase 5 **population** level.
+
+Adapted from the Field-work protocol's `size_seed_model.py` / `size_matched_
+comparison.py` / `per_eo_trends.py` family (ported from EO level to the
+Phase 5 populationID level, 2026-10-07).
+
+Goal
+----
+Behavioural validation of the Phase A per-population pollen-compatibility
+prediction (Figure 11 of the compact doc). If a mother plant's observed
+seed yield is systematically **less than what her plant size predicts**,
+and if that shortfall is concentrated in populations whose Phase A
+prediction says they should be mate-limited, we have a direct seed-set
+signal of the mate-limitation pathway — **without needing SRK genotypes
+yet**. Each plant is its own control via the species-wide size → yield
+allometry.
+
+Key change from the Field-work protocol version
+-----------------------------------------------
+The EO-level version applied a `min-n = 15 mother plants` threshold that
+discarded small populations. **Small populations are the ones we most
+want to see** (user instruction 2026-10-07): they are where drift is
+expected to be strongest and where the Phase A P_compat prediction is
+most informative. This Phase 5 version **keeps every population with
+≥ 2 plants** (minimum for a CI) and **does not discard any**.
+
+Pipeline
+--------
+STAGE 1  Predictor selection — 10-fold cross-validated RMSE on log10
+         seed yield among candidate allometries:
+             height / crown / area (ellipse) / crown + height
+         Winner = lowest mean CV-RMSE.
+STAGE 2  Expectation model — refit the winner on all plants (both
+         years pooled); fitted value = expected log10(yield) for a
+         plant of that size. Residual = observed − expected.
+STAGE 3  Below-expectation detection per (populationID, year):
+             - mean residual = log10 fold-of-expectation (0 = on curve)
+             - 95 % CI from the per-population residual spread
+             - one-sample t-test (where n ≥ 3) or Wilcoxon (n ≥ 6)
+             - Benjamini–Hochberg FDR across all (populationID × year)
+               combinations with n ≥ 3
+             - Flag "below expectation" (seed shortfall) if FDR-sig and
+               mean_resid < 0
+STAGE 4  Outputs:
+             tables/Phase5/step30i_size_seed_population_strata.tsv
+             figures/Phase5/step30i_size_seed_population.png / .pdf
+
+Conventions
+-----------
+BL colour palette + BL ordering (BL1 → BL5, area DESC → connectivity
+DESC) match the rest of Phase 5 — [[feedback_bl_order_area_first]] and
+the new population-level BL framework (§ Bottleneck Lineages of the
+compact doc). Figures follow the project convention: **2025 = open
+circle, 2026 = filled circle**, same BL colour, per-population row.
+"""
+from __future__ import annotations
+
+import sqlite3
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import statsmodels.formula.api as smf
+from scipy import stats
+from sklearn.model_selection import KFold
+from statsmodels.stats.multitest import fdrcorrection
+
+from srk_bl_constants import BL_COLORS
+
+TABLES  = Path("Tables/Phase5")
+FIGURES = Path("figures/Phase5")
+
+DB_PATH = Path(
+    "/Users/sven/Documents/Current_projects/LEPA_fieldwork_protocol/"
+    "SQL_DB/LEPA_SQL.db"
+)
+
+NEW_BL_ORDER = ["BL1", "BL2", "BL3", "BL4", "BL5"]
+CANDIDATES = {
+    "height":       "logy ~ logh",
+    "crown":        "logy ~ logc",
+    "area":         "logy ~ logarea",
+    "crown+height": "logy ~ logc + logh",
+}
+N_FOLDS = 10
+CV_SEED = 1
+
+
+# ---------------------------------------------------------------------------
+# Load data
+# ---------------------------------------------------------------------------
+def _year_from_date(s: pd.Series) -> pd.Series:
+    """occurrenceDate is `MM-DD-YYYY` for 2025; the 2026 'MM-DD' rows
+    without a year (field-note data issue, events 660-724) are counted
+    as 2026. Returns Int64 year or NaN."""
+    s = s.astype(str)
+    years = pd.to_numeric(s.str[-4:], errors="coerce")
+    short_mask = (s.str.len() == 5) & years.isna()
+    years = years.where(~short_mask, 2026)
+    return years.astype("Int64")
+
+
+def load_occurrences() -> pd.DataFrame:
+    """Pull per-occurrence crown + height + seed yield + eventID."""
+    con = sqlite3.connect(DB_PATH)
+    try:
+        df = pd.read_sql_query(
+            """
+            SELECT occurrenceID,
+                   eventID,
+                   occurrenceDate,
+                   occurrenceHeight    AS h,
+                   occurrenceCrownSize AS c,
+                   seedQuantityTotal   AS y
+            FROM vOccurrenceTraits
+            WHERE occurrenceHeight    > 0
+              AND occurrenceCrownSize > 0
+              AND seedQuantityTotal   > 0
+            """,
+            con,
+        )
+    finally:
+        con.close()
+    df["year"] = _year_from_date(df["occurrenceDate"])
+    df = df.dropna(subset=["year"]).copy()
+    df["year"] = df["year"].astype(int)
+    df["area"] = np.pi / 4.0 * df["c"] * df["h"]
+    for col in ("h", "c", "area", "y"):
+        df[f"log{col[0] if col != 'area' else 'area'}"] = np.log10(df[col])
+    df["logy"] = np.log10(df["y"])
+    return df
+
+
+def load_population_crosswalk() -> pd.DataFrame:
+    """populationID per (event_year, eventID). BL is pulled from the
+    classified TSV instead of the crosswalk because the crosswalk's
+    BL column was NOT updated when the Ward cluster → BL renumbering
+    (step30h_define_bl.py) happened — see
+    `step30g_populations_classified.tsv` for the authoritative BL."""
+    cw = pd.read_csv(TABLES / "step29a_population_crosswalk.tsv",
+                     sep="\t", encoding="utf-8-sig")
+    return cw[["event_year", "eventID", "populationID"]].drop_duplicates()
+
+
+def load_population_meta() -> pd.DataFrame:
+    """populationID → BL + population_label (authoritative source)."""
+    cl = pd.read_csv(TABLES / "step30g_populations_classified.tsv",
+                     sep="\t", encoding="utf-8-sig")
+    return (cl[["populationID", "BL", "population_label"]]
+              .drop_duplicates())
+
+
+# ---------------------------------------------------------------------------
+# Predictor selection
+# ---------------------------------------------------------------------------
+def cv_rmse(df: pd.DataFrame, formula: str,
+            folds: int, seed: int) -> tuple[float, float]:
+    kf = KFold(n_splits=folds, shuffle=True, random_state=seed)
+    err = []
+    for tr, te in kf.split(df):
+        m = smf.ols(formula, df.iloc[tr]).fit()
+        pred = m.predict(df.iloc[te])
+        err.append(np.sqrt(np.mean((df.iloc[te].logy.values - pred.values) ** 2)))
+    return float(np.mean(err)), float(np.std(err))
+
+
+def pick_best_predictor(df: pd.DataFrame) -> tuple[str, str, pd.DataFrame]:
+    rows = []
+    for name, f in CANDIDATES.items():
+        m = smf.ols(f, df).fit()
+        rmse, sd = cv_rmse(df, f, N_FOLDS, CV_SEED)
+        rows.append((name, rmse, sd, m.rsquared, m.aic))
+    rows.sort(key=lambda r: r[1])
+    table = pd.DataFrame(rows, columns=["predictor", "cv_rmse", "cv_sd",
+                                          "r2_in_sample", "aic"])
+    best = rows[0][0]
+    return best, CANDIDATES[best], table
+
+
+# ---------------------------------------------------------------------------
+# Per-population test
+# ---------------------------------------------------------------------------
+def per_population_year_test(df: pd.DataFrame) -> pd.DataFrame:
+    out = []
+    for (pid, yr), g in df.groupby(["populationID", "year"]):
+        n = len(g)
+        r = g["resid"].to_numpy()
+        bl = str(g["BL"].iloc[0])
+        label = str(g["population_label"].iloc[0])
+        if n >= 3:
+            mean = float(r.mean())
+            sd = float(r.std(ddof=1))
+            ci = float(stats.t.ppf(0.975, n - 1) * sd / np.sqrt(n))
+            t, p_t = stats.ttest_1samp(r, 0.0)
+            p_t = float(p_t)
+        else:
+            mean = float(r.mean()) if n >= 1 else np.nan
+            ci   = np.nan
+            t    = np.nan
+            p_t  = np.nan
+        if n >= 6:
+            try:
+                _, p_w = stats.wilcoxon(r)
+                p_w = float(p_w)
+            except ValueError:
+                p_w = np.nan
+        else:
+            p_w = np.nan
+        out.append(dict(populationID=pid, year=int(yr), BL=bl,
+                        population_label=label, n_plants=int(n),
+                        mean_resid=mean, ci95=ci, t_stat=float(t)
+                        if not np.isnan(t) else np.nan,
+                        p_ttest=p_t, p_wilcoxon=p_w))
+    res = pd.DataFrame(out)
+    # BH-FDR across all (populationID, year) rows with n ≥ 3
+    mask = res["n_plants"] >= 3
+    res["q_ttest"] = np.nan
+    if mask.sum() >= 2:
+        q = fdrcorrection(res.loc[mask, "p_ttest"].fillna(1.0).to_numpy())[1]
+        res.loc[mask, "q_ttest"] = q
+    res["fold_of_expectation"] = 10 ** res["mean_resid"]
+    res["fold_lo95"] = 10 ** (res["mean_resid"] - res["ci95"])
+    res["fold_hi95"] = 10 ** (res["mean_resid"] + res["ci95"])
+    res["flag_below_expectation"] = ((res["q_ttest"].fillna(1.0) < 0.05)
+                                       & (res["mean_resid"] < 0))
+    res["flag_above_expectation"] = ((res["q_ttest"].fillna(1.0) < 0.05)
+                                       & (res["mean_resid"] > 0))
+    return res
+
+
+# ---------------------------------------------------------------------------
+# Figure — forest plot per BL, 2025 open vs 2026 filled per population
+# ---------------------------------------------------------------------------
+def plot_forest(res: pd.DataFrame, df: pd.DataFrame,
+                 out_png: Path, out_pdf: Path) -> None:
+    # Ordering: within each BL, by populationID (same as other per-pop figures)
+    bls = [b for b in NEW_BL_ORDER if (res["BL"] == b).any()]
+    heights = []
+    for b in bls:
+        n_pops = res.loc[res["BL"] == b, "populationID"].nunique()
+        heights.append(max(int(n_pops), 1))
+
+    fig, axes = plt.subplots(
+        len(bls), 1,
+        figsize=(10.5, max(6.5, 0.33 * sum(heights) + 2.5)),
+        gridspec_kw={"height_ratios": heights},
+        sharex=True,
+    )
+    if len(bls) == 1:
+        axes = [axes]
+
+    for ax, bl in zip(axes, bls):
+        sub = (res[res["BL"] == bl]
+                 .sort_values(["populationID", "year"])
+                 .reset_index(drop=True))
+        pops = sorted(sub["populationID"].unique())
+        y_pos = {pid: i for i, pid in enumerate(pops)}
+        colour = BL_COLORS.get(bl, "#777777")
+
+        # Reference line at fold = 1 (on the species curve)
+        ax.axvline(1.0, color="#444", ls="--", lw=1.0, alpha=0.9)
+        # 0.5× and 2× light reference bands
+        ax.axvline(0.5, color="#888", ls=":", lw=0.7, alpha=0.6)
+        ax.axvline(2.0, color="#888", ls=":", lw=0.7, alpha=0.6)
+
+        for _, row in sub.iterrows():
+            pid = int(row["populationID"])
+            yr  = int(row["year"])
+            yi  = y_pos[pid] + (-0.14 if yr == 2025 else 0.14)
+            fold = row["fold_of_expectation"]
+            lo   = row["fold_lo95"]
+            hi   = row["fold_hi95"]
+            # Error bar if CI exists
+            if not np.isnan(lo) and not np.isnan(hi):
+                ax.plot([lo, hi], [yi, yi], color=colour, lw=1.3,
+                        alpha=0.55, zorder=1)
+            # Marker — open 2025 / filled 2026
+            n = int(row["n_plants"])
+            # Dot size scaled by n_plants (sqrt), floor at 30
+            s = 30 + 4.5 * np.sqrt(max(n, 1))
+            mfc = ("white" if yr == 2025 else colour)
+            mew = (1.4 if yr == 2025 else 0.6)
+            ax.scatter([fold], [yi], s=s, facecolor=mfc,
+                        edgecolor=colour, linewidth=mew, zorder=3)
+            # Flag badge for FDR-sig below-expectation
+            if bool(row["flag_below_expectation"]):
+                ax.annotate("★", (fold, yi), fontsize=11,
+                             color="#b2182b", ha="center", va="center",
+                             zorder=4)
+
+        # Left margin: P{N} identifier
+        ax.set_yticks(list(y_pos.values()))
+        ax.set_yticklabels([f"P{pid:>2}" for pid in pops], fontsize=9)
+        # Right margin: per-year n_plants annotation
+        right = []
+        for pid in pops:
+            parts = []
+            for yr in (2025, 2026):
+                r = sub[(sub["populationID"] == pid) & (sub["year"] == yr)]
+                if not r.empty:
+                    parts.append(f"{yr} n={int(r['n_plants'].iat[0])}")
+            right.append("  ·  ".join(parts))
+        ax2 = ax.twinx()
+        ax2.set_ylim(ax.get_ylim())
+        ax2.set_yticks(list(y_pos.values()))
+        ax2.set_yticklabels(right, fontsize=7.5, color="#444")
+        ax2.tick_params(axis="y", length=0, pad=2)
+        for s in ("top", "right", "left"):
+            ax2.spines[s].set_visible(False)
+
+        ax.set_xscale("log")
+        ax.set_xlim(0.1, 10.0)
+        ax.set_ylim(-0.7, len(pops) - 0.3)
+        ax.invert_yaxis()
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.grid(axis="x", which="both", alpha=0.3)
+        # BL badge
+        ax.text(0.008, 0.97, bl,
+                transform=ax.transAxes,
+                fontsize=12, fontweight="bold", color=colour,
+                va="top", ha="left",
+                bbox=dict(facecolor="white", edgecolor=colour,
+                           boxstyle="round,pad=0.25", alpha=0.9,
+                           linewidth=1.0))
+
+    axes[-1].set_xlabel(
+        "Fold of expectation  =  observed yield ÷ expected from size "
+        "(log scale) · < 1 = seed shortfall · ★ = FDR-sig below (q < 0.05)",
+        fontsize=10.5,
+    )
+
+    # Figure-level legend above subplots
+    from matplotlib.lines import Line2D
+    legend_handles = [
+        Line2D([0], [0], marker="o", linestyle="",
+                markerfacecolor="white", markeredgecolor="#444",
+                markeredgewidth=1.4, markersize=8, label="2025 (open)"),
+        Line2D([0], [0], marker="o", linestyle="",
+                markerfacecolor="#444", markeredgecolor="white",
+                markeredgewidth=0.5, markersize=8, label="2026 (filled)"),
+        Line2D([0], [0], color="#444", ls="--", lw=1.0,
+                label="on species curve  (fold = 1)"),
+        Line2D([0], [0], marker="*", linestyle="", color="#b2182b",
+                markersize=11, label="FDR < 0.05 below"),
+    ]
+    fig.legend(handles=legend_handles,
+                loc="upper center", bbox_to_anchor=(0.5, 0.965),
+                fontsize=9, frameon=True, ncol=4)
+
+    fig.suptitle(
+        "Phase 5 — per-population observed seed yield vs size expectation  "
+        f"(all populations with ≥ 2 plants, n = {res['populationID'].nunique()} "
+        f"populations across {df['year'].nunique()} years)",
+        fontsize=12, y=0.998,
+    )
+    fig.tight_layout(rect=[0, 0, 0.90, 0.93])
+    fig.savefig(out_png, dpi=200, bbox_inches="tight")
+    fig.savefig(out_pdf, bbox_inches="tight")
+    plt.close(fig)
+    print(f"[step30i] Wrote {out_png.name} + .pdf")
+
+
+# ---------------------------------------------------------------------------
+# Driver
+# ---------------------------------------------------------------------------
+def main() -> None:
+    print("[step30i] Loading occurrences from LEPA DB …")
+    occ = load_occurrences()
+    print(f"[step30i]   n = {len(occ)} occurrences with (height, crown, seed yield)")
+
+    cw = load_population_crosswalk()
+    merged = occ.merge(cw, left_on=["year", "eventID"],
+                        right_on=["event_year", "eventID"], how="inner")
+    print(f"[step30i]   n = {len(merged)} occurrences joinable to a Phase 5 populationID")
+
+    meta = load_population_meta()
+    merged = merged.merge(meta, on="populationID", how="left")
+    # Populations present in the crosswalk but missing from the
+    # classified TSV would land with NaN BL — flag + drop so stats are
+    # not polluted. Should be zero when both outputs are in sync.
+    n_missing_bl = int(merged["BL"].isna().sum())
+    if n_missing_bl:
+        print(f"[step30i]   WARNING: {n_missing_bl} occurrences have no BL "
+              f"assignment (populationID not in classified TSV) — dropped.")
+        merged = merged.dropna(subset=["BL"]).copy()
+
+    # ---- STAGE 1 — predictor selection ----
+    print("[step30i] STAGE 1 — predictor selection (10-fold CV)")
+    best, best_formula, cv_table = pick_best_predictor(merged)
+    print(cv_table.to_string(index=False))
+    print(f"[step30i]   -> selected predictor: {best}  ({best_formula})")
+
+    # ---- STAGE 2 — global expectation model ----
+    gm = smf.ols(best_formula, merged).fit()
+    merged["expected"] = gm.fittedvalues
+    merged["resid"]    = merged["logy"] - merged["expected"]
+    print(f"[step30i] STAGE 2 — global expectation model: "
+          f"R² = {gm.rsquared:.3f}, "
+          f"residual SD = {np.sqrt(gm.scale):.3f} log10 "
+          f"(≈ × / ÷ {10**np.sqrt(gm.scale):.1f})")
+
+    # ---- STAGE 3 — per-population test ----
+    res = per_population_year_test(merged)
+    # BL ordering + populationID within-BL ordering for display
+    res["_bl_rank"] = res["BL"].map(
+        {b: i for i, b in enumerate(NEW_BL_ORDER)}).fillna(99).astype(int)
+    res = res.sort_values(["_bl_rank", "populationID", "year"])
+    print(f"[step30i] STAGE 3 — per-population test "
+          f"({res['populationID'].nunique()} populations across both years, "
+          f"min-n = 2)")
+    print(res[["populationID", "year", "BL", "n_plants",
+                "fold_of_expectation", "fold_lo95", "fold_hi95",
+                "p_ttest", "q_ttest", "flag_below_expectation"]]
+          .to_string(index=False))
+
+    flagged_below = res[res["flag_below_expectation"]]
+    flagged_above = res[res["flag_above_expectation"]]
+    print(f"[step30i] Below-expectation (FDR < 0.05 AND mean_resid < 0): "
+          f"{len(flagged_below)} (population, year) rows")
+    for _, r in flagged_below.iterrows():
+        print(f"           P{int(r['populationID']):>2} {r['BL']} "
+              f"{int(r['year'])}  fold = {r['fold_of_expectation']:.2f}  "
+              f"n = {int(r['n_plants'])}  "
+              f"({r['population_label']})")
+    print(f"[step30i] Above-expectation (FDR < 0.05 AND mean_resid > 0): "
+          f"{len(flagged_above)} (population, year) rows")
+
+    # ---- STAGE 4 — outputs ----
+    out_tsv = TABLES / "step30i_size_seed_population_strata.tsv"
+    res.drop(columns=["_bl_rank"]).to_csv(out_tsv, sep="\t", index=False)
+    print(f"[step30i] Strata table → {out_tsv}")
+
+    # Keep the predictor-selection CV table for the methods section
+    cv_table.to_csv(TABLES / "step30i_size_seed_cv_rmse.tsv",
+                     sep="\t", index=False)
+
+    FIGURES.mkdir(parents=True, exist_ok=True)
+    plot_forest(res, merged,
+                FIGURES / "step30i_size_seed_population.png",
+                FIGURES / "step30i_size_seed_population.pdf")
+
+
+if __name__ == "__main__":
+    main()
