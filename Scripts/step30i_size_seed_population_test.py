@@ -241,7 +241,7 @@ def plot_species_calibration(df: pd.DataFrame, gm,
     by its population's BL. **This is the 'across-species' half of
     the test** — the species-wide curve that every per-population
     row in Figure 17b is measured against."""
-    fig, (axL, axR) = plt.subplots(1, 2, figsize=(13.5, 6.2),
+    fig, (axL, axR) = plt.subplots(1, 2, figsize=(14.0, 7.0),
                                      gridspec_kw={"width_ratios": [3.0, 2.0]})
 
     bls_present = [b for b in NEW_BL_ORDER if (df["BL"] == b).any()]
@@ -258,64 +258,132 @@ def plot_species_calibration(df: pd.DataFrame, gm,
                      label=f"{bl}  (n = {len(g)} plants)")
     lim_lo = max(min(observed.min(), expected.min()) * 0.6, 0.3)
     lim_hi = max(observed.max(), expected.max()) * 1.4
-    axL.plot([lim_lo, lim_hi], [lim_lo, lim_hi], "k--", lw=1.3,
-              alpha=0.9, label="on the species curve  (fold = 1)")
-    axL.plot([lim_lo, lim_hi], [lim_lo * 0.5, lim_hi * 0.5], "k:", lw=0.8,
-              alpha=0.5, label="½ × expectation")
-    axL.plot([lim_lo, lim_hi], [lim_lo * 2.0, lim_hi * 2.0], "k:", lw=0.8,
-              alpha=0.5, label="2 × expectation")
+
+    # Species curve = 1:1 — black dashed, prominent
+    axL.plot([lim_lo, lim_hi], [lim_lo, lim_hi],
+              color="black", linestyle="--", lw=1.6, alpha=0.95,
+              label="y = x · on the species curve  (fold = 1)",
+              zorder=1.5)
+    # ½× — SHORTFALL side (observed is HALF of expected): red,
+    # dash-dot. Sits BELOW the 1:1 line.
+    axL.plot([lim_lo, lim_hi], [lim_lo * 0.5, lim_hi * 0.5],
+              color="#b2182b", linestyle=(0, (5, 2, 1, 2)), lw=1.3,
+              alpha=0.85,
+              label="y = x / 2 · ½ × expectation  (shortfall band)",
+              zorder=1.4)
+    # 2× — SURPLUS side (observed is DOUBLE of expected): green,
+    # densely dotted. Sits ABOVE the 1:1 line.
+    axL.plot([lim_lo, lim_hi], [lim_lo * 2.0, lim_hi * 2.0],
+              color="#1b7837", linestyle=(0, (1, 2)), lw=1.3,
+              alpha=0.85,
+              label="y = 2 x · 2 × expectation  (surplus band)",
+              zorder=1.4)
+
+    # End-of-line labels at the right edge so the three lines are
+    # self-explanatory even without the legend.
+    for yfrac, text, col in [
+        (lim_hi,       "y = x",      "black"),
+        (lim_hi * 0.5, "y = x / 2",  "#b2182b"),
+        (lim_hi * 2.0, "y = 2x",     "#1b7837"),
+    ]:
+        if yfrac <= lim_hi * 1.05 and yfrac >= lim_lo:
+            axL.text(lim_hi * 0.96, yfrac, "  " + text,
+                      color=col, fontsize=9, fontweight="bold",
+                      ha="left", va="center",
+                      bbox=dict(facecolor="white", edgecolor="none",
+                                 alpha=0.85, pad=1.0))
     axL.set_xscale("log"); axL.set_yscale("log")
     axL.set_xlim(lim_lo, lim_hi); axL.set_ylim(lim_lo, lim_hi)
     axL.set_xlabel("Expected seed yield per plant  (from the species-wide "
                     f"{best} model, log scale)", fontsize=10)
     axL.set_ylabel("Observed seed yield per plant  (log scale)", fontsize=10)
-    axL.set_title(
-        f"A. Species-wide calibration scatter  —  "
-        f"R² = {gm.rsquared:.2f}  ·  one point per plant  "
-        f"(n = {len(df)} plants, {df['populationID'].nunique()} populations, "
-        f"{df['year'].nunique()} years)",
-        fontsize=11, loc="left", weight="bold",
-    )
-    axL.legend(loc="upper left", fontsize=8, frameon=True, ncol=1)
+    axL.legend(loc="lower right", fontsize=8, frameon=True, ncol=1)
     axL.spines["top"].set_visible(False); axL.spines["right"].set_visible(False)
     axL.grid(True, which="both", alpha=0.3)
+    # Panel label as a bold text in the upper-left corner of the
+    # data area (NOT via set_title, which collides with the suptitle
+    # at the top of the figure).
+    axL.text(0.02, 0.985,
+              "A. Species-wide calibration scatter",
+              transform=axL.transAxes, fontsize=11.5, va="top", ha="left",
+              fontweight="bold")
+    axL.text(0.02, 0.945,
+              f"R² = {gm.rsquared:.2f}  ·  one dot per plant  "
+              f"(n = {len(df)} plants, {df['populationID'].nunique()} "
+              f"populations, {df['year'].nunique()} years)",
+              transform=axL.transAxes, fontsize=8.5, va="top", ha="left",
+              color="#444")
 
-    # Right panel: predictor selection CV table + model summary
+    # Right panel: two clearly separated blocks on a plain
+    # background. Panel letter + heading sit INSIDE the data area
+    # (not via set_title, which was colliding with the suptitle).
     axR.axis("off")
-    coef_bits = ", ".join(
-        f"{k} = {v:+.2f}" for k, v in gm.params.to_dict().items()
-    )
-    model_text = (
-        f"$\\bf{{Expectation\\ model}}$ (STAGE 2)\n"
-        f"  Winner (STAGE 1):  **{best}**\n"
-        f"  Formula:  log₁₀(yield) ~  "
-        + CANDIDATES[best].split("~", 1)[1].strip() + "\n"
-        f"  R² (in sample):  {gm.rsquared:.3f}\n"
-        f"  Residual SD:  {np.sqrt(gm.scale):.3f} log₁₀  (≈ × / ÷ "
-        f"{10**np.sqrt(gm.scale):.1f})\n"
-        f"  Coefs:  {coef_bits}\n"
-    )
-    axR.text(0.02, 0.98, model_text, transform=axR.transAxes,
-              fontsize=9.5, va="top", ha="left", family="monospace")
-    # CV table
-    axR.text(0.02, 0.56,
-              "$\\bf{Predictor\\ selection}$ (STAGE 1, 10-fold CV)",
-              transform=axR.transAxes, fontsize=10, va="top")
-    # Build a compact monospace CV table
-    hdr = f"{'predictor':<13}{'CV-RMSE':>9}{'±sd':>7}{'R²':>7}{'AIC':>9}"
-    lines = [hdr]
+
+    # Panel label at the very top
+    axR.text(0.02, 0.985,
+              "B. Model build  —  how the species-wide expectation is set",
+              transform=axR.transAxes, fontsize=11.5, va="top", ha="left",
+              fontweight="bold")
+
+    # --- TOP block: STAGE 1 predictor-selection CV table -----------
+    axR.text(0.02, 0.90,
+              "STAGE 1  ·  predictor selection (10-fold cross-validation)",
+              transform=axR.transAxes, fontsize=10.5, va="top", ha="left",
+              fontweight="bold")
+    axR.text(0.02, 0.855,
+              "Lower CV-RMSE = better out-of-sample fit  →  wins Stage 2.",
+              transform=axR.transAxes, fontsize=8.5, va="top", ha="left",
+              color="#555")
+    cv_hdr = f"{'predictor':<13}{'CV-RMSE':>9}{'±sd':>7}{'R²_in':>7}{'AIC':>9}"
+    cv_lines = [cv_hdr]
     for _, r in cv_table.iterrows():
-        lines.append(
+        marker = "  ★" if r["predictor"] == best else "   "
+        cv_lines.append(
             f"{r['predictor']:<13}"
             f"{r['cv_rmse']:>9.3f}"
             f"{r['cv_sd']:>7.3f}"
             f"{r['r2_in_sample']:>7.3f}"
             f"{r['aic']:>9.1f}"
+            f"{marker}"
         )
-    axR.text(0.02, 0.52, "\n".join(lines), transform=axR.transAxes,
-              fontsize=9.0, va="top", ha="left", family="monospace")
-    axR.set_title("B. Model build  —  how the species-wide expectation is set",
-                   fontsize=11, loc="left", weight="bold")
+    axR.text(0.02, 0.80, "\n".join(cv_lines), transform=axR.transAxes,
+              fontsize=9.5, va="top", ha="left", family="monospace")
+    axR.text(0.02, 0.53,
+              f"→  Winner: {best}  (★)",
+              transform=axR.transAxes, fontsize=10, va="top", ha="left",
+              color="#1b7837", fontweight="bold")
+
+    # Thin horizontal separator between the two blocks
+    axR.axhline(0.47, color="#aaa", lw=0.7, alpha=0.8)
+
+    # --- BOTTOM block: STAGE 2 refitted expectation model ----------
+    axR.text(0.02, 0.42,
+              "STAGE 2  ·  refitted expectation model (all plants pooled)",
+              transform=axR.transAxes, fontsize=10.5, va="top", ha="left",
+              fontweight="bold")
+    axR.text(0.02, 0.375,
+              "Fitted value = expected log₁₀(yield) for a plant of that "
+              "size.\nResidual = observed − expected.",
+              transform=axR.transAxes, fontsize=8.5, va="top", ha="left",
+              color="#555")
+
+    coef_bits = ",   ".join(
+        f"{k} = {v:+.3f}" for k, v in gm.params.to_dict().items()
+    )
+    sd_log = float(np.sqrt(gm.scale))
+    stats_lines = [
+        f"Formula       :  log₁₀(yield) ~ {CANDIDATES[best].split('~',1)[1].strip()}",
+        f"Coefficients  :  {coef_bits}",
+        f"R² (in sample):  {gm.rsquared:.3f}",
+        f"Residual SD   :  {sd_log:.3f} log₁₀   (≈ × / ÷ {10**sd_log:.1f})",
+    ]
+    axR.text(0.02, 0.27, "\n".join(stats_lines), transform=axR.transAxes,
+              fontsize=9.5, va="top", ha="left", family="monospace")
+    # Footer
+    axR.text(0.02, 0.03,
+              "Every row of Figure 17b is measured against this expectation.",
+              transform=axR.transAxes, fontsize=8.5, va="bottom", ha="left",
+              color="#333", style="italic")
 
     fig.suptitle(
         "Phase 5 § C.0.d · Species-wide size → seed-yield expectation  "
