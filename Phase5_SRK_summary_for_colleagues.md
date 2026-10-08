@@ -141,7 +141,8 @@ across the sweep and its observed count is already inside the
 95 % CI of the prediction.)
 
 **Behavioural validation on all 44 populations
-([Figure 17](#fig-17)).** The three SRK-based tests above are
+([Figure 17a](#fig-17a) build + [Figure 17b](#fig-17b) test).**
+The three SRK-based tests above are
 confined to the three Phase 4 clean-overlap EOs because they need
 adult SRK genotypes. A fourth test runs on **every** Phase 5
 population at once, using **no SRK data**: for each plant, compare
@@ -1702,18 +1703,33 @@ the § C.0.b buffering stack (Class I dominance + class imbalance
 + tetraploid homozygosity) held even there — a positive result
 for the predicted-sustainable call.
 
-**Approach.** Each plant is its own control via the species-wide
-allometry. Stage 1 picks the best size predictor out-of-sample
-(10-fold CV RMSE across `height` / `crown` / `area` =
-π/4 · crown · height / `crown + height`); Stage 2 refits the
-winner on all plants, giving every plant an expected
-log<sub>10</sub>(yield) and a residual; Stage 3 tests per
-(populationID, year) whether the mean residual is < 0 with a
-Benjamini-Hochberg FDR across the ~ 80 strata. **No min-n
-threshold** — small populations are **included and highlighted**
-(the user focus for the 2026-10-07 run): the ★ badge marks
-FDR-sig below-expectation strata; the dot size encodes
-`n_plants` so small-N rows read as uncertain by eye.
+**Approach — across-species build, then within-population test.**
+The test splits into two stages:
+
+1. **Across-species build**: Stage 1 picks the best size
+   predictor out-of-sample via 10-fold CV RMSE on log<sub>10</sub>
+   seed yield across four candidate allometries — `height`,
+   `crown`, `area = π/4 · crown · height`, and `crown + height`
+   (free exponents). Stage 2 refits the CV-winner on **all plants
+   pooled across populations and years**: this is the
+   species-wide expectation curve. Every plant then has an
+   expected log<sub>10</sub>(yield) and a residual = observed −
+   expected. **Figure 17a** shows this build: observed vs
+   expected for every plant, log-log, coloured by BL, with the
+   1:1 species curve and the ×½ / ×2 reference lines.
+2. **Within-population test**: Stage 3 tests per (populationID,
+   year) whether the mean residual is systematically < 0 using
+   a one-sample t-test (n ≥ 3) with a Benjamini-Hochberg FDR
+   across the ~ 80 strata. **No min-n threshold** — small
+   populations are **included and highlighted** (user focus
+   2026-10-07): small-N rows carry wide CIs, but still show up
+   in the plot. **Figure 17b** is the per-population forest
+   plot of fold-of-expectation (= 10<sup>mean residual</sup>).
+
+Each plant is its own control via the species-wide allometry, so
+a population that shows a systematic residual is NOT just a size
+artefact — it is behaving differently from same-size plants
+elsewhere in the species.
 
 **Caveat on 2026 germplasm coverage.** A fraction of the 2026
 mother-plant occurrences do not yet have associated germplasm
@@ -1722,25 +1738,42 @@ records attached in the DB (clean-up in progress 2026-10-07).
 that are still missing collections; re-run step30i once the
 2026 germplasm cleaning is complete.
 
-![Figure 17](figures/Phase5/step30i_size_seed_population.png)
+<a id="fig-17a"></a>
+![Figure 17a](figures/Phase5/step30i_species_calibration.png)
 
-**Figure 17.** Observed seed yield per plant divided by the
-expected yield from the species-wide size → yield allometry,
-aggregated per (populationID, year). One row per population;
-**open circle = 2025 draw, filled circle = 2026 draw** in the
-same BL colour, slightly offset vertically; dot size ∝ √*n*
-plants. Horizontal bars = 95 % CI; the dashed vertical line at
-fold = 1 is the species curve. The light grey ×½ and ×2
-reference bands are the operational "biologically meaningful
-shortfall / surplus" markers. **★** = FDR-sig below expectation
-(q < 0.05 and mean residual < 0) — i.e. the population's plants
-produce fewer seeds than their sizes predict, a behavioural
-signature of mate limitation. Panels stacked by BL; left margin
-= `P{N}`; right margin = per-year `n` plants. Source:
+**Figure 17a — the across-species build.** Species-wide
+calibration scatter underlying the per-population test. **Panel
+A (left):** every plant that has crown + height + seed yield
+plotted as expected (species-wide allometry, log scale) vs
+observed (log scale), coloured by its population's BL. Dashed
+line = the species curve (fold = 1); dotted lines = ×½ and ×2
+reference bands. **Panel B (right):** the model build itself —
+the Stage 1 10-fold CV predictor-selection table (which
+allometry wins out-of-sample) + the Stage 2 refitted
+expectation-model summary (coefficients, R², residual SD). This
+is what every row of Figure 17b is measured against. Source:
+`step30i_size_seed_population_test.py`.
+Data: [`step30i_size_seed_cv_rmse.tsv`](tables/Phase5/step30i_size_seed_cv_rmse.tsv).
+
+<a id="fig-17b"></a>
+![Figure 17b](figures/Phase5/step30i_size_seed_population.png)
+
+**Figure 17b — the within-population test.** Observed seed yield
+per plant divided by the expected yield from Figure 17a's
+species-wide allometry, aggregated per (populationID, year). One
+row per population; **open circle = 2025 draw, filled circle =
+2026 draw** in the same BL colour, slightly offset vertically;
+dot size ∝ √*n* plants. Horizontal bars = 95 % CI; the dashed
+vertical line at fold = 1 is the species curve. The light grey
+×½ and ×2 reference bands are the operational "biologically
+meaningful shortfall / surplus" markers. **★ in the left margin**
+(not on the dot) = FDR-sig below expectation (q < 0.05 and mean
+residual < 0) — i.e. the population's plants produce fewer
+seeds than their sizes predict, a behavioural signature of mate
+limitation. Panels stacked by BL; left margin = `P{N}`; right
+margin = per-year `n` plants. Source:
 `step30i_size_seed_population_test.py`. Data:
-[`step30i_size_seed_population_strata.tsv`](tables/Phase5/step30i_size_seed_population_strata.tsv),
-predictor-selection CV in
-[`step30i_size_seed_cv_rmse.tsv`](tables/Phase5/step30i_size_seed_cv_rmse.tsv).
+[`step30i_size_seed_population_strata.tsv`](tables/Phase5/step30i_size_seed_population_strata.tsv).
 
 **Headline findings** (first run, 2026-10-07 — 10 strata flagged
 below expectation at FDR < 0.05).
@@ -1905,7 +1938,8 @@ summary.
 - **Figure 14** — [`step30_B_partC_clean_overlap.png`](figures/Phase5/step30_B_partC_clean_overlap.png) — § C.0.a Part C anchor at P3 (EO67) / P41 (EO70) / P39 (EO76) (SRK diversity + pollen compatibility + per-allele drift residual).
 - **Figure 15** — [`step30_B_partC_hypothesis_decomposition.png`](figures/Phase5/step30_B_partC_hypothesis_decomposition.png) — § C.0.b competing-hypothesis decomposition.
 - **Figure 16** — [`step30f_srk_diversity_radius_sweep.png`](figures/Phase5/step30f_srk_diversity_radius_sweep.png) — § C.0.c SRK-diversity radius sweep (deme-size vs residual-drift test).
-- **Figure 17** — [`step30i_size_seed_population.png`](figures/Phase5/step30i_size_seed_population.png) — § C.0.d behavioural check: observed seed yield per population vs size expectation, 2025 (open) vs 2026 (filled), all 44 populations with ≥ 2 plants.
+- **Figure 17a** — [`step30i_species_calibration.png`](figures/Phase5/step30i_species_calibration.png) — § C.0.d across-species build: calibration scatter (observed vs expected per plant, coloured by BL) + predictor-selection CV table + expectation-model summary.
+- **Figure 17b** — [`step30i_size_seed_population.png`](figures/Phase5/step30i_size_seed_population.png) — § C.0.d within-population test: observed seed yield per population vs size expectation, 2025 (open) vs 2026 (filled), all 44 populations with ≥ 2 plants; ★ in left margin = FDR-sig below expectation.
 - Candidate-population zoom panels — [`step29a_candidate_populations_zoom.png`](figures/Phase5/step29a_candidate_populations_zoom.png) + [`step29a_crash_populations_zoom.png`](figures/Phase5/step29a_crash_populations_zoom.png) (supporting plots for the LARGE + SMALL + crash candidates).
 
 ---

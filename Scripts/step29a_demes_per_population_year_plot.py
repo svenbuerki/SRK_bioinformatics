@@ -120,6 +120,17 @@ def main() -> None:
                              for _, r in sub.iterrows()],
                             fontsize=9)
 
+        # Finalise ax limits + invert BEFORE building the twinx right
+        # margin, so right-margin labels stay aligned with the data
+        # (bug fix 2026-10-08).
+        ax.set_xscale("log")
+        ax.set_xlim(0.8, max(df["component_N_fertile"].max() * 1.3, 50))
+        ax.set_ylim(-0.7, len(sub) - 0.3)
+        ax.invert_yaxis()
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.grid(axis="x", which="major", alpha=0.3)
+
         # Right margin via twinx (per-year K-demes / N adults)
         ax2 = ax.twinx()
         ax2.set_ylim(ax.get_ylim())
@@ -140,14 +151,6 @@ def main() -> None:
         ax2.tick_params(axis="y", length=0, pad=2)
         for s in ("top", "right", "left"):
             ax2.spines[s].set_visible(False)
-
-        ax.set_xscale("log")
-        ax.set_xlim(0.8, max(df["component_N_fertile"].max() * 1.3, 50))
-        ax.set_ylim(-0.7, len(sub) - 0.3)
-        ax.invert_yaxis()
-        ax.spines["top"].set_visible(False)
-        ax.spines["right"].set_visible(False)
-        ax.grid(axis="x", which="major", alpha=0.3)
 
         # BL label in top-left corner, coloured box
         ax.text(0.008, 0.97, bl,

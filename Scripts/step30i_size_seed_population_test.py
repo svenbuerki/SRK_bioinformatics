@@ -230,7 +230,107 @@ def per_population_year_test(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # ---------------------------------------------------------------------------
-# Figure — forest plot per BL, 2025 open vs 2026 filled per population
+# Figure A — species-wide calibration scatter
+# ---------------------------------------------------------------------------
+def plot_species_calibration(df: pd.DataFrame, gm,
+                               best: str, cv_table: pd.DataFrame,
+                               out_png: Path, out_pdf: Path) -> None:
+    """Panel A of the original Field-work-protocol figure, ported to
+    the Phase 5 population frame: observed seed yield vs the
+    species-wide allometric expectation. One dot per plant, coloured
+    by its population's BL. **This is the 'across-species' half of
+    the test** — the species-wide curve that every per-population
+    row in Figure 17b is measured against."""
+    fig, (axL, axR) = plt.subplots(1, 2, figsize=(13.5, 6.2),
+                                     gridspec_kw={"width_ratios": [3.0, 2.0]})
+
+    bls_present = [b for b in NEW_BL_ORDER if (df["BL"] == b).any()]
+    expected = 10 ** df["expected"].to_numpy()
+    observed = df["y"].to_numpy()
+
+    # Left panel: species calibration scatter
+    for bl in bls_present:
+        g = df[df["BL"] == bl]
+        col = BL_COLORS.get(bl, "#777777")
+        axL.scatter(10 ** g["expected"], g["y"],
+                     s=16, alpha=0.55, color=col,
+                     edgecolor="white", linewidth=0.3,
+                     label=f"{bl}  (n = {len(g)} plants)")
+    lim_lo = max(min(observed.min(), expected.min()) * 0.6, 0.3)
+    lim_hi = max(observed.max(), expected.max()) * 1.4
+    axL.plot([lim_lo, lim_hi], [lim_lo, lim_hi], "k--", lw=1.3,
+              alpha=0.9, label="on the species curve  (fold = 1)")
+    axL.plot([lim_lo, lim_hi], [lim_lo * 0.5, lim_hi * 0.5], "k:", lw=0.8,
+              alpha=0.5, label="½ × expectation")
+    axL.plot([lim_lo, lim_hi], [lim_lo * 2.0, lim_hi * 2.0], "k:", lw=0.8,
+              alpha=0.5, label="2 × expectation")
+    axL.set_xscale("log"); axL.set_yscale("log")
+    axL.set_xlim(lim_lo, lim_hi); axL.set_ylim(lim_lo, lim_hi)
+    axL.set_xlabel("Expected seed yield per plant  (from the species-wide "
+                    f"{best} model, log scale)", fontsize=10)
+    axL.set_ylabel("Observed seed yield per plant  (log scale)", fontsize=10)
+    axL.set_title(
+        f"A. Species-wide calibration scatter  —  "
+        f"R² = {gm.rsquared:.2f}  ·  one point per plant  "
+        f"(n = {len(df)} plants, {df['populationID'].nunique()} populations, "
+        f"{df['year'].nunique()} years)",
+        fontsize=11, loc="left", weight="bold",
+    )
+    axL.legend(loc="upper left", fontsize=8, frameon=True, ncol=1)
+    axL.spines["top"].set_visible(False); axL.spines["right"].set_visible(False)
+    axL.grid(True, which="both", alpha=0.3)
+
+    # Right panel: predictor selection CV table + model summary
+    axR.axis("off")
+    coef_bits = ", ".join(
+        f"{k} = {v:+.2f}" for k, v in gm.params.to_dict().items()
+    )
+    model_text = (
+        f"$\\bf{{Expectation\\ model}}$ (STAGE 2)\n"
+        f"  Winner (STAGE 1):  **{best}**\n"
+        f"  Formula:  log₁₀(yield) ~  "
+        + CANDIDATES[best].split("~", 1)[1].strip() + "\n"
+        f"  R² (in sample):  {gm.rsquared:.3f}\n"
+        f"  Residual SD:  {np.sqrt(gm.scale):.3f} log₁₀  (≈ × / ÷ "
+        f"{10**np.sqrt(gm.scale):.1f})\n"
+        f"  Coefs:  {coef_bits}\n"
+    )
+    axR.text(0.02, 0.98, model_text, transform=axR.transAxes,
+              fontsize=9.5, va="top", ha="left", family="monospace")
+    # CV table
+    axR.text(0.02, 0.56,
+              "$\\bf{Predictor\\ selection}$ (STAGE 1, 10-fold CV)",
+              transform=axR.transAxes, fontsize=10, va="top")
+    # Build a compact monospace CV table
+    hdr = f"{'predictor':<13}{'CV-RMSE':>9}{'±sd':>7}{'R²':>7}{'AIC':>9}"
+    lines = [hdr]
+    for _, r in cv_table.iterrows():
+        lines.append(
+            f"{r['predictor']:<13}"
+            f"{r['cv_rmse']:>9.3f}"
+            f"{r['cv_sd']:>7.3f}"
+            f"{r['r2_in_sample']:>7.3f}"
+            f"{r['aic']:>9.1f}"
+        )
+    axR.text(0.02, 0.52, "\n".join(lines), transform=axR.transAxes,
+              fontsize=9.0, va="top", ha="left", family="monospace")
+    axR.set_title("B. Model build  —  how the species-wide expectation is set",
+                   fontsize=11, loc="left", weight="bold")
+
+    fig.suptitle(
+        "Phase 5 § C.0.d · Species-wide size → seed-yield expectation  "
+        "(across-species build; the per-population test is Figure 17b)",
+        fontsize=12.5, y=0.995,
+    )
+    fig.tight_layout(rect=[0, 0, 1, 0.955])
+    fig.savefig(out_png, dpi=200, bbox_inches="tight")
+    fig.savefig(out_pdf, bbox_inches="tight")
+    plt.close(fig)
+    print(f"[step30i] Wrote {out_png.name} + .pdf")
+
+
+# ---------------------------------------------------------------------------
+# Figure B — forest plot per BL, 2025 open vs 2026 filled per population
 # ---------------------------------------------------------------------------
 def plot_forest(res: pd.DataFrame, df: pd.DataFrame,
                  out_png: Path, out_pdf: Path) -> None:
@@ -283,16 +383,36 @@ def plot_forest(res: pd.DataFrame, df: pd.DataFrame,
             mew = (1.4 if yr == 2025 else 0.6)
             ax.scatter([fold], [yi], s=s, facecolor=mfc,
                         edgecolor=colour, linewidth=mew, zorder=3)
-            # Flag badge for FDR-sig below-expectation
+            # Flag — bold red star in the LEFT margin at this row's y
+            # position, outside the plot so the open/filled fill of
+            # the circle stays legible (user feedback 2026-10-08).
             if bool(row["flag_below_expectation"]):
-                ax.annotate("★", (fold, yi), fontsize=11,
-                             color="#b2182b", ha="center", va="center",
-                             zorder=4)
+                ax.annotate("★", xy=(-0.028, yi),
+                             xycoords=("axes fraction", "data"),
+                             fontsize=14, color="#b2182b",
+                             fontweight="bold",
+                             ha="center", va="center",
+                             annotation_clip=False, zorder=5)
 
         # Left margin: P{N} identifier
         ax.set_yticks(list(y_pos.values()))
         ax.set_yticklabels([f"P{pid:>2}" for pid in pops], fontsize=9)
-        # Right margin: per-year n_plants annotation
+
+        # Finalise ax limits + invert BEFORE building the twinx right
+        # margin, so the right-margin ylim is in sync with the plotted
+        # points. (If ax2 is set up first and ax.invert_yaxis() is
+        # called afterwards, ax2's labels end up at the wrong vertical
+        # positions — bug fix 2026-10-08.)
+        ax.set_xscale("log")
+        ax.set_xlim(0.1, 10.0)
+        ax.set_ylim(-0.7, len(pops) - 0.3)
+        ax.invert_yaxis()
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.grid(axis="x", which="both", alpha=0.3)
+
+        # Right margin: per-year n_plants annotation, aligned to the
+        # same vertical positions as the plotted markers.
         right = []
         for pid in pops:
             parts = []
@@ -308,14 +428,6 @@ def plot_forest(res: pd.DataFrame, df: pd.DataFrame,
         ax2.tick_params(axis="y", length=0, pad=2)
         for s in ("top", "right", "left"):
             ax2.spines[s].set_visible(False)
-
-        ax.set_xscale("log")
-        ax.set_xlim(0.1, 10.0)
-        ax.set_ylim(-0.7, len(pops) - 0.3)
-        ax.invert_yaxis()
-        ax.spines["top"].set_visible(False)
-        ax.spines["right"].set_visible(False)
-        ax.grid(axis="x", which="both", alpha=0.3)
         # BL badge
         ax.text(0.008, 0.97, bl,
                 transform=ax.transAxes,
@@ -327,7 +439,8 @@ def plot_forest(res: pd.DataFrame, df: pd.DataFrame,
 
     axes[-1].set_xlabel(
         "Fold of expectation  =  observed yield ÷ expected from size "
-        "(log scale) · < 1 = seed shortfall · ★ = FDR-sig below (q < 0.05)",
+        "(log scale)   ·   < 1 = seed shortfall   ·   "
+        "★ in left margin = FDR-sig below (q < 0.05)",
         fontsize=10.5,
     )
 
@@ -343,7 +456,7 @@ def plot_forest(res: pd.DataFrame, df: pd.DataFrame,
         Line2D([0], [0], color="#444", ls="--", lw=1.0,
                 label="on species curve  (fold = 1)"),
         Line2D([0], [0], marker="*", linestyle="", color="#b2182b",
-                markersize=11, label="FDR < 0.05 below"),
+                markersize=12, label="★ (left margin) = FDR < 0.05 below"),
     ]
     fig.legend(handles=legend_handles,
                 loc="upper center", bbox_to_anchor=(0.5, 0.965),
@@ -437,6 +550,13 @@ def main() -> None:
                      sep="\t", index=False)
 
     FIGURES.mkdir(parents=True, exist_ok=True)
+    # Figure 17a — species-wide calibration (across-species evidence)
+    plot_species_calibration(
+        merged, gm, best, cv_table,
+        FIGURES / "step30i_species_calibration.png",
+        FIGURES / "step30i_species_calibration.pdf",
+    )
+    # Figure 17b — per-population forest (within-population test)
     plot_forest(res, merged,
                 FIGURES / "step30i_size_seed_population.png",
                 FIGURES / "step30i_size_seed_population.pdf")
