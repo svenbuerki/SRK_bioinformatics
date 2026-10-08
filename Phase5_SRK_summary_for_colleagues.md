@@ -816,8 +816,7 @@ on realised gene flow — flow across 50 m could be lower, but not
 higher.
 
 **The deme definition is a testable working hypothesis.** The
-Part C seed-genotyping design compares the per-location pollen-
-compatibility prediction against observed per-mother compatibility.
+Part C seed-genotyping design compares the per-population pollen-compatibility prediction against observed per-mother compatibility.
 A systematic location-level mismatch is not a framework failure —
 it is information about **how good the 50 m deme definition
 actually is**, and a future phase with parentage data or fine-scale
@@ -1508,10 +1507,10 @@ next field season:
 
 ---
 
-## Step 30 Part C § C.0 — Empirical validation of the P_compat model
+## Step 30 Part C § C.0 — Empirical validation of the pollen-compatibility model
 
 The primary Part C validation runs at **Phase 5 location scale**
-on the three clean-overlap populations **P3 (= EO67), P41 (= EO70), P39 (= EO76)** (§ C.0.a and § C.0.b below). The
+on the three clean-overlap populations **P3 (= P3), P41 (= P41), P39 (= P39)** (§ C.0.a and § C.0.b below). The
 other three EOs with Phase 4 SRK genotypes — **EO18, EO25, EO27** —
 are split under the 500 m rule and cannot yet be remapped to Phase 5
 locationCodes. Their observed-vs-predicted pollen compatibility is
@@ -1528,24 +1527,23 @@ same observed mothers for both):
 | EO18 | 39 | 0.69 (0.64–0.74) | 0.75 (0.71–0.79) |
 
 EO27 and EO25 pass at EO scale; EO18 shows a mild drift signal
-with overlapping CIs. The three clean-overlap populations P3 (= EO67), P41 (= EO70), P39 (= EO76
-EO76) are reported at Phase 5 location scale in § C.0.a — see the
+with overlapping CIs. The three clean-overlap populations **P3 (= P3), P41 (= P41), P39 (= P39)** are reported at the Phase 5 population scale in § C.0.a — see the
 embedded figure below.
 
 **Caveat.** P1 was built from these same individuals, so species-mean
 alignment is guaranteed; what this tests is **robustness to per-EO
 drift**, not absolute calibration.
 
-### C.0.a — Part C anchor at Phase 5 location scale (clean-overlap EOs)
+### C.0.a — Part C anchor at the clean-overlap populations P3, P41, P39
 
 **Question.** Three of the six § C.0 EOs are **1:1 with a Phase 5
 locationCode** — no 500 m within-EO split — so their adult SRK
 genotypes can be used **directly** as a Part C validation anchor at
 the Phase 5 location scale, no event-level remap required. Does the
-Phase 5 **per-location** prediction reproduce what we see at the
-location scale?
+Phase 5 **per-population** prediction reproduce what we see at the
+population scale?
 
-**The clean overlap set.** P3 (= EO67, 37 adults), P41 (= EO70, 74), P39 (= EO76, 76) =
+**The clean overlap set.** P3 (= P3, 37 adults), P41 (= P41, 74), P39 (= P39, 76) =
 **187 adults**. The other three § C.0 EOs (EO18, EO25, EO27) are
 split under the 500 m rule and need an `Individual → germplasmID →
 eventID → locationCode` join before their 151 adults can be used
@@ -1562,7 +1560,7 @@ here; that is scheduled as future work.
    is near the species ceiling (which it is for all three locations:
    19.2 at n=37, 24.0 at n=74, 24.0 at n=76), any large gap down to
    the observed count isolates **drift**, not sampling.
-4. Compare observed to the Phase 5 per-location prediction
+4. Compare observed to the Phase 5 per-population prediction
    (`step30_A_prediction_location_pcompat.tsv` for P_compat,
    `step30_A_prediction_location_diversity.tsv` for the component-
    unioned pool size).
@@ -1571,19 +1569,19 @@ here; that is scheduled as future work.
 
 | Location | Adults | Observed P_compat (95 % CI) | Phase 5 pred P_compat (95 % CI) | Observed Fgs | No-drift upper bound | Phase 5 pred Fgs (95 % CI) |
 |---|---:|---|---|---:|---:|---|
-| **EO67** | 37 | 0.697 (0.660–0.737) | 0.724 (0.632–0.803) | **7** of 32 | 19.2 | 10.8 (7.0–15.0) |
-| **EO70** | 74 | **0.532** (0.510–0.559) | **0.776** (0.740–0.806) | **6** of 32 | 23.8 | 28.3 (25.0–31.0) |
-| **EO76** | 76 | 0.722 (0.694–0.753) | 0.775 (0.749–0.797) | **9** of 32 | 24.0 | 31.8 (31.0–32.0) |
+| **P3** | 37 | 0.697 (0.660–0.737) | 0.724 (0.632–0.803) | **7** of 32 | 19.2 | 10.8 (7.0–15.0) |
+| **P41** | 74 | **0.532** (0.510–0.559) | **0.776** (0.740–0.806) | **6** of 32 | 23.8 | 28.3 (25.0–31.0) |
+| **P39** | 76 | 0.722 (0.694–0.753) | 0.775 (0.749–0.797) | **9** of 32 | 24.0 | 31.8 (31.0–32.0) |
 
-- **EO67** — observed and Phase 5 predicted CIs overlap on P_compat;
+- **P3** — observed and Phase 5 predicted CIs overlap on P_compat;
   observed Fg count sits inside the Phase 5 CI → **model passes** at
   this small BL4 location.
-- **EO70** — observed P_compat 0.24 units BELOW Phase 5 prediction
+- **P41** — observed P_compat 0.24 units BELOW Phase 5 prediction
   (CIs do not overlap); observed Fg diversity 6/32 vs predicted
   28/32 vs no-drift upper bound 24. **Massive drift collapse at a
   large location** — a genuine biological signal, confirming the
   § C.0 EO-scale finding at the Phase 5 location scale.
-- **EO76** — observed P_compat marginally below prediction; observed
+- **P39** — observed P_compat marginally below prediction; observed
   Fg diversity 9/32 vs predicted 32/32 vs no-drift upper bound 24.
   **Severe diversity collapse at the single largest LEPA site** —
   the P_compat model still holds up because Class II (6 Fgs,
@@ -1598,15 +1596,15 @@ here; that is scheduled as future work.
 <a id="fig-15"></a>
 ![Figure 15](figures/Phase5/step30_B_partC_clean_overlap.png)
 
-**Figure 15.** Phase 5 Part C anchor at the three clean-overlap populations — **P3 (= EO67_39)**, **P41 (= EO70_26)**, **P39 (= EO76_2)** — each 1:1 with a Phase 5 locationCode in 2025. (The figure's own axis labels still show legacy EO codes; a full re-run with population labels is a follow-up task.) Panel order follows the causal chain: diversity → pollen compatibility → per-Fg drift fingerprint. **Panel A — SRK diversity.** Phase 5 predicted (x) vs observed in adults (y), one square per location with 95 % CI horizontal error bars. 1:1 diagonal + ceiling at 32 Fgs. EO67 sits on the diagonal (model passes); EO70 (6/32) and EO76 (9/32) sit far below (large drift gap). **Panel B — pollen compatibility.** Phase 5 predicted vs observed, with the traffic-light background (red = failed, amber = struggling, green = sustainable) and 1:1 diagonal. EO67 and EO76 close to the diagonal; EO70 is the clear outlier (observed 0.53 vs predicted 0.78). **Panel C — per-Fg drift residual** `f_observed − f_P1` per location (one row each, Fgs sorted left-to-right by species-wide P1 frequency, most-common → rarest). **Green bars = Fg enriched vs P1** (drift favoured it); **red bars = Fg depleted vs P1**; **× markers = Fg absent at the location** (lost entirely). The residual pops out the drift fingerprint that the raw-frequency plot blurred — EO70 shows classic FG001 drift (+21 %) + FG024 (+18 %) with 26/32 Fgs absent; EO76 shows milder enrichment of FG012 / FG010; EO67's small-population signature elevates the normally-rare FG018 and FG023 instead of the common Fgs — a founder-effect signature rather than classical drift. Source: `step30d_partC_clean_overlap.py`.
+**Figure 15.** Phase 5 Part C anchor at the three clean-overlap populations — **P3 (= EO67_39)**, **P41 (= EO70_26)**, **P39 (= EO76_2)** — each 1:1 with a Phase 5 locationCode in 2025. Panel order follows the causal chain: diversity → pollen compatibility → per-Fg drift fingerprint. **Panel A — SRK diversity.** Phase 5 predicted (x) vs observed in adults (y), one square per location with 95 % CI horizontal error bars. 1:1 diagonal + ceiling at 32 Fgs. P3 sits on the diagonal (model passes); P41 (6/32) and P39 (9/32) sit far below (large drift gap). **Panel B — pollen compatibility.** Phase 5 predicted vs observed, with the traffic-light background (red = failed, amber = struggling, green = sustainable) and 1:1 diagonal. P3 and P39 close to the diagonal; P41 is the clear outlier (observed 0.53 vs predicted 0.78). **Panel C — per-Fg drift residual** `f_observed − f_P1` per location (one row each, Fgs sorted left-to-right by species-wide P1 frequency, most-common → rarest). **Green bars = Fg enriched vs P1** (drift favoured it); **red bars = Fg depleted vs P1**; **× markers = Fg absent at the location** (lost entirely). The residual pops out the drift fingerprint that the raw-frequency plot blurred — P41 shows classic FG001 drift (+21 %) + FG024 (+18 %) with 26/32 Fgs absent; P39 shows milder enrichment of FG012 / FG010; P3's small-population signature elevates the normally-rare FG018 and FG023 instead of the common Fgs — a founder-effect signature rather than classical drift. Source: `step30d_partC_clean_overlap.py`.
 
 ### C.0.b Diversity collapse → pollen compatibility: hypothesis decomposition
 
 **Why this analysis exists.** Panel A of § C.0.a (SRK diversity
 predicted vs observed) exposed a disconnect that pollen
-compatibility alone would have hidden: EO70 and EO76 both lose
+compatibility alone would have hidden: P41 and P39 both lose
 ~23 of their predicted alleles, but observed pollen compatibility
-drops by 0.24 at EO70 and barely 0.03 at EO76. EO67, with just 7
+drops by 0.24 at P41 and barely 0.03 at P39. P3, with just 7
 alleles against a predicted 10.8, lands at 0.70 — in the
 sustainable band. **Without the diversity trigger from § C.0.a we
 would not have known there was a mechanism question to ask.**
@@ -1676,40 +1674,40 @@ is **buffering** the location.
 
 | Location | Alleles obs / pred | Pollen compatibility obs → species-wide pred | Within-class spread | Class I / II balance | Zygosity composition |
 |---|---|---|---:|---:|---:|
-| **EO67** | 7 / 10.8 (-3.8) | 0.70 → 0.76 | **+100 %** | −7 % | −13 % |
-| **EO70** | 6 / 28.3 (-22.3) | 0.54 → 0.70 | **+88 %** | −3 % | −6 % |
-| **EO76** | 9 / 31.8 (-22.8) | 0.75 → 0.77 | **+206 %** | +1 % | **−115 %** |
+| **P3** | 7 / 10.8 (-3.8) | 0.70 → 0.76 | **+100 %** | −7 % | −13 % |
+| **P41** | 6 / 28.3 (-22.3) | 0.54 → 0.70 | **+88 %** | −3 % | −6 % |
+| **P39** | 9 / 31.8 (-22.8) | 0.75 → 0.77 | **+206 %** | +1 % | **−115 %** |
 
-- **EO70 — classical drift collapse.** FG024 absorbs 35 % of the
+- **P41 — classical drift collapse.** FG024 absorbs 35 % of the
   pool, FG001 another 62 %; four other alleles sit under 1 %.
   A FG024-homozygous Class I mother sees `(1 − 0.35)⁴ ≈ 0.17`
-  compatibility, vs ≈ 0.43 at EO67 where Class I is split four
+  compatibility, vs ≈ 0.43 at P3 where Class I is split four
   ways. The blue bar jumps up to 0.68 (closing most of the gap);
   red and yellow stay next to black. **Within-class concentration
   explains the deficit; class balance and zygosity are not
   involved.**
-- **EO67 — looks bad on paper, pollen compatibility survives.**
+- **P3 — looks bad on paper, pollen compatibility survives.**
   Only 7 of 32 alleles present, but those 7 split as **4 Class I
   alleles (FG024 / FG018 / FG023 / FG016, well spread) and 3
   Class II alleles**. Each Class I mother expresses a smaller
-  share of Class I mass than at EO70, so Class I × Class I
+  share of Class I mass than at P41, so Class I × Class I
   compatibility stays reasonable. Observed zygosity (32 %
   multi-identity) is slightly higher than species-wide — the
   yellow bar sits just below black, meaning observed zygosity is
-  mildly buffering. **Mate limitation at EO67 is not as bad as
+  mildly buffering. **Mate limitation at P3 is not as bad as
   the headline 7/32 count suggests.**
-- **EO76 — predicted near-perfect, observed severely collapsed,
+- **P39 — predicted near-perfect, observed severely collapsed,
   pollen compatibility still fine.** 9/32 alleles — a collapse
-  comparable to EO70 — but pollen compatibility drops only 0.03.
+  comparable to P41 — but pollen compatibility drops only 0.03.
   Decomposition exposes the mechanism: **zygosity is actively
-  buffering EO76** (yellow sits at 0.72, below the black 0.75,
+  buffering P39** (yellow sits at 0.72, below the black 0.75,
   a −115 % move relative to the gap). The location is 76 %
   homozygous (vs species-wide 66 %), and because its dominant
-  Class II allele (FG001 at 46 %) is less dominant than EO70's
+  Class II allele (FG001 at 46 %) is less dominant than P41's
   FG001 (62 %), those homozygous Class II mothers express a
   small, non-dominant set and face many compatible fathers. Blue
   overshoots the species-wide prediction (within-class diversity
-  at EO76 is actually better-spread than drift-only P1 would
+  at P39 is actually better-spread than drift-only P1 would
   deliver).
 
 #### Methodological take-home
@@ -1722,7 +1720,7 @@ identity** the mothers are. Capturing this requires an accurate
 sporophytic Class I / II model plus empirical zygosity (§ A.7–A.8)
 — a simpler diploid gametophytic approximation would collapse all
 three channels into a single "effective diversity" number and
-mis-predict EO76 outright. The hypothesis decomposition therefore
+mis-predict P39 outright. The hypothesis decomposition therefore
 doubles as validation of the model's mechanistic structure: it
 successfully resolves cases where the three channels pull in
 different directions.
@@ -1745,15 +1743,15 @@ loss:
    collapses onto *common* alleles.** The classical SI catastrophe
    (Lawrence 2000; Castric & Vekemans 2004) is a deme that collapses
    onto so few alleles that most mothers share them all → crash.
-   But at EO70 the 6 surviving Fgs are the species's *common* ones
+   But at P41 the 6 surviving Fgs are the species's *common* ones
    (FG001 at 41 %, FG024 at 35 % locally) — the opposite of the
    worst case. Different mothers still carry different combinations,
    so the pollen pool still finds compatible targets.
 3. **Tetraploid zygosity actively buffers at homozygous-rich sites.**
-   At EO76, 76 % of mothers are homozygous: a homozygous mother
+   At P39, 76 % of mothers are homozygous: a homozygous mother
    expresses a single Fg at her stigma, which pollen fathers can
    more easily avoid matching than a heterozygous mother's larger
-   expressed set. The yellow bar at EO76 in Figure 16 **drops below
+   expressed set. The yellow bar at P39 in Figure 16 **drops below
    the observed black bar** — the quantitative signature of this
    mechanism.
 
@@ -1765,7 +1763,7 @@ LEPA has**, the mating-level consequence of allele loss is
 **actively buffered** until the pool either (i) collapses onto a
 single class or (ii) homozygosity becomes so extreme that the
 expressed-set channel constrains compatibility. The 32 → 6 drift
-collapse at EO70 is severe by any count, and yet the pollen pool
+collapse at P41 is severe by any count, and yet the pollen pool
 still works at 70 % compatibility (close to the species mean 0.78).
 **The system has structural redundancy that diversity-counting
 alone cannot see.** The next-sampling-campaign data at the B1 pilot
@@ -1792,7 +1790,7 @@ pollen-compatibility response.
 <a id="fig-16"></a>
 ![Figure 16](figures/Phase5/step30_B_partC_hypothesis_decomposition.png)
 
-**Figure 16.** Competing-hypothesis decomposition of per-location pollen compatibility. Triggered by the SRK diversity discrepancies in § C.0.a. For each clean-overlap population — P3 (= EO67), P41 (= EO70), P39 (= EO76) — the figure shows five pollen-compatibility values from the same simulation (sporophytic Class I / II + empirical zygosity, 800 candidate fathers per mother, observed mother genotypes held fixed), each differing in which part of the father-drawing distribution is swapped to the species-wide reference. **Black — Observed:** fathers drawn from observed local allele frequencies and observed local zygosity. **Blue — Swap within-class spread:** keep observed Class I and Class II total masses, but reshape the within-class spread to match the P1 pattern (isolates the "drift monoculture" channel). **Red — Swap Class I / II balance:** keep within-class shape observed, rescale the two class totals to the species-wide values (isolates between-class rescue). **Yellow — Swap zygosity:** keep observed allele frequencies, swap father zygosity to species-wide 66/32/2 % (isolates the per-mother expressed-set channel). **Green — Phase 5 prediction:** everything swapped to species-wide. Error bars = bootstrap 95 % CI (400 mother resamples). Traffic-light bands shaded in the background; dashed grey line = species-wide pollen compatibility 0.78. **Reading rules:** a blue/red/yellow bar jumping toward green means that factor caused the gap; staying next to black means it was not involved; dropping below black means it is **buffering** the location (observed state on that axis is better than species-wide). **EO70** — blue dominates (within-class drift monoculture, FG024 at 35 % of pool); red and yellow neutral. **EO67** — small deficit, blue explains it; zygosity slightly buffering. **EO76** — small deficit despite collapsing from 32 to 9 alleles; yellow drops below black, meaning zygosity (76 % homozygous mothers) is actively buffering the location, and blue overshoots green because the specific within-class spread at EO76 is better than drift-only P1 would deliver. Source: `step30e_pcompat_hypothesis_decomposition.py`.
+**Figure 16.** Competing-hypothesis decomposition of per-location pollen compatibility. Triggered by the SRK diversity discrepancies in § C.0.a. For each clean-overlap population — P3 (= P3), P41 (= P41), P39 (= P39) — the figure shows five pollen-compatibility values from the same simulation (sporophytic Class I / II + empirical zygosity, 800 candidate fathers per mother, observed mother genotypes held fixed), each differing in which part of the father-drawing distribution is swapped to the species-wide reference. **Black — Observed:** fathers drawn from observed local allele frequencies and observed local zygosity. **Blue — Swap within-class spread:** keep observed Class I and Class II total masses, but reshape the within-class spread to match the P1 pattern (isolates the "drift monoculture" channel). **Red — Swap Class I / II balance:** keep within-class shape observed, rescale the two class totals to the species-wide values (isolates between-class rescue). **Yellow — Swap zygosity:** keep observed allele frequencies, swap father zygosity to species-wide 66/32/2 % (isolates the per-mother expressed-set channel). **Green — Phase 5 prediction:** everything swapped to species-wide. Error bars = bootstrap 95 % CI (400 mother resamples). Traffic-light bands shaded in the background; dashed grey line = species-wide pollen compatibility 0.78. **Reading rules:** a blue/red/yellow bar jumping toward green means that factor caused the gap; staying next to black means it was not involved; dropping below black means it is **buffering** the location (observed state on that axis is better than species-wide). **P41** — blue dominates (within-class drift monoculture, FG024 at 35 % of pool); red and yellow neutral. **P3** — small deficit, blue explains it; zygosity slightly buffering. **P39** — small deficit despite collapsing from 32 to 9 alleles; yellow drops below black, meaning zygosity (76 % homozygous mothers) is actively buffering the location, and blue overshoots green because the specific within-class spread at P39 is better than drift-only P1 would deliver. Source: `step30e_pcompat_hypothesis_decomposition.py`.
 
 **Note — why P1 is empirical, not uniform.** A uniform-frequency P1
 (Dirichlet(α = 1) over 32 Fgs, equivalent to the P0 "uninformative"
@@ -1801,7 +1799,7 @@ with no drift history**. That is not LEPA: decades of habitat loss
 have already pushed the species through drift, so empirical P1 — the
 observed Fg frequencies in the Canu-amplicon 263-individual inventory
 — is the realistic *starting point* against which per-location
-further drift is measured. Panel C makes this concrete: EO70's local
+further drift is measured. Panel C makes this concrete: P41's local
 pool has moved *past* P1 toward FG001 dominance, so even the already-
 skewed empirical prior underestimates how collapsed the local pool
 is. A uniform P1 would start from a flat distribution and declare
@@ -1815,8 +1813,8 @@ would not reflect how LEPA actually enters the modelling frame).
 over-estimates the observed SRK allele count by ~20 alleles at every
 clean-overlap location (predicted 11 / 28 / 32 vs observed 7 / 6 / 9).
 § C.0.b above decomposes *why pollen compatibility nevertheless
-tracks observation*; here we ask whether the diversity gap at EO70
-and EO76 could be an artefact of the operational deme being too
+tracks observation*; here we ask whether the diversity gap at P41
+and P39 could be an artefact of the operational deme being too
 wide at 50 m. Two competing scenarios:
 
 - **H1 — the 50 m operational deme is too wide.** Realised gene
@@ -1839,27 +1837,27 @@ simulate H2 directly** (that would require per-deme empirical
 frequency vectors we do not have yet — the next seed-genotyping
 campaign is designed to measure them).
 
-**EO67 is omitted from the figure.** It has only 2 events in the
+**P3 is omitted from the figure.** It has only 2 events in the
 2025 record, placed > 150 m apart, so the deme partition is
 invariant across every tested radius (2 demes everywhere). The
-sweep is non-informative there, and EO67's observed count is
+sweep is non-informative there, and P3's observed count is
 inside the 95 % CI of the Phase 5 prediction already — no gap to
-explain. The figure restricts to **EO70** and **EO76**, which do
-show meaningful fragmentation across the sweep (EO70: 1 → 3 demes;
-EO76: 5 → 17 demes as radius tightens).
+explain. The figure restricts to **P41** and **P39**, which do
+show meaningful fragmentation across the sweep (P41: 1 → 3 demes;
+P39: 5 → 17 demes as radius tightens).
 
-**Result — H1 is rejected within the P1 drift assumption at EO70
-and EO76** ([Figure 17](#fig-17)).
+**Result — H1 is rejected within the P1 drift assumption at P41
+and P39** ([Figure 17](#fig-17)).
 
 | Location | Observed | Predicted at r = 10 m | at 50 m | at 150 m | Deme count 10 m / 50 m / 150 m |
 |---|:---:|:---:|:---:|:---:|:---:|
-| **EO70** | 6 | 28.3 [25, 31] | 28.3 [25, 31] | 28.4 [25, 31] | 3 / 1 / 1 |
-| **EO76** | 9 | 31.8 [31, 32] | 31.8 [31, 32] | 31.8 [31, 32] | 17 / 6 / 5 |
+| **P41** | 6 | 28.3 [25, 31] | 28.3 [25, 31] | 28.4 [25, 31] | 3 / 1 / 1 |
+| **P39** | 9 | 31.8 [31, 32] | 31.8 [31, 32] | 31.8 [31, 32] | 17 / 6 / 5 |
 
 The prediction **does not move** across the sweep: even fragmenting
-EO76 into 17 small demes at 10 m, or EO70 into 3 demes at 10 m,
+P39 into 17 small demes at 10 m, or P41 into 3 demes at 10 m,
 leaves the union-of-per-deme pools at essentially the same 28–32
-Fgs. The ~22-allele gap at EO70 and ~23-allele gap at EO76 do not
+Fgs. The ~22-allele gap at P41 and ~23-allele gap at P39 do not
 close. Full table at
 [`step30f_srk_diversity_radius_sweep.tsv`](tables/Phase5/step30f_srk_diversity_radius_sweep.tsv).
 
@@ -1873,7 +1871,7 @@ rare Fgs under P1 (where FG001 ≈ 41 %, five more Fgs ≈ 25 %
 combined, 20+ rare Fgs each < 2 %), but a rare Fg at frequency
 *p* now has multiple sub-demes to appear in, and the union captures
 it with probability `1 − (1 − p)^(4 × N_total)` — governed by the
-location **total**, not the partition. Concretely at EO70's 10 m
+location **total**, not the partition. Concretely at P41's 10 m
 extreme the 161 plants split into sub-demes of 78 / 65 / 18 that
 each recover ~26 / 25 / 19 Fgs independently, but **their union
 still delivers 28**, same as the single 161-plant deme at 50 m.
@@ -1881,7 +1879,7 @@ Spatial sub-partitioning washes out at the location level once the
 total pool saturates P1 (above ~50–100 adults in LEPA). The
 partition would only matter at a location whose total `N_fertile`
 sits below that saturation ceiling and whose sub-deme sizes drop
-into the low single digits — neither applies at EO70 or EO76.
+into the low single digits — neither applies at P41 or P39.
 **Under P1 drift, varying the deme partition therefore cannot
 close the diversity gap at any radius** — only a drift model that
 differs per deme can (which is what the seed-genotyping campaign
@@ -1917,7 +1915,7 @@ will measure).
 <a id="fig-17"></a>
 ![Figure 17](figures/Phase5/step30f_srk_diversity_radius_sweep.png)
 
-**Figure 17.** SRK diversity gap (y = predicted − observed distinct SRK alleles) vs pollinator radius at **P41 (= EO70)** and **P39 (= EO76)**. x = radius used to rebuild the deme partition (10 → 150 m, log scale). Lines + 95 % CI bands = per-location per-radius simulation (2000 replicates per combination). Right-side labels show the gap at the largest radius; parenthetical observed counts come from the Phase 4 adult SRK genotypes (a single measurement, not a sweep output — shown as labels, not horizontal lines). Zero line = perfect match. Vertical dotted line at 50 m marks the current operational deme. H1 (deme too wide) would predict the gap to shrink toward zero as radius tightens; it stays flat at +22 and +23 across all radii, including the 10 m extreme that fragments EO70 into 3 demes and EO76 into 17 — rejecting H1 within the P1 drift assumption. P3 (= EO67) is omitted (deme partition invariant across the sweep, test non-informative). Source: `step30f_srk_diversity_hypothesis_test.py`.
+**Figure 17.** SRK diversity gap (y = predicted − observed distinct SRK alleles) vs pollinator radius at **P41 (= P41)** and **P39 (= P39)**. x = radius used to rebuild the deme partition (10 → 150 m, log scale). Lines + 95 % CI bands = per-location per-radius simulation (2000 replicates per combination). Right-side labels show the gap at the largest radius; parenthetical observed counts come from the Phase 4 adult SRK genotypes (a single measurement, not a sweep output — shown as labels, not horizontal lines). Zero line = perfect match. Vertical dotted line at 50 m marks the current operational deme. H1 (deme too wide) would predict the gap to shrink toward zero as radius tightens; it stays flat at +22 and +23 across all radii, including the 10 m extreme that fragments P41 into 3 demes and P39 into 17 — rejecting H1 within the P1 drift assumption. P3 (= P3) is omitted (deme partition invariant across the sweep, test non-informative). Source: `step30f_srk_diversity_hypothesis_test.py`.
 
 
 ## Phase B — Closing the causal chain with seed data

@@ -84,6 +84,27 @@ DEFAULT_BANDS_TSV   = DEFAULT_TABLES / "step30_A_traffic_light_bands.tsv"
 # EO <-> Phase 5 locationCode is 1:1 for these three.
 CLEAN_OVERLAP_EOS = ["EO67", "EO70", "EO76"]
 
+# EO → Phase 5 populationID mapping (post step30h renumber,
+# 2026-10-06). The three clean-overlap EOs are the SRK-genotyped
+# populations used across § C.0.a / § C.0.b / § C.0.c; the figures
+# now display both the Phase 5 populationID and the legacy EO code
+# so a reader can cross-reference against the per-population figures
+# upstream in the compact doc.
+EO_TO_POP = {
+    "EO67": "P3",
+    "EO70": "P41",
+    "EO76": "P39",
+}
+
+
+def eo_label(eo: str) -> str:
+    """Display label combining the Phase 5 populationID with the
+    legacy EO code — e.g. 'P3 (EO67)'. If an EO is not in the
+    mapping (e.g. a split EO like EO18 would be), fall back to the
+    EO code alone."""
+    pop = EO_TO_POP.get(eo)
+    return f"{pop} ({eo})" if pop else eo
+
 N_MC_FATHERS = 800
 N_BOOTSTRAP  = 400
 RNG_SEED     = 2033
@@ -274,7 +295,7 @@ def draw_figure(stats: pd.DataFrame,
                             - r["pred_phase5_distinct_Fgs"]]],
                      fmt="s", color=COLOUR_OBS, ecolor="#999999",
                      elinewidth=1.0, capsize=3, markersize=8, zorder=2)
-        label = r["locationCode"]
+        label = eo_label(r["locationCode"])
         if r["pred_phase5_distinct_Fgs"] > 0.65 * hiA:
             axA.annotate(
                 label + "  ",
@@ -291,7 +312,7 @@ def draw_figure(stats: pd.DataFrame,
     axA.set_ylabel("Observed number of distinct SRK alleles",
                    fontsize=10)
     axA.set_title(
-        f"A  SRK allele diversity per location (ceiling = {n_fg} alleles)",
+        f"A  SRK allele diversity per population (ceiling = {n_fg} alleles)",
         fontsize=11, loc="left")
     axA.spines["top"].set_visible(False)
     axA.spines["right"].set_visible(False)
@@ -325,7 +346,7 @@ def draw_figure(stats: pd.DataFrame,
                      elinewidth=1.0, capsize=3, markersize=8, zorder=2)
         # Flip label to the left of the dot when the dot sits in the
         # right third of the axis, otherwise it clips.
-        label = r["locationCode"]
+        label = eo_label(r["locationCode"])
         if r["pred_phase5_pcompat_mean"] > 0.65 * hiB:
             axB.annotate(
                 label + "  ",
@@ -397,7 +418,8 @@ def draw_figure(stats: pd.DataFrame,
         obs_fgs = int(stats.set_index("locationCode").loc[loc,
                                                            "obs_distinct_Fgs"])
         ax_i.text(0.995, 0.90,
-                   f"{loc}  (n={n_fun} adults, {obs_fgs}/{n_fg} alleles present)",
+                   f"{eo_label(loc)}  (n={n_fun} adults, "
+                   f"{obs_fgs}/{n_fg} alleles present)",
                    transform=ax_i.transAxes,
                    fontsize=10, ha="right", va="top", fontweight="bold")
         # Shared y-axis label — attach it to the middle row only so
@@ -417,14 +439,14 @@ def draw_figure(stats: pd.DataFrame,
         ax_i.set_ylim(-y_lim, y_lim)
 
     axC_rows[0].set_title(
-        "C  Allele frequency residuals per location — drift signature  "
+        "C  Allele frequency residuals per population — drift signature  "
         "(green = enriched vs species-wide, red = depleted)",
         fontsize=11, loc="left")
 
     fig.suptitle(
-        "Phase 5 Part C — Clean-overlap EOs (1:1 with Phase 5 location)  "
-        f"|  Phase 4 adult SRK genotypes  |  species-mean P_compat = "
-        f"{bands['species_mean']:.3f}",
+        "Part C — Clean-overlap populations (P3 = EO67, P41 = EO70, "
+        "P39 = EO76)  |  adult SRK genotypes  |  species-mean "
+        f"pollen compatibility = {bands['species_mean']:.3f}",
         fontsize=12, y=0.995,
     )
     fig.subplots_adjust(left=0.09, right=0.98, top=0.94, bottom=0.08)

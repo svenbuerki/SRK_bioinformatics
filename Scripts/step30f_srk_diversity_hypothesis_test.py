@@ -73,6 +73,16 @@ TARGETS = [
     ("EO76",  2, "#009E73", True),   # teal green; plotted
 ]
 
+# EO → Phase 5 populationID mapping (post step30h renumber,
+# 2026-10-06). Used to display 'P41 (EO70)' / 'P39 (EO76)' /
+# 'P3 (EO67)' in the figure.
+EO_TO_POP = {"EO67": "P3", "EO70": "P41", "EO76": "P39"}
+
+
+def eo_label(eo: str) -> str:
+    pop = EO_TO_POP.get(eo)
+    return f"{pop} ({eo})" if pop else eo
+
 
 def components_at_radius(sub: pd.DataFrame, radius_m: float) -> list[list[int]]:
     """Return a list of positional-index lists, one per connected
@@ -205,7 +215,7 @@ def main() -> None:
 
         ax.plot(sub["radius_m"], gap_mean, "-o",
                 color=color, linewidth=2.4, markersize=7,
-                label=f"{eo_code}  (observed = {obs_val} alleles)")
+                label=f"{eo_label(eo_code)}  (observed = {obs_val} alleles)")
         ax.fill_between(sub["radius_m"], gap_lo, gap_hi,
                          color=color, alpha=0.18)
 
@@ -236,7 +246,7 @@ def main() -> None:
     ax.set_xlabel("Pollinator radius used to build the deme partition  (m, log scale)")
     ax.set_ylabel("Predicted − observed distinct SRK alleles\n(the diversity gap at each radius)")
     ax.set_title(
-        "SRK diversity gap vs pollinator radius — EO70 and EO76\n"
+        "SRK diversity gap vs pollinator radius — P41 (EO70) and P39 (EO76)\n"
         "If gene flow were tighter than 50 m (H1), the gap should\n"
         "shrink as radius decreases. It does not.",
         fontsize=11,

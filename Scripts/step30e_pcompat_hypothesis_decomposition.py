@@ -113,6 +113,22 @@ DEFAULT_PRED_DIVERSITY = DEFAULT_TABLES / "step30_A_prediction_location_diversit
 
 CLEAN_OVERLAP_EOS = ["EO67", "EO70", "EO76"]
 
+# EO → Phase 5 populationID mapping (post step30h renumber,
+# 2026-10-06). Keeps figures aligned with the per-population
+# naming used across the compact doc.
+EO_TO_POP = {
+    "EO67": "P3",
+    "EO70": "P41",
+    "EO76": "P39",
+}
+
+
+def eo_label(eo: str) -> str:
+    """'P3 (EO67)' style — fall back to the EO code alone if the
+    EO isn't in the clean-overlap mapping."""
+    pop = EO_TO_POP.get(eo)
+    return f"{pop} ({eo})" if pop else eo
+
 N_MC_FATHERS = 800
 N_BOOTSTRAP  = 400
 RNG_SEED     = 2034
@@ -355,7 +371,7 @@ def draw_figure(stats: pd.DataFrame,
 
     ax.set_xticks(group_centres)
     ax.set_xticklabels(
-        [f"{code}\n(n={int(n)})" for code, n in zip(
+        [f"{eo_label(code)}\n(n={int(n)})" for code, n in zip(
             stats["locationCode"], stats["n_functional_carriers"])],
         fontsize=10,
     )
@@ -363,7 +379,7 @@ def draw_figure(stats: pd.DataFrame,
     ax.set_ylabel("Pollen compatibility under random mating", fontsize=11)
     ax.set_title(
         "Pollen compatibility — competing-hypothesis decomposition "
-        "per location",
+        "per population",
         fontsize=12, loc="left",
     )
     handles, labels = ax.get_legend_handles_labels()
